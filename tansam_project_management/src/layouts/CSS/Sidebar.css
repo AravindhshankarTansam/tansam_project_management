@@ -1,0 +1,105 @@
+/* Sidebar container */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background-color: #1e293b;
+  color: #ffffff;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Dashboard title */
+.sidebar-title {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+/* Role text */
+.sidebar-role {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+/* Navigation */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Links */
+.sidebar-link {
+  padding: 10px 12px;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: #334155;
+}
+
+/* Active link (optional) */
+.sidebar-link.active {
+  background-color: #0ea5e9;
+  font-weight: 500;
+}
+/* ---------- DROPDOWN ---------- */
+.sidebar-dropdown {
+  margin-bottom: 8px;
+}
+
+/* Dropdown header (Masters) */
+.dropdown-toggle {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+  background-color: #334155;
+}
+
+/* Arrow */
+.dropdown-arrow {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Dropdown container */
+.dropdown-menu {
+  margin-top: 4px;
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sub-links */
+.sidebar-sublink {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #cbd5f5;
+  text-decoration: none;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-sublink:hover {
+  background-color: #475569;
+  color: #ffffff;
+}
+
+/* Optional: active sublink */
+.sidebar-sublink.active {
+  background-color: #0ea5e9;
+  color: #ffffff;
+  font-weight: 500;
+}
