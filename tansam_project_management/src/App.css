@@ -1,13 +1,10 @@
 body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f4f6f8;
-  font-family: Arial, sans-serif;
+  height: 100vh;
 }
+
 
 /* Fade + slide animation */
 @keyframes fadeSlideIn {
@@ -59,4 +56,12 @@ button:hover {
 .error {
   color: red;
   margin-top: 10px;
+}
+
+.login-box {
+  width: 350px;
+  margin: 100px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
 }

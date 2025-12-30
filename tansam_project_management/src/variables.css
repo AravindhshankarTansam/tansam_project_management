@@ -1,0 +1,15 @@
+:root {
+  --bg-main: #f8fafc;
+  --bg-white: #ffffff;
+  --border: #e5e7eb;
+
+  --text-dark: #111827;
+  --text-muted: #6b7280;
+
+  --primary: #2563eb;
+  --success: #16a34a;
+  --danger: #dc2626;
+
+  --radius: 12px;
+  --shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
