@@ -1,13 +1,28 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { SIDEBAR_MENU } from "./SidebarConfig/SidebarConfig.js";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { SIDEBAR_MENU } from "./SidebarConfig/SidebarConfig";
 import "./CSS/Sidebar.css";
 
 export default function Sidebar({ role }) {
   const normalizedRole = role?.toLowerCase();
   const menuItems = SIDEBAR_MENU[normalizedRole] || [];
+  const location = useLocation();
 
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  // ✅ Auto-open dropdown if a child route is active
+  useEffect(() => {
+    menuItems.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some(
+          (child) => child.path === location.pathname
+        );
+        if (isChildActive) {
+          setOpenDropdown(item.label);
+        }
+      }
+    });
+  }, [location.pathname, menuItems]);
 
   const toggleDropdown = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
@@ -15,39 +30,40 @@ export default function Sidebar({ role }) {
 
   return (
     <aside className="sidebar">
-      <h3 className="sidebar-title">TANSAM</h3>
-      <h4 className="sidebar-title">Project Management</h4>
-
-      <p className="sidebar-role">
-        Role: {normalizedRole || "N/A"}
-      </p>
+      <div className="sidebar-header">
+        <h3 className="logo">TANSAM</h3>
+        <span className="subtitle">Project Management</span>
+      </div>
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => {
-          // ✅ DROPDOWN ITEM
           if (item.children) {
+            const isOpen = openDropdown === item.label;
+
             return (
-              <div key={item.label} className="sidebar-dropdown">
-                <div
-                  className="sidebar-link dropdown-toggle"
+              <div key={item.label} className="sidebar-section">
+                <button
+                  className={`section-title ${isOpen ? "open" : ""}`}
                   onClick={() => toggleDropdown(item.label)}
                 >
-                  {item.label}
-                  <span className="dropdown-arrow">
-                    {openDropdown === item.label ? "▲" : "▼"}
-                  </span>
-                </div>
+                  <span>{item.label}</span>
+                  <span className="arrow">{isOpen ? "▾" : "▸"}</span>
+                </button>
 
-                {openDropdown === item.label && (
-                  <div className="dropdown-menu">
+                {isOpen && (
+                  <div className="sidebar-submenu">
                     {item.children.map((child) => (
-                      <Link
+                      <NavLink
                         key={child.path}
                         to={child.path}
-                        className="sidebar-sublink"
+                        className={({ isActive }) =>
+                          isActive
+                            ? "sidebar-sublink active"
+                            : "sidebar-sublink"
+                        }
                       >
                         {child.label}
-                      </Link>
+                      </NavLink>
                     ))}
                   </div>
                 )}
@@ -55,15 +71,16 @@ export default function Sidebar({ role }) {
             );
           }
 
-          // ✅ NORMAL LINK
           return (
-            <Link
+            <NavLink
               key={item.path}
               to={item.path}
-              className="sidebar-link"
+              className={({ isActive }) =>
+                isActive ? "sidebar-link active" : "sidebar-link"
+              }
             >
               {item.label}
-            </Link>
+            </NavLink>
           );
         })}
       </nav>

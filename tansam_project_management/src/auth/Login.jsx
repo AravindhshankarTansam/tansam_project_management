@@ -1,43 +1,53 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../services/api";
 import "./CSS/Login.css";
 
 function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  // ADMIN ONLY (for now)
-  const ADMIN_USER = {
-    email: "admin@test.com",
-    password: "admin123",
-    role: "ADMIN",
-    route: "/admin",
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    if (email !== ADMIN_USER.email || password !== ADMIN_USER.password) {
-      setError("Invalid admin credentials");
-      return;
+    try {
+      console.log("📤 Sending login data:", { email, password });
+
+      const data = await loginUser(email, password);
+
+      // 🔍 LOG RESPONSE DATA
+      console.log("📥 Login API response:", data);
+
+      // Save user in state
+      setUser(data);
+      
+
+      // Persist login
+      localStorage.setItem("user", JSON.stringify(data));
+
+      // Redirect based on role
+      console.log("➡️ Redirecting to:", data.route);
+      navigate(data.route);
+
+    } catch (err) {
+      console.error("❌ Login error:", err);
+      setError(err.message || "Backend not reachable");
+    } finally {
+      setLoading(false);
     }
-
-    setUser({
-      email: ADMIN_USER.email,
-      role: ADMIN_USER.role,
-    });
-
-    navigate(ADMIN_USER.route);
   };
 
   return (
     <div className="login-container">
-      <h2 className="login-title">Admin Login</h2>
+      <h2 className="login-title">Login</h2>
 
-      {error && <p className="login-error">{error}</p>}
+      
 
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="login-field">
@@ -60,10 +70,16 @@ function Login({ setUser }) {
           />
         </div>
 
-        <button className="login-button" type="submit">
-          Login
+        <button
+          className="login-button"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
+
+      {error && <p className="login-error">{error}</p>}
     </div>
   );
 }

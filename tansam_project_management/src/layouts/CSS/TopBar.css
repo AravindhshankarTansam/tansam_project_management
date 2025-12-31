@@ -1,0 +1,30 @@
+.topbar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.user-name {
+  font-size: 14px;
+  margin-right: 16px;
+  color: #374151;
+}
+
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
