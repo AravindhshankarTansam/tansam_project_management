@@ -37,6 +37,9 @@ export default function Sidebar({ role }) {
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => {
+          // -------------------------------
+          // DROPDOWN SECTION
+          // -------------------------------
           if (item.children) {
             const isOpen = openDropdown === item.label;
 
@@ -71,10 +74,14 @@ export default function Sidebar({ role }) {
             );
           }
 
+          // -------------------------------
+          // NORMAL LINKS (Dashboard fix here)
+          // -------------------------------
           return (
             <NavLink
               key={item.path}
               to={item.path}
+              end={item.label === "Dashboard"}   // ✅ FIX
               className={({ isActive }) =>
                 isActive ? "sidebar-link active" : "sidebar-link"
               }
