@@ -104,19 +104,19 @@ export default function CreateProject() {
   return (
     <div style={{ padding: "20px" }}>
       <h2>📦 Projects Master</h2>
-      <button onClick={openAddModal} style={styles.addBtn}>➕ Add Project</button>
+<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+  <button onClick={openAddModal} style={styles.addBtn}>➕ Add Project</button>
 
-      {/* Items per page selector */}
-      <div style={{ marginBottom: "10px" }}>
-        Show:{" "}
-        <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
-          <option value={25}>25</option>
-          <option value={50}>50</option>
-          <option value={100}>100</option>
-        </select>{" "}
-        per page
-      </div>
-
+  <div>
+    Show:{" "}
+    <select value={itemsPerPage} onChange={handleItemsPerPageChange} style={{ marginLeft: "5px" }}>
+      <option value={25}>25</option>
+      <option value={50}>50</option>
+      <option value={100}>100</option>
+    </select>{" "}
+    per page
+  </div>
+</div>
       <table style={styles.table}>
         <thead>
           <tr>
