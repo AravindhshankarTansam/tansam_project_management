@@ -70,7 +70,7 @@ export default function Sidebar({ role }) {
         ))}
       </nav>
 
-      <div className="sidebar-footer">Settings</div>
+      {/* <div className="sidebar-footer">Settings</div> */}
     </aside>
   );
 }
