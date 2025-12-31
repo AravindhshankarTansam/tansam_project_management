@@ -10,8 +10,8 @@ export default function TopBar() {
 const styles = {
   topbar: {
     height: "60px",
-    background: "#0f172a",
-    color: "#fff",
+    background: "#fff",
+    color: "#282525ff",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
