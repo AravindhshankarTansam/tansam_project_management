@@ -1,9 +1,10 @@
 import { useState } from "react";
 
+import "./css/role.css";
 export default function Roles() {
   const [roles, setRoles] = useState([
-    { id: 1, name: "COORDINATOR", description: "Handles enquiries" },
-    { id: 2, name: "TL", description: "Team Lead approval" },
+    { id: 1, name: "COORDINATOR"},
+    { id: 2, name: "TL" },
   ]);
 
   const [showModal, setShowModal] = useState(false);
@@ -12,13 +13,13 @@ export default function Roles() {
   const [form, setForm] = useState({
     id: null,
     name: "",
-    description: "",
+   
   });
 
   // 🔹 Open Add Role
   const openAddModal = () => {
     setIsEdit(false);
-    setForm({ id: null, name: "", description: "" });
+    setForm({ id: null, name: "" });
     setShowModal(true);
   };
 
@@ -71,7 +72,7 @@ export default function Roles() {
         <thead>
           <tr>
             <th>Role Name</th>
-            <th>Description</th>
+          
             <th>Action</th>
           </tr>
         </thead>
@@ -79,15 +80,24 @@ export default function Roles() {
           {roles.map((role) => (
             <tr key={role.id}>
               <td>{role.name}</td>
-              <td>{role.description}</td>
-              <td>
-                <button
-                  onClick={() => openEditModal(role)}
-                  style={styles.editBtn}
-                >
-                  ✏️ Edit
-                </button>
-              </td>
+             
+              <td className="action-cell">
+  <button
+    className="icon-btn edit"
+    onClick={() => openEditModal(role)}
+    title="Edit"
+  >
+    ✏️
+  </button>
+
+  <button
+    className="icon-btn delete"
+    title="Delete"
+  >
+    🗑️
+  </button>
+</td>
+
             </tr>
           ))}
         </tbody>
