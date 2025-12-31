@@ -6,7 +6,6 @@ import "./CSS/Sidebar.css";
 export default function Sidebar({ role }) {
   const normalizedRole = role?.toLowerCase();
   const menuItems = SIDEBAR_MENU[normalizedRole] || [];
-
   const [openDropdown, setOpenDropdown] = useState(null);
 
   const toggleDropdown = (label) => {
@@ -15,27 +14,37 @@ export default function Sidebar({ role }) {
 
   return (
     <aside className="sidebar">
-      <h3 className="sidebar-title">TANSAM</h3>
-      <h4 className="sidebar-title">Project Management</h4>
+      <div className="sidebar-header">
+        <img
+          src="/public/tansam.jpg"
+          alt="TANSAM Logo"
+          className="sidebar-logo-img"
+        />
+        <div className="sidebar-title-wrap">
+          <h3 className="sidebar-title">TANSAM</h3>
+          <h4 className="sidebar-subtitle">Project Management</h4>
+        </div>
+      </div>
 
-      <p className="sidebar-role">
-        Role: {normalizedRole || "N/A"}
-      </p>
+      <p className="sidebar-role">Role: {normalizedRole || "N/A"}</p>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => {
-          // ✅ DROPDOWN ITEM
-          if (item.children) {
-            return (
-              <div key={item.label} className="sidebar-dropdown">
+        {menuItems.map((item) => (
+          <div
+            key={item.label}
+            className={`sidebar-item ${openDropdown === item.label ? "open" : ""}`} // + addition
+          >
+            {item.children ? (
+              <>
                 <div
                   className="sidebar-link dropdown-toggle"
                   onClick={() => toggleDropdown(item.label)}
                 >
-                  {item.label}
-                  <span className="dropdown-arrow">
-                    {openDropdown === item.label ? "▲" : "▼"}
-                  </span>
+                  <span>{item.label}</span>
+              <span className="dropdown-arrow">
+  {openDropdown === item.label ? "-" : "+"}
+</span>
+
                 </div>
 
                 {openDropdown === item.label && (
@@ -51,22 +60,17 @@ export default function Sidebar({ role }) {
                     ))}
                   </div>
                 )}
-              </div>
-            );
-          }
-
-          // ✅ NORMAL LINK
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className="sidebar-link"
-            >
-              {item.label}
-            </Link>
-          );
-        })}
+              </>
+            ) : (
+              <Link key={item.path} to={item.path} className="sidebar-link">
+                {item.label}
+              </Link>
+            )}
+          </div>
+        ))}
       </nav>
+
+      <div className="sidebar-footer">Settings</div>
     </aside>
   );
 }
