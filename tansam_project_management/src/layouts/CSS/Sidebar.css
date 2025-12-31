@@ -1,105 +1,109 @@
 /* Sidebar container */
 .sidebar {
-  width: 220px;
+  width: 240px;
   height: 100vh;
-  background-color: #1e293b;
-  color: #ffffff;
-  padding: 20px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 16px;
   box-sizing: border-box;
 }
 
-/* Dashboard title */
-.sidebar-title {
-  font-size: 18px;
-  margin-bottom: 6px;
+/* Header */
+.sidebar-header {
+  margin-bottom: 24px;
 }
 
-/* Role text */
-.sidebar-role {
+.logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.subtitle {
   font-size: 12px;
-  color: #94a3b8;
-  margin-bottom: 20px;
+  color: #6b7280;
 }
 
 /* Navigation */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
-/* Links */
+/* Main links */
 .sidebar-link {
   padding: 10px 12px;
-  color: #ffffff;
+  border-radius: 8px;
   text-decoration: none;
-  border-radius: 6px;
-  margin-bottom: 8px;
+  color: #374151;
+  font-size: 14px;
   transition: background 0.2s ease;
 }
 
 .sidebar-link:hover {
-  background-color: #334155;
+  background: #f3f4f6;
 }
 
-/* Active link (optional) */
 .sidebar-link.active {
-  background-color: #0ea5e9;
-  font-weight: 500;
-}
-/* ---------- DROPDOWN ---------- */
-.sidebar-dropdown {
-  margin-bottom: 8px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
 }
 
-/* Dropdown header (Masters) */
-.dropdown-toggle {
+/* Sections */
+.sidebar-section {
+  margin-top: 12px;
+}
+
+/* Section title */
+.section-title {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 8px 12px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  border-radius: 6px;
-  color: #ffffff;
-  transition: background 0.2s ease;
 }
 
-.dropdown-toggle:hover {
-  background-color: #334155;
+.section-title.open {
+  color: #111827;
 }
 
 /* Arrow */
-.dropdown-arrow {
-  font-size: 11px;
-  opacity: 0.8;
+.arrow {
+  font-size: 12px;
 }
 
-/* Dropdown container */
-.dropdown-menu {
+/* Submenu */
+.sidebar-submenu {
   margin-top: 4px;
   padding-left: 12px;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
-/* Sub-links */
+/* Sublinks */
 .sidebar-sublink {
   padding: 8px 12px;
-  font-size: 14px;
-  color: #cbd5f5;
-  text-decoration: none;
   border-radius: 6px;
-  margin-bottom: 4px;
-  transition: background 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+  font-size: 13px;
+  color: #4b5563;
 }
 
 .sidebar-sublink:hover {
-  background-color: #475569;
-  color: #ffffff;
+  background: #f3f4f6;
 }
 
-/* Optional: active sublink */
 .sidebar-sublink.active {
-  background-color: #0ea5e9;
-  color: #ffffff;
-  font-weight: 500;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
 }

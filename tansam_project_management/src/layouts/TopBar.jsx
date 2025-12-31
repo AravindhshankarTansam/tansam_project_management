@@ -1,27 +1,17 @@
+import React from 'react';
+import './CSS/TopBar.css';
+
 export default function TopBar() {
   return (
-    <div style={styles.topbar}>
-      <span>Welcome, User</span>
-      <button style={styles.logout}>Logout</button>
-    </div>
+    <header className="topbar">
+      <div className="topbar-left">
+        <span className="page-title">Dashboard</span>
+      </div>
+
+      <div className="topbar-right">
+        <span className="user-name">Welcome, User</span>
+        <button className="logout-btn">Logout</button>
+      </div>
+    </header>
   );
 }
-
-const styles = {
-  topbar: {
-    height: "60px",
-    background: "#0f172a",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 20px",
-  },
-  logout: {
-    background: "red",
-    color: "#fff",
-    border: "none",
-    padding: "6px 12px",
-    cursor: "pointer",
-  },
-};

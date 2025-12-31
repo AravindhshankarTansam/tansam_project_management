@@ -15,8 +15,6 @@ import Users from "./dashboards/Admin/Users.jsx";
 
 // Cordinator Imports
 
-
-
 function App() {
   const [user, setUser] = useState(null);
 
