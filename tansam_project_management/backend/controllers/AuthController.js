@@ -8,7 +8,7 @@ export const login = async (req, res) => {
     const conn = await mysql.createConnection({
       host: "localhost",
       user: "root",
-      password: "root",
+      password: "",
       database: "tansam_project",
     });
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./AdminDashboard.css";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const [showMaster, setShowMaster] = useState(false);
@@ -8,6 +9,7 @@ export default function AdminDashboard() {
   const [role, setRole] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
 
@@ -35,7 +37,8 @@ export default function AdminDashboard() {
 
           {showMaster && (
             <ul className="submenu">
-              <li>Role</li>
+              <li onClick={() => navigate("/roles")}>Role</li>
+
               <li>Department</li>
             </ul>
           )}
