@@ -12,8 +12,10 @@ import Labs from "./dashboards/Admin/Labs.jsx";
 import Reports from "./dashboards/Admin/Reports.jsx";
 import Roles from "./dashboards/Admin/Roles.jsx";
 import Users from "./dashboards/Admin/Users.jsx";
-
+import CreateProject from "./dashboards/Admin/Projects.jsx";
 // Cordinator Imports
+
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -42,6 +44,7 @@ function App() {
           <Route path="roles" element={<Roles />} />
           <Route path="labs" element={<Labs />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="project" element={<CreateProject />} />
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
