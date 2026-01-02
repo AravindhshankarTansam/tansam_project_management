@@ -3,6 +3,7 @@ export const SIDEBAR_MENU = {
   admin: [
     { label: "Dashboard", path: "/admin" },
     { label: "Create Users", path: "/admin/users" },
+      { label: "Project", path: "/admin/project" },
 
     {
       label: "Master Table",

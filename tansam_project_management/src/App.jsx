@@ -10,7 +10,7 @@ import Labs from "./dashboards/Admin/Labs.jsx";
 import Reports from "./dashboards/Admin/Reports.jsx";
 import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
 import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
-
+import CreateProject from "./dashboards/Admin/Projects.jsx";
 function App() {
   const [user, setUser] = useState(null);
 
@@ -44,6 +44,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<Users />} />
           <Route path="roles" element={<Roles />} />
+            <Route path="project" element={<CreateProject />} />
           <Route path="labs" element={<Labs />} />
           <Route path="reports" element={<Reports />} />
           <Route path="project-types" element={<CreateProjectType />} />
