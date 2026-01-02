@@ -266,3 +266,59 @@
   margin: 0 4px;
   padding: 3px 6px;
 }
+.filters select {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+.filters select option {
+  padding: 4px 6px;
+}
+.customDropdown {
+  position: relative;
+  width: 150px;
+  cursor: pointer;
+}
+
+.dropdownHeader {
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.selectedCount {
+  font-size: 12px;
+  color: #555;
+  margin-left: 5px;
+}
+
+.dropdownList {
+  position: absolute;
+  top: 35px;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+  padding: 5px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  padding: 3px 5px;
+}
+
+.dropdownItem input {
+  margin-right: 8px;
+}

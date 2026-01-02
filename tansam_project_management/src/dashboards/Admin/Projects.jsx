@@ -34,20 +34,25 @@ export default function ProjectsDashboard() {
       droppedReason: j % 5 === 0 ? "Client canceled" : "",
     })),
   }));
+const [modalMode, setModalMode] = useState("view"); // "view", "more", "edit"
 
   const [quotations, setQuotations] = useState(dummyQuotations);
   const [activeTab, setActiveTab] = useState("approved"); // approved or dropped
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
-  const [isReadOnly, setIsReadOnly] = useState(false);
+
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const [filterWorkCategory, setFilterWorkCategory] = useState("All");
-const [filterLab, setFilterLab] = useState("All");
-const [filterStatus, setFilterStatus] = useState("All");
+const [filterWorkCategory, setFilterWorkCategory] = useState([]);
+const [filterLab, setFilterLab] = useState([]);
+const [filterStatus, setFilterStatus] = useState([]);
+const [showCategory, setShowCategory] = useState(false);
+const [showLab, setShowLab] = useState(false);
+const [showStatus, setShowStatus] = useState(false);
+
 // Flatten projects
 const allProjects = [];
 quotations.forEach((q) => {
@@ -61,13 +66,16 @@ quotations.forEach((q) => {
 });
 const applyFilters = (projects) => {
   return projects.filter((p) => {
-    return (
-      (filterWorkCategory === "All" || p.workCategory === filterWorkCategory) &&
-      (filterLab === "All" || p.lab === filterLab) &&
-      (filterStatus === "All" || p.projectStatus === filterStatus)
-    );
+    const matchCategory =
+      filterWorkCategory.length === 0 || filterWorkCategory.includes(p.workCategory);
+    const matchLab = filterLab.length === 0 || filterLab.includes(p.lab);
+    const matchStatus =
+      filterStatus.length === 0 || filterStatus.includes(p.projectStatus);
+
+    return matchCategory && matchLab && matchStatus;
   });
 };
+
 
 const approvedProjects = applyFilters(
   allProjects.filter((p) => p.projectStatus !== "Dropped")
@@ -97,11 +105,13 @@ const droppedProjects = applyFilters(
     Math.ceil(projects.length / perPage);
 
   // Handlers
-  const openEditModal = (project, readOnly = false) => {
-    setEditingProject(project);
-    setIsReadOnly(readOnly);
-    setShowModal(true);
-  };
+const openEditModal = (project, readOnly = false, mode = "view") => {
+  setEditingProject(project);
+  setIsReadOnly(readOnly);
+  setModalMode(mode); // store the mode
+  setShowModal(true);
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -196,18 +206,18 @@ const droppedProjects = applyFilters(
                 <td className="td">{p.currentProgress}</td>
                 <td className="td">{p.revenue}</td>
                 <td className="td">{p.issues}</td>
-                {showDroppedReason && <td className="td">{p.droppedReason}</td>}
+               {showDroppedReason && <td className="td">{p.droppedReason}</td>}
                 <td className="td actionCell">
-  <div className="actionGroup">
-    {/* View */}
-    <button
-      className="viewBtn"
-      onClick={() => openEditModal(p, true)}
-      title="View"
-    >
-      <FaEye />
-    </button>
 
+   <div className="actionGroup">
+    {/* View */}
+   <button
+  className="viewBtn"
+  onClick={() => openEditModal(p, true, "view")}
+  title="View"
+>
+  <FaEye />
+</button>
     {/* Edit */}
     <button
       className="editBtn"
@@ -218,13 +228,13 @@ const droppedProjects = applyFilters(
     </button>
 
     {/* More */}
-    <button
-      className="moreBtn"
-      onClick={() => openEditModal(p, true)}
-      title="More"
-    >
-      <FaEllipsisH />
-    </button>
+  <button
+  className="moreBtn"
+  onClick={() => openEditModal(p, true, "more")}
+  title="More"
+>
+  <FaEllipsisH />
+</button>
 
     {/* Delete */}
     <button
@@ -328,44 +338,118 @@ const droppedProjects = applyFilters(
           alignItems: "center",
         }}
       >
-  <div className="topControls">
-  {/* Filters - LEFT */}
-  <div className="filters">
-    <select
-      value={filterWorkCategory}
-      onChange={(e) => setFilterWorkCategory(e.target.value)}
+<div className="filters" style={{ display: "flex", gap: "15px" }}>
+  {/* Work Category */}
+  <div className="customDropdown">
+    <div
+      className="dropdownHeader"
+      onClick={() => setShowCategory(!showCategory)}
     >
-      <option value="All">All Work Categories</option>
-      <option value="Software">Software</option>
-      <option value="Hardware">Hardware</option>
-      <option value="Consulting">Consulting</option>
-    </select>
-
-    <select
-      value={filterLab}
-      onChange={(e) => setFilterLab(e.target.value)}
-    >
-      <option value="All">All Labs</option>
-      <option value="Digital">Digital</option>
-      <option value="Asset">Asset</option>
-    </select>
-
-    <select
-      value={filterStatus}
-      onChange={(e) => setFilterStatus(e.target.value)}
-    >
-      <option value="All">All Project Types</option>
-      {PROJECT_STATUSES.map((s) => (
-        <option key={s} value={s}>
-          {s}
-        </option>
-      ))}
-    </select>
+      {filterWorkCategory.length === 0 ? (
+        <span className="placeholder">Work Category</span>
+      ) : (
+        <span className="selectedCount">{filterWorkCategory.join(", ")}</span>
+      )}
+    </div>
+    {showCategory && (
+      <div className="dropdownList">
+        {["Software", "Hardware", "Consulting"].map((cat) => (
+          <label key={cat} className="dropdownItem">
+            <input
+              type="checkbox"
+              value={cat}
+              checked={filterWorkCategory.includes(cat)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFilterWorkCategory((prev) =>
+                  prev.includes(value)
+                    ? prev.filter((v) => v !== value)
+                    : [...prev, value]
+                );
+              }}
+            />
+            {cat}
+          </label>
+        ))}
+      </div>
+    )}
   </div>
 
-  {/* Show per page - RIGHT */}
- 
+  {/* Lab */}
+  <div className="customDropdown">
+    <div
+      className="dropdownHeader"
+      onClick={() => setShowLab(!showLab)}
+    >
+      {filterLab.length === 0 ? (
+        <span className="placeholder">Lab</span>
+      ) : (
+        <span className="selectedCount">{filterLab.join(", ")}</span>
+      )}
+    </div>
+    {showLab && (
+      <div className="dropdownList">
+        {["Digital", "Asset"].map((lab) => (
+          <label key={lab} className="dropdownItem">
+            <input
+              type="checkbox"
+              value={lab}
+              checked={filterLab.includes(lab)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFilterLab((prev) =>
+                  prev.includes(value)
+                    ? prev.filter((v) => v !== value)
+                    : [...prev, value]
+                );
+              }}
+            />
+            {lab}
+          </label>
+        ))}
+      </div>
+    )}
+  </div>
+
+  {/* Status */}
+  <div className="customDropdown">
+    <div
+      className="dropdownHeader"
+      onClick={() => setShowStatus(!showStatus)}
+    >
+      {filterStatus.length === 0 ? (
+        <span className="placeholder">Status</span>
+      ) : (
+        <span className="selectedCount">{filterStatus.join(", ")}</span>
+      )}
+    </div>
+    {showStatus && (
+      <div className="dropdownList">
+        {PROJECT_STATUSES.map((s) => (
+          <label key={s} className="dropdownItem">
+            <input
+              type="checkbox"
+              value={s}
+              checked={filterStatus.includes(s)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFilterStatus((prev) =>
+                  prev.includes(value)
+                    ? prev.filter((v) => v !== value)
+                    : [...prev, value]
+                );
+              }}
+            />
+            {s}
+          </label>
+        ))}
+      </div>
+    )}
+  </div>
 </div>
+
+
+
 
         <div>
           Total Projects:{" "}
@@ -377,87 +461,150 @@ const droppedProjects = applyFilters(
       {renderTable(displayedProjects, activeTab === "dropped")}
 
       {/* Modal */}
- {showModal && editingProject && (
+{/* Modal */}
+{showModal && editingProject && (
   <div className="modalOverlay">
     <div className="modalBox">
-      <h3>{isReadOnly ? "View Project" : "Edit Project"}</h3>
+      {/* Modal Title */}
+      <h3>
+        {modalMode === "view"
+          ? "View Project"
+          : modalMode === "edit"
+          ? "Edit Project"
+          : "Project Details"}
+      </h3>
 
-      <form onSubmit={handleSave}>
-        {[
-          "projectName",
-          "lab",
-          "workCategory",
-          "startDate",
-          "endDate",
-          "projectStatus",
-          "currentProgress",
-          "revenue",
-          "issues",
-          "droppedReason",
-        ].map((field) => {
-          if (field.includes("Date")) {
+      {/* View / More Mode */}
+      {(modalMode === "view" || modalMode === "more") && (() => {
+        // Important fields for "View"
+        const viewFieldsImportant = [
+          { label: "Project Name", value: editingProject.projectName },
+          { label: "Quotation", value: editingProject.quotationName },
+          { label: "Client", value: editingProject.clientName },
+          { label: "Status", value: editingProject.projectStatus },
+          { label: "Progress", value: editingProject.currentProgress },
+          { label: "Revenue", value: editingProject.revenue },
+        ];
+
+        // All fields for "More"
+        const viewFieldsAll = [
+          { label: "Project Name", value: editingProject.projectName },
+          { label: "Quotation", value: editingProject.quotationName },
+          { label: "Client", value: editingProject.clientName },
+          { label: "Lab", value: editingProject.lab },
+          { label: "Work Category", value: editingProject.workCategory },
+          { label: "Start Date", value: editingProject.startDate },
+          { label: "End Date", value: editingProject.endDate },
+          { label: "Status", value: editingProject.projectStatus },
+          { label: "Progress", value: editingProject.currentProgress },
+          { label: "Revenue", value: editingProject.revenue },
+          { label: "Issues", value: editingProject.issues || "-" },
+          // Dropped Reason only for Dropped projects
+          ...(editingProject.projectStatus === "Dropped"
+            ? [{ label: "Dropped Reason", value: editingProject.droppedReason || "-" }]
+            : []),
+        ];
+
+        const fieldsToRender =
+          modalMode === "view" ? viewFieldsImportant : viewFieldsAll;
+
+        return (
+          <div className="viewCard">
+            {fieldsToRender.map((field) => (
+              <div key={field.label} className="viewRow">
+                <strong>{field.label}:</strong> <span>{field.value}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Edit Mode */}
+      {modalMode === "edit" && (
+        <form onSubmit={handleSave}>
+          {[
+            "projectName",
+            "lab",
+            "workCategory",
+            "startDate",
+            "endDate",
+            "projectStatus",
+            "currentProgress",
+            "revenue",
+            "issues",
+            "droppedReason",
+          ].map((field) => {
+            if (field.includes("Date")) {
+              return (
+                <input
+                  key={field}
+                  type="date"
+                  name={field}
+                  value={editingProject[field]}
+                  onChange={handleChange}
+                  className="modalInput"
+                />
+              );
+            }
+
+            if (field === "projectStatus") {
+              return (
+                <select
+                  key={field}
+                  name={field}
+                  value={editingProject[field]}
+                  onChange={handleChange}
+                  className="modalInput"
+                >
+                  {PROJECT_STATUSES.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              );
+            }
+
             return (
               <input
                 key={field}
-                type="date"
                 name={field}
+                placeholder={field.replace(/([A-Z])/g, " $1").trim()}
                 value={editingProject[field]}
                 onChange={handleChange}
                 className="modalInput"
-                disabled={isReadOnly}
               />
             );
-          }
+          })}
 
-          if (field === "projectStatus") {
-            return (
-              <select
-                key={field}
-                name={field}
-                value={editingProject[field]}
-                onChange={handleChange}
-                className="modalInput"
-                disabled={isReadOnly}
-              >
-                {PROJECT_STATUSES.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            );
-          }
-
-          return (
-            <input
-              key={field}
-              name={field}
-              placeholder={field.replace(/([A-Z])/g, " $1").trim()}
-              value={editingProject[field]}
-              onChange={handleChange}
-              className="modalInput"
-              disabled={isReadOnly}
-            />
-          );
-        })}
-
-        <div className="modalActions">
-          <button
-            type="button"
-            onClick={() => setShowModal(false)}
-            className="cancelBtn"
-          >
-            {isReadOnly ? "Close" : "Cancel"}
-          </button>
-
-          {!isReadOnly && (
+          <div className="modalActions">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="cancelBtn"
+            >
+              Cancel
+            </button>
             <button type="submit" className="saveBtn">
               Save
             </button>
-          )}
+          </div>
+        </form>
+      )}
+
+      {/* Close button for View/More */}
+      {(modalMode === "view" || modalMode === "more") && (
+        <div style={{ textAlign: "right", marginTop: "15px" }}>
+          <button
+            className="cancelBtn"
+            onClick={() => setShowModal(false)}
+          >
+            Close
+          </button>
         </div>
-      </form>
+      )}
     </div>
   </div>
 )}
+
 
     </div>
   );
