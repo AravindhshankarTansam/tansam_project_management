@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaEye, FaEllipsisH, FaTrash } from "react-icons/fa";
 
 const PROJECT_STATUSES = [
   "Created",
@@ -31,6 +32,9 @@ export default function ProjectsDashboard() {
     })),
   }));
 
+
+
+
   const [quotations, setQuotations] = useState(dummyQuotations);
   const [activeTab, setActiveTab] = useState("approved"); // approved or dropped
   const [showModal, setShowModal] = useState(false);
@@ -39,8 +43,12 @@ export default function ProjectsDashboard() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
+const handleItemsPerPageChange = (e) => {
+  setItemsPerPage(Number(e.target.value));
+  setCurrentPage(1); // Reset page to 1
+};
   // Flatten projects for tabs
   const allProjects = [];
   quotations.forEach((q) => {
@@ -148,11 +156,21 @@ export default function ProjectsDashboard() {
                 <td style={styles.td}>{p.revenue}</td>
                 <td style={styles.td}>{p.issues}</td>
                 {showDroppedReason && <td style={styles.td}>{p.droppedReason}</td>}
-                <td style={styles.td}>
-                  <button style={styles.viewBtn} onClick={() => openEditModal(p, true)}>View</button>
-                  <button style={styles.moreBtn} onClick={() => openEditModal(p, false)}>More View</button>
-                  <button style={styles.deleteBtn} onClick={() => handleDelete(p)}>🗑️</button>
-                </td>
+<td style={{ ...styles.td,  whiteSpace: "normal" }}>
+  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+    <button style={styles.viewBtn} onClick={() => openEditModal(p, true)}>
+      <FaEye style={{ marginRight: "4px" }} /> 
+    </button>
+    <button style={styles.moreBtn} onClick={() => openEditModal(p, true)}>
+      <FaEllipsisH style={{ marginRight: "4px" }} /> 
+    </button>
+    <button style={styles.deleteBtn} onClick={() => handleDelete(p)}>
+      <FaTrash style={{ marginRight: "4px" }} /> 
+    </button>
+  </div>
+</td>
+
+
               </tr>
             ))
           )}
@@ -188,18 +206,39 @@ export default function ProjectsDashboard() {
       <div style={{ marginBottom: "20px" }}>
         <button
           style={{ ...styles.tabBtn, background: activeTab === "approved" ? "#2563eb" : "#e5e7eb" }}
-          onClick={() => { setActiveTab("approved"); setCurrentPage(1); }}
+          onClick={() => {
+            setActiveTab("approved");
+            setCurrentPage(1);
+          }}
         >
           Approved Projects
         </button>
         <button
           style={{ ...styles.tabBtn, background: activeTab === "dropped" ? "#2563eb" : "#e5e7eb" }}
-          onClick={() => { setActiveTab("dropped"); setCurrentPage(1); }}
+          onClick={() => {
+            setActiveTab("dropped");
+            setCurrentPage(1);
+          }}
         >
           Dropped Projects
         </button>
+        
       </div>
-
+    <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div>
+        <label>
+          Show{" "}
+          <select value={itemsPerPage} onChange={handleItemsPerPageChange} style={{ padding: "4px 8px", marginLeft: "4px" }}>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>{" "}
+          per page
+        </label>
+      </div>
+      <div>Total Projects: {activeTab === "approved" ? approvedProjects.length : droppedProjects.length}</div>
+    </div>
       {renderTable(displayedProjects, activeTab === "dropped")}
 
       {/* Modal */}
@@ -336,6 +375,9 @@ const styles = {
     marginRight: "4px",
     cursor: "pointer",
     borderRadius: "3px",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
   },
   moreBtn: {
     background: "#2563eb",
@@ -345,6 +387,9 @@ const styles = {
     marginRight: "4px",
     cursor: "pointer",
     borderRadius: "3px",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
   },
   deleteBtn: {
     background: "#ef4444",
@@ -354,6 +399,9 @@ const styles = {
     cursor: "pointer",
     borderRadius: "3px",
     fontSize: "16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   pageBtn: {
     margin: "0 4px",
