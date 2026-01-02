@@ -12,6 +12,9 @@ import {
   getWorkCategories,
   createWorkCategory,
   updateWorkCategory,
+  getUsers,
+  createUser,
+  updateUser,
 } from "../controllers/admin.controller.js";
 
 import { authMiddleware } from "../middlewares/auth.middleware.js";
@@ -39,5 +42,9 @@ router.get("/work-categories", authMiddleware, roleMiddleware(["ADMIN"]), getWor
 router.post("/work-categories", authMiddleware, roleMiddleware(["ADMIN"]), createWorkCategory);
 router.put("/work-categories/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateWorkCategory);
 
+// 👤 USERS (ADMIN)
+router.get("/users", authMiddleware, roleMiddleware(["ADMIN"]), getUsers);
+router.post("/users", authMiddleware, roleMiddleware(["ADMIN"]), createUser);
+router.put("/users/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateUser);
 
 export default router;

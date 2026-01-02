@@ -1,5 +1,6 @@
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
+import bcrypt from "bcryptjs";
 
 /**
  * GET roles (ADMIN only)
@@ -311,5 +312,101 @@ export const updateWorkCategory = async (req, res) => {
   } catch (err) {
     console.error("Update work category error:", err);
     res.status(500).json({ message: "Failed to update work category" });
+  }
+};
+
+/**
+ * GET users (ADMIN only)
+ */
+export const getUsers = async (req, res) => {
+  try {
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    const [users] = await db.execute(`
+      SELECT id, name, mobile, email, role, lab, status
+      FROM users_admin
+      ORDER BY id
+    `);
+
+    res.json(users);
+  } catch (err) {
+    console.error("Get users error:", err);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
+};
+
+/**
+ * CREATE user (ADMIN only)
+ */
+export const createUser = async (req, res) => {
+  try {
+    const { name, mobile, email, role, lab, password, status } = req.body;
+
+    if (!name || !mobile || !email || !role || !password) {
+      return res.status(400).json({
+        message: "Name, mobile, email, role and password are required",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    await db.execute(
+      `
+      INSERT INTO users_admin
+        (name, mobile, email, role, lab, password, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        name.trim(),
+        mobile.trim(),
+        email.trim().toLowerCase(),
+        role,
+        lab || null,
+        hashedPassword,
+        status || "ACTIVE",
+      ]
+    );
+
+    res.status(201).json({ message: "User created successfully" });
+  } catch (err) {
+    if (err.code === "ER_DUP_ENTRY") {
+      return res
+        .status(409)
+        .json({ message: "User with this email already exists" });
+    }
+
+    console.error("Create user error:", err);
+    res.status(500).json({ message: "Failed to create user" });
+  }
+};
+
+/**
+ * UPDATE user (ADMIN only)
+ */
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role, lab, status } = req.body;
+
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    await db.execute(
+      `
+      UPDATE users_admin
+      SET role=?, lab=?, status=?
+      WHERE id=?
+      `,
+      [role, lab, status || "ACTIVE", id]
+    );
+
+    res.json({ message: "User updated successfully" });
+  } catch (err) {
+    console.error("Update user error:", err);
+    res.status(500).json({ message: "Failed to update user" });
   }
 };

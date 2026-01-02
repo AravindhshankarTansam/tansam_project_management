@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
-
-const ROLES = ["COORDINATOR", "TL", "FINANCE", "CEO"];
-const LABS = ["Lab A", "Lab B", "Lab C"];
+import {
+  fetchUsers,
+  createUser,
+  updateUser,
+  fetchRoles,
+  fetchLabs,
+} from "../../services/admin/admin.roles.api";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+
+  const [roles, setRoles] = useState([]);
+  const [labs, setLabs] = useState([]);
+
 
   const [form, setForm] = useState({
+    id: null,
     name: "",
     mobile: "",
     email: "",
@@ -17,37 +27,40 @@ export default function Users() {
     status: "ACTIVE",
   });
 
-  // Mock fetch
-  useEffect(() => {
-    setUsers([
-      {
-        id: 1,
-        name: "John Doe",
-        mobile: "9876543210",
-        email: "john@test.com",
-        role: "COORDINATOR",
-        lab: "Lab A",
-        status: "ACTIVE",
-      },
-    ]);
-  }, []);
+  // 🔹 LOAD USERS
+const loadUsers = async () => {
+  try {
+    const data = await fetchUsers();
+    setUsers(data);
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  // 🔹 LOAD USERS
+const loadMasters = async () => {
+  try {
+    const rolesData = await fetchRoles();
+    const labsData = await fetchLabs();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    setRoles(rolesData.filter(r => r.status === "ACTIVE"));
+    setLabs(labsData.filter(l => l.status === "ACTIVE"));
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
-    if (!form.name || !form.mobile || !form.email || !form.role) {
-      alert("Please fill all required fields");
-      return;
-    }
+useEffect(() => {
+  loadUsers();
+  loadMasters();
+}, []);
 
-    setUsers([...users, { ...form, id: Date.now() }]);
-    setShowModal(false);
 
+  // 🔹 Open Add
+  const openAddModal = () => {
+    setIsEdit(false);
     setForm({
+      id: null,
       name: "",
       mobile: "",
       email: "",
@@ -56,6 +69,53 @@ export default function Users() {
       password: "",
       status: "ACTIVE",
     });
+    setShowModal(true);
+  };
+
+  // 🔹 Open Edit
+  const openEditModal = (user) => {
+    setIsEdit(true);
+    setForm({ ...user, password: "" });
+    setShowModal(true);
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // 🔹 Save User
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.name || !form.mobile || !form.email || !form.role) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    try {
+      if (isEdit) {
+        await updateUser(form.id, {
+          role: form.role,
+          lab: form.lab,
+          status: form.status,
+        });
+      } else {
+        await createUser({
+          name: form.name,
+          mobile: form.mobile,
+          email: form.email,
+          role: form.role,
+          lab: form.lab,
+          password: form.password,
+          status: form.status,
+        });
+      }
+
+      setShowModal(false);
+      loadUsers();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
@@ -63,12 +123,12 @@ export default function Users() {
       {/* ---------- HEADER ---------- */}
       <div style={styles.header}>
         <h2>👤 User Management</h2>
-        <button style={styles.addBtn} onClick={() => setShowModal(true)}>
+        <button style={styles.addBtn} onClick={openAddModal}>
           ➕ Add User
         </button>
       </div>
 
-      {/* ---------- USERS TABLE ---------- */}
+      {/* ---------- TABLE ---------- */}
       <table style={styles.table}>
         <thead>
           <tr>
@@ -78,6 +138,7 @@ export default function Users() {
             <th>Role</th>
             <th>Lab</th>
             <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -87,10 +148,24 @@ export default function Users() {
               <td>{u.mobile}</td>
               <td>{u.email}</td>
               <td>{u.role}</td>
-              <td>{u.lab}</td>
+              <td>{u.lab || "-"}</td>
               <td>{u.status}</td>
+              <td>
+                <button
+                  style={styles.editBtn}
+                  onClick={() => openEditModal(u)}
+                >
+                  ✏️ Edit
+                </button>
+              </td>
             </tr>
           ))}
+
+          {users.length === 0 && (
+            <tr>
+              <td colSpan="7">No users found</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
@@ -98,66 +173,74 @@ export default function Users() {
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
-            <h3>Add User</h3>
+            <h3>{isEdit ? "Edit User" : "Add User"}</h3>
 
             <form onSubmit={handleSubmit}>
-              <input
-                name="name"
-                placeholder="Full Name"
-                value={form.name}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              {!isEdit && (
+                <>
+                  <input
+                    name="name"
+                    placeholder="Full Name"
+                    value={form.name}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
 
-              <input
-                name="mobile"
-                placeholder="Mobile Number"
-                value={form.mobile}
-                onChange={handleChange}
-                style={styles.input}
-              />
+                  <input
+                    name="mobile"
+                    placeholder="Mobile Number"
+                    value={form.mobile}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
 
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-                style={styles.input}
-              />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={form.email}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
 
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                style={styles.input}
-              >
-                <option value="">Select Role</option>
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
+                </>
+              )}
 
-              <select
-                name="lab"
-                value={form.lab}
-                onChange={handleChange}
-                style={styles.input}
-              >
-                <option value="">Select Lab</option>
-                {LABS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
+<select
+  name="role"
+  value={form.role}
+  onChange={handleChange}
+  style={styles.input}
+>
+  <option value="">Select Role</option>
+  {roles.map((r) => (
+    <option key={r.id} value={r.name}>
+      {r.name}
+    </option>
+  ))}
+</select>
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                style={styles.input}
-              />
+<select
+  name="lab"
+  value={form.lab}
+  onChange={handleChange}
+  style={styles.input}
+>
+  <option value="">Select Lab</option>
+  {labs.map((l) => (
+    <option key={l.id} value={l.name}>
+      {l.name}
+    </option>
+  ))}
+</select>
 
               <select
                 name="status"
@@ -194,7 +277,6 @@ const styles = {
   header: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: "15px",
   },
   addBtn: {
@@ -203,11 +285,16 @@ const styles = {
     color: "#fff",
     border: "none",
     cursor: "pointer",
-    borderRadius: "4px",
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
+  },
+  editBtn: {
+    padding: "4px 8px",
+    background: "#f59e0b",
+    border: "none",
+    cursor: "pointer",
   },
   overlay: {
     position: "fixed",
@@ -220,7 +307,7 @@ const styles = {
   modal: {
     background: "#fff",
     padding: "20px",
-    width: "400px",
+    width: "420px",
     borderRadius: "6px",
   },
   input: {

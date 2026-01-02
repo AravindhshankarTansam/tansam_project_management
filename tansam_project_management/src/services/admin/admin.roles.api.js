@@ -158,3 +158,41 @@ export const updateWorkCategory = async (id, payload) => {
   if (!res.ok) throw new Error(data.message);
   return data;
 };
+/* =====================================================
+   User
+===================================================== */
+// 🔹 GET users
+export const fetchUsers = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/users`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch users");
+  return res.json();
+};
+
+// 🔹 CREATE user
+export const createUser = async (payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/users`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// 🔹 UPDATE user
+export const updateUser = async (id, payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/users/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
