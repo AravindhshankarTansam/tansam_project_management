@@ -131,84 +131,97 @@ export default function Users() {
             </div>
 
             <form onSubmit={handleSubmit}>
-              <label className="form-label">Full Name</label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="Enter full name"
-              />
+              {/* 3 × 2 GRID */}
+              <div className="form-grid">
+                <div className="form-field">
+                  <label className="form-label">Full Name</label>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
 
-              <label className="form-label">Mobile Number</label>
-              <input
-                name="mobile"
-                value={form.mobile}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="Enter mobile number"
-              />
+                <div className="form-field">
+                  <label className="form-label">Mobile Number</label>
+                  <input
+                    name="mobile"
+                    value={form.mobile}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
 
-              <label className="form-label">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="Enter email"
-              />
+                <div className="form-field">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
 
-              <label className="form-label">Role</label>
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="">Select role</option>
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+                <div className="form-field">
+                  <label className="form-label">Role</label>
+                  <select
+                    name="role"
+                    value={form.role}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="">Select role</option>
+                    {ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <label className="form-label">Lab</label>
-              <select
-                name="lab"
-                value={form.lab}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="">Select lab</option>
-                {LABS.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+                <div className="form-field">
+                  <label className="form-label">Lab</label>
+                  <select
+                    name="lab"
+                    value={form.lab}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="">Select lab</option>
+                    {LABS.map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="Enter password"
-              />
+                <div className="form-field">
+                  <label className="form-label">Status</label>
+                  <select
+                    name="status"
+                    value={form.status}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                  </select>
+                </div>
 
-              <label className="form-label">Status</label>
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
+                <div className="form-field">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
+              </div>
 
               <div className="form-actions">
                 <button
