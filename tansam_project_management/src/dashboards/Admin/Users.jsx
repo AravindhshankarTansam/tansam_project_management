@@ -16,7 +16,6 @@ export default function Users() {
   const [roles, setRoles] = useState([]);
   const [labs, setLabs] = useState([]);
 
-
   const [form, setForm] = useState({
     id: null,
     name: "",
@@ -29,33 +28,32 @@ export default function Users() {
   });
 
   // 🔹 LOAD USERS
-const loadUsers = async () => {
-  try {
-    const data = await fetchUsers();
-    setUsers(data);
-  } catch (err) {
-    toast.error("Failed to load users");
-  }
-};
+  const loadUsers = async () => {
+    try {
+      const data = await fetchUsers();
+      setUsers(data);
+    } catch (err) {
+      toast.error("Failed to load users");
+    }
+  };
 
   // 🔹 LOAD USERS
-const loadMasters = async () => {
-  try {
-    const rolesData = await fetchRoles();
-    const labsData = await fetchLabs();
+  const loadMasters = async () => {
+    try {
+      const rolesData = await fetchRoles();
+      const labsData = await fetchLabs();
 
-    setRoles(rolesData.filter(r => r.status === "ACTIVE"));
-    setLabs(labsData.filter(l => l.status === "ACTIVE"));
-  } catch (err) {
-    toast.error("Failed to load users");
-  }
-};
+      setRoles(rolesData.filter((r) => r.status === "ACTIVE"));
+      setLabs(labsData.filter((l) => l.status === "ACTIVE"));
+    } catch (err) {
+      toast.error("Failed to load users");
+    }
+  };
 
-useEffect(() => {
-  loadUsers();
-  loadMasters();
-}, []);
-
+  useEffect(() => {
+    loadUsers();
+    loadMasters();
+  }, []);
 
   // 🔹 Open Add
   const openAddModal = () => {
@@ -154,10 +152,7 @@ useEffect(() => {
               <td>{u.lab || "-"}</td>
               <td>{u.status}</td>
               <td>
-                <button
-                  style={styles.editBtn}
-                  onClick={() => openEditModal(u)}
-                >
+                <button style={styles.editBtn} onClick={() => openEditModal(u)}>
                   ✏️ Edit
                 </button>
               </td>
@@ -174,7 +169,7 @@ useEffect(() => {
 
       {/* ---------- MODAL ---------- */}
       {showModal && (
-        <div style={styles.overlay}>
+        <div style={styles.modal}>
           <div style={styles.modal}>
             <h3>{isEdit ? "Edit User" : "Add User"}</h3>
 
@@ -217,33 +212,33 @@ useEffect(() => {
                 </>
               )}
 
-<select
-  name="role"
-  value={form.role}
-  onChange={handleChange}
-  style={styles.input}
->
-  <option value="">Select Role</option>
-  {roles.map((r) => (
-    <option key={r.id} value={r.name}>
-      {r.name}
-    </option>
-  ))}
-</select>
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                style={styles.input}
+              >
+                <option value="">Select Role</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.name}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
 
-<select
-  name="lab"
-  value={form.lab}
-  onChange={handleChange}
-  style={styles.input}
->
-  <option value="">Select Lab</option>
-  {labs.map((l) => (
-    <option key={l.id} value={l.name}>
-      {l.name}
-    </option>
-  ))}
-</select>
+              <select
+                name="lab"
+                value={form.lab}
+                onChange={handleChange}
+                style={styles.input}
+              >
+                <option value="">Select Lab</option>
+                {labs.map((l) => (
+                  <option key={l.id} value={l.name}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
 
               <select
                 name="status"

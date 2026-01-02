@@ -119,7 +119,7 @@ export default function CreateWorkCategories() {
 
       {/* ---------- MODAL ---------- */}
       {showModal && (
-        <div style={styles.overlay}>
+        <div style={styles.modal}>
           <div style={styles.modal}>
             <h3>{isEdit ? "Edit Work Category" : "Add Work Category"}</h3>
 

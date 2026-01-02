@@ -43,11 +43,7 @@ export default function Reports() {
     }
 
     if (isEdit) {
-      setReports(
-        reports.map((r) =>
-          r.id === form.id ? { ...form } : r
-        )
-      );
+      setReports(reports.map((r) => (r.id === form.id ? { ...form } : r)));
     } else {
       setReports([...reports, { ...form, id: Date.now() }]);
     }
@@ -92,7 +88,7 @@ export default function Reports() {
 
       {/* ---------- MODAL ---------- */}
       {showModal && (
-        <div style={styles.overlay}>
+        <div style={styles.modal}>
           <div style={styles.modal}>
             <h3>{isEdit ? "Edit Report" : "Add Report"}</h3>
 

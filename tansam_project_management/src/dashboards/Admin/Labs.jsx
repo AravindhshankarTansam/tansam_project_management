@@ -119,7 +119,7 @@ export default function Labs() {
 
       {/* ---------- MODAL ---------- */}
       {showModal && (
-        <div style={styles.overlay}>
+        <div style={styles.modal}>
           <div style={styles.modal}>
             <h3>{isEdit ? "Edit Lab" : "Add Lab"}</h3>
 

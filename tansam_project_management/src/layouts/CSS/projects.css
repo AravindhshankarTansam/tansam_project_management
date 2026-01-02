@@ -1,0 +1,212 @@
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  table-layout: fixed;
+}
+
+.th {
+  border: 1px solid #ccc;
+  padding: 8px;
+  background: #f3f4f6;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tabs */
+.tabBtn {
+  padding: 6px 12px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px;
+  width: 450px;
+  border-radius: 4px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.cancelBtn {
+  margin-right: 10px;
+  padding: 6px 10px;
+}
+
+.saveBtn {
+  padding: 6px 10px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+}
+
+/* Action Buttons */
+.viewBtn {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  margin-right: 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.moreBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  margin-right: 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.deleteBtn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pagination */
+.pageBtn {
+  margin: 0 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  border: none;
+}
+.tabBtn {
+  background: #e5e7eb;
+  color: #000;
+}
+
+.tabBtn.active {
+  background: #2563eb;
+  color: #fff;
+}
+/* Action column cell */
+.actionCell {
+  white-space: nowrap;
+}
+
+/* Button wrapper */
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;           /* space between buttons */
+  justify-content: center; /* optional */
+}
+
+/* Buttons (optional fine-tuning) */
+.viewBtn,
+.moreBtn,
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Overlay */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal box */
+.modalBox {
+  background: #fff;
+  width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 6px;
+}
+
+/* Inputs */
+.modalInput {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Action buttons */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelBtn {
+  padding: 6px 12px;
+  border: none;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.saveBtn {
+  padding: 6px 12px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+.editBtn {
+  background: #f59e0b; /* amber */
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
