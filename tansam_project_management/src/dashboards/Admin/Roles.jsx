@@ -6,6 +6,7 @@ import {
 } from "./../../services/admin/admin.roles.api";
 import "./admincss/Roles.css";
 
+import { FiPlus, FiEdit2, FiX, FiSave } from "react-icons/fi";
 
 export default function Roles() {
   const [roles, setRoles] = useState([]);
@@ -18,7 +19,6 @@ export default function Roles() {
     status: "ACTIVE",
   });
 
-  // 🔹 Load roles on page load
   useEffect(() => {
     loadRoles();
   }, []);
@@ -26,20 +26,18 @@ export default function Roles() {
   const loadRoles = async () => {
     try {
       const data = await fetchRoles();
-      setRoles(data);
+      setRoles(data || []);
     } catch (err) {
       alert(err.message);
     }
   };
 
-  // 🔹 Open Add
   const openAddModal = () => {
     setIsEdit(false);
     setForm({ id: null, name: "", status: "ACTIVE" });
     setShowModal(true);
   };
 
-  // 🔹 Open Edit
   const openEditModal = (role) => {
     setIsEdit(true);
     setForm(role);
@@ -50,11 +48,10 @@ export default function Roles() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name) {
+    if (!form.name.trim()) {
       alert("Role name is required");
       return;
     }
@@ -76,88 +73,124 @@ export default function Roles() {
     }
   };
 
-return (
-  <div className="roles-container">
-    <h2 className="roles-title"> Roles Master</h2>
+  return (
+    <div className="roles-container">
+      {/* HEADER */}
+      <div className="roles-header">
+        <h2 className="roles-title">Roles Master</h2>
 
-    <button onClick={openAddModal} className="add-btn">
-      ➕ Add Role
-    </button>
+        <button className="primary-btn" onClick={openAddModal}>
+          <FiPlus size={16} />
+          Add Role
+        </button>
+      </div>
 
-    {/* TABLE */}
-    <table className="roles-table">
-      <thead>
-        <tr>
-          <th>Role Name</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {roles.map((role) => (
-          <tr key={role.id}>
-            <td>{role.name}</td>
-            <td>{role.status}</td>
-            <td>
-              <button
-                onClick={() => openEditModal(role)}
-                className="edit-btn"
-              >
-                ✏️ Edit
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+      {/* TABLE */}
+      <div className="table-wrapper">
+        <table className="roles-table">
+          <thead>
+            <tr>
+              <th className="col-name">Role Name</th>
+              <th className="col-status">Status</th>
+              <th className="col-action center">Action</th>
+            </tr>
+          </thead>
 
-    {/* MODAL */}
-    {showModal && (
-      <div className="modal-overlay">
-        <div className="modal-box">
-          <h3 className="modal-title">
-            {isEdit ? "Edit Role" : "Add Role"}
-          </h3>
+          <tbody>
+            {roles.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="empty-text">
+                  No roles found
+                </td>
+              </tr>
+            ) : (
+              roles.map((role) => (
+                <tr key={role.id}>
+                  <td className="col-name">{role.name}</td>
 
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="name"
-              placeholder="Role Name"
-              value={form.name}
-              onChange={handleChange}
-              className="form-input"
-            />
+                  <td className="col-status">
+                    <span
+                      className={`status-badge ${
+                        role.status === "ACTIVE" ? "active" : "inactive"
+                      }`}
+                    >
+                      {role.status}
+                    </span>
+                  </td>
 
-            {isEdit && (
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
+                  <td className="col-action center">
+                    <button
+                      className="icon-btn"
+                      onClick={() => openEditModal(role)}
+                      title="Edit Role"
+                    >
+                      <FiEdit2 />
+                    </button>
+                  </td>
+                </tr>
+              ))
             )}
+          </tbody>
+        </table>
+      </div>
 
-            <div className="form-actions">
+      {/* MODAL */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>{isEdit ? "Edit Role" : "Add Role"}</h3>
               <button
-                type="button"
+                className="icon-btn"
                 onClick={() => setShowModal(false)}
-                className="cancel-btn"
               >
-                Cancel
-              </button>
-              <button type="submit" className="save-btn">
-                Save
+                <FiX />
               </button>
             </div>
-          </form>
-        </div>
-      </div>
-    )}
-  </div>
-);
 
+            <form onSubmit={handleSubmit}>
+              <label className="form-label">Role Name</label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Enter role name"
+              />
+
+              {isEdit && (
+                <>
+                  <label className="form-label">Status</label>
+                  <select
+                    name="status"
+                    value={form.status}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                  </select>
+                </>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  <FiSave size={16} />
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import "./admincss/User.css";
+import { FiPlus, FiX, FiSave } from "react-icons/fi";
 
 const ROLES = ["COORDINATOR", "TL", "FINANCE", "CEO"];
 const LABS = ["Lab A", "Lab B", "Lab C"];
@@ -17,7 +19,6 @@ export default function Users() {
     status: "ACTIVE",
   });
 
-  // Mock fetch
   useEffect(() => {
     setUsers([
       {
@@ -59,125 +60,166 @@ export default function Users() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      {/* ---------- HEADER ---------- */}
-      <div style={styles.header}>
-        <h2>👤 User Management</h2>
-        <button style={styles.addBtn} onClick={() => setShowModal(true)}>
-          ➕ Add User
+    <div className="users-container">
+      {/* HEADER */}
+      <div className="users-header">
+        <h2 className="users-title">User Management</h2>
+
+        <button className="primary-btn" onClick={() => setShowModal(true)}>
+          <FiPlus size={16} />
+          Add User
         </button>
       </div>
 
-      {/* ---------- USERS TABLE ---------- */}
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Lab</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td>{u.name}</td>
-              <td>{u.mobile}</td>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
-              <td>{u.lab}</td>
-              <td>{u.status}</td>
+      {/* TABLE */}
+      <div className="table-wrapper">
+        <table className="users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Lab</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      {/* ---------- MODAL ---------- */}
+          <tbody>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="empty-text">
+                  No users found
+                </td>
+              </tr>
+            ) : (
+              users.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.name}</td>
+                  <td>{u.mobile}</td>
+                  <td>{u.email}</td>
+                  <td>{u.role}</td>
+                  <td>{u.lab || "-"}</td>
+                  <td>
+                    <span
+                      className={`status-badge ${
+                        u.status === "ACTIVE" ? "active" : "inactive"
+                      }`}
+                    >
+                      {u.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODAL */}
       {showModal && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h3>Add User</h3>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>Add User</h3>
+              <button
+                className="icon-btn"
+                onClick={() => setShowModal(false)}
+              >
+                <FiX />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmit}>
+              <label className="form-label">Full Name</label>
               <input
                 name="name"
-                placeholder="Full Name"
                 value={form.name}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-input"
+                placeholder="Enter full name"
               />
 
+              <label className="form-label">Mobile Number</label>
               <input
                 name="mobile"
-                placeholder="Mobile Number"
                 value={form.mobile}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-input"
+                placeholder="Enter mobile number"
               />
 
+              <label className="form-label">Email</label>
               <input
                 type="email"
                 name="email"
-                placeholder="Email"
                 value={form.email}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-input"
+                placeholder="Enter email"
               />
 
+              <label className="form-label">Role</label>
               <select
                 name="role"
                 value={form.role}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-select"
               >
-                <option value="">Select Role</option>
+                <option value="">Select role</option>
                 {ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
                 ))}
               </select>
 
+              <label className="form-label">Lab</label>
               <select
                 name="lab"
                 value={form.lab}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-select"
               >
-                <option value="">Select Lab</option>
+                <option value="">Select lab</option>
                 {LABS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
                 ))}
               </select>
 
+              <label className="form-label">Password</label>
               <input
                 type="password"
                 name="password"
-                placeholder="Password"
                 value={form.password}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-input"
+                placeholder="Enter password"
               />
 
+              <label className="form-label">Status</label>
               <select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-select"
               >
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
 
-              <div style={{ textAlign: "right" }}>
+              <div className="form-actions">
                 <button
                   type="button"
+                  className="secondary-btn"
                   onClick={() => setShowModal(false)}
-                  style={styles.cancelBtn}
                 >
                   Cancel
                 </button>
-                <button type="submit" style={styles.saveBtn}>
+                <button type="submit" className="primary-btn">
+                  <FiSave size={16} />
                   Save
                 </button>
               </div>
@@ -188,54 +230,3 @@ export default function Users() {
     </div>
   );
 }
-
-/* ---------- STYLES ---------- */
-const styles = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "15px",
-  },
-  addBtn: {
-    padding: "8px 14px",
-    background: "#16a34a",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-    borderRadius: "4px",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.4)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modal: {
-    background: "#fff",
-    padding: "20px",
-    width: "400px",
-    borderRadius: "6px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "10px",
-  },
-  cancelBtn: {
-    marginRight: "10px",
-    padding: "6px 10px",
-  },
-  saveBtn: {
-    padding: "6px 12px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-  },
-};

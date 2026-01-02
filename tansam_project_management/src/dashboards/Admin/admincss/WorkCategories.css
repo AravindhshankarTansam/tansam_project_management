@@ -1,70 +1,50 @@
 /* ---------- LAYOUT ---------- */
-.roles-container {
+.work-categories-container {
   padding: 24px;
 }
 
-.roles-header {
+.work-categories-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.roles-title {
+.work-categories-title {
   font-size: 22px;
   font-weight: 600;
   color: #0f172a;
 }
 
-/* ---------- BUTTONS (GREEN PRIMARY) ---------- */
-.primary-btn,
-.secondary-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* ---------- BUTTONS ---------- */
+.primary-btn {
+  background: #15803d;
+  color: #fff;
   padding: 9px 16px;
   border-radius: 8px;
+  border: none;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-/* PRIMARY (GREEN) */
-.primary-btn {
-  background: #15803d; /* emerald-700 */
-  color: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .primary-btn:hover {
-  background: #166534; /* darker green */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: #166534;
 }
 
-.primary-btn:active {
-  transform: translateY(1px);
-}
-
-.primary-btn:disabled {
-  background: #86efac;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-/* SECONDARY */
 .secondary-btn {
   background: #f1f5f9;
-  color: #0f172a;
   border: 1px solid #cbd5e1;
+  color: #0f172a;
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.secondary-btn:hover {
-  background: #e2e8f0;
-}
-
-/* ICON BUTTONS */
+/* ---------- ICON BUTTON ---------- */
 .icon-btn {
   background: transparent;
   border: none;
@@ -74,20 +54,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
 }
 
-/* EDIT ICON → ORANGE */
-.icon-btn svg {
-  color: #ea580c; /* orange-600 */
+.icon-btn.edit svg {
+  color: #ea580c;
 }
 
-.icon-btn:hover {
-  background: #ffedd5; /* light orange */
-}
-
-.icon-btn:hover svg {
-  color: #c2410c;
+.icon-btn.edit:hover {
+  background: #ffedd5;
 }
 
 /* ---------- TABLE ---------- */
@@ -98,7 +72,7 @@
   overflow: hidden;
 }
 
-.roles-table {
+.work-categories-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
@@ -117,30 +91,26 @@
   width: 20%;
 }
 
-/* ---------- TABLE HEADER ---------- */
-.roles-table thead {
-  background: #f1f5f9;
-}
-
-.roles-table th {
+/* Header */
+.work-categories-table th {
   padding: 16px;
   font-size: 13px;
   font-weight: 700;
+  background: #f1f5f9;
   text-transform: uppercase;
   color: #0f172a;
   text-align: left;
   border-bottom: 2px solid #e5e7eb;
 }
 
-/* ---------- TABLE BODY ---------- */
-.roles-table td {
+/* Body */
+.work-categories-table td {
   padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
-  color: #0f172a;
   vertical-align: middle;
 }
 
-.roles-table tbody tr:hover {
+.work-categories-table tbody tr:hover {
   background: #f8fafc;
 }
 
@@ -160,7 +130,6 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  display: inline-block;
 }
 
 .status-badge.active {
@@ -173,6 +142,18 @@
   color: #991b1b;
 }
 
+/* ---------- ACTION COLUMN ALIGNMENT FIX ---------- */
+.work-categories-table th.col-action,
+.work-categories-table td.col-action {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.work-categories-table td.col-action .icon-btn {
+  width: 32px;
+  height: 32px;
+}
+
 /* ---------- MODAL ---------- */
 .modal-overlay {
   position: fixed;
@@ -181,7 +162,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
 }
 
 .modal-box {
@@ -189,14 +169,12 @@
   width: 420px;
   border-radius: 12px;
   padding: 20px;
-  animation: fadeIn 0.2s ease-in-out;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
 /* ---------- FORM ---------- */
@@ -205,7 +183,6 @@
   font-weight: 600;
   margin-bottom: 4px;
   display: block;
-  color: #0f172a;
 }
 
 .form-input,
@@ -215,51 +192,10 @@
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   margin-bottom: 12px;
-  font-size: 14px;
-}
-
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: #15803d;
-  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.15);
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-}
-
-/* 🔧 FIX ACTION COLUMN ALIGNMENT */
-.roles-table th.col-action,
-.roles-table td.col-action {
-  text-align: center;
-  vertical-align: middle;
-}
-
-/* Force perfect centering of icon */
-.roles-table td.col-action {
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
-
-.roles-table td.col-action .icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  width: 32px;
-}
-
-/* ---------- ANIMATION ---------- */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
