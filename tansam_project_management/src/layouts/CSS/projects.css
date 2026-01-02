@@ -283,15 +283,15 @@
 }
 
 .dropdownHeader {
+  padding: 8px 10px;
   border: 1px solid #ccc;
-  padding: 5px 10px;
-  background: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   border-radius: 4px;
-}
+  cursor: pointer;
 
+  white-space: nowrap;
+   word-break: break-word;         /* 🔴 keeps text inside */
+  text-overflow: ellipsis;   /* 🔴 cuts long text cleanly */
+}
 .selectedCount {
   font-size: 12px;
   color: #555;
@@ -322,3 +322,9 @@
 .dropdownItem input {
   margin-right: 8px;
 }
+.placeholder {
+  color: #b0b0b0;
+  font-size: 14px;
+  font-style: italic;
+}
+

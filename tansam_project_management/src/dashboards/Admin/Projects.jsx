@@ -49,6 +49,9 @@ const [modalMode, setModalMode] = useState("view"); // "view", "more", "edit"
 const [filterWorkCategory, setFilterWorkCategory] = useState([]);
 const [filterLab, setFilterLab] = useState([]);
 const [filterStatus, setFilterStatus] = useState([]);
+// const [filterClient, setFilterClient] = useState([]);
+
+
 const [showCategory, setShowCategory] = useState(false);
 const [showLab, setShowLab] = useState(false);
 const [showStatus, setShowStatus] = useState(false);
@@ -64,6 +67,20 @@ quotations.forEach((q) => {
     });
   });
 });
+  const handleClearAll = () => {
+    // Clear all filters
+    setFilterWorkCategory([]);
+    setFilterLab([]);
+    setFilterStatus([]);
+    // setFilterClient([]);
+
+    // Close all dropdowns
+    setShowCategory(false);
+    setShowLab(false);
+    setShowStatus(false);
+    
+  };
+
 const applyFilters = (projects) => {
   return projects.filter((p) => {
     const matchCategory =
@@ -346,7 +363,7 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
       onClick={() => setShowCategory(!showCategory)}
     >
       {filterWorkCategory.length === 0 ? (
-        <span className="placeholder">Work Category</span>
+        <span className="placeholder">Search Work Category</span>
       ) : (
         <span className="selectedCount">{filterWorkCategory.join(", ")}</span>
       )}
@@ -375,6 +392,7 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
     )}
   </div>
 
+
   {/* Lab */}
   <div className="customDropdown">
     <div
@@ -382,7 +400,7 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
       onClick={() => setShowLab(!showLab)}
     >
       {filterLab.length === 0 ? (
-        <span className="placeholder">Lab</span>
+        <span className="placeholder">Search Lab</span>
       ) : (
         <span className="selectedCount">{filterLab.join(", ")}</span>
       )}
@@ -418,7 +436,7 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
       onClick={() => setShowStatus(!showStatus)}
     >
       {filterStatus.length === 0 ? (
-        <span className="placeholder">Status</span>
+        <span className="placeholder">Search Status</span>
       ) : (
         <span className="selectedCount">{filterStatus.join(", ")}</span>
       )}
@@ -446,6 +464,24 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
       </div>
     )}
   </div>
+<button
+  style={{
+    color: "white",
+    backgroundColor: "red",
+    border: "none",
+    borderRadius: "4px",
+    padding: "6px 12px",
+    cursor: "pointer",
+    marginBottom: "12px",
+  }}
+   onClick={(e) => {
+    e.stopPropagation();   // 🔴 THIS LINE FIXES IT
+    handleClearAll();
+  }}
+>
+  Clear All Filters
+</button>
+
 </div>
 
 
