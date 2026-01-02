@@ -51,9 +51,10 @@ function App() {
  {/* FINANCE ROUTES */}
 <Route path="/finance" element={<Dashboard />}>
   <Route index element={<Dashboard />} />
-  <Route path="terms-and-conditions" element={<TermsAndConditions />} />
+  <Route path="Terms & Conditions" element={<TermsAndConditions />} />
   <Route path="terms" element={<Terms />} />
 </Route>
+<Route path="TermsAndConditions" element={<TermsAndConditions />} />
 
       </Routes>
     </BrowserRouter>
