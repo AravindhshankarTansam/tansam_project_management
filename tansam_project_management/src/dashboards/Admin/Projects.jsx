@@ -45,29 +45,49 @@ export default function ProjectsDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [filterWorkCategory, setFilterWorkCategory] = useState("All");
+const [filterLab, setFilterLab] = useState("All");
+const [filterStatus, setFilterStatus] = useState("All");
+// Flatten projects
+const allProjects = [];
+quotations.forEach((q) => {
+  q.projects.forEach((p) => {
+    allProjects.push({
+      ...p,
+      quotationName: q.quotationName,
+      clientName: q.clientName,
+    });
+  });
+});
+const applyFilters = (projects) => {
+  return projects.filter((p) => {
+    return (
+      (filterWorkCategory === "All" || p.workCategory === filterWorkCategory) &&
+      (filterLab === "All" || p.lab === filterLab) &&
+      (filterStatus === "All" || p.projectStatus === filterStatus)
+    );
+  });
+};
+
+const approvedProjects = applyFilters(
+  allProjects.filter((p) => p.projectStatus !== "Dropped")
+);
+
+const droppedProjects = applyFilters(
+  allProjects.filter((p) => p.projectStatus === "Dropped")
+);
+
+
+
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1); // Important to reset to first page
   };
 
   // Flatten projects for tabs
-  const allProjects = [];
-  quotations.forEach((q) => {
-    q.projects.forEach((p) => {
-      allProjects.push({
-        ...p,
-        quotationName: q.quotationName,
-        clientName: q.clientName,
-      });
-    });
-  });
+ 
 
-  const approvedProjects = allProjects.filter(
-    (p) => p.projectStatus !== "Dropped"
-  );
-  const droppedProjects = allProjects.filter(
-    (p) => p.projectStatus === "Dropped"
-  );
+ 
   const paginatedProjects = (projects, page, perPage) => {
     const start = (page - 1) * perPage;
     return projects.slice(start, start + perPage);
@@ -253,27 +273,53 @@ export default function ProjectsDashboard() {
     <div style={{ padding: "20px" }}>
       <h2>📊 Projects Dashboard</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <button
-          className={`tabBtn ${activeTab === "approved" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("approved");
-            setCurrentPage(1);
-          }}
-        >
-          Approved Projects
-        </button>
+   <div className="tabRow">
+  {/* LEFT: Tabs */}
+<div className="tabHeader">
+  {/* LEFT: Tabs */}
+  <div className="tabs">
+    <button
+      className={`tabBtn ${activeTab === "approved" ? "active" : ""}`}
+      onClick={() => {
+        setActiveTab("approved");
+        setCurrentPage(1);
+      }}
+    >
+      Approved Projects
+    </button>
 
-        <button
-          className={`tabBtn ${activeTab === "dropped" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("dropped");
-            setCurrentPage(1);
-          }}
-        >
-          Dropped Projects
-        </button>
-      </div>
+    <button
+      className={`tabBtn ${activeTab === "dropped" ? "active" : ""}`}
+      onClick={() => {
+        setActiveTab("dropped");
+        setCurrentPage(1);
+      }}
+    >
+      Dropped Projects
+    </button>
+  </div>
+
+  {/* RIGHT: Show per page */}
+  <div className="pageSizeRight">
+    <label>
+      Show{" "}
+      <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+        <option value={10}>10</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>{" "}
+      per page
+    </label>
+  </div>
+</div>
+
+
+
+  {/* RIGHT: Show per page */}
+
+</div>
+
       <div
         style={{
           marginBottom: "10px",
@@ -282,22 +328,45 @@ export default function ProjectsDashboard() {
           alignItems: "center",
         }}
       >
-        <div>
-          <label>
-            Show{" "}
-            <select
-              value={itemsPerPage}
-              onChange={handleItemsPerPageChange}
-              style={{ padding: "4px 8px", marginLeft: "4px" }}
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>{" "}
-            per page
-          </label>
-        </div>
+  <div className="topControls">
+  {/* Filters - LEFT */}
+  <div className="filters">
+    <select
+      value={filterWorkCategory}
+      onChange={(e) => setFilterWorkCategory(e.target.value)}
+    >
+      <option value="All">All Work Categories</option>
+      <option value="Software">Software</option>
+      <option value="Hardware">Hardware</option>
+      <option value="Consulting">Consulting</option>
+    </select>
+
+    <select
+      value={filterLab}
+      onChange={(e) => setFilterLab(e.target.value)}
+    >
+      <option value="All">All Labs</option>
+      <option value="Digital">Digital</option>
+      <option value="Asset">Asset</option>
+    </select>
+
+    <select
+      value={filterStatus}
+      onChange={(e) => setFilterStatus(e.target.value)}
+    >
+      <option value="All">All Project Types</option>
+      {PROJECT_STATUSES.map((s) => (
+        <option key={s} value={s}>
+          {s}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* Show per page - RIGHT */}
+ 
+</div>
+
         <div>
           Total Projects:{" "}
           {activeTab === "approved"

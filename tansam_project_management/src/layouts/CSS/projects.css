@@ -210,3 +210,59 @@
   align-items: center;
   justify-content: center;
 }
+.topControls {
+  display: flex;
+  justify-content: space-between; /* LEFT & RIGHT */
+  align-items: center;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+/* LEFT FILTERS */
+.filters {
+  display: flex;
+  gap: 10px;
+}
+
+/* RIGHT PAGE SIZE */
+.pageSize {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+/* dropdowns */
+.filters select,
+.pageSize select {
+  padding: 4px 8px;
+}
+.tabRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tabHeader {
+  display: flex;
+  justify-content: space-between; /* pushes right side */
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.pageSizeRight {
+  margin-left: auto;        /* forces extreme right */
+  font-size: 14px;
+}
+
+.pageSizeRight select {
+  margin: 0 4px;
+  padding: 3px 6px;
+}
