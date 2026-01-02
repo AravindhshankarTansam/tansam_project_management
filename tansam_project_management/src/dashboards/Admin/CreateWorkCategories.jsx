@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  fetchWorkCategories,
+  createWorkCategory,
+  updateWorkCategory,
+} from "../../services/admin/admin.roles.api";
 
 export default function CreateWorkCategories() {
-  const [categories, setCategories] = useState([
-    { id: 1, name: "Electrical", status: "ACTIVE" },
-    { id: 2, name: "Mechanical", status: "INACTIVE" },
-  ]);
-
+  const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -14,6 +15,20 @@ export default function CreateWorkCategories() {
     name: "",
     status: "ACTIVE",
   });
+
+  // 🔹 LOAD WORK CATEGORIES
+  const loadCategories = async () => {
+    try {
+      const data = await fetchWorkCategories();
+      setCategories(data);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   // 🔹 Open Add
   const openAddModal = () => {
@@ -34,7 +49,7 @@ export default function CreateWorkCategories() {
   };
 
   // 🔹 Save
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -42,20 +57,24 @@ export default function CreateWorkCategories() {
       return;
     }
 
-    if (isEdit) {
-      setCategories(
-        categories.map((c) =>
-          c.id === form.id ? { ...form } : c
-        )
-      );
-    } else {
-      setCategories([
-        ...categories,
-        { ...form, id: Date.now() },
-      ]);
-    }
+    try {
+      if (isEdit) {
+        await updateWorkCategory(form.id, {
+          name: form.name,
+          status: form.status,
+        });
+      } else {
+        await createWorkCategory({
+          name: form.name,
+          status: form.status,
+        });
+      }
 
-    setShowModal(false);
+      setShowModal(false);
+      loadCategories();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
@@ -66,7 +85,6 @@ export default function CreateWorkCategories() {
         ➕ Add Work Category
       </button>
 
-      {/* ---------- TABLE ---------- */}
       <table style={styles.table}>
         <thead>
           <tr>
@@ -90,6 +108,12 @@ export default function CreateWorkCategories() {
               </td>
             </tr>
           ))}
+
+          {categories.length === 0 && (
+            <tr>
+              <td colSpan="3">No work categories found</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
