@@ -17,9 +17,9 @@ export const SIDEBAR_MENU = {
   ],
 
   coordinator: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Leads", path: "/dashboard/leads" },
-    { label: "Opportunities", path: "/dashboard/opportunities" },
+    { label: "Dashboard", path: "/coordinator" },
+    { label: "New Opportunities", path: "/coordinator/opportunities" },
+    { label: "Opportunities-Tacker", path: "/coordinator/Opportunities-tacker" },
   ],
 
   tl: [
