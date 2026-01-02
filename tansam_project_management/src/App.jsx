@@ -12,6 +12,16 @@ import Labs from "./dashboards/Admin/Labs.jsx";
 import Reports from "./dashboards/Admin/Reports.jsx";
 import Roles from "./dashboards/Admin/Roles.jsx";
 import Users from "./dashboards/Admin/Users.jsx";
+// TL Imports
+import TLLayout from "./tl/layout/TLLayout.jsx";
+import TLDashboard from "./tl/pages/TLdashboard.jsx";
+import CreateProject from "./tl/pages/CreateProject.jsx";
+import ProjectFollowUp from "./tl/pages/ProjectFollowUp.jsx";
+import Summary from "./tl/pages/Summary.jsx";
+
+
+
+
 
 // Cordinator Imports
 
@@ -44,7 +54,24 @@ function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
+
+          
+          
         </Route>
+         {/* TEAM LEADER (SEPARATE, NOT INSIDE ADMIN) */}
+  <Route
+    path="/tl"
+    element={
+      <PrivateRoute>
+        <TLLayout />
+      </PrivateRoute>
+    }
+  >
+    <Route index element={<TLDashboard />} />
+    <Route path="create-project" element={<CreateProject />} />
+    <Route path="follow-up" element={<ProjectFollowUp />} />
+    <Route path="summary" element={<Summary />} />
+  </Route>
 
       </Routes>
     </BrowserRouter>
