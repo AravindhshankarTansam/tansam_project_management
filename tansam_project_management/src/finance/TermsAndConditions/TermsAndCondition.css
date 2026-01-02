@@ -1,0 +1,137 @@
+/* Page container */
+.page-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f6f8;
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background-color: #fcfbfb;
+  overflow-y: auto;
+  z-index: 1000;
+  padding-top: 20px;
+}
+
+/* Header */
+.header-container {
+  position: sticky;
+  top: 0;
+  background-color: #f5f5f5;
+  padding: 10px 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+/* Navbar layout */
+.navbar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Logo and title */
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo12 {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 5px;
+}
+
+.title1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333333;
+}
+
+/* Spacer pushes elements apart */
+.spacer {
+  flex: 1;
+}
+
+/* Main content */
+.main-content {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.content12 {
+  padding: 20px;
+  flex-grow: 1;
+}
+
+/* Content header */
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* H1 title */
+.content-header h1 {
+  font-size: 2rem;
+  color: #222222;
+}
+
+/* Add button */
+.add-btn {
+  background-color: #007bff;
+  color: #ffffff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+  background-color: #0056b3;
+}
+
+.add-btn.open {
+  background-color: #28a745;
+}
+
+/* Paragraph text */
+.content12 p {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555555;
+  margin-bottom: 20px;
+}
+
+/* Add form container with transition */
+.add-form-container {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.add-form-container.show {
+  max-height: 1000px; /* large enough to fit form */
+  opacity: 1;
+}

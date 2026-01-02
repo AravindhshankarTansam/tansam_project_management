@@ -11,37 +11,61 @@ function Login({ setUser }) {
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+  //   setLoading(true);
 
-    try {
-      console.log("📤 Sending login data:", { email, password });
+  //   try {
+  //     console.log("📤 Sending login data:", { email, password });
 
-      const data = await loginUser(email, password);
+  //     const data = await loginUser(email, password);
 
-      // 🔍 LOG RESPONSE DATA
-      console.log("📥 Login API response:", data);
+  //     // 🔍 LOG RESPONSE DATA
+  //     console.log("📥 Login API response:", data);
 
-      // Save user in state
-      setUser(data);
+  //     // Save user in state
+  //     setUser(data);
       
 
-      // Persist login
-      localStorage.setItem("user", JSON.stringify(data));
+  //     // Persist login
+  //     // localStorage.setItem("user", JSON.stringify(data));
 
-      // Redirect based on role
-      console.log("➡️ Redirecting to:", data.route);
-      navigate(data.route);
+  //     // Redirect based on role
+  //     console.log("➡️ Redirecting to:", data.route);
+  //     // navigate(data.route);
 
-    } catch (err) {
-      console.error("❌ Login error:", err);
-      setError(err.message || "Backend not reachable");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   } catch (err) {
+  //     console.error("❌ Login error:", err);
+  //     setError(err.message || "Backend not reachable");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try {
+    const data = await loginUser(email, password);
+
+    // TEMP: force TL role
+    setUser({
+      role: "finance",
+      email: data.email || email,
+    });
+
+    navigate("/finance");
+
+  } catch (err) {
+    setError(err.message || "Backend not reachable");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="login-container">
@@ -85,3 +109,5 @@ function Login({ setUser }) {
 }
 
 export default Login;
+
+

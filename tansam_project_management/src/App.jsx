@@ -13,6 +13,9 @@ import Reports from "./dashboards/Admin/Reports.jsx";
 import Roles from "./dashboards/Admin/Roles.jsx";
 import Users from "./dashboards/Admin/Users.jsx";
 
+import Dashboard from "./finance/Dashboard/Dashboard.jsx";
+import TermsAndConditions from "./finance/TermsAndConditions/TermsAndCondition.jsx";
+import Terms from "./finance/Terms/Terms.jsx";
 // Cordinator Imports
 
 function App() {
@@ -45,6 +48,12 @@ function App() {
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
+ {/* FINANCE ROUTES */}
+<Route path="/finance" element={<Dashboard />}>
+  <Route index element={<Dashboard />} />
+  <Route path="terms-and-conditions" element={<TermsAndConditions />} />
+  <Route path="terms" element={<Terms />} />
+</Route>
 
       </Routes>
     </BrowserRouter>

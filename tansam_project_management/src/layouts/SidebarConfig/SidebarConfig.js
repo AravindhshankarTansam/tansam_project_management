@@ -29,12 +29,12 @@ export const SIDEBAR_MENU = {
     { label: "Team Review", path: "/dashboard/team-review" },
   ],
 
-  finance: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Quotations", path: "/dashboard/quotations" },
-    { label: "Approvals", path: "/dashboard/approvals" },
-    { label: "Reports", path: "/dashboard/reports" },
-  ],
+finance: [
+  { label: "Dashboard", path: "/finance" },
+  { label: "Generate Quotation", path: "/finance/generate-quotation" },
+  { label: "Terms", path: "/finance/terms" },
+  { label: "Terms & Conditions", path: "/finance/terms-and-conditions" },
+],
 
   ceo: [
     { label: "Dashboard", path: "/dashboard" },
