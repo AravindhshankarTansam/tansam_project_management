@@ -42,13 +42,14 @@ export default function ProjectsDashboard() {
   const [isReadOnly, setIsReadOnly] = useState(false);
 
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+const [currentPage, setCurrentPage] = useState(1);
+const [itemsPerPage, setItemsPerPage] = useState(10);
 
 const handleItemsPerPageChange = (e) => {
   setItemsPerPage(Number(e.target.value));
-  setCurrentPage(1); // Reset page to 1
+  setCurrentPage(1); // Important to reset to first page
 };
+
   // Flatten projects for tabs
   const allProjects = [];
   quotations.forEach((q) => {
@@ -59,13 +60,14 @@ const handleItemsPerPageChange = (e) => {
 
   const approvedProjects = allProjects.filter((p) => p.projectStatus !== "Dropped");
   const droppedProjects = allProjects.filter((p) => p.projectStatus === "Dropped");
+const paginatedProjects = (projects, page, perPage) => {
+  const start = (page - 1) * perPage;
+  return projects.slice(start, start + perPage);
+};
 
-  const paginatedProjects = (projects) => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return projects.slice(start, start + itemsPerPage);
-  };
 
-  const totalPages = (projects) => Math.ceil(projects.length / itemsPerPage);
+ const totalPages = (projects, perPage) => Math.ceil(projects.length / perPage);
+
 
   // Handlers
   const openEditModal = (project, readOnly = false) => {
@@ -178,26 +180,30 @@ const handleItemsPerPageChange = (e) => {
       </table>
 
       {/* Pagination */}
-      <div style={{ marginTop: "10px", textAlign: "center" }}>
-        {Array.from({ length: totalPages(projects) }, (_, i) => (
-          <button
-            key={i}
-            style={{
-              ...styles.pageBtn,
-              background: currentPage === i + 1 ? "#2563eb" : "#e5e7eb",
-              color: currentPage === i + 1 ? "#fff" : "#000",
-            }}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+<div style={{ marginTop: "10px", textAlign: "center" }}>
+  {Array.from({ length: totalPages(activeTab === "approved" ? approvedProjects : droppedProjects, itemsPerPage) }, (_, i) => (
+    <button
+      key={i}
+      style={{
+        ...styles.pageBtn,
+        background: currentPage === i + 1 ? "#2563eb" : "#e5e7eb",
+        color: currentPage === i + 1 ? "#fff" : "#000",
+      }}
+      onClick={() => setCurrentPage(i + 1)}
+    >
+      {i + 1}
+    </button>
+  ))}
+</div>
+
     </>
   );
+const displayedProjects =
+  activeTab === "approved"
+    ? paginatedProjects(approvedProjects, currentPage, itemsPerPage)
+    : paginatedProjects(droppedProjects, currentPage, itemsPerPage);
 
-  const displayedProjects =
-    activeTab === "approved" ? paginatedProjects(approvedProjects) : paginatedProjects(droppedProjects);
+
 
   return (
     <div style={{ padding: "20px" }}>
