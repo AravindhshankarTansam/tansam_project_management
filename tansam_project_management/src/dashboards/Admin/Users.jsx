@@ -6,6 +6,7 @@ import {
   fetchRoles,
   fetchLabs,
 } from "../../services/admin/admin.roles.api";
+import { toast } from "react-toastify";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -33,7 +34,7 @@ const loadUsers = async () => {
     const data = await fetchUsers();
     setUsers(data);
   } catch (err) {
-    alert(err.message);
+    toast.error("Failed to load users");
   }
 };
 
@@ -46,7 +47,7 @@ const loadMasters = async () => {
     setRoles(rolesData.filter(r => r.status === "ACTIVE"));
     setLabs(labsData.filter(l => l.status === "ACTIVE"));
   } catch (err) {
-    alert(err.message);
+    toast.error("Failed to load users");
   }
 };
 
@@ -88,7 +89,7 @@ useEffect(() => {
     e.preventDefault();
 
     if (!form.name || !form.mobile || !form.email || !form.role) {
-      alert("Please fill all required fields");
+      toast.warning("Please fill all required fields");
       return;
     }
 
@@ -99,6 +100,7 @@ useEffect(() => {
           lab: form.lab,
           status: form.status,
         });
+        toast.success("User updated successfully");
       } else {
         await createUser({
           name: form.name,
@@ -109,12 +111,13 @@ useEffect(() => {
           password: form.password,
           status: form.status,
         });
+        toast.success("User created successfully");
       }
 
       setShowModal(false);
       loadUsers();
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || "Operation failed");
     }
   };
 
