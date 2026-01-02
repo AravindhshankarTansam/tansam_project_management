@@ -10,68 +10,36 @@ const PROJECT_STATUSES = [
 ];
 
 export default function ProjectsDashboard() {
-  const dummyQuotations = [
-    {
-      id: 1,
-      quotationName: "Quotation 1",
-      clientName: "Client A",
-      phase: "Approved",
-      projects: [
-        {
-          id: 101,
-          projectName: "Project 1A",
-          projectStatus: "Created",
-          workCategory: "Software",
-          currentProgress: "0%",
-          lab: "Digital",
-          startDate: "2025-01-01",
-          endDate: "2025-01-15",
-          revenue: "100000",
-          issues: "",
-          droppedReason: "",
-        },
-        {
-          id: 102,
-          projectName: "Project 1B",
-          projectStatus: "Dropped",
-          workCategory: "Hardware",
-          currentProgress: "0%",
-          lab: "Asset",
-          startDate: "2025-01-16",
-          endDate: "2025-01-31",
-          revenue: "120000",
-          issues: "",
-          droppedReason: "Budget issue",
-        },
-      ],
-    },
-    {
-      id: 2,
-      quotationName: "Quotation 2",
-      clientName: "Client B",
-      phase: "Approved",
-      projects: [
-        {
-          id: 201,
-          projectName: "Project 2A",
-          projectStatus: "Dropped",
-          workCategory: "Consulting",
-          currentProgress: "0%",
-          lab: "AR/VR",
-          startDate: "2025-02-01",
-          endDate: "2025-02-15",
-          revenue: "80000",
-          issues: "",
-          droppedReason: "Client canceled",
-        },
-      ],
-    },
-  ];
+  // Generate dummy quotations with multiple projects
+  const dummyQuotations = Array.from({ length: 5 }, (_, i) => ({
+    id: i + 1,
+    quotationName: `Quotation ${i + 1}`,
+    clientName: `Client ${String.fromCharCode(65 + i)}`,
+    phase: "Approved",
+    projects: Array.from({ length: 12 }, (_, j) => ({
+      id: (i + 1) * 100 + j + 1,
+      projectName: `Project ${i + 1}-${j + 1}`,
+      projectStatus: j % 5 === 0 ? "Dropped" : "Created",
+      workCategory: j % 3 === 0 ? "Software" : j % 3 === 1 ? "Hardware" : "Consulting",
+      currentProgress: `${Math.floor(Math.random() * 100)}%`,
+      lab: j % 2 === 0 ? "Digital" : "Asset",
+      startDate: "2025-01-01",
+      endDate: "2025-01-15",
+      revenue: `${50000 + j * 1000}`,
+      issues: "",
+      droppedReason: j % 5 === 0 ? "Client canceled" : "",
+    })),
+  }));
 
   const [quotations, setQuotations] = useState(dummyQuotations);
   const [activeTab, setActiveTab] = useState("approved"); // approved or dropped
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Flatten projects for tabs
   const allProjects = [];
@@ -84,9 +52,17 @@ export default function ProjectsDashboard() {
   const approvedProjects = allProjects.filter((p) => p.projectStatus !== "Dropped");
   const droppedProjects = allProjects.filter((p) => p.projectStatus === "Dropped");
 
+  const paginatedProjects = (projects) => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return projects.slice(start, start + itemsPerPage);
+  };
+
+  const totalPages = (projects) => Math.ceil(projects.length / itemsPerPage);
+
   // Handlers
-  const openEditModal = (project) => {
+  const openEditModal = (project, readOnly = false) => {
     setEditingProject(project);
+    setIsReadOnly(readOnly);
     setShowModal(true);
   };
 
@@ -111,66 +87,99 @@ export default function ProjectsDashboard() {
     setShowModal(false);
   };
 
+  const handleDelete = (project) => {
+    if (window.confirm(`Are you sure you want to delete ${project.projectName}?`)) {
+      setQuotations((prev) =>
+        prev.map((q) => ({
+          ...q,
+          projects: q.projects.filter((p) => p.id !== project.id),
+        }))
+      );
+    }
+  };
+
   const renderTable = (projects, showDroppedReason = false) => (
-    <table style={styles.table}>
-      <thead>
-        <tr>
-          {[
-            "Project Name",
-            "Quotation",
-            "Client",
-            "Status",
-            "Work Category",
-            "Progress",
-            "Lab",
-            "Start Date",
-            "End Date",
-            "Revenue",
-            "Issues",
-            showDroppedReason ? "Dropped Reason" : null,
-            "Action",
-          ]
-            .filter(Boolean)
-            .map((col) => (
-              <th key={col} style={styles.th}>
-                {col}
-              </th>
-            ))}
-        </tr>
-      </thead>
-      <tbody>
-        {projects.length === 0 ? (
+    <>
+      <table style={styles.table}>
+        <thead>
           <tr>
-            <td colSpan={showDroppedReason ? 13 : 12} style={{ textAlign: "center" }}>
-              No projects found
-            </td>
+            {[
+              "Project Name",
+              "Quotation",
+              "Client",
+              "Status",
+              "Work Category",
+              "Progress",
+              "Lab",
+              "Start Date",
+              "End Date",
+              "Revenue",
+              "Issues",
+              showDroppedReason ? "Dropped Reason" : null,
+              "Action",
+            ]
+              .filter(Boolean)
+              .map((col) => (
+                <th key={col} style={styles.th}>
+                  {col}
+                </th>
+              ))}
           </tr>
-        ) : (
-          projects.map((p) => (
-            <tr key={p.id}>
-              <td style={styles.td}>{p.projectName}</td>
-              <td style={styles.td}>{p.quotationName}</td>
-              <td style={styles.td}>{p.clientName}</td>
-              <td style={styles.td}>{p.projectStatus}</td>
-              <td style={styles.td}>{p.workCategory}</td>
-              <td style={styles.td}>{p.currentProgress}</td>
-              <td style={styles.td}>{p.lab}</td>
-              <td style={styles.td}>{p.startDate}</td>
-              <td style={styles.td}>{p.endDate}</td>
-              <td style={styles.td}>{p.revenue}</td>
-              <td style={styles.td}>{p.issues}</td>
-              {showDroppedReason && <td style={styles.td}>{p.droppedReason}</td>}
-              <td style={styles.td}>
-                <button onClick={() => openEditModal(p)} style={styles.iconBtn}>
-                  ✏️
-                </button>
+        </thead>
+        <tbody>
+          {projects.length === 0 ? (
+            <tr>
+              <td colSpan={showDroppedReason ? 13 : 12} style={{ textAlign: "center" }}>
+                No projects found
               </td>
             </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+          ) : (
+            projects.map((p) => (
+              <tr key={p.id}>
+                <td style={styles.td}>{p.projectName}</td>
+                <td style={styles.td}>{p.quotationName}</td>
+                <td style={styles.td}>{p.clientName}</td>
+                <td style={styles.td}>{p.projectStatus}</td>
+                <td style={styles.td}>{p.workCategory}</td>
+                <td style={styles.td}>{p.currentProgress}</td>
+                <td style={styles.td}>{p.lab}</td>
+                <td style={styles.td}>{p.startDate}</td>
+                <td style={styles.td}>{p.endDate}</td>
+                <td style={styles.td}>{p.revenue}</td>
+                <td style={styles.td}>{p.issues}</td>
+                {showDroppedReason && <td style={styles.td}>{p.droppedReason}</td>}
+                <td style={styles.td}>
+                  <button style={styles.viewBtn} onClick={() => openEditModal(p, true)}>View</button>
+                  <button style={styles.moreBtn} onClick={() => openEditModal(p, false)}>More View</button>
+                  <button style={styles.deleteBtn} onClick={() => handleDelete(p)}>🗑️</button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
+      {/* Pagination */}
+      <div style={{ marginTop: "10px", textAlign: "center" }}>
+        {Array.from({ length: totalPages(projects) }, (_, i) => (
+          <button
+            key={i}
+            style={{
+              ...styles.pageBtn,
+              background: currentPage === i + 1 ? "#2563eb" : "#e5e7eb",
+              color: currentPage === i + 1 ? "#fff" : "#000",
+            }}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+    </>
   );
+
+  const displayedProjects =
+    activeTab === "approved" ? paginatedProjects(approvedProjects) : paginatedProjects(droppedProjects);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -179,25 +188,25 @@ export default function ProjectsDashboard() {
       <div style={{ marginBottom: "20px" }}>
         <button
           style={{ ...styles.tabBtn, background: activeTab === "approved" ? "#2563eb" : "#e5e7eb" }}
-          onClick={() => setActiveTab("approved")}
+          onClick={() => { setActiveTab("approved"); setCurrentPage(1); }}
         >
           Approved Projects
         </button>
         <button
           style={{ ...styles.tabBtn, background: activeTab === "dropped" ? "#2563eb" : "#e5e7eb" }}
-          onClick={() => setActiveTab("dropped")}
+          onClick={() => { setActiveTab("dropped"); setCurrentPage(1); }}
         >
           Dropped Projects
         </button>
       </div>
 
-      {activeTab === "approved" ? renderTable(approvedProjects) : renderTable(droppedProjects, true)}
+      {renderTable(displayedProjects, activeTab === "dropped")}
 
       {/* Modal */}
       {showModal && editingProject && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
-            <h3>Edit Project</h3>
+            <h3>{isReadOnly ? "View Project" : "Edit Project"}</h3>
             <form onSubmit={handleSave}>
               {[
                 "projectName",
@@ -220,6 +229,7 @@ export default function ProjectsDashboard() {
                       value={editingProject[field]}
                       onChange={handleChange}
                       style={styles.input}
+                      disabled={isReadOnly}
                     />
                   );
                 } else if (field === "projectStatus") {
@@ -230,6 +240,7 @@ export default function ProjectsDashboard() {
                       value={editingProject[field]}
                       onChange={handleChange}
                       style={styles.input}
+                      disabled={isReadOnly}
                     >
                       {PROJECT_STATUSES.map((s) => (
                         <option key={s}>{s}</option>
@@ -245,17 +256,20 @@ export default function ProjectsDashboard() {
                       value={editingProject[field]}
                       onChange={handleChange}
                       style={styles.input}
+                      disabled={isReadOnly}
                     />
                   );
                 }
               })}
               <div style={{ textAlign: "right" }}>
                 <button type="button" onClick={() => setShowModal(false)} style={styles.cancelBtn}>
-                  Cancel
+                  {isReadOnly ? "Close" : "Cancel"}
                 </button>
-                <button type="submit" style={styles.saveBtn}>
-                  Save
-                </button>
+                {!isReadOnly && (
+                  <button type="submit" style={styles.saveBtn}>
+                    Save
+                  </button>
+                )}
               </div>
             </form>
           </div>
@@ -314,5 +328,38 @@ const styles = {
   input: { width: "100%", padding: "8px", marginBottom: "10px" },
   cancelBtn: { marginRight: "10px", padding: "6px 10px" },
   saveBtn: { padding: "6px 10px", background: "#2563eb", color: "#fff", border: "none" },
-  iconBtn: { background: "transparent", border: "none", cursor: "pointer", fontSize: "16px" },
+  viewBtn: {
+    background: "#22c55e",
+    color: "#fff",
+    border: "none",
+    padding: "4px 8px",
+    marginRight: "4px",
+    cursor: "pointer",
+    borderRadius: "3px",
+  },
+  moreBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    padding: "4px 8px",
+    marginRight: "4px",
+    cursor: "pointer",
+    borderRadius: "3px",
+  },
+  deleteBtn: {
+    background: "#ef4444",
+    color: "#fff",
+    border: "none",
+    padding: "4px 8px",
+    cursor: "pointer",
+    borderRadius: "3px",
+    fontSize: "16px",
+  },
+  pageBtn: {
+    margin: "0 4px",
+    padding: "4px 8px",
+    cursor: "pointer",
+    borderRadius: "3px",
+    border: "none",
+  },
 };
