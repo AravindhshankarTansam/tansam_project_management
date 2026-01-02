@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  fetchLabs,
+  createLab,
+  updateLab,
+} from "../../services/admin/admin.roles.api";
 
 export default function Labs() {
-  const [labs, setLabs] = useState([
-    { id: 1, name: "Lab A", status: "ACTIVE" },
-    { id: 2, name: "Lab B", status: "INACTIVE" },
-  ]);
-
+  const [labs, setLabs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -14,6 +15,20 @@ export default function Labs() {
     name: "",
     status: "ACTIVE",
   });
+
+  // 🔹 LOAD LABS
+  const loadLabs = async () => {
+    try {
+      const data = await fetchLabs();
+      setLabs(data);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  useEffect(() => {
+    loadLabs();
+  }, []);
 
   // 🔹 Open Add
   const openAddModal = () => {
@@ -34,7 +49,7 @@ export default function Labs() {
   };
 
   // 🔹 Save
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -42,17 +57,24 @@ export default function Labs() {
       return;
     }
 
-    if (isEdit) {
-      setLabs(
-        labs.map((l) =>
-          l.id === form.id ? { ...form } : l
-        )
-      );
-    } else {
-      setLabs([...labs, { ...form, id: Date.now() }]);
-    }
+    try {
+      if (isEdit) {
+        await updateLab(form.id, {
+          name: form.name,
+          status: form.status,
+        });
+      } else {
+        await createLab({
+          name: form.name,
+          status: form.status,
+        });
+      }
 
-    setShowModal(false);
+      setShowModal(false);
+      loadLabs();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
@@ -63,7 +85,6 @@ export default function Labs() {
         ➕ Add Lab
       </button>
 
-      {/* ---------- TABLE ---------- */}
       <table style={styles.table}>
         <thead>
           <tr>
@@ -87,6 +108,12 @@ export default function Labs() {
               </td>
             </tr>
           ))}
+
+          {labs.length === 0 && (
+            <tr>
+              <td colSpan="3">No labs found</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
@@ -136,7 +163,7 @@ export default function Labs() {
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ---------- STYLES (MISSING BEFORE) ---------- */
 const styles = {
   addBtn: {
     marginBottom: "10px",

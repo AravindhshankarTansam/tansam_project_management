@@ -1,25 +1,29 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Login from "./auth/Login.jsx";
-
-// Admin Imports
 import DashboardLayout from "./layouts/DashboardLayout.jsx";
-import AdminDashboard from "./dashboards/Admin/AdminDashboard.jsx"
-import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
-import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
+import AdminDashboard from "./dashboards/Admin/AdminDashboard.jsx";
+import Users from "./dashboards/Admin/Users.jsx";
+import Roles from "./dashboards/Admin/Roles.jsx";
 import Labs from "./dashboards/Admin/Labs.jsx";
 import Reports from "./dashboards/Admin/Reports.jsx";
-import Roles from "./dashboards/Admin/Roles.jsx";
-import Users from "./dashboards/Admin/Users.jsx";
-
-// Cordinator Imports
+import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
+import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
 
+  // 🔥 Restore session on refresh
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const PrivateRoute = ({ children }) => {
-    return user ? children : <Navigate to="/" />;
+    return user ? children : <Navigate to="/" replace />;
   };
 
   return (
@@ -28,12 +32,12 @@ function App() {
         {/* Login */}
         <Route path="/" element={<Login setUser={setUser} />} />
 
-        {/* Admin Layout with Nested Routes */}
+        {/* Admin */}
         <Route
           path="/admin"
           element={
             <PrivateRoute>
-              <DashboardLayout user={user} />
+              <DashboardLayout user={user} setUser={setUser} />
             </PrivateRoute>
           }
         >
@@ -45,7 +49,6 @@ function App() {
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
-
       </Routes>
     </BrowserRouter>
   );

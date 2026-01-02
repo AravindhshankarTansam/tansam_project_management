@@ -1,7 +1,7 @@
-import React from 'react';
-import './CSS/TopBar.css';
+import React from "react";
+import "./CSS/TopBar.css";
 
-export default function TopBar() {
+export default function TopBar({ user, onLogout }) {
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -9,8 +9,12 @@ export default function TopBar() {
       </div>
 
       <div className="topbar-right">
-        <span className="user-name">Welcome, User</span>
-        <button className="logout-btn">Logout</button>
+        <span className="user-name">
+          Welcome, {user?.name || user?.role}
+        </span>
+        <button className="logout-btn" onClick={onLogout}>
+          Logout
+        </button>
       </div>
     </header>
   );

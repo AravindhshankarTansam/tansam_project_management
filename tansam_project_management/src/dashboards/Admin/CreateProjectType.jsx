@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  fetchProjectTypes,
+  createProjectType,
+  updateProjectType,
+} from "../../services/admin/admin.roles.api";
 
 export default function CreateProjectTypes() {
-  const [projectTypes, setProjectTypes] = useState([
-    { id: 1, name: "New Installation", status: "ACTIVE" },
-    { id: 2, name: "Maintenance", status: "INACTIVE" },
-  ]);
-
+  const [projectTypes, setProjectTypes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -14,6 +15,20 @@ export default function CreateProjectTypes() {
     name: "",
     status: "ACTIVE",
   });
+
+  // 🔹 LOAD PROJECT TYPES
+  const loadProjectTypes = async () => {
+    try {
+      const data = await fetchProjectTypes();
+      setProjectTypes(data);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  useEffect(() => {
+    loadProjectTypes();
+  }, []);
 
   // 🔹 Open Add
   const openAddModal = () => {
@@ -34,7 +49,7 @@ export default function CreateProjectTypes() {
   };
 
   // 🔹 Save
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -42,20 +57,24 @@ export default function CreateProjectTypes() {
       return;
     }
 
-    if (isEdit) {
-      setProjectTypes(
-        projectTypes.map((t) =>
-          t.id === form.id ? { ...form } : t
-        )
-      );
-    } else {
-      setProjectTypes([
-        ...projectTypes,
-        { ...form, id: Date.now() },
-      ]);
-    }
+    try {
+      if (isEdit) {
+        await updateProjectType(form.id, {
+          name: form.name,
+          status: form.status,
+        });
+      } else {
+        await createProjectType({
+          name: form.name,
+          status: form.status,
+        });
+      }
 
-    setShowModal(false);
+      setShowModal(false);
+      loadProjectTypes();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
@@ -66,7 +85,6 @@ export default function CreateProjectTypes() {
         ➕ Add Project Type
       </button>
 
-      {/* ---------- TABLE ---------- */}
       <table style={styles.table}>
         <thead>
           <tr>
@@ -90,6 +108,12 @@ export default function CreateProjectTypes() {
               </td>
             </tr>
           ))}
+
+          {projectTypes.length === 0 && (
+            <tr>
+              <td colSpan="3">No project types found</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
