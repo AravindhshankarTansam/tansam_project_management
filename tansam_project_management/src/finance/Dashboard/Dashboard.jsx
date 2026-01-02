@@ -12,7 +12,7 @@ export default function Dashboard() {
   return (
     <div className="layout">
      
-
+      <Sidebar role="finance" />
       <main className="contents1">
         <h1>Dashboard</h1>
 
