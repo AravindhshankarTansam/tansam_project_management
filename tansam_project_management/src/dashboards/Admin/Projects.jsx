@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 import { FaEye, FaEllipsisH, FaTrash, FaEdit } from "react-icons/fa";
 
 import "../../layouts/CSS/projects.css";
@@ -81,6 +82,19 @@ quotations.forEach((q) => {
     setShowStatus(false);
     
   };
+useEffect(() => {
+  const closeDropdowns = () => {
+    setShowCategory(false);
+    setShowLab(false);
+    setShowStatus(false);
+  };
+
+  document.addEventListener("click", closeDropdowns);
+
+  return () => {
+    document.removeEventListener("click", closeDropdowns);
+  };
+}, []);
 
 const applyFilters = (projects) => {
   return projects.filter((p) => {
@@ -302,6 +316,7 @@ const handleSave = (e) => {
 
   return (
     <div style={{ padding: "20px" }}>
+      <div className="dashboardHeader">
       <h2>📊 Projects Dashboard</h2>
 <button
   className="addBtn"
@@ -330,7 +345,7 @@ const handleSave = (e) => {
 >
   ➕ Add Project
 </button>
-
+</div>
    <div className="tabRow">
   {/* LEFT: Tabs */}
 <div className="tabHeader">
@@ -388,7 +403,11 @@ const handleSave = (e) => {
       >
 <div className="filters" style={{ display: "flex", gap: "15px" }}>
   {/* Work Category */}
-  <div className="customDropdown">
+<div
+  className="customDropdown"
+  onClick={(e) => e.stopPropagation()}
+>
+
     <div
       className="dropdownHeader"
       onClick={() => setShowCategory(!showCategory)}
@@ -425,7 +444,11 @@ const handleSave = (e) => {
 
 
   {/* Lab */}
-  <div className="customDropdown">
+ <div
+  className="customDropdown"
+  onClick={(e) => e.stopPropagation()}
+>
+
     <div
       className="dropdownHeader"
       onClick={() => setShowLab(!showLab)}
@@ -461,7 +484,11 @@ const handleSave = (e) => {
   </div>
 
   {/* Status */}
-  <div className="customDropdown">
+<div
+  className="customDropdown"
+  onClick={(e) => e.stopPropagation()}
+>
+
     <div
       className="dropdownHeader"
       onClick={() => setShowStatus(!showStatus)}
@@ -533,13 +560,16 @@ const handleSave = (e) => {
   <div className="modalOverlay">
     <div className="modalBox">
       {/* Modal Title */}
-      <h3>
-        {modalMode === "view"
-          ? "View Project"
-          : modalMode === "edit"
-          ? "Edit Project"
-          : "Project Details"}
-      </h3>
+     <h3>
+  {modalMode === "view"
+    ? "View Project"
+    : modalMode === "edit"
+    ? editingProject.projectName
+      ? "Edit Project"
+      : "Add Project"
+    : "Project Details"}
+</h3>
+
 
       {/* View / More Mode */}
       {(modalMode === "view" || modalMode === "more") && (() => {
