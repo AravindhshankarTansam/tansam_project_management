@@ -11,6 +11,10 @@ import Reports from "./dashboards/Admin/Reports.jsx";
 import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
 import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 import CreateProject from "./dashboards/Admin/Projects.jsx";
+import Quotations from "./dashboards/Finance/Quotations.jsx";
+import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
+// import FinanceReports from "./dashboards/Finance/Reports.jsx";
+import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
 function App() {
   const [user, setUser] = useState(null);
 
@@ -50,8 +54,23 @@ function App() {
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
+
+        <Route
+  path="/finance"
+  element={
+    <PrivateRoute>
+      <DashboardLayout user={user} setUser={setUser} />
+    </PrivateRoute>
+  }
+>
+ 
+  <Route path="quotations" element={<Quotations />} />
+  <Route path="quotation-followup" element={<QuotationFollowup />} />
+  <Route path="dashboard" element={<FinanceDashboard />} />
+  {/* <Route path="reports" element={<FinanceReports />} /> */}
+</Route>
       </Routes>
-    </BrowserRouter>
+    </BrowserRouter>  
   );
 }
 

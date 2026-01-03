@@ -31,11 +31,12 @@ export const SIDEBAR_MENU = {
   ],
 
   finance: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Quotations", path: "/dashboard/quotations" },
-    { label: "Approvals", path: "/dashboard/approvals" },
-    { label: "Reports", path: "/dashboard/reports" },
+    { label: "Dashboard", path: "/finance/dashboard" },
+    { label: "Quotations", path: "/finance/quotations" },
+    { label: "Quotation Follow-up", path: "/finance/quotation-followup" },
+    { label: "Reports", path: "/finance/reports" },
   ],
+
 
   ceo: [
     { label: "Dashboard", path: "/dashboard" },
