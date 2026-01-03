@@ -41,6 +41,7 @@ const [modalMode, setModalMode] = useState("view"); // "view", "more", "edit"
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
+const [isReadOnly, setIsReadOnly] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -134,29 +135,32 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
     const { name, value } = e.target;
     setEditingProject({ ...editingProject, [name]: value });
   };
+const handleSave = (e) => {
+  e.preventDefault();
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    setQuotations((prev) =>
-      prev.map((q) => {
-        if (
-          q.id ===
-          quotations.find(
-            (qu) => qu.quotationName === editingProject.quotationName
-          ).id
-        ) {
-          return {
-            ...q,
-            projects: q.projects.map((p) =>
-              p.id === editingProject.id ? editingProject : p
-            ),
-          };
-        }
-        return q;
-      })
-    );
-    setShowModal(false);
-  };
+  setQuotations((prev) =>
+    prev.map((q) => {
+      if (q.quotationName === editingProject.quotationName) {
+        const exists = q.projects.some(
+          (p) => p.id === editingProject.id
+        );
+
+        return {
+          ...q,
+          projects: exists
+            ? q.projects.map((p) =>
+                p.id === editingProject.id ? editingProject : p
+              )
+            : [...q.projects, editingProject],
+        };
+      }
+      return q;
+    })
+  );
+
+  setShowModal(false);
+};
+
 
   const handleDelete = (project) => {
     if (
@@ -236,13 +240,13 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
   <FaEye />
 </button>
     {/* Edit */}
-    <button
-      className="editBtn"
-      onClick={() => openEditModal(p, false)}
-      title="Edit"
-    >
-      <FaEdit />
-    </button>
+<button
+  className="editBtn"
+  onClick={() => openEditModal(p, false, "edit")}
+  title="Edit"
+>
+  <FaEdit />
+</button>
 
     {/* More */}
   <button
@@ -299,6 +303,33 @@ const openEditModal = (project, readOnly = false, mode = "view") => {
   return (
     <div style={{ padding: "20px" }}>
       <h2>📊 Projects Dashboard</h2>
+<button
+  className="addBtn"
+  onClick={() =>
+    openEditModal(
+      {
+        id: Date.now(),
+        projectName: "",
+        quotationName: quotations[0].quotationName,
+        clientName: quotations[0].clientName,
+        lab: "",
+        workCategory: "",
+        projectType: "",
+        startDate: "",
+        endDate: "",
+        projectStatus: "Created",
+        currentProgress: "0%",
+        revenue: "",
+        issues: "",
+        droppedReason: "",
+      },
+      false,
+      "edit"
+    )
+  }
+>
+  ➕ Add Project
+</button>
 
    <div className="tabRow">
   {/* LEFT: Tabs */}
