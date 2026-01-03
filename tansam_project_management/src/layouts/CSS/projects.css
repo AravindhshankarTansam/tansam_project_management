@@ -349,3 +349,44 @@
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+/* Wrap content and allow resizer to stretch */
+.thWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* pushes | to the edge */
+  position: relative;
+  padding: 0 8px;
+}
+
+/* The vertical resizer handle */
+.resizer {
+  width: 6px;            /* make it easier to grab */
+  cursor: col-resize;
+  height: 100%;          /* full height of th */
+  background-color: transparent; /* keep invisible but clickable */
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/* optional: show visible line on hover */
+.resizer:hover {
+  background-color: #ccc;
+}
+/* Make th itself resizable via cursor at the edge */
+.th {
+  border: 1px solid #ccc;
+  padding: 8px;
+  background: #f3f4f6;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative; /* needed for edge detection */
+}
+
+/* Change cursor on hover near the right edge */
+.th.resizable:hover {
+  cursor: col-resize;
+}

@@ -15,6 +15,28 @@ const PROJECT_STATUSES = [
 ];
 
 export default function ProjectsDashboard() {
+   const [columnWidths, setColumnWidths] = useState(Array(13).fill("auto"));
+const handleMouseDown = (e, index) => {
+  e.preventDefault();
+  const th = e.target;
+  const startX = e.clientX;
+  const startWidth = th.offsetWidth;
+
+  const onMouseMove = (e) => {
+    const newWidth = startWidth + (e.clientX - startX);
+    setColumnWidths((prev) =>
+      prev.map((w, i) => (i === index ? `${newWidth}px` : w))
+    );
+  };
+
+  const onMouseUp = () => {
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
+
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
+};
   // Generate dummy quotations with multiple projects
   const dummyQuotations = Array.from({ length: 5 }, (_, i) => ({
     id: i + 1,
@@ -190,126 +212,132 @@ const handleSave = (e) => {
     }
   };
 
-  const renderTable = (projects, showDroppedReason = false) => (
-    <>
-      <table className="table">
-        <thead>
+ const renderTable = (projects, showDroppedReason = false) => (
+  <>
+    <table className="table">
+      <thead>
+        <tr>
+          {[
+            "Project Name",
+            "Quotation",
+            "Client",
+            "Lab",
+            "Work Category",
+            "Start Date",
+            "End Date",
+            "Status",
+            "Progress",
+            "Revenue",
+            "Issues",
+            showDroppedReason ? "Dropped Reason" : null,
+            "Action",
+          ]
+            .filter(Boolean)
+            .map((col, index) => (
+      <th
+  key={col}
+  className="th resizable"
+  style={{ width: columnWidths[index], minWidth: "50px" }}
+  onMouseDown={(e) => {
+    // Only trigger if near the right edge (10px)
+    const th = e.currentTarget;
+    if (e.nativeEvent.offsetX > th.offsetWidth - 10) {
+      handleMouseDown(e, index);
+    }
+  }}
+>
+  {col}
+</th>
+            ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {projects.length === 0 ? (
           <tr>
-            {[
-              "Project Name",
-              "Quotation",
-              "Client",
-              "Lab",
-              "Work Category",
-              "Start Date",
-              "End Date",
-              "Status",
-              "Progress",
-              "Revenue",
-              "Issues",
-              showDroppedReason ? "Dropped Reason" : null,
-              "Action",
-            ]
-              .filter(Boolean)
-              .map((col) => (
-                <th key={col} className="th">
-                  {col}
-                </th>
-              ))}
+            <td
+              colSpan={showDroppedReason ? 13 : 12}
+              style={{ textAlign: "center" }}
+            >
+              No projects found
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {projects.length === 0 ? (
-            <tr>
-              <td
-                colSpan={showDroppedReason ? 13 : 12}
-                style={{ textAlign: "center" }}
-              >
-                No projects found
+        ) : (
+          projects.map((p) => (
+            <tr key={p.id}>
+              <td className="td">{p.projectName}</td>
+              <td className="td">{p.quotationName}</td>
+              <td className="td">{p.clientName}</td>
+              <td className="td">{p.lab}</td>
+              <td className="td">{p.workCategory}</td>
+              <td className="td">{p.startDate}</td>
+              <td className="td">{p.endDate}</td>
+              <td className="td">{p.projectStatus}</td>
+              <td className="td">{p.currentProgress}</td>
+              <td className="td">{p.revenue}</td>
+              <td className="td">{p.issues}</td>
+              {showDroppedReason && <td className="td">{p.droppedReason}</td>}
+              <td className="td actionCell">
+                <div className="actionGroup">
+                  <button
+                    className="viewBtn"
+                    onClick={() => openEditModal(p, true, "view")}
+                    title="View"
+                  >
+                    <FaEye />
+                  </button>
+                  <button
+                    className="editBtn"
+                    onClick={() => openEditModal(p, false, "edit")}
+                    title="Edit"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    className="moreBtn"
+                    onClick={() => openEditModal(p, true, "more")}
+                    title="More"
+                  >
+                    <FaEllipsisH />
+                  </button>
+                  <button
+                    className="deleteBtn"
+                    onClick={() => handleDelete(p)}
+                    title="Delete"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
               </td>
             </tr>
-          ) : (
-            projects.map((p) => (
-              <tr key={p.id}>
-                <td className="td">{p.projectName}</td>
-                <td className="td">{p.quotationName}</td>
-                <td className="td">{p.clientName}</td>
-                <td className="td">{p.lab}</td>
-                <td className="td">{p.workCategory}</td>
-                <td className="td">{p.startDate}</td>
-                <td className="td">{p.endDate}</td>
-                <td className="td">{p.projectStatus}</td>
-                <td className="td">{p.currentProgress}</td>
-                <td className="td">{p.revenue}</td>
-                <td className="td">{p.issues}</td>
-               {showDroppedReason && <td className="td">{p.droppedReason}</td>}
-                <td className="td actionCell">
-
-   <div className="actionGroup">
-    {/* View */}
-   <button
-  className="viewBtn"
-  onClick={() => openEditModal(p, true, "view")}
-  title="View"
->
-  <FaEye />
-</button>
-    {/* Edit */}
-<button
-  className="editBtn"
-  onClick={() => openEditModal(p, false, "edit")}
-  title="Edit"
->
-  <FaEdit />
-</button>
-
-    {/* More */}
-  <button
-  className="moreBtn"
-  onClick={() => openEditModal(p, true, "more")}
-  title="More"
->
-  <FaEllipsisH />
-</button>
-
-    {/* Delete */}
-    <button
-      className="deleteBtn"
-      onClick={() => handleDelete(p)}
-      title="Delete"
-    >
-      <FaTrash />
-    </button>
-  </div>
-</td>
-
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-
-      {/* Pagination */}
-      <div style={{ marginTop: "10px", textAlign: "center" }}>
-        {Array.from(
-          {
-            length: totalPages(
-              activeTab === "approved" ? approvedProjects : droppedProjects,
-              itemsPerPage
-            ),
-          },
-          (_, i) => (
-            <button
-              className={`pageBtn ${currentPage === i + 1 ? "active" : ""}`}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          )
+          ))
         )}
-      </div>
-    </>
-  );
+      </tbody>
+    </table>
+
+    {/* Pagination */}
+    <div style={{ marginTop: "10px", textAlign: "center" }}>
+      {Array.from(
+        {
+          length: totalPages(
+            activeTab === "approved" ? approvedProjects : droppedProjects,
+            itemsPerPage
+          ),
+        },
+        (_, i) => (
+          <button
+            key={i}
+            className={`pageBtn ${currentPage === i + 1 ? "active" : ""}`}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        )
+      )}
+    </div>
+  </>
+);
+
   const displayedProjects =
     activeTab === "approved"
       ? paginatedProjects(approvedProjects, currentPage, itemsPerPage)
