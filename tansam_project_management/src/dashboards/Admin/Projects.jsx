@@ -5,6 +5,7 @@ import { FaEye, FaEllipsisH, FaTrash, FaEdit } from "react-icons/fa";
 import "../../layouts/CSS/projects.css";
 
 const PROJECT_STATUSES = [
+  
   "Created",
   "In Progress",
   "On Hold",
@@ -323,10 +324,10 @@ const handleSave = (e) => {
   onClick={() =>
     openEditModal(
       {
-        id: Date.now(),
+        id: "",
         projectName: "",
-        quotationName: quotations[0].quotationName,
-        clientName: quotations[0].clientName,
+        quotationName: "",
+        clientName:"",
         lab: "",
         workCategory: "",
         projectType: "",
@@ -618,74 +619,103 @@ const handleSave = (e) => {
 
       {/* Edit Mode */}
       {modalMode === "edit" && (
-        <form onSubmit={handleSave}>
-          {[
-            "projectName",
-            "lab",
-            "workCategory",
-            "startDate",
-            "endDate",
-            "projectStatus",
-            "currentProgress",
-            "revenue",
-            "issues",
-            "droppedReason",
-          ].map((field) => {
-            if (field.includes("Date")) {
-              return (
-                <input
-                  key={field}
-                  type="date"
-                  name={field}
-                  value={editingProject[field]}
-                  onChange={handleChange}
-                  className="modalInput"
-                />
-              );
-            }
+  <form onSubmit={handleSave}>
+    {[
+      "projectName",
+      "quotationName",
+      "clientName",
+      "lab",
+      "workCategory",
+      "projectType",
+      "startDate",
+      "endDate",
+      "projectStatus",
+      "currentProgress",
+      "revenue",
+      "issues",
+      "droppedReason",
+    ].map((field) => {
 
-            if (field === "projectStatus") {
-              return (
-                <select
-                  key={field}
-                  name={field}
-                  value={editingProject[field]}
-                  onChange={handleChange}
-                  className="modalInput"
-                >
-                  {PROJECT_STATUSES.map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-              );
-            }
+      // 🔹 Hide Dropped Reason unless status is Dropped
+      if (field === "droppedReason" && editingProject.projectStatus !== "Dropped") {
+        return null;
+      }
 
-            return (
-              <input
-                key={field}
-                name={field}
-                placeholder={field.replace(/([A-Z])/g, " $1").trim()}
-                value={editingProject[field]}
-                onChange={handleChange}
-                className="modalInput"
-              />
-            );
-          })}
+      // 🔹 Date fields
+      if (field.includes("Date")) {
+        return (
+          <input
+            key={field}
+            type="date"
+            name={field}
+            value={editingProject[field]}
+            onChange={handleChange}
+            className="modalInput"
+          />
+        );
+      }
 
-          <div className="modalActions">
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-              className="cancelBtn"
-            >
-              Cancel
-            </button>
-            <button type="submit" className="saveBtn">
-              Save
-            </button>
-          </div>
-        </form>
-      )}
+      // 🔹 Status dropdown
+      if (field === "projectStatus") {
+        return (
+          <select
+            key={field}
+            name={field}
+            value={editingProject[field]}
+            onChange={handleChange}
+            className="modalInput"
+          >
+            {PROJECT_STATUSES.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        );
+      }
+
+      // 🔹 DROPPED REASON → TEXT AREA
+if (field === "droppedReason" && editingProject.projectStatus === "Dropped") {
+  return (
+    <textarea
+      key={field}
+      name={field}
+      value={editingProject[field] || ""}
+      onChange={handleChange}
+      className="modalTextarea"
+      placeholder="Enter dropped reason"
+      rows={4}       // makes it taller
+      style={{ width: "100%", resize: "vertical" }} // full width and resizable vertically
+    />
+  );
+}
+
+
+      // 🔹 Default input
+      return (
+        <input
+          key={field}
+          name={field}
+          placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+          value={editingProject[field]}
+          onChange={handleChange}
+          className="modalInput"
+        />
+      );
+    })}
+
+    <div className="modalActions">
+      <button
+        type="button"
+        onClick={() => setShowModal(false)}
+        className="cancelBtn"
+      >
+        Cancel
+      </button>
+      <button type="submit" className="saveBtn">
+        Save
+      </button>
+    </div>
+  </form>
+)}
 
       {/* Close button for View/More */}
       {(modalMode === "view" || modalMode === "more") && (
