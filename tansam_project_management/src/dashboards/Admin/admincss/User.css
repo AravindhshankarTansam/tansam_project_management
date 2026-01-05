@@ -1,4 +1,4 @@
-.roles-container {
+.users-container {
   padding: 32px;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #f8fafc;
@@ -7,7 +7,7 @@
 }
 
 /* ================= PAGE HEADER ================= */
-.roles-header {
+.page-header {
   margin-bottom: 32px;
   display: flex;
   justify-content: space-between;
@@ -15,11 +15,11 @@
   gap: 16px;
 }
 
-.roles-header h2 {
+.page-header h2 {
   font-size: 26px;
   font-weight: 700;
   margin: 0;
-  color: #0f172a;
+  color: #0f172a; /* solid, professional */
 }
 
 .page-sub {
@@ -31,26 +31,23 @@
 /* ================= TABLE CARD ================= */
 .table-card {
   background: #ffffff;
-  border-radius: 18px; /* ⬅️ curvier */
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: border-radius 0.2s ease;
 }
 
 /* ================= TABLE ================= */
-.roles-table {
+.users-table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 18px;
-  overflow: hidden; /* IMPORTANT for rounded corners */
 }
 
-.roles-table thead {
+.users-table thead {
   background: #f1f5f9;
 }
 
-.roles-table th {
+.users-table th {
   padding: 14px 18px;
   font-size: 13px;
   font-weight: 700;
@@ -60,17 +57,17 @@
   letter-spacing: 0.6px;
 }
 
-.roles-table td {
+.users-table td {
   padding: 16px 18px;
   font-size: 14px;
   color: #334155;
 }
 
-.roles-table tbody tr {
+.users-table tbody tr {
   border-top: 1px solid #e2e8f0;
 }
 
-.roles-table tbody tr:hover {
+.users-table tbody tr:hover {
   background: #f8fafc;
 }
 
@@ -84,7 +81,7 @@
 /* ================= STATUS ================= */
 .status {
   padding: 6px 12px;
-  border-radius: 999px; /* ⬅️ pill */
+  border-radius: 16px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -101,10 +98,10 @@
 
 /* ================= BUTTONS ================= */
 .primary-btn {
-  background: #334155;
+  background: #334155; /* slate */
   color: #ffffff;
   padding: 10px 16px;
-  border-radius: 12px; /* ⬅️ curvier */
+  border-radius: 10px;
   border: none;
   font-weight: 600;
   font-size: 14px;
@@ -112,7 +109,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease, border-radius 0.2s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .primary-btn:hover {
@@ -124,7 +121,7 @@
   background: #e5e7eb;
   color: #0f172a;
   padding: 10px 16px;
-  border-radius: 12px; /* ⬅️ curvier */
+  border-radius: 10px;
   border: none;
   font-weight: 600;
   cursor: pointer;
@@ -138,7 +135,7 @@
   font-size: 16px;
   color: #334155;
   padding: 6px;
-  border-radius: 10px; /* ⬅️ softer */
+  border-radius: 6px;
 }
 
 .icon-btn:hover {
@@ -159,9 +156,8 @@
 .modal-box {
   background: #ffffff;
   width: 420px;
-  border-radius: 20px; /* ⬅️ premium curve */
+  border-radius: 14px;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
-  transition: border-radius 0.2s ease;
 }
 
 .modal-header {
@@ -190,7 +186,7 @@
 .modal-body select {
   padding: 10px 12px;
   border: 1px solid #cbd5e1;
-  border-radius: 12px; /* ⬅️ softer fields */
+  border-radius: 10px;
   font-size: 14px;
 }
 

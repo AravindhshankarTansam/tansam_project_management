@@ -4,8 +4,8 @@ import {
   createRole,
   updateRole,
 } from "./../../services/admin/admin.roles.api";
+import { FiPlus, FiEdit, FiX, FiSave } from "react-icons/fi";
 import "./admincss/Roles.css";
-
 
 export default function Roles() {
   const [roles, setRoles] = useState([]);
@@ -18,28 +18,26 @@ export default function Roles() {
     status: "ACTIVE",
   });
 
-  // 🔹 Load roles on page load
+  /* ================= LOAD ROLES ================= */
   useEffect(() => {
     loadRoles();
   }, []);
 
   const loadRoles = async () => {
     try {
-      const data = await fetchRoles();
-      setRoles(data);
+      setRoles(await fetchRoles());
     } catch (err) {
       alert(err.message);
     }
   };
 
-  // 🔹 Open Add
+  /* ================= HANDLERS ================= */
   const openAddModal = () => {
     setIsEdit(false);
     setForm({ id: null, name: "", status: "ACTIVE" });
     setShowModal(true);
   };
 
-  // 🔹 Open Edit
   const openEditModal = (role) => {
     setIsEdit(true);
     setForm(role);
@@ -50,7 +48,6 @@ export default function Roles() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -68,7 +65,6 @@ export default function Roles() {
       } else {
         await createRole(form.name);
       }
-
       setShowModal(false);
       loadRoles();
     } catch (err) {
@@ -76,88 +72,106 @@ export default function Roles() {
     }
   };
 
-return (
-  <div className="roles-container">
-    <h2 className="roles-title"> Roles Master</h2>
+  /* ================= UI ================= */
+  return (
+    <div className="roles-container">
+      {/* HEADER */}
+      <div className="roles-header">
+        <h2>ROLES MASTER</h2>
+        <button className="primary-btn" onClick={openAddModal}>
+          <FiPlus /> Add Role
+        </button>
+      </div>
 
-    <button onClick={openAddModal} className="add-btn">
-      ➕ Add Role
-    </button>
-
-    {/* TABLE */}
-    <table className="roles-table">
-      <thead>
-        <tr>
-          <th>Role Name</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {roles.map((role) => (
-          <tr key={role.id}>
-            <td>{role.name}</td>
-            <td>{role.status}</td>
-            <td>
-              <button
-                onClick={() => openEditModal(role)}
-                className="edit-btn"
-              >
-                ✏️ Edit
-              </button>
-            </td>
+      {/* TABLE */}
+      <table className="roles-table">
+        <thead>
+          <tr>
+            <th>Role Name</th>
+            <th>Status</th>
+            <th style={{ textAlign: "center" }}>Action</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {roles.map((role) => (
+            <tr key={role.id}>
+              <td>{role.name}</td>
+              <td>
+                <span className={`status ${role.status.toLowerCase()}`}>
+                  {role.status}
+                </span>
+              </td>
+              <td style={{ textAlign: "center" }}>
+                <button
+                  className="icon-btn"
+                  onClick={() => openEditModal(role)}
+                >
+                  <FiEdit />
+                </button>
+              </td>
+            </tr>
+          ))}
 
-    {/* MODAL */}
-    {showModal && (
-      <div className="modal-overlay">
-        <div className="modal-box">
-          <h3 className="modal-title">
-            {isEdit ? "Edit Role" : "Add Role"}
-          </h3>
+          {roles.length === 0 && (
+            <tr>
+              <td colSpan="3" className="empty">
+                No roles found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="name"
-              placeholder="Role Name"
-              value={form.name}
-              onChange={handleChange}
-              className="form-input"
-            />
-
-            {isEdit && (
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
-            )}
-
-            <div className="form-actions">
+      {/* MODAL */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>{isEdit ? "Edit Role" : "Add Role"}</h3>
               <button
-                type="button"
+                className="icon-btn"
                 onClick={() => setShowModal(false)}
-                className="cancel-btn"
               >
-                Cancel
-              </button>
-              <button type="submit" className="save-btn">
-                Save
+                <FiX />
               </button>
             </div>
-          </form>
-        </div>
-      </div>
-    )}
-  </div>
-);
 
+            <form onSubmit={handleSubmit} className="modal-body">
+              <input
+                type="text"
+                name="name"
+                placeholder="Role Name"
+                value={form.name}
+                onChange={handleChange}
+              />
+
+              {isEdit && (
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                </select>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  <FiSave /> Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
