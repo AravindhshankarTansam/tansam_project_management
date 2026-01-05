@@ -74,28 +74,29 @@ export default function QuotationFollowup() {
       <div className="table-header">
         <h2>Quotation Follow-up</h2>
         <button className="btn-add-quotation" onClick={() => setShowModal(true)}>
-          + Add Quotation
+          + Add Quotation follow-up
         </button>
       </div>
   <div style={{ position: "relative" }}>
-    <select
-      value={pageSize}
-      onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
-      style={{
-        padding: "5px 10px",
-        borderRadius: "5px",
-        border: "1px solid #ccc",
-        backgroundColor: "#fff",
-        cursor: "pointer",
-        appearance: "none",
-        WebkitAppearance: "none",
-        MozAppearance: "none",
-      }}
-    >
-      {[5, 10, 25, 50].map(n => (
-        <option key={n} value={n}>{n} per page</option>
-      ))}
-    </select>
+<div className="page-size-ui">
+  <span>Show</span>
+
+  <select
+    value={pageSize}
+    onChange={(e) => {
+      setPageSize(Number(e.target.value));
+      setPage(1);
+    }}
+  >
+    <option value={5}>5</option>
+    <option value={10}>10</option>
+    <option value={25}>25</option>
+    <option value={50}>50</option>
+  </select>
+
+  <span>per page</span>
+</div>
+
   </div>
       {/* Table */}
       <div className="card-table">

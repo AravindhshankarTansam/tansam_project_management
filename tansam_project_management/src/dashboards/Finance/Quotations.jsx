@@ -20,6 +20,21 @@ export default function Quotations() {
   const [pageSize, setPageSize] = useState(5);
 const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+const clientOptions = [...new Set(data.map(d => d.clientName))];
+const workCategoryOptions = [...new Set(data.map(d => d.workCategory))];
+const labOptions = [...new Set(data.map(d => d.lab))];
+const [selectedClient, setSelectedClient] = useState("");
+const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
+const [selectedLab, setSelectedLab] = useState("");
+
+
+const clearAllFilters = () => {
+  setSelectedClient("");
+  setSelectedWorkCategory("");
+  setSelectedLab("");
+  setPage(1);
+};
+
   const [newQuotation, setNewQuotation] = useState({
     clientName: "",
     clientType: "Corporate",
@@ -30,12 +45,12 @@ const [editId, setEditId] = useState(null);
     date: "",
   });
 
-  const filtered = data.filter(
-    q =>
-      q.clientName.toLowerCase().includes(search.toLowerCase()) ||
-      q.workCategory.toLowerCase().includes(search.toLowerCase()) ||
-      q.lab.toLowerCase().includes(search.toLowerCase())
-  );
+const filtered = data.filter(q =>
+  (selectedClient === "" || q.clientName === selectedClient) &&
+  (selectedWorkCategory === "" || q.workCategory === selectedWorkCategory) &&
+  (selectedLab === "" || q.lab === selectedLab)
+);
+
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -100,18 +115,73 @@ const handleEdit = (quotation) => {
       </div>
 
       {/* Search & Page Size */}
-      <div className="filters">
-        <input
-          placeholder="Search Client / Work Category / Lab"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        <select value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>
-          {[5, 10, 25, 50].map(n => (
-            <option key={n} value={n}>{n} per page</option>
-          ))}
-        </select>
-      </div>
+<div className="filters">
+<select
+  value={selectedClient}
+  onChange={(e) => {
+    setSelectedClient(e.target.value);
+    setPage(1);
+  }}
+>
+  <option value="">All Clients</option>
+  {clientOptions.map(client => (
+    <option key={client} value={client}>{client}</option>
+  ))}
+</select>
+
+<select
+  value={selectedWorkCategory}
+  onChange={(e) => {
+    setSelectedWorkCategory(e.target.value);
+    setPage(1);
+  }}
+>
+  <option value="">All Work Categories</option>
+  {workCategoryOptions.map(cat => (
+    <option key={cat} value={cat}>{cat}</option>
+  ))}
+</select>
+
+
+<select
+  value={selectedWorkCategory}
+  onChange={(e) => {
+    setSelectedWorkCategory(e.target.value);
+    setPage(1);
+  }}
+>
+  <option value="">All Work Categories</option>
+  {workCategoryOptions.map(cat => (
+    <option key={cat} value={cat}>{cat}</option>
+  ))}
+</select>
+
+<button
+  className="btn-clear-filters"
+  onClick={clearAllFilters}
+>
+  Clear All
+</button>
+
+  <div className="page-size-ui">
+    <span>Show</span>
+    <select
+      value={pageSize}
+      onChange={(e) => {
+        setPageSize(Number(e.target.value));
+        setPage(1);
+      }}
+    >
+      <option value={5}>5</option>
+      <option value={10}>10</option>
+      <option value={25}>25</option>
+      <option value={50}>50</option>
+    </select>
+    <span>per page</span>
+  </div>
+</div>
+
+
 
       {/* Table */}
       <div className="card-table">
@@ -169,7 +239,7 @@ const handleEdit = (quotation) => {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Add Quotation</h3>
+            <h3>Add Quotation follow</h3>
             <div className="modal-form">
               <input placeholder="Client Name" value={newQuotation.clientName} onChange={e => setNewQuotation({...newQuotation, clientName: e.target.value})} />
               <select value={newQuotation.clientType} onChange={e => setNewQuotation({...newQuotation, clientType: e.target.value})}>

@@ -122,3 +122,35 @@
   padding: 8px 10px;
   font-size: 14px;
 }
+.page-size-ui {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+.page-size-ui select {
+  padding: 4px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}
+
+.page-size-ui select:focus {
+  border-color: #007bff;
+}
+.btn-clear-filters {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-clear-filters:hover {
+  background: #e0e0e0;
+}
