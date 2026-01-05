@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import "../../layouts/CSS/finance.css";
 
-const DUMMY_QUOTATIONS = Array.from({ length: 10 }, (_, i) => ({
-  id: i + 1,
-  quotationNo: `QT-2024-${1000 + i}`,
-  clientName: `Client ${i + 1}`,
-  clientType: i % 2 === 0 ? "Corporate" : "Individual",
-  workCategory: i % 2 === 0 ? "Environmental" : "Chemical",
-  lab: i % 3 === 0 ? "Chennai Lab" : "Bangalore Lab",
-  description: "Sample testing & analysis",
-  value: 25000 + i * 1000,
-  date: "2024-10-01",
-}));
+import {
+  getQuotations,
+  addQuotation,
+  updateQuotation,
+  deleteQuotation,
+} from "../../services/api";
+// const DUMMY_QUOTATIONS = Array.from({ length: 10 }, (_, i) => ({
+//   id: i + 1,
+//   quotationNo: `QT-2024-${1000 + i}`,
+//   clientName: `Client ${i + 1}`,
+//   clientType: i % 2 === 0 ? "Corporate" : "Individual",
+//   workCategory: i % 2 === 0 ? "Environmental" : "Chemical",
+//   lab: i % 3 === 0 ? "Chennai Lab" : "Bangalore Lab",
+//   description: "Sample testing & analysis",
+//   value: 25000 + i * 1000,
+//   date: "2024-10-01",
+// }));
 
 export default function Quotations() {
-  const [data, setData] = useState(DUMMY_QUOTATIONS);
+  const [data, setData] = useState([]);
   // const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -55,9 +61,9 @@ const filtered = data.filter(q =>
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const deleteRow = id => {
-    setData(prev => prev.filter(item => item.id !== id));
-  };
+  // const deleteRow = id => {
+  //   setData(prev => prev.filter(item => item.id !== id));
+  // };
 
   // const handleAddQuotation = () => {
   //   const newId = data.length ? data[data.length - 1].id + 1 : 1;
@@ -78,31 +84,32 @@ const handleEdit = (quotation) => {
   setEditId(quotation.id);
   setNewQuotation({ ...quotation });
   setShowModal(true);
-};const handleSaveQuotation = () => {
-  if (editId) {
-    // Update existing quotation
-    setData(prev =>
-      prev.map(q => (q.id === editId ? { ...q, ...newQuotation } : q))
-    );
-  } else {
-    // Add new quotation
-    const newId = data.length ? data[data.length - 1].id + 1 : 1;
-    const quotationNo = `QT-2024-${1000 + newId}`;
-    setData(prev => [...prev, { id: newId, quotationNo, ...newQuotation }]);
-  }
+};
+useEffect(() => {
+  getQuotations().then(setData);
+}, []);
+const handleSaveQuotation = async () => {
+  try {
+    if (editId) await updateQuotation(editId, newQuotation);
+    else await addQuotation(newQuotation);
 
-  // Reset modal
-  setShowModal(false);
-  setEditId(null);
-  setNewQuotation({
-    clientName: "",
-    clientType: "Corporate",
-    workCategory: "",
-    lab: "",
-    description: "",
-    value: "",
-    date: "",
-  });
+    const updatedData = await getQuotations();
+    setData(updatedData);
+
+    setShowModal(false);
+    setEditId(null);
+    setNewQuotation({ clientName: "", clientType: "Corporate", workCategory: "", lab: "", description: "", value: "", date: "" });
+  } catch (err) {
+    console.error(err);
+  }
+};const deleteRow = async (id) => {
+  try {
+    await deleteQuotation(id);
+    const updatedData = await getQuotations();
+    setData(updatedData);
+  } catch (err) {
+    console.error(err);
+  }
 };
   return (
     <div className="finance-container">
