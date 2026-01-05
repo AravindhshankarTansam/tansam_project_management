@@ -15,7 +15,7 @@ const DUMMY_QUOTATIONS = Array.from({ length: 10 }, (_, i) => ({
 
 export default function Quotations() {
   const [data, setData] = useState(DUMMY_QUOTATIONS);
-  const [search, setSearch] = useState("");
+  // const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 const [editId, setEditId] = useState(null);
@@ -26,14 +26,14 @@ const labOptions = [...new Set(data.map(d => d.lab))];
 const [selectedClient, setSelectedClient] = useState("");
 const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
 const [selectedLab, setSelectedLab] = useState("");
-
-
 const clearAllFilters = () => {
   setSelectedClient("");
   setSelectedWorkCategory("");
   setSelectedLab("");
-  setPage(1);
+  setPage(1); // reset pagination
 };
+
+
 
   const [newQuotation, setNewQuotation] = useState({
     clientName: "",
@@ -59,21 +59,21 @@ const filtered = data.filter(q =>
     setData(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleAddQuotation = () => {
-    const newId = data.length ? data[data.length - 1].id + 1 : 1;
-    const quotationNo = `QT-2024-${1000 + newId}`;
-    setData(prev => [...prev, { id: newId, quotationNo, ...newQuotation }]);
-    setShowModal(false);
-    setNewQuotation({
-      clientName: "",
-      clientType: "Corporate",
-      workCategory: "",
-      lab: "",
-      description: "",
-      value: "",
-      date: "",
-    });
-  };
+  // const handleAddQuotation = () => {
+  //   const newId = data.length ? data[data.length - 1].id + 1 : 1;
+  //   const quotationNo = `QT-2024-${1000 + newId}`;
+  //   setData(prev => [...prev, { id: newId, quotationNo, ...newQuotation }]);
+  //   setShowModal(false);
+  //   setNewQuotation({
+  //     clientName: "",
+  //     clientType: "Corporate",
+  //     workCategory: "",
+  //     lab: "",
+  //     description: "",
+  //     value: "",
+  //     date: "",
+  //   });
+  // };
 const handleEdit = (quotation) => {
   setEditId(quotation.id);
   setNewQuotation({ ...quotation });
@@ -116,46 +116,44 @@ const handleEdit = (quotation) => {
 
       {/* Search & Page Size */}
 <div className="filters">
-<select
-  value={selectedClient}
-  onChange={(e) => {
-    setSelectedClient(e.target.value);
-    setPage(1);
-  }}
->
-  <option value="">All Clients</option>
-  {clientOptions.map(client => (
-    <option key={client} value={client}>{client}</option>
-  ))}
-</select>
+  <select
+    value={selectedClient}
+    onChange={(e) => {
+      setSelectedClient(e.target.value);
+      setPage(1);
+    }}
+  >
+    <option value="">All Clients</option>
+    {clientOptions.map(client => (
+      <option key={client} value={client}>{client}</option>
+    ))}
+  </select>
 
-<select
-  value={selectedWorkCategory}
-  onChange={(e) => {
-    setSelectedWorkCategory(e.target.value);
-    setPage(1);
-  }}
->
-  <option value="">All Work Categories</option>
-  {workCategoryOptions.map(cat => (
-    <option key={cat} value={cat}>{cat}</option>
-  ))}
-</select>
+  <select
+    value={selectedWorkCategory}
+    onChange={(e) => {
+      setSelectedWorkCategory(e.target.value);
+      setPage(1);
+    }}
+  >
+    <option value="">All Work Categories</option>
+    {workCategoryOptions.map(cat => (
+      <option key={cat} value={cat}>{cat}</option>
+    ))}
+  </select>
 
-
-<select
-  value={selectedWorkCategory}
-  onChange={(e) => {
-    setSelectedWorkCategory(e.target.value);
-    setPage(1);
-  }}
->
-  <option value="">All Work Categories</option>
-  {workCategoryOptions.map(cat => (
-    <option key={cat} value={cat}>{cat}</option>
-  ))}
-</select>
-
+  <select
+    value={selectedLab}
+    onChange={(e) => {
+      setSelectedLab(e.target.value);
+      setPage(1);
+    }}
+  >
+    <option value="">All Labs</option>
+    {labOptions.map(lab => (
+      <option key={lab} value={lab}>{lab}</option>
+    ))}
+  </select>
 <button
   className="btn-clear-filters"
   onClick={clearAllFilters}
@@ -239,7 +237,7 @@ const handleEdit = (quotation) => {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Add Quotation follow</h3>
+            <h3>Add Quotation</h3>
             <div className="modal-form">
               <input placeholder="Client Name" value={newQuotation.clientName} onChange={e => setNewQuotation({...newQuotation, clientName: e.target.value})} />
               <select value={newQuotation.clientType} onChange={e => setNewQuotation({...newQuotation, clientType: e.target.value})}>
