@@ -1,13 +1,26 @@
 import { useEffect, useState } from "react";
+import {
+  fetchUsers,
+  createUser,
+  updateUser,
+  fetchRoles,
+  fetchLabs,
+} from "../../services/admin/admin.roles.api";
+import { toast } from "react-toastify";
 
-const ROLES = ["COORDINATOR", "TL", "FINANCE", "CEO"];
-const LABS = ["Lab A", "Lab B", "Lab C"];
+import { FiUserPlus, FiEdit, FiX, FiSave } from "react-icons/fi";
+import "./admincss/User.css";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+
+  const [roles, setRoles] = useState([]);
+  const [labs, setLabs] = useState([]);
 
   const [form, setForm] = useState({
+    id: null,
     name: "",
     mobile: "",
     email: "",
@@ -17,37 +30,32 @@ export default function Users() {
     status: "ACTIVE",
   });
 
-  // Mock fetch
-  useEffect(() => {
-    setUsers([
-      {
-        id: 1,
-        name: "John Doe",
-        mobile: "9876543210",
-        email: "john@test.com",
-        role: "COORDINATOR",
-        lab: "Lab A",
-        status: "ACTIVE",
-      },
-    ]);
-  }, []);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const loadUsers = async () => {
+    try {
+      setUsers(await fetchUsers());
+    } catch {
+      toast.error("Failed to load users");
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!form.name || !form.mobile || !form.email || !form.role) {
-      alert("Please fill all required fields");
-      return;
+  const loadMasters = async () => {
+    try {
+      setRoles((await fetchRoles()).filter(r => r.status === "ACTIVE"));
+      setLabs((await fetchLabs()).filter(l => l.status === "ACTIVE"));
+    } catch {
+      toast.error("Failed to load master data");
     }
+  };
 
-    setUsers([...users, { ...form, id: Date.now() }]);
-    setShowModal(false);
+  useEffect(() => {
+    loadUsers();
+    loadMasters();
+  }, []);
 
+  const openAddModal = () => {
+    setIsEdit(false);
     setForm({
+      id: null,
       name: "",
       mobile: "",
       email: "",
@@ -56,129 +64,160 @@ export default function Users() {
       password: "",
       status: "ACTIVE",
     });
+    setShowModal(true);
+  };
+
+  const openEditModal = (user) => {
+    setIsEdit(true);
+    setForm({ ...user, password: "" });
+    setShowModal(true);
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.name || !form.mobile || !form.email || !form.role) {
+      toast.warning("Please fill all required fields");
+      return;
+    }
+
+    try {
+      if (isEdit) {
+        await updateUser(form.id, {
+          role: form.role,
+          lab: form.lab,
+          status: form.status,
+        });
+        toast.success("User updated successfully");
+      } else {
+        await createUser(form);
+        toast.success("User created successfully");
+      }
+      setShowModal(false);
+      loadUsers();
+    } catch (err) {
+      toast.error(err.message || "Operation failed");
+    }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      {/* ---------- HEADER ---------- */}
-      <div style={styles.header}>
-        <h2>👤 User Management</h2>
-        <button style={styles.addBtn} onClick={() => setShowModal(true)}>
-          ➕ Add User
+    <div className="users-container">
+      {/* PAGE HEADER */}
+      <div className="page-header">
+        <div>
+          <h2>User Management</h2>
+          <p className="page-sub">
+            Create, update and manage application users
+          </p>
+        </div>
+
+        <button className="primary-btn" onClick={openAddModal}>
+          <FiUserPlus /> Add User
         </button>
       </div>
 
-      {/* ---------- USERS TABLE ---------- */}
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Lab</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td>{u.name}</td>
-              <td>{u.mobile}</td>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
-              <td>{u.lab}</td>
-              <td>{u.status}</td>
+      {/* TABLE CARD */}
+      <div className="table-card">
+        <table className="users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Lab</th>
+              <th>Status</th>
+              <th style={{ textAlign: "center" }}>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id}>
+                <td>{u.name}</td>
+                <td>{u.mobile}</td>
+                <td>{u.email}</td>
+                <td>{u.role}</td>
+                <td>{u.lab || "-"}</td>
+                <td>
+                  <span className={`status ${u.status.toLowerCase()}`}>
+                    {u.status}
+                  </span>
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <button
+                    className="icon-btn"
+                    onClick={() => openEditModal(u)}
+                  >
+                    <FiEdit />
+                  </button>
+                </td>
+              </tr>
+            ))}
 
-      {/* ---------- MODAL ---------- */}
+            {users.length === 0 && (
+              <tr>
+                <td colSpan="7" className="empty">
+                  No users found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODAL */}
       {showModal && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h3>Add User</h3>
-
-            <form onSubmit={handleSubmit}>
-              <input
-                name="name"
-                placeholder="Full Name"
-                value={form.name}
-                onChange={handleChange}
-                style={styles.input}
-              />
-
-              <input
-                name="mobile"
-                placeholder="Mobile Number"
-                value={form.mobile}
-                onChange={handleChange}
-                style={styles.input}
-              />
-
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-                style={styles.input}
-              />
-
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                style={styles.input}
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>{isEdit ? "Edit User" : "Add User"}</h3>
+              <button
+                className="icon-btn"
+                onClick={() => setShowModal(false)}
               >
+                <FiX />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="modal-body">
+              {!isEdit && (
+                <>
+                  <input name="name" placeholder="Full Name" value={form.name} onChange={handleChange} />
+                  <input name="mobile" placeholder="Mobile Number" value={form.mobile} onChange={handleChange} />
+                  <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+                  <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} />
+                </>
+              )}
+
+              <select name="role" value={form.role} onChange={handleChange}>
                 <option value="">Select Role</option>
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.name}>{r.name}</option>
                 ))}
               </select>
 
-              <select
-                name="lab"
-                value={form.lab}
-                onChange={handleChange}
-                style={styles.input}
-              >
+              <select name="lab" value={form.lab} onChange={handleChange}>
                 <option value="">Select Lab</option>
-                {LABS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
+                {labs.map((l) => (
+                  <option key={l.id} value={l.name}>{l.name}</option>
                 ))}
               </select>
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                style={styles.input}
-              />
-
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                style={styles.input}
-              >
+              <select name="status" value={form.status} onChange={handleChange}>
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
 
-              <div style={{ textAlign: "right" }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={styles.cancelBtn}
-                >
+              <div className="modal-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" style={styles.saveBtn}>
-                  Save
+                <button type="submit" className="primary-btn">
+                  <FiSave /> Save
                 </button>
               </div>
             </form>
@@ -188,54 +227,3 @@ export default function Users() {
     </div>
   );
 }
-
-/* ---------- STYLES ---------- */
-const styles = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "15px",
-  },
-  addBtn: {
-    padding: "8px 14px",
-    background: "#16a34a",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-    borderRadius: "4px",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.4)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modal: {
-    background: "#fff",
-    padding: "20px",
-    width: "400px",
-    borderRadius: "6px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "10px",
-  },
-  cancelBtn: {
-    marginRight: "10px",
-    padding: "6px 10px",
-  },
-  saveBtn: {
-    padding: "6px 12px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-  },
-};

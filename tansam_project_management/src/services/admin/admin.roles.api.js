@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:9899/api/admin/roles";
+const BASE_ADMIN_URL = "http://localhost:9899/api/admin";
 
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -9,9 +9,12 @@ const getAuthHeaders = () => {
   };
 };
 
-// 🔹 GET roles
+/* =====================================================
+   ROLES
+===================================================== */
+
 export const fetchRoles = async () => {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_ADMIN_URL}/roles`, {
     headers: getAuthHeaders(),
   });
 
@@ -19,9 +22,8 @@ export const fetchRoles = async () => {
   return res.json();
 };
 
-// 🔹 CREATE role
 export const createRole = async (name) => {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_ADMIN_URL}/roles`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify({ name }),
@@ -32,9 +34,159 @@ export const createRole = async (name) => {
   return data;
 };
 
-// 🔹 UPDATE role
 export const updateRole = async (id, payload) => {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const res = await fetch(`${BASE_ADMIN_URL}/roles/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+/* =====================================================
+   LABS
+===================================================== */
+
+export const fetchLabs = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/labs`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch labs");
+  return res.json();
+};
+
+export const createLab = async (payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/labs`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+export const updateLab = async (id, payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/labs/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+/* =====================================================
+   Project Types
+===================================================== */
+// 🔹 GET project types
+export const fetchProjectTypes = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/project-types`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch project types");
+  return res.json();
+};
+
+// 🔹 CREATE project type
+export const createProjectType = async (payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/project-types`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// 🔹 UPDATE project type
+export const updateProjectType = async (id, payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/project-types/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+/* =====================================================
+   Work Categories
+===================================================== */
+// 🔹 GET work categories
+export const fetchWorkCategories = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/work-categories`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch work categories");
+  return res.json();
+};
+
+// 🔹 CREATE work category
+export const createWorkCategory = async (payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/work-categories`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// 🔹 UPDATE work category
+export const updateWorkCategory = async (id, payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/work-categories/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+/* =====================================================
+   User
+===================================================== */
+// 🔹 GET users
+export const fetchUsers = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/users`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch users");
+  return res.json();
+};
+
+// 🔹 CREATE user
+export const createUser = async (payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/users`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// 🔹 UPDATE user
+export const updateUser = async (id, payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/users/${id}`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),

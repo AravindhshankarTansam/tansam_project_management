@@ -1,8 +1,16 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 
-export default function DashboardLayout({ user }) {
+export default function DashboardLayout({ user, setUser }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user"); // clear session
+    setUser(null);                   // clear state
+    navigate("/", { replace: true }); // redirect to login
+  };
+
   return (
     <div style={styles.layout}>
       {/* Sidebar */}
@@ -10,7 +18,7 @@ export default function DashboardLayout({ user }) {
 
       {/* Main content */}
       <div style={styles.main}>
-        <TopBar />
+        <TopBar user={user} onLogout={handleLogout} />
 
         <main style={styles.content}>
           <Outlet />
