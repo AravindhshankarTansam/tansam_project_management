@@ -34,7 +34,7 @@ export const SIDEBAR_MENU = {
     { label: "Dashboard", path: "/finance/dashboard" },
     { label: "Quotations", path: "/finance/quotations" },
     { label: "Quotation Follow-up", path: "/finance/quotation-followup" },
-    { label: "Reports", path: "/finance/reports" },
+    { label: "Reports", path: "/finance/terms-and-conditions" },
   ],
 
 

@@ -13,8 +13,9 @@ import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 import CreateProject from "./dashboards/Admin/Projects.jsx";
 import Quotations from "./dashboards/Finance/Quotations.jsx";
 import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
-// import FinanceReports from "./dashboards/Finance/Reports.jsx";
+ import FinanceReports from "./dashboards/Finance/TermsAndConditions/TermsAndConditions.jsx";
 import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
+import GenerateQuotation from "./dashboards/Finance/GenerateQuotation/generateQuotation.jsx";
 function App() {
   const [user, setUser] = useState(null);
 
@@ -67,7 +68,8 @@ function App() {
   <Route path="quotations" element={<Quotations />} />
   <Route path="quotation-followup" element={<QuotationFollowup />} />
   <Route path="dashboard" element={<FinanceDashboard />} />
-  {/* <Route path="reports" element={<FinanceReports />} /> */}
+  <Route path="terms-and-conditions" element={<FinanceReports />} />
+  <Route path="generate-quotation" element={<GenerateQuotation />} />
 </Route>
       </Routes>
     </BrowserRouter>  
