@@ -30,12 +30,13 @@ export const SIDEBAR_MENU = {
     { label: "Team Review", path: "/dashboard/team-review" },
   ],
 
-  finance: [
-    { label: "Dashboard", path: "/finance/dashboard" },
-    { label: "Quotations", path: "/finance/quotations" },
-    { label: "Quotation Follow-up", path: "/finance/quotation-followup" },
-    { label: "Reports", path: "/finance/reports" },
-  ],
+finance: [
+  { label: "Dashboard", path: "/finance" },
+  { label: "Quotations", path: "/finance/quotations" },
+  { label: "Quotation Follow-up", path: "/finance/quotation-followup" },
+  { label: "Reports", path: "/finance/reports" },
+],
+
 
 
   ceo: [

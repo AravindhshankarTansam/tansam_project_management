@@ -10,40 +10,38 @@ function Login({ setUser }) {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
 
-  try {
-    console.log("📤 Sending login data:", { email, password });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const data = await loginUser(email, password);
-    console.log("📥 Login API response:", data);
+    try {
+      console.log("📤 Sending login data:", { email, password });
 
-    setUser(data);
-    localStorage.setItem("user", JSON.stringify(data));
+      const data = await loginUser(email, password);
 
-    // ✅ Redirect based on role
-  if (data.role === "finance") {
-  // If mock or backend doesn't provide route, hardcode it
-  navigate(data.route || "/finance/dashboard");
-} else if (data.role === "admin") {
-  navigate(data.route || "/admin");
-}
-else {
-      // fallback
-      navigate("/");
+      // 🔍 LOG RESPONSE DATA
+      console.log("📥 Login API response:", data);
+
+      // Save user in state
+      setUser(data);
+      
+
+      // Persist login
+      localStorage.setItem("user", JSON.stringify(data));
+
+      // Redirect based on role
+      console.log("➡️ Redirecting to:", data.route);
+      navigate(data.route);
+
+    } catch (err) {
+      console.error("❌ Login error:", err);
+      setError(err.message || "Backend not reachable");
+    } finally {
+      setLoading(false);
     }
-
-  } catch (err) {
-    console.error("❌ Login error:", err);
-    setError(err.message || "Backend not reachable");
-  } finally {
-    setLoading(false);
-  }
-};
-;
+  };
 
   return (
     <div className="login-container">

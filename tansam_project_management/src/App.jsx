@@ -58,8 +58,7 @@ function App() {
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
-
-        <Route
+<Route
   path="/finance"
   element={
     <PrivateRoute>
@@ -67,11 +66,11 @@ function App() {
     </PrivateRoute>
   }
 >
- 
+  <Route index element={<FinanceDashboard />} />
   <Route path="quotations" element={<Quotations />} />
   <Route path="quotation-followup" element={<QuotationFollowup />} />
-  <Route path="dashboard" element={<FinanceDashboard />} />
-  {/* <Route path="reports" element={<FinanceReports />} /> */}
+  {/* Add other finance children routes here, like Reports */}
+  <Route path="reports" element={<Reports />} />
 </Route>
 
         {/* COORDINATOR */}
