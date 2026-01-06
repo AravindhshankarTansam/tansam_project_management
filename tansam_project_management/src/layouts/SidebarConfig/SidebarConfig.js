@@ -27,6 +27,17 @@ export const SIDEBAR_MENU = {
     { label: "Create Project", path: "/tl/create-project" },
     { label: "Project Follow-up", path: "/tl/follow-up" },
     { label: "Summary", path: "/tl/summary" },
+
+    // 🔥 SEPARATE SECTION (AFTER SUMMARY)
+    {
+      label: "Project Execution",
+      children: [
+        { label: "Assign Team", path: "/tl/assign-team" },
+        { label: "Departments", path: "/tl/department" },
+        // { label: "Daily Updates", path: "/tl/daily-updates" },
+        // { label: "Time Tracking", path: "/tl/time-tracking" },
+      ],
+    },
   ],
 
   finance: [

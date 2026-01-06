@@ -2,6 +2,10 @@ import { createAdminSchemas } from "./admin/admin.schema.js";
 import { createCoordinatorSchemas } from "./coordinator/coordinator.schema.js";
 import { createProjectSchemas } from "./project/project.schema.js";
 
+import { createAssignTeamSchema } from "./project/assignTeam/assignTeam.schema.js";
+import { createDepartmentSchema } from "./project/department/department.schema.js";
+
+
 /**
  * Main schema initializer
  * Called from controllers (role-based)
@@ -18,6 +22,14 @@ export const initSchemas = async (db, options = {}) => {
     if (options.project) {
     await createProjectSchemas(db);
   }
+  if (options.assignTeam) {
+    await createAssignTeamSchema(db);
+  }
+
+  if (options.department) {
+    await createDepartmentSchema(db);
+  }
+ 
 
   // future extensions 👇
   // if (options.project) { ... }

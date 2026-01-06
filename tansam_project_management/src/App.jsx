@@ -23,6 +23,9 @@ import TLDashboard from "./tl/pages/TLDashboard.jsx";
 import CreateProject from "./tl/pages/CreateProject.jsx";
 import ProjectFollowUp from "./tl/pages/ProjectFollowUp.jsx";
 import Summary from "./tl/pages/Summary.jsx";
+import AssignTeam from "./tl/pages/AssignTeam.jsx";
+import Department from "./tl/pages/department.jsx";
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -88,6 +91,8 @@ function App() {
           <Route path="create-project" element={<CreateProject />} />
           <Route path="follow-up" element={<ProjectFollowUp />} />
           <Route path="summary" element={<Summary />} />
+          <Route path="assign-team" element={<AssignTeam />} />
+          <Route path="department" element={<Department />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
