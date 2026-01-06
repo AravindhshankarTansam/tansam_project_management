@@ -4,6 +4,7 @@ import { createProjectSchemas } from "./project/project.schema.js";
 
 import { createAssignTeamSchema } from "./project/assignTeam/assignTeam.schema.js";
 import { createDepartmentSchema } from "./project/department/department.schema.js";
+import { createMemberSchema } from "./project/member/member.schema.js";
 
 
 /**
@@ -29,6 +30,10 @@ export const initSchemas = async (db, options = {}) => {
   if (options.department) {
     await createDepartmentSchema(db);
   }
+  if (options.member) {
+  await createMemberSchema(db);
+}
+
  
 
   // future extensions 👇

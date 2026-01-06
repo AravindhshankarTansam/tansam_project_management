@@ -34,7 +34,7 @@ export const SIDEBAR_MENU = {
       children: [
         { label: "Assign Team", path: "/tl/assign-team" },
         { label: "Departments", path: "/tl/department" },
-        // { label: "Daily Updates", path: "/tl/daily-updates" },
+        { label: "Team Member", path: "/tl/team-member" },
         // { label: "Time Tracking", path: "/tl/time-tracking" },
       ],
     },

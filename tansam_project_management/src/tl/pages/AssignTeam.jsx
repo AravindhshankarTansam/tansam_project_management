@@ -10,6 +10,8 @@ import {
   deleteAssignment,
 } from "../../services/assignTeam.api";
 import { fetchDepartments } from "../../services/department.api";
+import { fetchMembers } from "../../services/member.api";
+
 
 import "./AssignTeam.css";
 
@@ -24,6 +26,8 @@ export default function AssignTeam() {
   const [assignments, setAssignments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState([]);
+
 
   const [form, setForm] = useState({
     projectId: "",
@@ -35,23 +39,21 @@ export default function AssignTeam() {
     endDate: "",
   });
 
-  useEffect(() => {
-    Promise.all([
-      fetchProjects(),
-      fetchDepartments(),
-      fetchAssignments(),
-    ])
-      .then(([projs, depts, assigns]) => {
-        setProjects(projs || []);
-        setDepartments(depts || []);
-        setAssignments(assigns || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        toast.error("Failed to load data");
-        setLoading(false);
-      });
-  }, []);
+ useEffect(() => {
+  Promise.all([
+    fetchProjects(),
+    fetchDepartments(),
+    fetchAssignments(),
+    fetchMembers(),
+  ]).then(([p, d, a, m]) => {
+    setProjects(p);
+    setDepartments(d);
+    setAssignments(a);
+    setMembers(m);
+    setLoading(false);
+  });
+}, []);
+
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -182,13 +184,19 @@ export default function AssignTeam() {
                 ))}
               </select>
 
-              <input
-                name="memberName"
-                placeholder="Member Name"
-                value={form.memberName}
-                onChange={handleChange}
-                required
-              />
+             <select
+  name="memberName"
+  value={form.memberName}
+  onChange={handleChange}
+  required
+>
+  <option value="">Select Member</option>
+  {members.map((m) => (
+    <option key={m.id} value={m.name}>
+      {m.name}
+    </option>
+  ))}
+</select>
 
               <input
                 name="role"
