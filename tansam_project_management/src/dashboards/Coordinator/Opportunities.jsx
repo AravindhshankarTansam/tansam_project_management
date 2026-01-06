@@ -8,6 +8,7 @@ export default function Opportunities() {
   const [isPreview, setIsPreview] = useState(false);
 
   const [form, setForm] = useState({
+    opportunityName: "",
     customerName: "",
     industry: "",
     contactPerson: "",
@@ -20,6 +21,7 @@ export default function Opportunities() {
 
   const resetForm = () => {
     setForm({
+      opportunityName: "",
       customerName: "",
       industry: "",
       contactPerson: "",
@@ -38,9 +40,9 @@ export default function Opportunities() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     setOpportunities([...opportunities, form]);
     resetForm();
+    setIsPreview(false);
     setShowModal(false);
   };
 
@@ -48,19 +50,16 @@ export default function Opportunities() {
     <div className="opportunity-wrapper">
       <h2 className="opportunity-title">New Opportunities</h2>
 
-      {/* ADD BUTTON */}
       <div className="opportunity-actions">
-        <button onClick={() => setShowModal(true)}>
-          + Add Opportunity
-        </button>
+        <button onClick={() => setShowModal(true)}>+ Add Opportunity</button>
       </div>
 
-      {/* TABLE */}
       {opportunities.length > 0 && (
         <div className="opportunity-table-wrapper">
           <table className="opportunity-table">
             <thead>
               <tr>
+                <th>Opportunity</th>
                 <th>Customer</th>
                 <th>Company</th>
                 <th>Contact</th>
@@ -71,6 +70,7 @@ export default function Opportunities() {
             <tbody>
               {opportunities.map((item, index) => (
                 <tr key={index}>
+                  <td>{item.opportunityName}</td>
                   <td>{item.customerName}</td>
                   <td>{item.industry}</td>
                   <td>{item.contactPerson}</td>
@@ -83,13 +83,22 @@ export default function Opportunities() {
         </div>
       )}
 
-      {/* MODAL */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-card">
             <h3>Add Opportunity</h3>
 
             <form onSubmit={handleSubmit} className="opportunity-form">
+              <div className="form-group">
+                <label>Opportunity Name</label>
+                <input
+                  name="opportunityName"
+                  value={form.opportunityName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
               <div className="form-group">
                 <label>Customer Name</label>
                 <input
@@ -155,28 +164,7 @@ export default function Opportunities() {
                 </select>
               </div>
 
-<div className="form-group full-width">
-  <label>Description</label>
-
-  {!isPreview ? (
-    <RichTextEditor
-      value={form.leadDescription}
-      onChange={(value) =>
-        setForm({ ...form, leadDescription: value })
-      }
-    />
-  ) : (
-    <div
-      className="preview-content"
-      dangerouslySetInnerHTML={{
-        __html: form.leadDescription || "<p>No description</p>",
-      }}
-    />
-  )}
-</div>
-
-
-              <div className="form-group">
+              <div className="form-group status-field">
                 <label>Status</label>
                 <select
                   name="leadStatus"
@@ -188,32 +176,50 @@ export default function Opportunities() {
                 </select>
               </div>
 
-<div className="modal-actions">
-  <button
-    type="button"
-    className="preview-btn"
-    onClick={() => setIsPreview(!isPreview)}
-  >
-    {isPreview ? "Back to Edit" : "Preview"}
-  </button>
+              <div className="form-group full-width description-field">
+                <label>Description</label>
 
-  <button type="submit">Save</button>
+                {!isPreview ? (
+                  <RichTextEditor
+                    value={form.leadDescription}
+                    onChange={(value) =>
+                      setForm({ ...form, leadDescription: value })
+                    }
+                  />
+                ) : (
+                  <div
+                    className="preview-content"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        form.leadDescription || "<p>No description</p>",
+                    }}
+                  />
+                )}
+              </div>
 
-  <button
-    type="button"
-    className="cancel-btn"
-    onClick={() => {
-      resetForm();
-      setIsPreview(false);
-      setShowModal(false);
-    }}
-  >
-    Cancel
-  </button>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="preview-btn"
+                  onClick={() => setIsPreview(!isPreview)}
+                >
+                  {isPreview ? "Back to Edit" : "Preview"}
+                </button>
 
+                <button type="submit">Save</button>
 
-</div>
-
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => {
+                    resetForm();
+                    setIsPreview(false);
+                    setShowModal(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>

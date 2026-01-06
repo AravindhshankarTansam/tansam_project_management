@@ -18,8 +18,12 @@
   color: #1f2937;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 10px;
-  justify-content: center;
+  text-align: center;
 }
+
+/* ============================
+   Opportunity Form
+   ============================ */
 
 .opportunity-form {
   display: grid;
@@ -66,11 +70,32 @@
   min-height: 90px;
 }
 
-.opportunity-actions {
+/* ============================
+   Field Ordering (KEY FIX)
+   ============================ */
+
+/* Status field position */
+.form-group.status-field {
+  order: 8;
+}
+
+/* Description BELOW status */
+.form-group.description-field {
+  order: 9;
   grid-column: 1 / -1;
+}
+
+.modal-actions {
+  order: 10;
+}
+/* ============================
+   Action Button (Top Add)
+   ============================ */
+
+.opportunity-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-bottom: 16px;
 }
 
 .opportunity-actions button {
@@ -90,29 +115,12 @@
   box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
 }
 
-.opportunity-actions button:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .opportunity-form {
-    grid-template-columns: 1fr;
-  }
-}
 /* ============================
    Opportunity Table
    ============================ */
 
 .opportunity-table-wrapper {
   margin-top: 30px;
-}
-
-.opportunity-table-wrapper h3 {
-  font-size: 18px;
-  margin-bottom: 12px;
-  color: #1f2937;
 }
 
 .opportunity-table {
@@ -143,6 +151,7 @@
 .opportunity-table tr:hover {
   background: #e0e7ff;
 }
+
 /* ============================
    Modal Styles
    ============================ */
@@ -172,21 +181,10 @@
   font-size: 20px;
 }
 
-.modal-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
+/* ============================
+   Rich Text Editor
+   ============================ */
 
-.cancel-btn {
-  background: #e5e7eb;
-  color: #111827;
-}
-
-.cancel-btn:hover {
-  background: #d1d5db;
-}
 .rte-wrapper {
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -212,12 +210,13 @@
   padding: 10px;
   min-height: 120px;
 }
+
 /* ============================
    Modal Action Buttons
    ============================ */
 
 .modal-actions {
-  grid-column: 1 / -1;      /* span full width in grid */
+  grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -227,7 +226,7 @@
   border-top: 1px solid #e5e7eb;
 }
 
-/* Preview button */
+/* Preview */
 .preview-btn {
   background: #10b981;
   color: #ffffff;
@@ -243,7 +242,7 @@
   background: #059669;
 }
 
-/* Save button */
+/* Save */
 .modal-actions button[type="submit"] {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #ffffff;
@@ -259,10 +258,10 @@
   box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
 }
 
-/* Cancel button */
+/* Cancel */
 .cancel-btn {
   background: #fa5523;
-  color: #fff;
+  color: #ffffff;
   border: none;
   padding: 8px 16px;
   font-size: 14px;
@@ -272,4 +271,14 @@
 
 .cancel-btn:hover {
   background: #fd7b7b;
+}
+
+/* ============================
+   Responsive
+   ============================ */
+
+@media (max-width: 768px) {
+  .opportunity-form {
+    grid-template-columns: 1fr;
+  }
 }
