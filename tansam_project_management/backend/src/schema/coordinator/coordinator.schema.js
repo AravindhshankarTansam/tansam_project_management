@@ -17,12 +17,15 @@ export const createCoordinatorSchemas = async (db) => {
       lead_status ENUM('NEW','EXISTING') DEFAULT 'NEW',
 
       created_by INT NOT NULL COMMENT 'coordinator user id',
+      created_by_name VARCHAR(100) COMMENT 'creator name',
+      created_by_role VARCHAR(50) COMMENT 'creator role',
 
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
-      INDEX idx_opportunity_id (opportunity_id)
+      INDEX idx_opportunity_id (opportunity_id),
+      INDEX idx_created_by (created_by)
     )
   `);
 };

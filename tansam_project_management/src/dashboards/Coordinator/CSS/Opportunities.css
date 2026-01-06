@@ -274,6 +274,98 @@
 }
 
 /* ============================
+   Actions Column (Edit / Delete)
+   ============================ */
+
+.opportunity-table th:last-child,
+.opportunity-table td:last-child {
+  text-align: center;
+  width: 120px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 0;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.icon-btn.edit {
+  color: #2563eb;
+}
+
+.icon-btn.edit:hover {
+  background: #e0e7ff;
+  transform: translateY(-1px);
+}
+
+.icon-btn.delete {
+  color: #dc2626;
+}
+
+.icon-btn.delete:hover {
+  background: #fee2e2;
+  transform: translateY(-1px);
+}
+
+/* ============================
+   Status Pills
+   ============================ */
+
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.new {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status.existing {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ============================
+   Empty Table Row
+   ============================ */
+
+.opportunity-table .empty {
+  text-align: center;
+  padding: 18px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.view-link {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 4px;
+  padding: 0;
+}
+
+.view-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================
    Responsive
    ============================ */
 

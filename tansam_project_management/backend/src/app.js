@@ -3,6 +3,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import coordinatorRoutes from "./routes/coordinator.routes.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(
         "Content-Type",
         "x-user-id",
         "x-user-role",
+        "x-user-name",
         ],
     credentials: true, // safe even if not using cookies yet
   })
@@ -29,5 +31,6 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/coordinator", coordinatorRoutes);
 
 export default app;
