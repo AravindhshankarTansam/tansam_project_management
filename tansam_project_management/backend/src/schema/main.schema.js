@@ -1,5 +1,6 @@
 import { createAdminSchemas } from "./admin/admin.schema.js";
 import { createCoordinatorSchemas } from "./coordinator/coordinator.schema.js";
+import { createProjectSchemas } from "./project/project.schema.js";
 
 /**
  * Main schema initializer
@@ -13,6 +14,9 @@ export const initSchemas = async (db, options = {}) => {
 
   if (options.coordinator) {
     await createCoordinatorSchemas(db);
+  }
+    if (options.project) {
+    await createProjectSchemas(db);
   }
 
   // future extensions 👇
