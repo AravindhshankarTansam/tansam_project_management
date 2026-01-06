@@ -116,11 +116,6 @@ export default function Reports() {
 
       {/* MODAL */}
       {showModal && (
-<<<<<<< HEAD
-        <div style={styles.modal}>
-          <div style={styles.modal}>
-            <h3>{isEdit ? "Edit Report" : "Add Report"}</h3>
-=======
         <div className="modal-overlay">
           <div className="modal-box">
             <div className="modal-header">
@@ -132,7 +127,6 @@ export default function Reports() {
                 <FiX />
               </button>
             </div>
->>>>>>> 43265bad79afc02b5f43d2a7bd0ccc0573662ed5
 
             <form onSubmit={handleSubmit}>
               <label className="form-label">Report Name</label>
