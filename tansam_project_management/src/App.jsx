@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 
 import Login from "./auth/Login.jsx";
 import DashboardLayout from "./layouts/DashboardLayout.jsx";
+
+// Admin
 import AdminDashboard from "./dashboards/Admin/AdminDashboard.jsx";
 import Users from "./dashboards/Admin/Users.jsx";
 import Roles from "./dashboards/Admin/Roles.jsx";
@@ -10,6 +12,11 @@ import Labs from "./dashboards/Admin/Labs.jsx";
 import Reports from "./dashboards/Admin/Reports.jsx";
 import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
 import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
+
+// Coordinator
+import CoordinatorDashboard from "./dashboards/Coordinator/CoordinatorDashboard.jsx";
+import Opportunities from "./dashboards/Coordinator/Opportunities.jsx";
+import OpportunitiesTacker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
 import CreateProject from "./dashboards/Admin/Projects.jsx";
 import Quotations from "./dashboards/Finance/Quotations.jsx";
 import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
@@ -18,17 +25,14 @@ import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
 function App() {
   const [user, setUser] = useState(null);
 
-  // 🔥 Restore session on refresh
+  // 🔄 Restore session on refresh
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const PrivateRoute = ({ children }) => {
-    return user ? children : <Navigate to="/" replace />;
-  };
+  const PrivateRoute = ({ children }) =>
+    user ? children : <Navigate to="/" replace />;
 
   return (
     <BrowserRouter>
@@ -36,7 +40,7 @@ function App() {
         {/* Login */}
         <Route path="/" element={<Login setUser={setUser} />} />
 
-        {/* Admin */}
+        {/* ADMIN */}
         <Route
           path="/admin"
           element={
@@ -69,6 +73,20 @@ function App() {
   <Route path="dashboard" element={<FinanceDashboard />} />
   {/* <Route path="reports" element={<FinanceReports />} /> */}
 </Route>
+
+        {/* COORDINATOR */}
+        <Route
+          path="/coordinator"
+          element={
+            <PrivateRoute>
+              <DashboardLayout user={user} setUser={setUser} />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<CoordinatorDashboard />} />
+          <Route path="/coordinator/Opportunities-tacker" element={<OpportunitiesTacker />} />
+          <Route path="/coordinator/opportunities" element={<Opportunities />} />
+        </Route>
       </Routes>
     </BrowserRouter>  
   );

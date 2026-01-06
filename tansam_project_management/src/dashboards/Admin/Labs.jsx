@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import {
-  fetchLabs,
-  createLab,
-  updateLab,
-} from "../../services/admin/admin.roles.api";
+import { useState } from "react";
+import "./admincss/Labs.css";
+import { FiPlus, FiEdit2, FiX, FiSave } from "react-icons/fi";
 
 export default function Labs() {
-  const [labs, setLabs] = useState([]);
+  const [labs, setLabs] = useState([
+    { id: 1, name: "Lab A", status: "ACTIVE" },
+    { id: 2, name: "Lab B", status: "INACTIVE" },
+  ]);
+
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -16,28 +17,12 @@ export default function Labs() {
     status: "ACTIVE",
   });
 
-  // 🔹 LOAD LABS
-  const loadLabs = async () => {
-    try {
-      const data = await fetchLabs();
-      setLabs(data);
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  useEffect(() => {
-    loadLabs();
-  }, []);
-
-  // 🔹 Open Add
   const openAddModal = () => {
     setIsEdit(false);
     setForm({ id: null, name: "", status: "ACTIVE" });
     setShowModal(true);
   };
 
-  // 🔹 Open Edit
   const openEditModal = (lab) => {
     setIsEdit(true);
     setForm(lab);
@@ -48,8 +33,7 @@ export default function Labs() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Save
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -57,101 +41,116 @@ export default function Labs() {
       return;
     }
 
-    try {
-      if (isEdit) {
-        await updateLab(form.id, {
-          name: form.name,
-          status: form.status,
-        });
-      } else {
-        await createLab({
-          name: form.name,
-          status: form.status,
-        });
-      }
-
-      setShowModal(false);
-      loadLabs();
-    } catch (err) {
-      alert(err.message);
+    if (isEdit) {
+      setLabs(labs.map((l) => (l.id === form.id ? { ...form } : l)));
+    } else {
+      setLabs([...labs, { ...form, id: Date.now() }]);
     }
+
+    setShowModal(false);
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>🏢 Labs Master</h2>
+    <div className="labs-container">
+      {/* HEADER */}
+      <div className="labs-header">
+        <h2 className="labs-title">Labs Master</h2>
 
-      <button onClick={openAddModal} style={styles.addBtn}>
-        ➕ Add Lab
-      </button>
+        <button className="primary-btn" onClick={openAddModal}>
+          <FiPlus size={16} />
+          Add Lab
+        </button>
+      </div>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Lab Name</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {labs.map((lab) => (
-            <tr key={lab.id}>
-              <td>{lab.name}</td>
-              <td>{lab.status}</td>
-              <td>
-                <button
-                  onClick={() => openEditModal(lab)}
-                  style={styles.editBtn}
-                >
-                  ✏️ Edit
-                </button>
-              </td>
-            </tr>
-          ))}
-
-          {labs.length === 0 && (
+      {/* TABLE */}
+      <div className="table-wrapper">
+        <table className="labs-table">
+          <thead>
             <tr>
-              <td colSpan="3">No labs found</td>
+              <th className="col-name">Lab Name</th>
+              <th className="col-status">Status</th>
+              <th className="col-action center">Action</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {labs.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="empty-text">
+                  No labs found
+                </td>
+              </tr>
+            ) : (
+              labs.map((lab) => (
+                <tr key={lab.id}>
+                  <td className="col-name">{lab.name}</td>
+                  <td className="col-status">
+                    <span
+                      className={`status-badge ${
+                        lab.status === "ACTIVE" ? "active" : "inactive"
+                      }`}
+                    >
+                      {lab.status}
+                    </span>
+                  </td>
+                  <td className="col-action center">
+                    <button
+                      className="icon-btn edit"
+                      onClick={() => openEditModal(lab)}
+                      title="Edit Lab"
+                    >
+                      <FiEdit2 />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      {/* ---------- MODAL ---------- */}
+      {/* MODAL */}
       {showModal && (
-        <div style={styles.modal}>
-          <div style={styles.modal}>
-            <h3>{isEdit ? "Edit Lab" : "Add Lab"}</h3>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>{isEdit ? "Edit Lab" : "Add Lab"}</h3>
+              <button className="icon-btn" onClick={() => setShowModal(false)}>
+                <FiX />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmit}>
+              <label className="form-label">Lab Name</label>
               <input
                 type="text"
                 name="name"
-                placeholder="Lab Name"
                 value={form.name}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-input"
+                placeholder="Enter lab name"
               />
 
+              <label className="form-label">Status</label>
               <select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-select"
               >
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
 
-              <div style={{ textAlign: "right" }}>
+              <div className="form-actions">
                 <button
                   type="button"
+                  className="secondary-btn"
                   onClick={() => setShowModal(false)}
-                  style={styles.cancelBtn}
                 >
                   Cancel
                 </button>
-                <button type="submit" style={styles.saveBtn}>
+                <button type="submit" className="primary-btn">
+                  <FiSave size={16} />
                   Save
                 </button>
               </div>
@@ -162,57 +161,3 @@ export default function Labs() {
     </div>
   );
 }
-
-/* ---------- STYLES (MISSING BEFORE) ---------- */
-const styles = {
-  addBtn: {
-    marginBottom: "10px",
-    padding: "8px 12px",
-    background: "#16a34a",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  editBtn: {
-    padding: "4px 8px",
-    background: "#f59e0b",
-    border: "none",
-    cursor: "pointer",
-  },
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    height: "100%",
-    width: "100%",
-    background: "rgba(0,0,0,0.4)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modal: {
-    background: "#fff",
-    padding: "20px",
-    width: "360px",
-    borderRadius: "4px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "10px",
-  },
-  cancelBtn: {
-    marginRight: "10px",
-    padding: "6px 10px",
-  },
-  saveBtn: {
-    padding: "6px 10px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-  },
-};

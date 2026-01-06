@@ -1,4 +1,6 @@
 import { useState } from "react";
+import "./admincss/Reports.css";
+import { FiPlus, FiEdit2, FiX, FiSave } from "react-icons/fi";
 
 export default function Reports() {
   const [reports, setReports] = useState([
@@ -15,14 +17,12 @@ export default function Reports() {
     status: "ACTIVE",
   });
 
-  // 🔹 Open Add
   const openAddModal = () => {
     setIsEdit(false);
     setForm({ id: null, name: "", status: "ACTIVE" });
     setShowModal(true);
   };
 
-  // 🔹 Open Edit
   const openEditModal = (report) => {
     setIsEdit(true);
     setForm(report);
@@ -33,7 +33,6 @@ export default function Reports() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Save
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -45,82 +44,128 @@ export default function Reports() {
     if (isEdit) {
       setReports(reports.map((r) => (r.id === form.id ? { ...form } : r)));
     } else {
-      setReports([...reports, { ...form, id: Date.now() }]);
+      setReports([
+        ...reports,
+        { ...form, id: Date.now() },
+      ]);
     }
 
     setShowModal(false);
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>📊 Reports Master</h2>
+    <div className="reports-container">
+      {/* HEADER */}
+      <div className="reports-header">
+        <h2 className="reports-title">Reports Master</h2>
 
-      <button onClick={openAddModal} style={styles.addBtn}>
-        ➕ Add Report
-      </button>
+        <button className="primary-btn" onClick={openAddModal}>
+          <FiPlus size={16} />
+          Add Report
+        </button>
+      </div>
 
-      {/* ---------- TABLE ---------- */}
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Report Name</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((report) => (
-            <tr key={report.id}>
-              <td>{report.name}</td>
-              <td>{report.status}</td>
-              <td>
-                <button
-                  onClick={() => openEditModal(report)}
-                  style={styles.editBtn}
-                >
-                  ✏️ Edit
-                </button>
-              </td>
+      {/* TABLE */}
+      <div className="table-wrapper">
+        <table className="reports-table">
+          <thead>
+            <tr>
+              <th className="col-name">Report Name</th>
+              <th className="col-status">Status</th>
+              <th className="col-action center">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      {/* ---------- MODAL ---------- */}
+          <tbody>
+            {reports.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="empty-text">
+                  No reports found
+                </td>
+              </tr>
+            ) : (
+              reports.map((report) => (
+                <tr key={report.id}>
+                  <td className="col-name">{report.name}</td>
+
+                  <td className="col-status">
+                    <span
+                      className={`status-badge ${
+                        report.status === "ACTIVE" ? "active" : "inactive"
+                      }`}
+                    >
+                      {report.status}
+                    </span>
+                  </td>
+
+                  <td className="col-action center">
+                    <button
+                      className="icon-btn edit"
+                      onClick={() => openEditModal(report)}
+                      title="Edit Report"
+                    >
+                      <FiEdit2 />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODAL */}
       {showModal && (
+<<<<<<< HEAD
         <div style={styles.modal}>
           <div style={styles.modal}>
             <h3>{isEdit ? "Edit Report" : "Add Report"}</h3>
+=======
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>{isEdit ? "Edit Report" : "Add Report"}</h3>
+              <button
+                className="icon-btn"
+                onClick={() => setShowModal(false)}
+              >
+                <FiX />
+              </button>
+            </div>
+>>>>>>> 43265bad79afc02b5f43d2a7bd0ccc0573662ed5
 
             <form onSubmit={handleSubmit}>
+              <label className="form-label">Report Name</label>
               <input
                 type="text"
                 name="name"
-                placeholder="Report Name"
                 value={form.name}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-input"
+                placeholder="Enter report name"
               />
 
+              <label className="form-label">Status</label>
               <select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                style={styles.input}
+                className="form-select"
               >
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
 
-              <div style={{ textAlign: "right" }}>
+              <div className="form-actions">
                 <button
                   type="button"
+                  className="secondary-btn"
                   onClick={() => setShowModal(false)}
-                  style={styles.cancelBtn}
                 >
                   Cancel
                 </button>
-                <button type="submit" style={styles.saveBtn}>
+                <button type="submit" className="primary-btn">
+                  <FiSave size={16} />
                   Save
                 </button>
               </div>
@@ -131,57 +176,3 @@ export default function Reports() {
     </div>
   );
 }
-
-/* ---------- STYLES ---------- */
-const styles = {
-  addBtn: {
-    marginBottom: "10px",
-    padding: "8px 12px",
-    background: "#16a34a",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  editBtn: {
-    padding: "4px 8px",
-    background: "#f59e0b",
-    border: "none",
-    cursor: "pointer",
-  },
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    height: "100%",
-    width: "100%",
-    background: "rgba(0,0,0,0.4)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modal: {
-    background: "#fff",
-    padding: "20px",
-    width: "360px",
-    borderRadius: "4px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "10px",
-  },
-  cancelBtn: {
-    marginRight: "10px",
-    padding: "6px 10px",
-  },
-  saveBtn: {
-    padding: "6px 10px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-  },
-};
