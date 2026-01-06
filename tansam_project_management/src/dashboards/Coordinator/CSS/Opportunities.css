@@ -365,6 +365,41 @@
   text-decoration: underline;
 }
 
+/* ================= FILTER BAR ================= */
+/* ================= FILTER BAR ================= */
+.opportunity-filters {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.opportunity-filters input,
+.opportunity-filters select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.opportunity-filters input {
+  min-width: 260px;
+}
+
+.reset-btn {
+  background: #e5e7eb;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reset-btn:hover {
+  background: #d1d5db;
+}
+
+
 /* ============================
    Responsive
    ============================ */

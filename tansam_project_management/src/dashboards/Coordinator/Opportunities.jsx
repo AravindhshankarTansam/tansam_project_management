@@ -19,6 +19,13 @@ export default function Opportunities() {
   // Track expanded descriptions
   const [expandedRows, setExpandedRows] = useState({});
 
+  // ✅ FILTER STATE (ADDED)
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    source: "",
+  });
+
   const [form, setForm] = useState({
     opportunity_id: null,
     opportunityName: "",
@@ -48,6 +55,29 @@ export default function Opportunities() {
       setLoading(false);
     }
   };
+
+  /* ================= FILTER LOGIC (ADDED) ================= */
+  const filteredOpportunities = opportunities.filter((item) => {
+    const searchMatch =
+      !filters.search ||
+      item.opportunity_name
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase()) ||
+      item.customer_name
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase()) ||
+      item.company_name
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase());
+
+    const statusMatch =
+      !filters.status || item.lead_status === filters.status;
+
+    const sourceMatch =
+      !filters.source || item.lead_source === filters.source;
+
+    return searchMatch && statusMatch && sourceMatch;
+  });
 
   /* ================= HANDLERS ================= */
 
@@ -136,6 +166,52 @@ export default function Opportunities() {
         <button onClick={openAddModal}>+ Add Opportunity</button>
       </div>
 
+      {/* ✅ FILTER BAR (ADDED) */}
+      <div className="opportunity-filters">
+        <input
+          type="text"
+          placeholder="Search Opportunity / Customer / Company"
+          value={filters.search}
+          onChange={(e) =>
+            setFilters({ ...filters, search: e.target.value })
+          }
+        />
+
+        <select
+          value={filters.status}
+          onChange={(e) =>
+            setFilters({ ...filters, status: e.target.value })
+          }
+        >
+          <option value="">All Status</option>
+          <option value="NEW">NEW</option>
+          <option value="EXISTING">EXISTING</option>
+        </select>
+
+        <select
+          value={filters.source}
+          onChange={(e) =>
+            setFilters({ ...filters, source: e.target.value })
+          }
+        >
+          <option value="">All Sources</option>
+          <option value="WEBSITE">Website</option>
+          <option value="REFERRAL">Referral</option>
+          <option value="CALL">Call</option>
+          <option value="EMAIL">Email</option>
+        </select>
+
+        <button
+          className="reset-btn"
+          onClick={() =>
+            setFilters({ search: "", status: "", source: "" })
+          }
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* TABLE */}
       <div className="opportunity-table-wrapper">
         {loading ? (
           <p>Loading...</p>
@@ -159,14 +235,14 @@ export default function Opportunities() {
             </thead>
 
             <tbody>
-              {opportunities.length === 0 ? (
+              {filteredOpportunities.length === 0 ? (
                 <tr>
                   <td colSpan={12} className="empty">
                     No opportunities found
                   </td>
                 </tr>
               ) : (
-                opportunities.map((item, index) => {
+                filteredOpportunities.map((item, index) => {
                   const isExpanded = expandedRows[item.opportunity_id];
                   const hasLongDesc =
                     item.lead_description &&
@@ -240,7 +316,8 @@ export default function Opportunities() {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* MODAL — unchanged */}
+       {/* MODAL */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-card">

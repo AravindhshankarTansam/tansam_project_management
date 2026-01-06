@@ -16,6 +16,7 @@ import {
   createUser,
   updateUser,
 } from "../controllers/admin.controller.js";
+import {getOpportunities,} from "../controllers/coordinator.controller.js";
 
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { roleMiddleware } from "../middlewares/admin.middleware.js";
@@ -46,5 +47,14 @@ router.put("/work-categories/:id", authMiddleware, roleMiddleware(["ADMIN"]), up
 router.get("/users", authMiddleware, roleMiddleware(["ADMIN"]), getUsers);
 router.post("/users", authMiddleware, roleMiddleware(["ADMIN"]), createUser);
 router.put("/users/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateUser);
+
+// COORDINATOR – OPPORTUNITY ROUTES (ADMIN)
+router.get(
+  "/opportunities",
+  authMiddleware,
+  roleMiddleware(["ADMIN"]),
+  getOpportunities
+);
+
 
 export default router;

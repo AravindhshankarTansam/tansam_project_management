@@ -110,15 +110,14 @@ export const createOpportunity = async (req, res) => {
 ====================================================== */
 export const getOpportunities = async (req, res) => {
   try {
-    if (!req.user?.id) {
+    if (!req.user?.id || !req.user?.role) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
 
-    const [rows] = await db.execute(
-      `
+    let query = `
       SELECT
         opportunity_id,
         opportunity_name,
@@ -135,11 +134,19 @@ export const getOpportunities = async (req, res) => {
         created_by_name,
         created_by_role
       FROM opportunities_coordinator
-      WHERE created_by = ?
-      ORDER BY id DESC
-      `,
-      [req.user.id]
-    );
+    `;
+
+    const params = [];
+
+    // 🔐 ROLE-BASED DATA ACCESS
+    if (req.user.role === "COORDINATOR") {
+      query += ` WHERE created_by = ?`;
+      params.push(req.user.id);
+    }
+
+    query += ` ORDER BY id DESC`;
+
+    const [rows] = await db.execute(query, params);
 
     res.json(rows);
   } catch (err) {
@@ -147,6 +154,7 @@ export const getOpportunities = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch opportunities" });
   }
 };
+
 
 /* ======================================================
    UPDATE OPPORTUNITY (OWN ONLY)
