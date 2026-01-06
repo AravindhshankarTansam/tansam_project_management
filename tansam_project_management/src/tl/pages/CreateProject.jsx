@@ -1,20 +1,26 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { FiEdit, FiTrash2, FiChevronDown, FiPlus } from "react-icons/fi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./CreateProject.css";
+import {
+  createProject,
+  fetchProjects,
+  updateProject,
+  deleteProject,
+} from "../../services/project.api";
+
+
+/* ---------- DATE FORMAT HELPER ---------- */
+const formatDate = (dateValue) => {
+  if (!dateValue) return "";
+  return new Date(dateValue).toISOString().split("T")[0];
+};
 
 export default function CreateProject() {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      projectName: "Marketing Website",
-      clientName: "ABC Pvt Ltd",
-      projectType: "Web Development",
-      startDate: "2024-06-01",
-      endDate: "2024-08-15",
-      status: "In Progress",
-    },
-  ]);
-
+  /* ---------- STATE ---------- */
+  const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -27,6 +33,20 @@ export default function CreateProject() {
     endDate: "",
     status: "Planned",
   });
+
+  /* ---------- LOAD PROJECTS ---------- */
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await fetchProjects();
+        setProjects(data);
+      } catch {
+        toast.error("Failed to load projects");
+      }
+    };
+
+    loadProjects();
+  }, []);
 
   /* ---------- HANDLERS ---------- */
   const handleChange = (e) => {
@@ -49,30 +69,74 @@ export default function CreateProject() {
 
   const openEditModal = (project) => {
     setIsEdit(true);
-    setForm(project);
+    setForm({
+      ...project,
+      startDate: formatDate(project.startDate),
+      endDate: formatDate(project.endDate),
+    });
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      setProjects(projects.filter((p) => p.id !== id));
-    }
+const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this project?")) return;
+
+  try {
+    await deleteProject(id);
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+    toast.success("Project deleted successfully");
+  } catch {
+    toast.error("Delete failed");
+  }
+};
+
+
+  /* ---------- CREATE PROJECT ---------- */
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    projectName: form.projectName,
+    clientName: form.clientName,
+    projectType: form.projectType,
+    startDate: form.startDate,
+    endDate: form.endDate,
+    status: form.status,
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  try {
     if (isEdit) {
-      setProjects(projects.map((p) => (p.id === form.id ? form : p)));
+      await updateProject(form.id, payload);
+      toast.success("Project updated successfully");
     } else {
-      setProjects([...projects, { ...form, id: Date.now() }]);
+      await createProject(payload);
+      toast.success("Project created successfully");
     }
 
+    const data = await fetchProjects();
+    setProjects(data);
     setShowModal(false);
-  };
+    setIsEdit(false);
+  } catch (err) {
+    toast.error(err.message);
+  }
+};
 
+  /* ---------- UI ---------- */
   return (
     <div className="create-project">
+      {/* TOAST CONTAINER (LOCAL TO THIS PAGE) */}
+      <ToastContainer
+        position="top-right"
+        autoClose={1200}           // 1.2 seconds (adjust if needed)
+        hideProgressBar={false}    // ✅ show progress bar
+        newestOnTop
+        closeOnClick
+        pauseOnHover={false}
+        draggable
+        theme="light"              // clean professional look
+      />
+
+
       {/* HEADER */}
       <div className="page-header">
         <h2>Project Management</h2>
@@ -82,7 +146,7 @@ export default function CreateProject() {
         </button>
       </div>
 
-      {/* TABLE CARD */}
+      {/* TABLE */}
       <div className="table-card">
         <table className="project-table">
           <thead>
@@ -97,40 +161,48 @@ export default function CreateProject() {
             </tr>
           </thead>
           <tbody>
-            {projects.map((p) => (
-              <tr key={p.id}>
-                <td>{p.projectName}</td>
-                <td>{p.clientName}</td>
-                <td>{p.projectType}</td>
-                <td>{p.startDate}</td>
-                <td>{p.endDate}</td>
-                <td>
-                  <span
-                    className={`status ${p.status
-                      .toLowerCase()
-                      .replace(" ", "-")}`}
-                  >
-                    {p.status}
-                  </span>
-                </td>
-                <td className="action-col">
-                  <button
-                    className="icon-btn edit"
-                    onClick={() => openEditModal(p)}
-                    title="Edit Project"
-                  >
-                    <FiEdit />
-                  </button>
-                  <button
-                    className="icon-btn delete"
-                    onClick={() => handleDelete(p.id)}
-                    title="Delete Project"
-                  >
-                    <FiTrash2 />
-                  </button>
+            {projects.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  No projects found
                 </td>
               </tr>
-            ))}
+            ) : (
+              projects.map((p) => (
+                <tr key={p.id}>
+                  <td>{p.projectName}</td>
+                  <td>{p.clientName}</td>
+                  <td>{p.projectType}</td>
+                  <td>{formatDate(p.startDate)}</td>
+                  <td>{formatDate(p.endDate)}</td>
+                  <td>
+                    <span
+                      className={`status ${p.status
+                        .toLowerCase()
+                        .replace(" ", "-")}`}
+                    >
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="action-col">
+                    <button
+                      className="icon-btn edit"
+                      onClick={() => openEditModal(p)}
+                      title="Edit"
+                    >
+                      <FiEdit />
+                    </button>
+                    <button
+                      className="icon-btn delete"
+                      onClick={() => handleDelete(p.id)}
+                      title="Delete"
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
