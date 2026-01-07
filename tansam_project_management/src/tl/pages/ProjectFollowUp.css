@@ -1,4 +1,5 @@
-/* No need to import font here if loaded in index.html */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 .followup-page {
   padding: 32px;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -7,29 +8,29 @@
   color: #1e293b;
 }
 
-/* HEADER */
-.page-header {
-  margin-bottom: 32px;
+/* Header */
+.followup-header {
+  margin-bottom: 28px;
 }
 
-.page-header h2 {
+.followup-header h2 {
   font-size: 28px;
   font-weight: 700;
-  margin: 0 0 8px 0;
   background: linear-gradient(90deg, #10b981, #34d399);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0 0 8px 0;
 }
 
-.page-sub {
-  font-size: 16px;
+.followup-subtitle {
   color: #64748b;
+  font-size: 16px;
   margin: 0;
 }
 
-/* TABLE CARD */
-.table-card {
+/* Table Card */
+.followup-table-card {
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -47,7 +48,7 @@
 }
 
 .followup-table th {
-  padding: 16px 20px;
+  padding: 16px 12px;
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
@@ -57,85 +58,74 @@
 }
 
 .followup-table td {
-  padding: 20px;
-  font-size: 15px;
+  padding: 18px 12px;
+  font-size: 14.5px;
   color: #334155;
   vertical-align: middle;
 }
 
-.followup-table tbody tr {
-  border-top: 1px solid #e2e8f0;
+.followup-row:hover {
+  background: #f1f5f9;
   transition: background 0.2s;
 }
 
-.followup-table tbody tr:hover {
-  background: #f1f5f9;
-}
-
-/* PROJECT NAME */
-.project-name strong {
+/* Project Cell */
+.followup-project-cell strong {
   display: block;
-  font-size: 16px;
   font-weight: 600;
+  color: #1e293b;
 }
 
-.project-name small {
-  color: #94a3b8;
-  font-size: 13px;
+.followup-project-code {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-top: 4px;
 }
 
-/* STATUS BADGE */
-.status-badge {
-  padding: 8px 14px;
+/* Status Badge */
+.followup-status-badge {
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.status-badge.completed {
+.followup-status-badge.planned,
+.followup-status-badge.on-hold {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.followup-status-badge.in-progress {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.followup-status-badge.completed {
   background: #dcfce7;
   color: #166534;
 }
 
-.status-badge.in-progress {
-  background: #dbf4ff;
-  color: #075985;
-}
-
-.status-badge .icon {
-  font-size: 14px;
-}
-
-/* AMOUNTS */
-.amount {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.amount.paid {
-  color: #16a34a;
-}
-
-.amount.pending {
+.followup-status-badge.at-risk {
+  background: #fee2e2;
   color: #dc2626;
 }
 
-.amount.cleared {
-  color: #16a34a;
+.badge-icon {
+  font-size: 14px;
 }
 
-/* PROGRESS BAR */
-.progress-container {
+/* Progress Bar */
+.followup-progress-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 140px;
+  gap: 10px;
 }
 
-.progress-bar {
+.followup-progress-bar {
   flex: 1;
   height: 8px;
   background: #e2e8f0;
@@ -143,61 +133,242 @@
   overflow: hidden;
 }
 
-.progress-fill {
+.followup-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #34d399, #10b981);
+  background: linear-gradient(90deg, #10b981, #34d399);
   border-radius: 4px;
-  transition: width 0.6s ease;
+  transition: width 0.4s ease;
 }
 
-.progress-text {
+.followup-progress-text {
   font-size: 13px;
   font-weight: 600;
-  color: #10b981;
+  color: #1e293b;
   min-width: 40px;
   text-align: right;
 }
 
-/* TRACK BUTTON */
-.track-btn {
-  background: linear-gradient(135deg, #34d399, #10b981);
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 12px;
-  cursor: pointer;
+/* Urgency & Critical */
+.followup-urgent {
+  color: #dc2626;
   font-weight: 600;
+}
+
+.followup-critical {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.critical-icon {
+  color: #dc2626;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Team & Updated */
+.followup-team,
+.followup-updated {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.team-icon,
+.clock-icon {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Actions */
+.followup-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.followup-view-btn,
+.followup-edit-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
   font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
+  gap: 6px;
+  transition: all 0.3s;
 }
 
-.track-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+.followup-view-btn {
+  background: transparent;
+  border: 1.5px solid #10b981;
+  color: #10b981;
 }
 
-.track-btn .icon {
+.followup-view-btn:hover {
+  background: #10b981;
+  color: white;
+}
+
+.followup-edit-btn {
+  background: transparent;
+  border: 1.5px solid #4f46e5;
+  color: #4f46e5;
+}
+
+.followup-edit-btn:hover {
+  background: #4f46e5;
+  color: white;
+}
+
+.view-icon,
+.edit-icon {
+  font-size: 15px;
+}
+
+/* Empty & Loading */
+.followup-empty,
+.followup-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
   font-size: 16px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .followup-table th,
-  .followup-table td {
-    padding: 12px;
-    font-size: 14px;
-  }
+/* Edit Modal */
+.followup-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
-  .progress-container {
-    min-width: 100px;
-  }
+.followup-modal {
+  background: white;
+  padding: 32px;
+  width: min(90%, 520px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  animation: modalFadeIn 0.3s ease-out;
+}
 
-  .track-btn {
-    padding: 8px 14px;
-    font-size: 13px;
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.followup-modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.modal-project-name {
+  color: #64748b;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+.followup-modal label {
+  display: block;
+  margin: 20px 0 8px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.followup-modal input[type="text"],
+.followup-modal input[type="date"],
+.followup-modal input[type="number"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.followup-modal input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.progress-slider {
+  width: 100%;
+  margin: 12px 0 8px 0;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #10b981;
+  cursor: pointer;
+}
+
+.progress-value {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #10b981;
+  margin: 8px 0 20px 0;
+}
+
+.followup-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.followup-cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.followup-cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+.followup-save-btn {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.followup-save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
 }
