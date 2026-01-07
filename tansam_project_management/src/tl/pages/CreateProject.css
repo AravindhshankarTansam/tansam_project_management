@@ -1,64 +1,119 @@
-/* Import Inter - Professional Modern Font */
+/* ================================
+   FONT & BASE
+================================ */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 .create-project {
-  padding: 32px;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #f9fafb;
+  padding: 28px;
+  font-family: "Inter", sans-serif;
+  background: #f8fafc;
   min-height: 100vh;
-  color: #1e293b;
+  color: #0f172a;
 }
 
-/* HEADER */
+/* ================================
+   HEADER
+================================ */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .page-header h2 {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: linear-gradient(90deg, #0ea5e9, #22c55e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #34d399, #10b981);
-  color: white;
-  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  padding: 12px 18px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
+  font-size: 14px;
+  transition: all 0.25s ease;
 }
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-.plus-icon {
-  font-size: 18px;
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
 }
 
-/* TABLE CARD */
+/* ================================
+   SEARCH & FILTER BAR
+================================ */
+.search-filter-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.search-box,
+.filter-box {
+  position: relative;
+}
+
+.search-box input,
+.filter-box select {
+  padding: 12px 14px 12px 42px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 14px;
+  min-width: 260px;
+  transition: all 0.2s ease;
+}
+
+.search-box input:focus,
+.filter-box select:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.search-box svg,
+.filter-box svg {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.reset-btn {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.reset-btn:hover {
+  background: #e2e8f0;
+}
+
+/* ================================
+   TABLE
+================================ */
 .table-card {
-  background: white;
+  background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .project-table {
@@ -67,119 +122,134 @@
 }
 
 .project-table thead {
-  background: #f8fafc;
+  background: #f1f5f9;
 }
 
 .project-table th {
-  padding: 16px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #000;
   text-align: left;
-}
-
-.project-table td {
-  padding: 16px 12px;
-  font-size: 14.5px;
-  color: #334155;
-}
-
-.project-table tbody tr {
-  border-top: 1px solid #e2e8f0;
-  transition: background 0.2s;
-}
-
-.project-table tbody tr:hover {
-  background: #f1f5f9;
-}
-
-/* ACTION BUTTONS */
-.action-col {
-  display: flex;
-  gap: 12px;
-}
-
-.icon-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 10px;
-  font-size: 17px;
-  transition: all 0.2s;
-}
-
-.icon-btn.edit {
-  color: #4f46e5;
-}
-
-.icon-btn.edit:hover {
-  background: #eef2ff;
-  transform: scale(1.1);
-}
-
-.icon-btn.delete {
-  color: #ef4444;
-}
-
-.icon-btn.delete:hover {
-  background: #fee2e2;
-  transform: scale(1.1);
-}
-
-/* STATUS BADGES */
-.status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12.5px;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status.planned {
-  background: #f1f5f9;
+  padding: 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
   color: #475569;
 }
 
-.status.in-progress {
-  background: #eef2ff;
-  color: #4f46e5;
+.project-table td {
+  padding: 14px;
+  font-size: 14px;
+  border-top: 1px solid #e2e8f0;
 }
 
-.status.completed {
+.project-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ================================
+   STATUS BADGES
+================================ */
+/* ================================
+   STATUS BADGES (FIXED)
+================================ */
+/* ================================
+   STATUS BADGES (FINAL)
+================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Planned → Gray */
+.status-badge.planned {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* In Progress → Blue */
+.status-badge.in-progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Completed → Green + Tick */
+.status-badge.completed {
   background: #dcfce7;
   color: #166534;
 }
 
-.status.on-hold {
+/* On Hold → Red */
+.status-badge.on-hold {
   background: #fee2e2;
-  color: #dc2626;
+  color: #991b1b;
 }
 
-/* MODAL */
+
+/* ================================
+   ACTION BUTTONS
+================================ */
+.action-col {
+  display: flex;
+  gap: 10px;
+}
+
+.action-col button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.action-col button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-col button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+/* ================================
+   EMPTY STATE
+================================ */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+/* ================================
+   MODAL
+================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
 .modal {
-  background: white;
-  padding: 32px;
-  width: min(90%, 480px);
+  background: #fff;
+  width: 420px;
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-  animation: modalFadeIn 0.3s ease-out;
+  padding: 26px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.25s ease;
 }
 
-@keyframes modalFadeIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -191,218 +261,116 @@
 }
 
 .modal h3 {
-  margin-bottom: 24px;
-  font-size: 22px;
+  margin-bottom: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: #1e293b;
 }
 
 .modal input,
-.select-wrapper select {
+.modal select {
   width: 100%;
   padding: 12px 14px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   border-radius: 12px;
   border: 1.5px solid #e2e8f0;
-  background: #ffffff;
-  font-size: 15px;
-  transition: all 0.2s;
-}
-
-.modal input::placeholder {
-  color: #94a3b8;
+  font-size: 14px;
 }
 
 .modal input:focus,
-.select-wrapper select:focus {
+.modal select:focus {
   outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
 }
 
 .select-wrapper {
   position: relative;
-  margin-bottom: 16px;
 }
 
-.select-wrapper select {
-  appearance: none;
-  cursor: pointer;
-  padding-right: 40px;
-}
-
-.select-icon {
+.select-wrapper svg {
   position: absolute;
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
-  color: #94a3b8;
   pointer-events: none;
+  color: #94a3b8;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-.cancel-btn {
-  background: #f1f5f9;
-  color: #475569;
-  border: none;
-  padding: 10px 20px;
+.modal-actions button {
+  padding: 10px 18px;
   border-radius: 12px;
-  font-weight: 500;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cancel-btn:hover {
-  background: #e2e8f0;
-}
-
-.save-btn {
-  background: linear-gradient(135deg, #34d399, #10b981);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 12px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
 }
 
-.save-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-/* SEARCH & FILTER BAR */
-.search-filter-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-/* Search Box */
-.search-box {
-  position: relative;
-  flex: 1;
-  min-width: 280px;
-  max-width: 420px;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 14px 16px 14px 48px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  background: white;
-  font-size: 15px;
-  font-family: "Inter", sans-serif;
-  transition: all 0.3s ease;
-  color: #1e293b;
-}
-
-.search-box input::placeholder {
-  color: #94a3b8;
-}
-
-.search-box input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 18px;
-  pointer-events: none;
-}
-
-/* Filter Dropdown */
-.filter-box {
-  position: relative;
-  min-width: 220px;
-}
-
-.filter-box select {
-  width: 100%;
-  padding: 14px 40px 14px 48px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  background: white;
-  font-size: 15px;
-  font-family: "Inter", sans-serif;
-  color: #1e293b;
-  appearance: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.filter-box select:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
-}
-
-.filter-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 17px;
-  pointer-events: none;
-}
-
-.select-arrow {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 18px;
-  pointer-events: none;
-}
-
-/* Reset / Clear Filters Button */
-.reset-btn {
+.modal-actions button:first-child {
   background: #f1f5f9;
-  color: #475569;
+}
+
+.modal-actions button:last-child {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+}
+
+/* ================================
+   ACCESS DENIED
+================================ */
+.unauthorized {
+  padding: 60px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* ================================
+   ACTION BUTTONS (EDIT = BLUE, DELETE = RED)
+================================ */
+.action-col {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.icon-btn {
   border: none;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-weight: 500;
-  font-size: 15px;
+  background: transparent;
   cursor: pointer;
+  font-size: 16px;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  white-space: nowrap;
+  justify-content: center;
 }
 
-.reset-btn:hover {
-  background: #e2e8f0;
-  color: #1e293b;
-  transform: translateY(-1px);
+/* ✏️ EDIT */
+.edit-btn {
+  color: #2563eb; /* blue-600 */
 }
 
-/* No Results Message */
-.no-results {
-  text-align: center;
-  padding: 80px 20px;
-  color: #94a3b8;
-  font-size: 16px;
-  font-weight: 500;
+.edit-btn:hover:not(:disabled) {
+  background: #dbeafe; /* blue-100 */
+}
+
+/* 🗑 DELETE */
+.delete-btn {
+  color: #dc2626; /* red-600 */
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: #fee2e2; /* red-100 */
+}
+
+/* Disabled */
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
