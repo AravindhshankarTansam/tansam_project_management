@@ -1,6 +1,6 @@
 import { connectDB } from "../config/db.js";
 import { Document, Packer, Paragraph, TextRun } from "docx";
-
+import { createQuotationDocx } from "../utils/QuotationDocx.js";
 
 // Get all quotations
 export const getQuotations = async (req, res) => {
@@ -108,52 +108,16 @@ export const deleteQuotation = async (req, res) => {
   }
 };
 export const downloadQuotationDocx = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const db = await connectDB();
+  const { id } = req.params;
+  const quotation = await getQuotationById(id);
 
-    // Get the quotation
-    const [rows] = await db.execute("SELECT * FROM quotations WHERE id=?", [id]);
-    if (!rows.length) {
-      return res.status(404).json({ message: "Quotation not found" });
-    }
-    const q = rows[0];
+  if (!quotation) return res.status(404).send("Quotation not found");
 
-    // Generate DOCX dynamically
-    const doc = new Document({
-      sections: [
-        {
-          children: [
-            new Paragraph({
-              children: [new TextRun({ text: `Quotation: ${q.quotationNo}`, bold: true, size: 32 })],
-            }),
-            new Paragraph({ children: [new TextRun(`Client: ${q.clientName}`)] }),
-            new Paragraph({ children: [new TextRun(`Client Type: ${q.clientType}`)] }),
-            new Paragraph({ children: [new TextRun(`Work Category: ${q.workCategory}`)] }),
-            new Paragraph({ children: [new TextRun(`Lab: ${q.lab}`)] }),
-            new Paragraph({ children: [new TextRun(`Description: ${q.description}`)] }),
-            new Paragraph({ children: [new TextRun(`Value: ₹ ${q.value}`)] }),
-            new Paragraph({ children: [new TextRun(`Date: ${new Date(q.date).toLocaleDateString()}`)] }),
-          ],
-        },
-      ],
-    });
+  const buffer = await createQuotationDocx(quotation);
 
-    const buffer = await Packer.toBuffer(doc);
-
-    // Send DOCX file
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=Quotation_${q.quotationNo}.docx`
-    );
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    );
-
-    res.send(buffer);
-  } catch (err) {
-    console.error("Download DOCX Error:", err);
-    res.status(500).json({ message: "Failed to download DOCX" });
-  }
+  res.set({
+    "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "Content-Disposition": `attachment; filename=Quotation_${quotation.quotationNo}.docx`,
+  });
+  res.send(buffer);
 };

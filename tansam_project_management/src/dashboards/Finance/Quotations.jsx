@@ -286,14 +286,15 @@ const downloadDocx = async (quotation) => {
                   </td>
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
-                    <button
-                      className="btn-docx"
-                      onClick={() => downloadDocx(q)}
-                      disabled={downloadingId === q.id}
-                      title="Download DOCX"
-                    >
-                      {downloadingId === q.id ? "⏳" : "📄"}
-                    </button>
+                   <button
+  className="btn-docx"
+  onClick={() => downloadDocx(q)}
+  disabled={downloadingId === q.id}
+  title="Download DOCX"
+>
+  {downloadingId === q.id ? "⏳" : "📄"}
+</button>
+
                     <button
                       className="btn-edit"
                       onClick={() => handleEdit(q)}
