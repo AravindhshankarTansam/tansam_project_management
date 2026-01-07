@@ -5,9 +5,11 @@ import {
   FiChevronDown,
   FiPlus,
   FiSearch,
-  FiCheckCircle,
   FiFilter,
   FiX,
+  FiCheckCircle,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,21 +24,20 @@ import {
 
 import { fetchProjectTypes } from "../../services/projectType.api";
 
-/* ---------- DATE FORMAT HELPER ---------- */
 const formatDate = (dateValue) => {
   if (!dateValue) return "";
   return new Date(dateValue).toISOString().split("T")[0];
 };
 
+const PROJECTS_PER_PAGE = 10;
+
 export default function CreateProject() {
-  /* ---------- USER / ROLE ---------- */
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role;
 
   const isTL = role === "TEAM LEAD";
   const isAdmin = role === "ADMIN";
 
-  /* ---------- STATE ---------- */
   const [projects, setProjects] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
 
@@ -45,6 +46,8 @@ export default function CreateProject() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [form, setForm] = useState({
     id: null,
@@ -56,7 +59,6 @@ export default function CreateProject() {
     status: "Planned",
   });
 
-  /* ---------- LOAD PROJECTS + PROJECT TYPES ---------- */
   useEffect(() => {
     let mounted = true;
 
@@ -81,7 +83,7 @@ export default function CreateProject() {
     };
   }, []);
 
-  /* ---------- FILTERED PROJECTS ---------- */
+  /* Filtered Projects */
   const filteredProjects = useMemo(() => {
     let filtered = projects;
 
@@ -101,7 +103,19 @@ export default function CreateProject() {
     return filtered;
   }, [projects, searchTerm, selectedType]);
 
-  /* ---------- HANDLERS ---------- */
+  /* Pagination Logic */
+  const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE);
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * PROJECTS_PER_PAGE;
+    return filteredProjects.slice(start, start + PROJECTS_PER_PAGE);
+  }, [filteredProjects, currentPage]);
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -167,6 +181,7 @@ export default function CreateProject() {
       }
 
       setProjects(await fetchProjects());
+      setCurrentPage(1); // Reset to first page after create/update
       setShowModal(false);
       setIsEdit(false);
     } catch (err) {
@@ -177,9 +192,9 @@ export default function CreateProject() {
   const resetFilters = () => {
     setSearchTerm("");
     setSelectedType("");
+    setCurrentPage(1);
   };
 
-  /* ---------- ACCESS GUARD ---------- */
   if (!isTL && !isAdmin) {
     return (
       <div className="unauthorized">
@@ -189,12 +204,10 @@ export default function CreateProject() {
     );
   }
 
-  /* ---------- UI ---------- */
   return (
     <div className="create-project">
       <ToastContainer autoClose={1200} newestOnTop />
 
-      {/* HEADER */}
       <div className="page-header">
         <h2>Project Management</h2>
         {isTL && (
@@ -204,7 +217,6 @@ export default function CreateProject() {
         )}
       </div>
 
-      {/* SEARCH + FILTER */}
       <div className="search-filter-bar">
         <div className="search-box">
           <FiSearch />
@@ -238,7 +250,6 @@ export default function CreateProject() {
         )}
       </div>
 
-      {/* TABLE */}
       <div className="table-card">
         <table className="project-table">
           <thead>
@@ -253,14 +264,14 @@ export default function CreateProject() {
             </tr>
           </thead>
           <tbody>
-            {filteredProjects.length === 0 ? (
+            {paginatedProjects.length === 0 ? (
               <tr>
                 <td colSpan="7" className="no-results">
                   No projects found
                 </td>
               </tr>
             ) : (
-              filteredProjects.map((p) => (
+              paginatedProjects.map((p) => (
                 <tr key={p.id}>
                   <td>{p.projectName}</td>
                   <td>{p.clientName}</td>
@@ -279,21 +290,17 @@ export default function CreateProject() {
                       {p.status}
                     </span>
                   </td>
-
                   <td className="action-col">
                     <button
                       className="icon-btn edit-btn"
                       disabled={!isTL}
-                      title="Edit"
                       onClick={() => openEditModal(p)}
                     >
                       <FiEdit />
                     </button>
-
                     <button
                       className="icon-btn delete-btn"
                       disabled={!isTL}
-                      title="Delete"
                       onClick={() => handleDelete(p.id)}
                     >
                       <FiTrash2 />
@@ -304,6 +311,39 @@ export default function CreateProject() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="page-btn"
+            >
+              <FiChevronLeft />
+              Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => goToPage(page)}
+                className={`page-number ${page === currentPage ? "active" : ""}`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="page-btn"
+            >
+              Next
+              <FiChevronRight />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* MODAL */}
@@ -342,7 +382,7 @@ export default function CreateProject() {
                     </option>
                   ))}
                 </select>
-                {/* <FiChevronDown /> */}
+                {/* <FiChevronDown className="select-icon" /> */}
               </div>
 
               <input
@@ -361,17 +401,13 @@ export default function CreateProject() {
               />
 
               <div className="select-wrapper">
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                >
+                <select name="status" value={form.status} onChange={handleChange}>
                   <option>Planned</option>
                   <option>In Progress</option>
                   <option>Completed</option>
                   <option>On Hold</option>
                 </select>
-                {/* <FiChevronDown /> */}
+                {/* <FiChevronDown className="select-icon" /> */}
               </div>
 
               <div className="modal-actions">
