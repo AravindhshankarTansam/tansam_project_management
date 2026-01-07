@@ -5,7 +5,7 @@ import {
   getQuotations,
   addQuotation,
   updateQuotation,
-  deleteQuotation
+  deleteQuotation,
 } from "../../services/quotation/quotation.api";
 
 export default function Quotations() {
@@ -16,16 +16,16 @@ export default function Quotations() {
   const [showModal, setShowModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
 
-  const clientOptions = [...new Set(data.map(d => d.clientName))];
-  const workCategoryOptions = [...new Set(data.map(d => d.workCategory))];
-  const labOptions = [...new Set(data.map(d => d.lab))];
+  const clientOptions = [...new Set(data.map((d) => d.clientName))];
+  const workCategoryOptions = [...new Set(data.map((d) => d.workCategory))];
+  const labOptions = [...new Set(data.map((d) => d.lab))];
 
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
   const [selectedLab, setSelectedLab] = useState("");
 
   const [newQuotation, setNewQuotation] = useState({
-      quotationNo: "",
+    quotationNo: "",
     clientName: "",
     clientType: "Corporate",
     workCategory: "",
@@ -42,46 +42,57 @@ export default function Quotations() {
     setPage(1);
   };
 
-  const filtered = data.filter(q =>
-    (selectedClient === "" || q.clientName === selectedClient) &&
-    (selectedWorkCategory === "" || q.workCategory === selectedWorkCategory) &&
-    (selectedLab === "" || q.lab === selectedLab)
+  const filtered = data.filter(
+    (q) =>
+      (selectedClient === "" || q.clientName === selectedClient) &&
+      (selectedWorkCategory === "" ||
+        q.workCategory === selectedWorkCategory) &&
+      (selectedLab === "" || q.lab === selectedLab)
   );
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   // ✅ DOCX DOWNLOAD FUNCTION
-  const downloadDocx = async (quotation) => {
-    setDownloadingId(quotation.id);
-    try {
-      const response = await fetch(`/api/quotations/${quotation.id}/docx`, {
-        method: 'GET',
+const downloadDocx = async (quotation) => {
+  setDownloadingId(quotation.id);
+  try {
+    const userId = localStorage.getItem("userId") || "1";
+    const userRole = (localStorage.getItem("userRole") || "FINANCE").toUpperCase();
+
+    const response = await fetch(
+      `http://localhost:9899/api/quotations/${quotation.id}/docx`,
+      {
+        method: "GET",
         headers: {
-          'Accept': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          Accept:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "x-user-id": userId,
+          "x-user-role": userRole,
         },
-      });
-
-      if (!response.ok) {
-        throw new Error('Download failed');
       }
+    );
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Quotation_${quotation.quotationNo}.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('Failed to download DOCX');
-    } finally {
-      setDownloadingId(null);
+    if (!response.ok) {
+      throw new Error("Download failed");
     }
-  };
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Quotation_${quotation.quotationNo}.docx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Download error:", error);
+    alert("Failed to download DOCX");
+  } finally {
+    setDownloadingId(null);
+  }
+};
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
@@ -114,19 +125,19 @@ export default function Quotations() {
       });
     } catch (err) {
       console.error(err);
-      alert('Error saving quotation');
+      alert("Error saving quotation");
     }
   };
 
   const deleteRow = async (id) => {
-    if (window.confirm('Are you sure you want to delete this quotation?')) {
+    if (window.confirm("Are you sure you want to delete this quotation?")) {
       try {
         await deleteQuotation(id);
         const updatedData = await getQuotations();
         setData(updatedData);
       } catch (err) {
         console.error(err);
-        alert('Error deleting quotation');
+        alert("Error deleting quotation");
       }
     }
   };
@@ -151,9 +162,14 @@ export default function Quotations() {
       <div className="table-header">
         <div>
           <h2>Quotations Management</h2>
-          <p className="header-subtitle">Create, manage and download quotations</p>
+          <p className="header-subtitle">
+            Create, manage and download quotations
+          </p>
         </div>
-        <button className="btn-add-quotation" onClick={() => setShowModal(true)}>
+        <button
+          className="btn-add-quotation"
+          onClick={() => setShowModal(true)}
+        >
           + Create New Quotation
         </button>
       </div>
@@ -168,8 +184,10 @@ export default function Quotations() {
           }}
         >
           <option value="">All Clients</option>
-          {clientOptions.map(client => (
-            <option key={client} value={client}>{client}</option>
+          {clientOptions.map((client) => (
+            <option key={client} value={client}>
+              {client}
+            </option>
           ))}
         </select>
 
@@ -181,8 +199,10 @@ export default function Quotations() {
           }}
         >
           <option value="">All Categories</option>
-          {workCategoryOptions.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
+          {workCategoryOptions.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
           ))}
         </select>
 
@@ -194,8 +214,10 @@ export default function Quotations() {
           }}
         >
           <option value="">All Labs</option>
-          {labOptions.map(lab => (
-            <option key={lab} value={lab}>{lab}</option>
+          {labOptions.map((lab) => (
+            <option key={lab} value={lab}>
+              {lab}
+            </option>
           ))}
         </select>
 
@@ -248,7 +270,9 @@ export default function Quotations() {
                   </td>
                   <td>{q.clientName}</td>
                   <td>
-                    <span className={`badge badge-${q.clientType.toLowerCase()}`}>
+                    <span
+                      className={`badge badge-${q.clientType.toLowerCase()}`}
+                    >
                       {q.clientType}
                     </span>
                   </td>
@@ -257,8 +281,10 @@ export default function Quotations() {
                     <span className="badge-lab">{q.lab}</span>
                   </td>
                   <td className="desc-cell">{q.description}</td>
-                  <td className="value-cell">₹ {parseInt(q.value).toLocaleString('en-IN')}</td>
-                  <td>{new Date(q.date).toLocaleDateString('en-IN')}</td>
+                  <td className="value-cell">
+                    ₹ {parseInt(q.value).toLocaleString("en-IN")}
+                  </td>
+                  <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
                     <button
                       className="btn-docx"
@@ -266,7 +292,7 @@ export default function Quotations() {
                       disabled={downloadingId === q.id}
                       title="Download DOCX"
                     >
-                      {downloadingId === q.id ? '⏳' : '📄'}
+                      {downloadingId === q.id ? "⏳" : "📄"}
                     </button>
                     <button
                       className="btn-edit"
@@ -298,10 +324,7 @@ export default function Quotations() {
 
       {/* Pagination */}
       <div className="pagination">
-        <button
-          disabled={page === 1}
-          onClick={() => setPage(p => p - 1)}
-        >
+        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
           ← Prev
         </button>
         <span>
@@ -309,7 +332,7 @@ export default function Quotations() {
         </span>
         <button
           disabled={page === totalPages}
-          onClick={() => setPage(p => p + 1)}
+          onClick={() => setPage((p) => p + 1)}
         >
           Next →
         </button>
@@ -321,20 +344,25 @@ export default function Quotations() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
-              <button className="btn-close" onClick={closeModal}>✕</button>
+              <button className="btn-close" onClick={closeModal}>
+                ✕
+              </button>
             </div>
-<div className="form-group">
-  <label>Quotation No *</label>
-  <input
-    type="text"
-    placeholder="e.g., QT-2026-001"
-    value={newQuotation.quotationNo}
-    onChange={e =>
-      setNewQuotation({ ...newQuotation, quotationNo: e.target.value })
-    }
-    required
-  />
-</div>
+            <div className="form-group">
+              <label>Quotation No *</label>
+              <input
+                type="text"
+                placeholder="e.g., QT-2026-001"
+                value={newQuotation.quotationNo}
+                onChange={(e) =>
+                  setNewQuotation({
+                    ...newQuotation,
+                    quotationNo: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
 
             <div className="modal-form">
               <div className="form-group">
@@ -343,7 +371,12 @@ export default function Quotations() {
                   type="text"
                   placeholder="Enter client name"
                   value={newQuotation.clientName}
-                  onChange={e => setNewQuotation({...newQuotation, clientName: e.target.value})}
+                  onChange={(e) =>
+                    setNewQuotation({
+                      ...newQuotation,
+                      clientName: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -353,7 +386,12 @@ export default function Quotations() {
                   <label>Client Type *</label>
                   <select
                     value={newQuotation.clientType}
-                    onChange={e => setNewQuotation({...newQuotation, clientType: e.target.value})}
+                    onChange={(e) =>
+                      setNewQuotation({
+                        ...newQuotation,
+                        clientType: e.target.value,
+                      })
+                    }
                   >
                     <option value="Corporate">Corporate</option>
                     <option value="Individual">Individual</option>
@@ -368,7 +406,12 @@ export default function Quotations() {
                     type="number"
                     placeholder="Enter amount"
                     value={newQuotation.value}
-                    onChange={e => setNewQuotation({...newQuotation, value: e.target.value})}
+                    onChange={(e) =>
+                      setNewQuotation({
+                        ...newQuotation,
+                        value: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -381,7 +424,12 @@ export default function Quotations() {
                     type="text"
                     placeholder="e.g., Environmental, Chemical"
                     value={newQuotation.workCategory}
-                    onChange={e => setNewQuotation({...newQuotation, workCategory: e.target.value})}
+                    onChange={(e) =>
+                      setNewQuotation({
+                        ...newQuotation,
+                        workCategory: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -392,7 +440,9 @@ export default function Quotations() {
                     type="text"
                     placeholder="e.g., Chennai Lab"
                     value={newQuotation.lab}
-                    onChange={e => setNewQuotation({...newQuotation, lab: e.target.value})}
+                    onChange={(e) =>
+                      setNewQuotation({ ...newQuotation, lab: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -403,7 +453,12 @@ export default function Quotations() {
                 <textarea
                   placeholder="Enter detailed description of the work..."
                   value={newQuotation.description}
-                  onChange={e => setNewQuotation({...newQuotation, description: e.target.value})}
+                  onChange={(e) =>
+                    setNewQuotation({
+                      ...newQuotation,
+                      description: e.target.value,
+                    })
+                  }
                   rows="4"
                   required
                 />
@@ -414,7 +469,9 @@ export default function Quotations() {
                 <input
                   type="date"
                   value={newQuotation.date}
-                  onChange={e => setNewQuotation({...newQuotation, date: e.target.value})}
+                  onChange={(e) =>
+                    setNewQuotation({ ...newQuotation, date: e.target.value })
+                  }
                   required
                 />
               </div>
