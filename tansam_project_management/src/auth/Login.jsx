@@ -11,17 +11,6 @@ function Login({ setUser }) {
 
   const navigate = useNavigate();
 
-  /* 🔁 FRONTEND ROLE → ROUTE MAP */
-  const roleRouteMap = {
-    ADMIN: "/admin",
-    COORDINATOR: "/coordinator",
-    "TEAM LEAD": "/tl",   // ✅ FIXED
-    TL: "/tl",
-    FINANCE: "/finance",
-    CEO: "/ceo",
-    MD: "/ceo",
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -32,23 +21,23 @@ function Login({ setUser }) {
 
       const data = await loginUser(email, password);
 
+      // 🔍 LOG RESPONSE DATA
       console.log("📥 Login API response:", data);
 
-      // Save user globally
+      // Save user in state
       setUser(data);
+      
 
       // Persist login
       localStorage.setItem("user", JSON.stringify(data));
 
-      // 🔥 FRONTEND decides redirect
-      const redirectPath = roleRouteMap[data.role] || "/";
-
-      console.log("➡️ Redirecting to:", redirectPath);
-      navigate(redirectPath);
+      // Redirect based on role
+      console.log("➡️ Redirecting to:", data.route);
+      navigate(data.route);
 
     } catch (err) {
       console.error("❌ Login error:", err);
-      setError(err.message || "Login failed");
+      setError(err.message || "Backend not reachable");
     } finally {
       setLoading(false);
     }
@@ -57,6 +46,8 @@ function Login({ setUser }) {
   return (
     <div className="login-container">
       <h2 className="login-title">Login</h2>
+
+      
 
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="login-field">
