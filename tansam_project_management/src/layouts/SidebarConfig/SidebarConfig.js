@@ -23,10 +23,21 @@ export const SIDEBAR_MENU = {
   ],
 
   tl: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Leads", path: "/dashboard/leads" },
-    { label: "Projects", path: "/dashboard/projects" },
-    { label: "Team Review", path: "/dashboard/team-review" },
+    { label: "Dashboard", path: "/tl" },
+    { label: "Create Project", path: "/tl/create-project" },
+    { label: "Project Follow-up", path: "/tl/follow-up" },
+    { label: "Summary", path: "/tl/summary" },
+
+    // 🔥 SEPARATE SECTION (AFTER SUMMARY)
+    {
+      label: "Project Execution",
+      children: [
+        { label: "Assign Team", path: "/tl/assign-team" },
+        { label: "Departments", path: "/tl/department" },
+        { label: "Team Member", path: "/tl/team-member" },
+        // { label: "Time Tracking", path: "/tl/time-tracking" },
+      ],
+    },
   ],
 
   finance: [

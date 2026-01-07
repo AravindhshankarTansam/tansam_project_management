@@ -65,6 +65,7 @@ export const login = async (req, res) => {
     const roleRoutes = {
       ADMIN: "/admin",
       COORDINATOR: "/coordinator",
+      "TEAM LEAD": "/tl", 
       TL: "/tl",
       FINANCE: "/finance",
       CEO: "/ceo",

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Login from "./auth/Login.jsx";
 import DashboardLayout from "./layouts/DashboardLayout.jsx";
 
-// Admin
+/* ADMIN */
 import AdminDashboard from "./dashboards/Admin/AdminDashboard.jsx";
 import Users from "./dashboards/Admin/Users.jsx";
 import Roles from "./dashboards/Admin/Roles.jsx";
@@ -13,15 +13,24 @@ import Reports from "./dashboards/Admin/Reports.jsx";
 import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
 import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 
-// Coordinator
+/* COORDINATOR */
 import CoordinatorDashboard from "./dashboards/Coordinator/CoordinatorDashboard.jsx";
 import Opportunities from "./dashboards/Coordinator/Opportunities.jsx";
 import OpportunitiesTacker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
 
+/* TEAM LEADER */
+import TLDashboard from "./tl/pages/TLDashboard.jsx";
+import CreateProject from "./tl/pages/CreateProject.jsx";
+import ProjectFollowUp from "./tl/pages/ProjectFollowUp.jsx";
+import Summary from "./tl/pages/Summary.jsx";
+import AssignTeam from "./tl/pages/AssignTeam.jsx";
+import Department from "./tl/pages/department.jsx";
+import TeamMember from "./tl/pages/teammember.jsx";
+
+
 function App() {
   const [user, setUser] = useState(null);
 
-  // 🔄 Restore session on refresh
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -33,7 +42,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login */}
         <Route path="/" element={<Login setUser={setUser} />} />
 
         {/* ADMIN */}
@@ -64,9 +72,32 @@ function App() {
           }
         >
           <Route index element={<CoordinatorDashboard />} />
-          <Route path="/coordinator/Opportunities-tacker" element={<OpportunitiesTacker />} />
-          <Route path="/coordinator/opportunities" element={<Opportunities />} />
+          <Route path="opportunities" element={<Opportunities />} />
+          <Route
+            path="opportunities-tracker"
+            element={<OpportunitiesTacker />}
+          />
         </Route>
+
+        {/* TEAM LEADER */}
+        <Route
+          path="/tl"
+          element={
+            <PrivateRoute>
+              <DashboardLayout user={user} setUser={setUser} />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<TLDashboard />} />
+          <Route path="create-project" element={<CreateProject />} />
+          <Route path="follow-up" element={<ProjectFollowUp />} />
+          <Route path="summary" element={<Summary />} />
+          <Route path="assign-team" element={<AssignTeam />} />
+          <Route path="department" element={<Department />} />
+          <Route path="team-member" element={<TeamMember />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

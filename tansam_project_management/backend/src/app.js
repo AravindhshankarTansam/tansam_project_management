@@ -3,6 +3,10 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import projectRoutes from "./routes/project.routes.js";
+import assignTeamRoutes from "./routes/assignTeam.routes.js";
+import departmentRoutes from "./routes/department.routes.js";
+import membersRoutes from "./routes/members.routes.js";
 
 const app = express();
 
@@ -29,5 +33,9 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api", projectRoutes);
+app.use("/api", assignTeamRoutes);
+app.use("/api", departmentRoutes);
+app.use("/api", membersRoutes);
 
 export default app;
