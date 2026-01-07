@@ -279,3 +279,130 @@
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
   background: linear-gradient(135deg, #22c55e, #16a34a);
 }
+
+/* SEARCH & FILTER BAR */
+.search-filter-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 280px;
+  max-width: 420px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+  color: #1e293b;
+}
+
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+/* Filter Dropdown */
+.filter-box {
+  position: relative;
+  min-width: 220px;
+}
+
+.filter-box select {
+  width: 100%;
+  padding: 14px 40px 14px 48px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
+  color: #1e293b;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-box select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.filter-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+/* Reset / Clear Filters Button */
+.reset-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.reset-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-1px);
+}
+
+/* No Results Message */
+.no-results {
+  text-align: center;
+  padding: 80px 20px;
+  color: #94a3b8;
+  font-size: 16px;
+  font-weight: 500;
+}

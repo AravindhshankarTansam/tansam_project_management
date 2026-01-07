@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { FiEdit, FiTrash2, FiChevronDown, FiPlus } from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import { FiEdit, FiTrash2, FiChevronDown, FiPlus, FiSearch, FiFilter, FiX } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./CreateProject.css";
@@ -25,10 +25,13 @@ export default function CreateProject() {
   const isTL = role === "TEAM LEAD";
   const isAdmin = role === "ADMIN";
 
-  /* ---------- STATE (HOOKS ALWAYS FIRST) ---------- */
+  /* ---------- STATE ---------- */
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState(""); // "" = All types
 
   const [form, setForm] = useState({
     id: null,
@@ -43,19 +46,36 @@ export default function CreateProject() {
   /* ---------- LOAD PROJECTS ---------- */
   useEffect(() => {
     fetchProjects()
-      .then(setProjects)
+      .then((data) => setProjects(data || []))
       .catch(() => toast.error("Failed to load projects"));
   }, []);
 
-  /* ---------- ACCESS GUARD (AFTER HOOKS ✅) ---------- */
-  if (!isTL && !isAdmin) {
-    return (
-      <div className="unauthorized">
-        <h3>Access Denied</h3>
-        <p>You do not have permission to access this page.</p>
-      </div>
-    );
-  }
+  /* ---------- DERIVED FILTERED PROJECTS (useMemo - No setState in effect!) ---------- */
+  const filteredProjects = useMemo(() => {
+    let filtered = projects;
+
+    // Search by project name or client
+    if (searchTerm.trim()) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.projectName?.toLowerCase().includes(lowerSearch) ||
+          p.clientName?.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    // Filter by project type
+    if (selectedType) {
+      filtered = filtered.filter((p) => p.projectType === selectedType);
+    }
+
+    return filtered;
+  }, [projects, searchTerm, selectedType]);
+
+  /* ---------- UNIQUE PROJECT TYPES FOR FILTER DROPDOWN ---------- */
+  const projectTypes = useMemo(() => {
+    return Array.from(new Set(projects.map((p) => p.projectType).filter(Boolean)));
+  }, [projects]);
 
   /* ---------- HANDLERS ---------- */
   const handleChange = (e) => {
@@ -64,7 +84,6 @@ export default function CreateProject() {
 
   const openAddModal = () => {
     if (!isTL) return;
-
     setIsEdit(false);
     setForm({
       id: null,
@@ -80,7 +99,6 @@ export default function CreateProject() {
 
   const openEditModal = (project) => {
     if (!isTL) return;
-
     setIsEdit(true);
     setForm({
       ...project,
@@ -92,7 +110,6 @@ export default function CreateProject() {
 
   const handleDelete = async (id) => {
     if (!isTL) return;
-
     if (!window.confirm("Are you sure you want to delete this project?")) return;
 
     try {
@@ -135,26 +152,72 @@ export default function CreateProject() {
     }
   };
 
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedType("");
+  };
+
+  const hasActiveFilters = searchTerm || selectedType;
+
+  /* ---------- ACCESS GUARD ---------- */
+  if (!isTL && !isAdmin) {
+    return (
+      <div className="unauthorized">
+        <h3>Access Denied</h3>
+        <p>You do not have permission to access this page.</p>
+      </div>
+    );
+  }
+
   /* ---------- UI ---------- */
   return (
     <div className="create-project">
-      <ToastContainer
-        position="top-right"
-        autoClose={1200}
-        pauseOnHover={false}
-        newestOnTop
-        theme="light"
-      />
+      <ToastContainer position="top-right" autoClose={1200} theme="light" newestOnTop />
 
       {/* HEADER */}
       <div className="page-header">
         <h2>Project Management</h2>
 
-        {/* ONLY TEAM LEAD CAN CREATE */}
         {isTL && (
           <button className="add-btn" onClick={openAddModal}>
             <FiPlus className="plus-icon" />
             Create New Project
+          </button>
+        )}
+      </div>
+
+      {/* SEARCH & FILTER BAR */}
+      <div className="search-filter-bar">
+        <div className="search-box">
+          <FiSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search by project name or client..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="filter-box">
+          <FiFilter className="filter-icon" />
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <option value="">All Types</option>
+            {projectTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          <FiChevronDown className="select-arrow" />
+        </div>
+
+        {hasActiveFilters && (
+          <button className="reset-btn" onClick={resetFilters}>
+            <FiX />
+            Clear Filters
           </button>
         )}
       </div>
@@ -173,16 +236,17 @@ export default function CreateProject() {
               <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {projects.length === 0 ? (
+            {filteredProjects.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
-                  No projects found
+                <td colSpan="7" className="no-results">
+                  {hasActiveFilters
+                    ? "No projects match your search or filter"
+                    : "No projects found"}
                 </td>
               </tr>
             ) : (
-              projects.map((p) => (
+              filteredProjects.map((p) => (
                 <tr key={p.id}>
                   <td>{p.projectName}</td>
                   <td>{p.clientName}</td>
@@ -192,7 +256,7 @@ export default function CreateProject() {
                   <td>
                     <span
                       className={`status ${p.status
-                        .toLowerCase()
+                        ?.toLowerCase()
                         .replace(" ", "-")}`}
                     >
                       {p.status}
@@ -224,7 +288,7 @@ export default function CreateProject() {
         </table>
       </div>
 
-      {/* MODAL – TEAM LEAD ONLY */}
+      {/* MODAL */}
       {showModal && isTL && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -281,11 +345,7 @@ export default function CreateProject() {
               />
 
               <div className="select-wrapper">
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                >
+                <select name="status" value={form.status} onChange={handleChange}>
                   <option value="Planned">Planned</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>
