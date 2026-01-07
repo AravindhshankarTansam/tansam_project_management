@@ -17,7 +17,7 @@ import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 import CoordinatorDashboard from "./dashboards/Coordinator/CoordinatorDashboard.jsx";
 import Opportunities from "./dashboards/Coordinator/Opportunities.jsx";
 import OpportunitiesTacker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
-import CreateProject from "./dashboards/Admin/Projects.jsx";
+import CreateProjects from "./dashboards/Admin/Projects.jsx";
 import Quotations from "./dashboards/Finance/Quotations.jsx";
 import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
 // import FinanceReports from "./dashboards/Finance/Reports.jsx";
