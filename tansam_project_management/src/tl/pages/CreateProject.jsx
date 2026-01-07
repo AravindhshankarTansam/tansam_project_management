@@ -1,5 +1,14 @@
-import { useState, useEffect } from "react";
-import { FiEdit, FiTrash2, FiChevronDown, FiPlus } from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import {
+  FiEdit,
+  FiTrash2,
+  FiChevronDown,
+  FiPlus,
+  FiSearch,
+  FiCheckCircle,
+  FiFilter,
+  FiX,
+} from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./CreateProject.css";
@@ -11,6 +20,8 @@ import {
   deleteProject,
 } from "../../services/project.api";
 
+import { fetchProjectTypes } from "../../services/projectType.api";
+
 /* ---------- DATE FORMAT HELPER ---------- */
 const formatDate = (dateValue) => {
   if (!dateValue) return "";
@@ -20,15 +31,20 @@ const formatDate = (dateValue) => {
 export default function CreateProject() {
   /* ---------- USER / ROLE ---------- */
   const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role; // "TEAM LEAD" | "ADMIN" | others
+  const role = user?.role;
 
   const isTL = role === "TEAM LEAD";
   const isAdmin = role === "ADMIN";
 
-  /* ---------- STATE (HOOKS ALWAYS FIRST) ---------- */
+  /* ---------- STATE ---------- */
   const [projects, setProjects] = useState([]);
+  const [projectTypes, setProjectTypes] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("");
 
   const [form, setForm] = useState({
     id: null,
@@ -40,31 +56,57 @@ export default function CreateProject() {
     status: "Planned",
   });
 
-  /* ---------- LOAD PROJECTS ---------- */
+  /* ---------- LOAD PROJECTS + PROJECT TYPES ---------- */
   useEffect(() => {
-    fetchProjects()
-      .then(setProjects)
-      .catch(() => toast.error("Failed to load projects"));
+    let mounted = true;
+
+    (async () => {
+      try {
+        const [projectsData, typesData] = await Promise.all([
+          fetchProjects(),
+          fetchProjectTypes(),
+        ]);
+
+        if (mounted) {
+          setProjects(projectsData || []);
+          setProjectTypes(typesData || []);
+        }
+      } catch {
+        toast.error("Failed to load data");
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  /* ---------- ACCESS GUARD (AFTER HOOKS ✅) ---------- */
-  if (!isTL && !isAdmin) {
-    return (
-      <div className="unauthorized">
-        <h3>Access Denied</h3>
-        <p>You do not have permission to access this page.</p>
-      </div>
-    );
-  }
+  /* ---------- FILTERED PROJECTS ---------- */
+  const filteredProjects = useMemo(() => {
+    let filtered = projects;
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.projectName?.toLowerCase().includes(q) ||
+          p.clientName?.toLowerCase().includes(q)
+      );
+    }
+
+    if (selectedType) {
+      filtered = filtered.filter((p) => p.projectType === selectedType);
+    }
+
+    return filtered;
+  }, [projects, searchTerm, selectedType]);
 
   /* ---------- HANDLERS ---------- */
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const openAddModal = () => {
     if (!isTL) return;
-
     setIsEdit(false);
     setForm({
       id: null,
@@ -80,7 +122,6 @@ export default function CreateProject() {
 
   const openEditModal = (project) => {
     if (!isTL) return;
-
     setIsEdit(true);
     setForm({
       ...project,
@@ -92,13 +133,12 @@ export default function CreateProject() {
 
   const handleDelete = async (id) => {
     if (!isTL) return;
-
-    if (!window.confirm("Are you sure you want to delete this project?")) return;
+    if (!window.confirm("Delete this project?")) return;
 
     try {
       await deleteProject(id);
       setProjects((prev) => prev.filter((p) => p.id !== id));
-      toast.success("Project deleted successfully");
+      toast.success("Project deleted");
     } catch {
       toast.error("Delete failed");
     }
@@ -120,14 +160,13 @@ export default function CreateProject() {
     try {
       if (isEdit) {
         await updateProject(form.id, payload);
-        toast.success("Project updated successfully");
+        toast.success("Project updated");
       } else {
         await createProject(payload);
-        toast.success("Project created successfully");
+        toast.success("Project created");
       }
 
-      const data = await fetchProjects();
-      setProjects(data);
+      setProjects(await fetchProjects());
       setShowModal(false);
       setIsEdit(false);
     } catch (err) {
@@ -135,26 +174,66 @@ export default function CreateProject() {
     }
   };
 
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedType("");
+  };
+
+  /* ---------- ACCESS GUARD ---------- */
+  if (!isTL && !isAdmin) {
+    return (
+      <div className="unauthorized">
+        <h3>Access Denied</h3>
+        <p>You do not have permission to access this page.</p>
+      </div>
+    );
+  }
+
   /* ---------- UI ---------- */
   return (
     <div className="create-project">
-      <ToastContainer
-        position="top-right"
-        autoClose={1200}
-        pauseOnHover={false}
-        newestOnTop
-        theme="light"
-      />
+      <ToastContainer autoClose={1200} newestOnTop />
 
       {/* HEADER */}
       <div className="page-header">
         <h2>Project Management</h2>
-
-        {/* ONLY TEAM LEAD CAN CREATE */}
         {isTL && (
           <button className="add-btn" onClick={openAddModal}>
-            <FiPlus className="plus-icon" />
-            Create New Project
+            <FiPlus /> Create New Project
+          </button>
+        )}
+      </div>
+
+      {/* SEARCH + FILTER */}
+      <div className="search-filter-bar">
+        <div className="search-box">
+          <FiSearch />
+          <input
+            placeholder="Search project or client..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="filter-box">
+          <FiFilter />
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <option value="">All Types</option>
+            {projectTypes.map((t) => (
+              <option key={t.id} value={t.name}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+          <FiChevronDown />
+        </div>
+
+        {(searchTerm || selectedType) && (
+          <button className="reset-btn" onClick={resetFilters}>
+            <FiX /> Clear
           </button>
         )}
       </div>
@@ -164,25 +243,24 @@ export default function CreateProject() {
         <table className="project-table">
           <thead>
             <tr>
-              <th>Project Name</th>
+              <th>Project</th>
               <th>Client</th>
               <th>Type</th>
-              <th>Start Date</th>
-              <th>End Date</th>
+              <th>Start</th>
+              <th>End</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {projects.length === 0 ? (
+            {filteredProjects.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
+                <td colSpan="7" className="no-results">
                   No projects found
                 </td>
               </tr>
             ) : (
-              projects.map((p) => (
+              filteredProjects.map((p) => (
                 <tr key={p.id}>
                   <td>{p.projectName}</td>
                   <td>{p.clientName}</td>
@@ -191,27 +269,31 @@ export default function CreateProject() {
                   <td>{formatDate(p.endDate)}</td>
                   <td>
                     <span
-                      className={`status ${p.status
+                      className={`status-badge ${p.status
                         .toLowerCase()
                         .replace(" ", "-")}`}
                     >
+                      {p.status === "Completed" && (
+                        <FiCheckCircle style={{ marginRight: "6px" }} />
+                      )}
                       {p.status}
                     </span>
                   </td>
+
                   <td className="action-col">
                     <button
-                      className="icon-btn edit"
+                      className="icon-btn edit-btn"
                       disabled={!isTL}
-                      title={isTL ? "Edit" : "View only"}
+                      title="Edit"
                       onClick={() => openEditModal(p)}
                     >
                       <FiEdit />
                     </button>
 
                     <button
-                      className="icon-btn delete"
+                      className="icon-btn delete-btn"
                       disabled={!isTL}
-                      title={isTL ? "Delete" : "View only"}
+                      title="Delete"
                       onClick={() => handleDelete(p.id)}
                     >
                       <FiTrash2 />
@@ -224,11 +306,11 @@ export default function CreateProject() {
         </table>
       </div>
 
-      {/* MODAL – TEAM LEAD ONLY */}
+      {/* MODAL */}
       {showModal && isTL && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>{isEdit ? "Edit Project" : "Create New Project"}</h3>
+            <h3>{isEdit ? "Edit Project" : "Create Project"}</h3>
 
             <form onSubmit={handleSubmit}>
               <input
@@ -238,7 +320,6 @@ export default function CreateProject() {
                 onChange={handleChange}
                 required
               />
-
               <input
                 name="clientName"
                 placeholder="Client Name"
@@ -255,13 +336,13 @@ export default function CreateProject() {
                   required
                 >
                   <option value="">Select Project Type</option>
-                  <option value="Web Development">Web Development</option>
-                  <option value="Mobile App">Mobile App</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="UI/UX Design">UI/UX Design</option>
-                  <option value="Consulting">Consulting</option>
+                  {projectTypes.map((t) => (
+                    <option key={t.id} value={t.name}>
+                      {t.name}
+                    </option>
+                  ))}
                 </select>
-                <FiChevronDown className="select-icon" />
+                {/* <FiChevronDown /> */}
               </div>
 
               <input
@@ -271,7 +352,6 @@ export default function CreateProject() {
                 onChange={handleChange}
                 required
               />
-
               <input
                 type="date"
                 name="endDate"
@@ -286,25 +366,19 @@ export default function CreateProject() {
                   value={form.status}
                   onChange={handleChange}
                 >
-                  <option value="Planned">Planned</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                  <option value="On Hold">On Hold</option>
+                  <option>Planned</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                  <option>On Hold</option>
                 </select>
-                <FiChevronDown className="select-icon" />
+                {/* <FiChevronDown /> */}
               </div>
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => setShowModal(false)}
-                >
+                <button type="button" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="save-btn">
-                  {isEdit ? "Update Project" : "Create Project"}
-                </button>
+                <button type="submit">{isEdit ? "Update" : "Create"}</button>
               </div>
             </form>
           </div>
