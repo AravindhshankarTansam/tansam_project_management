@@ -8,6 +8,8 @@ import projectRoutes from "./routes/project.routes.js";
 import assignTeamRoutes from "./routes/assignTeam.routes.js";
 import departmentRoutes from "./routes/department.routes.js";
 import membersRoutes from "./routes/members.routes.js";
+import projectTypeRoutes from "./routes/projectType.routes.js";
+
 import quotationFollowup from "./routes/quotationFollowup.routes.js";
 
 const app = express();
@@ -42,5 +44,8 @@ app.use("/api", projectRoutes);
 app.use("/api", assignTeamRoutes);
 app.use("/api", departmentRoutes);
 app.use("/api", membersRoutes);
+app.use("/api", projectTypeRoutes);
+
+
 
 export default app;

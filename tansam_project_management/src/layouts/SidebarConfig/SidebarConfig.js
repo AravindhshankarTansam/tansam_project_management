@@ -25,6 +25,7 @@ export const SIDEBAR_MENU = {
 
   tl: [
     { label: "Dashboard", path: "/tl" },
+    { label: "Project Types", path: "/tl/project-types" },
     { label: "Create Project", path: "/tl/create-project" },
     { label: "Project Follow-up", path: "/tl/follow-up" },
     { label: "Summary", path: "/tl/summary" },
@@ -33,6 +34,7 @@ export const SIDEBAR_MENU = {
     {
       label: "Project Execution",
       children: [
+
         { label: "Assign Team", path: "/tl/assign-team" },
         { label: "Departments", path: "/tl/department" },
         { label: "Team Member", path: "/tl/team-member" },
