@@ -107,6 +107,14 @@ export const deleteQuotation = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getQuotationById = async (id) => {
+  const db = await connectDB();
+  const [rows] = await db.execute("SELECT * FROM quotations WHERE id=?", [id]);
+  return rows[0]; // or null if not found
+};
+
 export const downloadQuotationDocx = async (req, res) => {
   const { id } = req.params;
   const quotation = await getQuotationById(id);

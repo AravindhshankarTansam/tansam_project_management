@@ -16,6 +16,6 @@ router.put("/:id", updateQuotation);
 router.delete("/:id", deleteQuotation);
 
 // ✅ Correct download route
-router.get("/:id/docx", downloadQuotationDocx);
 
+router.get("/:id/docx", downloadQuotationDocx);
 export default router;

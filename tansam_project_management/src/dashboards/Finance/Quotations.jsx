@@ -60,18 +60,18 @@ const downloadDocx = async (quotation) => {
     const userId = localStorage.getItem("userId") || "1";
     const userRole = (localStorage.getItem("userRole") || "FINANCE").toUpperCase();
 
-    const response = await fetch(
-      `http://localhost:9899/api/quotations/${quotation.id}/docx`,
-      {
-        method: "GET",
-        headers: {
-          Accept:
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "x-user-id": userId,
-          "x-user-role": userRole,
-        },
-      }
-    );
+const response = await fetch(
+  `http://localhost:9899/api/quotations/${quotation.id}/docx`,
+  {
+    method: "GET",
+    headers: {
+      Accept:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "x-user-id": userId,
+      "x-user-role": userRole,
+    },
+  }
+);
 
     if (!response.ok) {
       throw new Error("Download failed");
