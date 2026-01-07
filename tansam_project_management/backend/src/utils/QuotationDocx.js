@@ -4,7 +4,7 @@ import path from "path";
 
 export const createQuotationDocx = async (quotation) => {
   try {
-    // ✅ FIXED: Multiple logo path attempts
+    // ✅ Attempt multiple logo paths
     const logoPaths = [
       path.resolve("src/assets/logo.png"),
       path.resolve("backend/src/assets/logo.png"),
@@ -14,37 +14,25 @@ export const createQuotationDocx = async (quotation) => {
     ];
 
     let logoBuffer = null;
-    let logoPathUsed = "";
 
     for (const logoPath of logoPaths) {
-      try {
-        if (fs.existsSync(logoPath)) {
-          logoBuffer = fs.readFileSync(logoPath);
-          logoPathUsed = logoPath;
-          console.log("✅ Logo found at:", logoPath);
-          break;
-        }
-      } catch (e) {
-        console.log("Logo not found at:", logoPath);
+      if (fs.existsSync(logoPath)) {
+        logoBuffer = fs.readFileSync(logoPath);
+        console.log("✅ Logo found at:", logoPath);
+        break;
       }
     }
 
-    if (!logoBuffer) {
-      console.warn("⚠️ Logo not found, creating without logo");
-    }
+    if (!logoBuffer) console.warn("⚠️ Logo not found, creating DOCX without logo");
 
-    // Rest of your DOCX code...
+    // ----- Client / Quotation Details Table -----
     const detailsTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
         new TableRow({
           children: [
-            new TableCell({ 
-              children: [new Paragraph("Quotation No: " + quotation.quotationNo)] 
-            }),
-            new TableCell({ 
-              children: [new Paragraph("Date: " + new Date(quotation.date).toLocaleDateString("en-IN"))] 
-            }),
+            new TableCell({ children: [new Paragraph({ text: "Quotation No: " + quotation.quotationNo, bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Date: " + new Date(quotation.date).toLocaleDateString("en-IN") })] }),
           ],
         }),
         new TableRow({
@@ -62,64 +50,85 @@ export const createQuotationDocx = async (quotation) => {
       ],
     });
 
+    // ----- Items Table (Description + Value) -----
     const itemsTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
+        // Header row
         new TableRow({
           children: [
-            new TableCell({ children: [new Paragraph("Description")] }),
-            new TableCell({ children: [new Paragraph("Quote Value (₹)")] }),
+            new TableCell({ children: [new Paragraph({ text: "Description", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Quote Value (₹)", bold: true })] }),
           ],
         }),
+        // Item row
         new TableRow({
           children: [
             new TableCell({ children: [new Paragraph(quotation.description || "N/A")] }),
             new TableCell({ children: [new Paragraph(parseInt(quotation.value || 0).toLocaleString("en-IN"))] }),
           ],
         }),
+        // Total row
         new TableRow({
           children: [
-            new TableCell({ children: [new Paragraph("Total")], columnSpan: 1 }),
-            new TableCell({ children: [new Paragraph(parseInt(quotation.value || 0).toLocaleString("en-IN"))] }),
+            new TableCell({ children: [new Paragraph({ text: "Total", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: parseInt(quotation.value || 0).toLocaleString("en-IN"), bold: true })] }),
           ],
         }),
       ],
     });
 
-   const doc = new Document({
-  sections: [
-    {
-      properties: {},
-      children: [
-        // ✅ Replace this part
-        ...(logoBuffer ? [
-          new Paragraph({
-            children: [
-              new ImageRun({
-                data: logoBuffer,
-                transformation: { width: 150, height: 50 },
-              }),
-            ],
-          })
-        ] : []),
+    // ----- Final Document -----
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            // Logo
+            ...(logoBuffer
+              ? [
+                  new Paragraph({
+                    children: [
+                      new ImageRun({
+                        data: logoBuffer,
+                        transformation: { width: 150, height: 50 },
+                      }),
+                    ],
+                  }),
+                ]
+              : []),
 
-        new Paragraph({ text: "\n\n" }),
-        new Paragraph({
-          text: "QUOTATION",
-          bold: true,
-          size: 36,
-        }),
-        new Paragraph({ text: "\n" }),
+            new Paragraph({ text: "\n\n" }),
 
-        detailsTable,
-        new Paragraph({ text: "\n" }),
-        itemsTable,
-        new Paragraph({ text: "\n\nThank you for your business!", italics: true }),
+            // Quotation Header
+            new Paragraph({
+              text: "QUOTATION",
+              bold: true,
+              size: 36,
+              spacing: { after: 200 },
+            }),
+
+            // Details Table
+            detailsTable,
+            new Paragraph({ text: "\n" }),
+
+            // Items Table
+            itemsTable,
+            new Paragraph({ text: "\n" }),
+
+            // Closing Note
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Thank you for your business!",
+                  italics: true,
+                }),
+              ],
+            }),
+          ],
+        },
       ],
-    },
-  ],
-});
-
+    });
 
     const buffer = await Packer.toBuffer(doc);
     console.log("✅ DOCX generated successfully, size:", buffer.length, "bytes");
