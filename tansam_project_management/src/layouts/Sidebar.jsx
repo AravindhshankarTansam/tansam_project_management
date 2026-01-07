@@ -4,7 +4,13 @@ import { SIDEBAR_MENU } from "./SidebarConfig/SidebarConfig";
 import "./CSS/Sidebar.css";
 
 export default function Sidebar({ role }) {
-  const normalizedRole = role?.toLowerCase();
+  // const normalizedRole = role?.toLowerCase();
+  const normalizedRole = role
+  ?.toLowerCase()
+  .replace(/\s+/g, "") === "teamlead"
+  ? "tl"
+  : role?.toLowerCase();
+
   const menuItems = SIDEBAR_MENU[normalizedRole] || [];
   const location = useLocation();
 

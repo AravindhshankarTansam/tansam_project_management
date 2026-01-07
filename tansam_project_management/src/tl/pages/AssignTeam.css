@@ -1,0 +1,215 @@
+.assign-page {
+  padding: 32px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f9fafb;
+  min-height: 100vh;
+  color: #1e293b;
+}
+
+/* Header */
+.assign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.assign-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.assign-add-btn {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
+}
+
+.assign-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.plus-icon {
+  font-size: 18px;
+}
+
+/* Table Card */
+.assign-table-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.assign-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.assign-table thead {
+  background: #f8fafc;
+}
+
+.assign-table th {
+  padding: 16px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #000;
+  text-align: left;
+}
+
+.assign-table td {
+  padding: 16px 12px;
+  font-size: 14.5px;
+  color: #334155;
+}
+
+.assign-table tbody tr {
+  border-top: 1px solid #e2e8f0;
+  transition: background 0.2s;
+}
+
+.assign-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+/* Delete Button */
+.assign-delete-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 17px;
+  transition: all 0.2s;
+}
+
+.assign-delete-btn:hover {
+  background: #fee2e2;
+  transform: scale(1.1);
+}
+
+/* Empty & Loading States */
+.assign-empty,
+.assign-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* Modal */
+.assign-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.assign-modal {
+  background: white;
+  padding: 32px;
+  width: min(90%, 520px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.assign-modal h3 {
+  margin-bottom: 24px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.assign-modal input,
+.assign-modal select {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.assign-modal input::placeholder {
+  color: #94a3b8;
+}
+
+.assign-modal input:focus,
+.assign-modal select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.assign-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.assign-cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.assign-cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+.assign-save-btn {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.assign-save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
