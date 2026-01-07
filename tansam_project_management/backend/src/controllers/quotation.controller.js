@@ -14,10 +14,11 @@ export const getQuotations = async (req, res) => {
   }
 };
 
-// Add new quotation
+// Add quotation
 export const addQuotation = async (req, res) => {
   try {
     const {
+      quotationNo,
       clientName,
       clientType,
       workCategory,
@@ -29,13 +30,10 @@ export const addQuotation = async (req, res) => {
 
     const db = await connectDB();
 
-    // Generate quotation number
-    const quotationNo = `QT-${new Date().getFullYear()}-${Date.now()}`;
-
     const [result] = await db.execute(
       `INSERT INTO quotations
-      (quotationNo, clientName, clientType, workCategory, lab, description, value, date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (quotationNo, clientName, clientType, workCategory, lab, description, value, date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         quotationNo,
         clientName,
