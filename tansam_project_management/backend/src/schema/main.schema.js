@@ -5,6 +5,7 @@ import { createProjectSchemas } from "./project/project.schema.js";
 import { createAssignTeamSchema } from "./project/assignTeam/assignTeam.schema.js";
 import { createDepartmentSchema } from "./project/department/department.schema.js";
 import { createMemberSchema } from "./project/member/member.schema.js";
+import { createQuotationFollowupsSchema } from "./finance/finance.schema.js";
 import { createProjectTypeSchema } from "./project/projectType/projectType.schema.js";
 
 
@@ -27,6 +28,9 @@ export const initSchemas = async (db, options = {}) => {
   if (options.assignTeam) {
     await createAssignTeamSchema(db);
   }
+  if (options.assignTeam) {
+    await createAssignTeamSchema(db);
+  }
 
   if (options.department) {
     await createDepartmentSchema(db);
@@ -35,6 +39,9 @@ export const initSchemas = async (db, options = {}) => {
   await createMemberSchema(db);
 }
 
+ if (options.finance) {
+  await createQuotationFollowupsSchema(db);
+}
   if (options.projectType) {
     await createProjectTypeSchema(db);
   }

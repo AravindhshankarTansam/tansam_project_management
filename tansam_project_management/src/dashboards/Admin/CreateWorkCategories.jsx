@@ -43,15 +43,10 @@ export default function CreateWorkCategories() {
 
     if (isEdit) {
       setCategories(
-        categories.map((c) =>
-          c.id === form.id ? { ...form } : c
-        )
+        categories.map((c) => (c.id === form.id ? { ...form } : c))
       );
     } else {
-      setCategories([
-        ...categories,
-        { ...form, id: Date.now() },
-      ]);
+      setCategories([...categories, { ...form, id: Date.now() }]);
     }
 
     setShowModal(false);
@@ -124,10 +119,7 @@ export default function CreateWorkCategories() {
           <div className="modal-box">
             <div className="modal-header">
               <h3>{isEdit ? "Edit Work Category" : "Add Work Category"}</h3>
-              <button
-                className="icon-btn"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="icon-btn" onClick={() => setShowModal(false)}>
                 <FiX />
               </button>
             </div>

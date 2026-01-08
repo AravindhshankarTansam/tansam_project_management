@@ -3,6 +3,7 @@ export const SIDEBAR_MENU = {
   admin: [
     { label: "Dashboard", path: "/admin" },
     { label: "Create Users", path: "/admin/users" },
+      { label: "Project", path: "/admin/project" },
 
     {
       label: "Master Table",
@@ -42,12 +43,14 @@ export const SIDEBAR_MENU = {
     },
   ],
 
-  finance: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Quotations", path: "/dashboard/quotations" },
-    { label: "Approvals", path: "/dashboard/approvals" },
-    { label: "Reports", path: "/dashboard/reports" },
-  ],
+finance: [
+  { label: "Dashboard", path: "/finance" },
+  { label: "Quotations", path: "/finance/quotations" },
+  { label: "Quotation Follow-up", path: "/finance/quotation-followup" },
+  // { label: "Reports", path: "/finance/reports" },
+],
+
+
 
   ceo: [
     { label: "Dashboard", path: "/dashboard" },

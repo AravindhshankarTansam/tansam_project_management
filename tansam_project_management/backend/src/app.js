@@ -3,12 +3,14 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import quotationRoutes from "./routes/quotationRoutes.js";
 import projectRoutes from "./routes/project.routes.js";
 import assignTeamRoutes from "./routes/assignTeam.routes.js";
 import departmentRoutes from "./routes/department.routes.js";
 import membersRoutes from "./routes/members.routes.js";
 import projectTypeRoutes from "./routes/projectType.routes.js";
 
+import quotationFollowup from "./routes/quotationFollowup.routes.js";
 
 const app = express();
 
@@ -34,8 +36,11 @@ app.use(
 app.use(express.json());
 
 // Routes
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/quotations", quotationRoutes);
+app.use("/api/quotation-followups", quotationFollowup);
 app.use("/api", projectRoutes);
 app.use("/api", assignTeamRoutes);
 app.use("/api", departmentRoutes);

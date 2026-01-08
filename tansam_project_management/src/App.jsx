@@ -17,6 +17,12 @@ import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 import CoordinatorDashboard from "./dashboards/Coordinator/CoordinatorDashboard.jsx";
 import Opportunities from "./dashboards/Coordinator/Opportunities.jsx";
 import OpportunitiesTacker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
+import CreateProjects from "./dashboards/Admin/Projects.jsx";
+import Quotations from "./dashboards/Finance/Quotations.jsx";
+import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
+// import FinanceReports from "./dashboards/Finance/Reports.jsx";
+import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
+
 
 /* TEAM LEADER */
 import TLDashboard from "./tl/pages/TLDashboard.jsx";
@@ -57,11 +63,26 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<Users />} />
           <Route path="roles" element={<Roles />} />
+            <Route path="project" element={<CreateProject />} />
           <Route path="labs" element={<Labs />} />
           <Route path="reports" element={<Reports />} />
           <Route path="project-types" element={<CreateProjectType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
+<Route
+  path="/finance"
+  element={
+    <PrivateRoute>
+      <DashboardLayout user={user} setUser={setUser} />
+    </PrivateRoute>
+  }
+>
+  <Route index element={<FinanceDashboard />} />
+  <Route path="quotations" element={<Quotations />} />
+  <Route path="quotation-followup" element={<QuotationFollowup />} />
+  {/* Add other finance children routes here, like Reports */}
+  <Route path="reports" element={<Reports />} />
+</Route>
 
         {/* COORDINATOR */}
         <Route
@@ -101,7 +122,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </BrowserRouter>  
   );
 }
 

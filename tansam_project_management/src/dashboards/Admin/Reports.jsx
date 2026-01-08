@@ -42,11 +42,7 @@ export default function Reports() {
     }
 
     if (isEdit) {
-      setReports(
-        reports.map((r) =>
-          r.id === form.id ? { ...form } : r
-        )
-      );
+      setReports(reports.map((r) => (r.id === form.id ? { ...form } : r)));
     } else {
       setReports([
         ...reports,
