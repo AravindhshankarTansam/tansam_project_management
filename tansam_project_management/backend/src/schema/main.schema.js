@@ -1,5 +1,13 @@
 import { createAdminSchemas } from "./admin/admin.schema.js";
 import { createCoordinatorSchemas } from "./coordinator/coordinator.schema.js";
+import { createProjectSchemas } from "./project/project.schema.js";
+
+import { createAssignTeamSchema } from "./project/assignTeam/assignTeam.schema.js";
+import { createDepartmentSchema } from "./project/department/department.schema.js";
+import { createMemberSchema } from "./project/member/member.schema.js";
+import { createQuotationFollowupsSchema } from "./finance/finance.schema.js";
+import { createProjectTypeSchema } from "./project/projectType/projectType.schema.js";
+
 
 /**
  * Main schema initializer
@@ -15,6 +23,31 @@ export const initSchemas = async (db, options = {}) => {
     await createCoordinatorSchemas(db);
     console.log("Coordinator schemas initialized");
   }
+    if (options.project) {
+    await createProjectSchemas(db);
+  }
+  if (options.assignTeam) {
+    await createAssignTeamSchema(db);
+  }
+  if (options.assignTeam) {
+    await createAssignTeamSchema(db);
+  }
+
+  if (options.department) {
+    await createDepartmentSchema(db);
+  }
+  if (options.member) {
+  await createMemberSchema(db);
+}
+
+ if (options.finance) {
+  await createQuotationFollowupsSchema(db);
+}
+  if (options.projectType) {
+    await createProjectTypeSchema(db);
+  }
+
+ 
 
   // future extensions 👇
   // if (options.project) { ... }
