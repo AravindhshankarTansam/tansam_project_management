@@ -20,6 +20,7 @@ export const getQuotations = async (req, res) => {
 export const addQuotation = async (req, res) => {
   try {
     const {
+      project_name,
       quotationNo,
       clientName,
       clientType,
@@ -34,9 +35,10 @@ export const addQuotation = async (req, res) => {
 
     const [result] = await db.execute(
       `INSERT INTO quotations
-       (quotationNo, clientName, clientType, workCategory, lab, description, value, date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        project_name,
         quotationNo,
         clientName,
         clientType,
@@ -50,6 +52,7 @@ export const addQuotation = async (req, res) => {
 
     res.status(201).json({
       id: result.insertId,
+      project_name,
       quotationNo,
       clientName,
       clientType,
@@ -70,6 +73,7 @@ export const updateQuotation = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      project_name,
       clientName,
       clientType,
       workCategory,
@@ -83,9 +87,9 @@ export const updateQuotation = async (req, res) => {
 
     await db.execute(
       `UPDATE quotations
-       SET clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
+       SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
        WHERE id=?`,
-      [clientName, clientType, workCategory, lab, description, value, date, id]
+      [project_name, clientName, clientType, workCategory, lab, description, value, date, id]
     );
 
     res.json({ id, ...req.body });

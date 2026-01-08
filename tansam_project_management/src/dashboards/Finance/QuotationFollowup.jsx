@@ -17,6 +17,7 @@ export default function QuotationFollowup() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 const [newFollowup, setNewFollowup] = useState({
+  projectName: "",
   clientResponse: "",
   lastFollowup: "",
   revisedCost: "",
@@ -75,6 +76,7 @@ const handleSave = async () => {
     setEditId(null);
 
     setNewFollowup({
+      projectName: "",
       clientResponse: "",
       lastFollowup: "",
       revisedCost: "",
@@ -135,6 +137,7 @@ const handleSave = async () => {
           <thead>
             <tr>
               {[
+                "Project Name",
   "Client Response",
   "Last Follow-up",
   "Revised Cost",
@@ -158,6 +161,8 @@ const handleSave = async () => {
           <tbody>
             {paginated.map(d => (
               <tr key={d.id}>
+                <td>{d.project_name}</td>
+
                 <td>{d.clientResponse}</td>
                 <td>{d.lastFollowup}</td>
                 <td>₹ {d.revisedCost}</td>

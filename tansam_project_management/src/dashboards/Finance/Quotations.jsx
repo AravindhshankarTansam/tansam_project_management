@@ -26,6 +26,7 @@ export default function Quotations() {
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
+     project_name: "", 
     clientName: "",
     clientType: "Corporate",
     workCategory: "",
@@ -115,7 +116,10 @@ const response = await fetch(
       setShowModal(false);
       setEditId(null);
       setNewQuotation({
+        quotationNo: "",
+         project_name: "",
         clientName: "",
+
         clientType: "Corporate",
         workCategory: "",
         lab: "",
@@ -146,6 +150,8 @@ const response = await fetch(
     setShowModal(false);
     setEditId(null);
     setNewQuotation({
+      quotationNo: "",
+      project_name: "",
       clientName: "",
       clientType: "Corporate",
       workCategory: "",
@@ -249,7 +255,9 @@ const response = await fetch(
           <thead>
             <tr>
               <th>S.No</th>
+             
               <th>Quotation No</th>
+               <th>Project Name</th>
               <th>Client Name</th>
               <th>Client Type</th>
               <th>Work Category</th>
@@ -268,6 +276,8 @@ const response = await fetch(
                   <td>
                     <strong>{q.quotationNo}</strong>
                   </td>
+                  <td>{q.project_name}</td>
+
                   <td>{q.clientName}</td>
                   <td>
                     <span
@@ -364,6 +374,21 @@ const response = await fetch(
                 required
               />
             </div>
+<div className="form-group">
+  <label>Project Name *</label>
+  <input
+    type="text"
+    placeholder="Enter project name"
+    value={newQuotation.project_name}
+    onChange={(e) =>
+      setNewQuotation({
+        ...newQuotation,
+        project_name: e.target.value,
+      })
+    }
+    required
+  />
+</div>
 
             <div className="modal-form">
               <div className="form-group">

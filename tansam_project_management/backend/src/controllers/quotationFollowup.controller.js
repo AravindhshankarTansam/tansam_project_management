@@ -18,6 +18,7 @@ export const getFollowups = async (req, res) => {
 export const addFollowup = async (req, res) => {
   try {
     const {
+      project_name, 
       clientResponse,
       lastFollowup,
       revisedCost,
@@ -34,9 +35,10 @@ export const addFollowup = async (req, res) => {
     const db = await connectDB();
     const [result] = await db.execute(
       `INSERT INTO quotation_followups
-      (clientResponse, lastFollowup, revisedCost, nextFollowup, remarks, status, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (project_name, clientResponse, lastFollowup, revisedCost, nextFollowup, remarks, status, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        project_name,
         clientResponse,
         lastFollowup,
         revisedCost,
@@ -63,6 +65,7 @@ export const updateFollowup = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      project_name,
       clientResponse,
       lastFollowup,
       revisedCost,
@@ -79,6 +82,7 @@ export const updateFollowup = async (req, res) => {
     const db = await connectDB();
     await db.execute(
       `UPDATE quotation_followups SET
+        project_name=?,
         clientResponse=?,
         lastFollowup=?,
         revisedCost=?,
@@ -92,6 +96,7 @@ export const updateFollowup = async (req, res) => {
         reason=?
        WHERE id=?`,
       [
+        project_name,
         clientResponse,
         lastFollowup,
         revisedCost,
