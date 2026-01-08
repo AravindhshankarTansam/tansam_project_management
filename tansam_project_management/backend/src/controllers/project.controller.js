@@ -5,8 +5,6 @@ import { initSchemas } from "../schema/main.schema.js";
 export const createProject = async (req, res) => {
   try {
     const db = await connectDB();
-
-    // ✅ THIS IS THE KEY LINE
     await initSchemas(db, { project: true });
 
     const {
@@ -16,12 +14,17 @@ export const createProject = async (req, res) => {
       startDate,
       endDate,
       status,
+      poStatus,
+      quotationNumber,
+      poNumber,
+      poFile,
     } = req.body;
 
     await db.execute(
       `INSERT INTO projects
-       (project_name, client_name, project_type, start_date, end_date, status)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       (project_name, client_name, project_type, start_date, end_date, status,
+        po_status, quotation_number, po_number, po_file)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectName,
         clientName,
@@ -29,42 +32,52 @@ export const createProject = async (req, res) => {
         startDate,
         endDate,
         status || "Planned",
+        poStatus || "Negotiated",
+        quotationNumber || null,
+        poNumber || null,
+        poFile || null,
       ]
     );
 
     res.status(201).json({ message: "Project created successfully" });
   } catch (err) {
-    console.error("Create project error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
 export const getProjects = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { project: true });
 
-    const [rows] = await db.execute(
-      `SELECT 
-         id,
-         project_name AS projectName,
-         client_name AS clientName,
-         project_type AS projectType,
-         start_date AS startDate,
-         end_date AS endDate,
-         status
-       FROM projects
-       ORDER BY id DESC`
-    );
+    const [rows] = await db.execute(`
+      SELECT
+        id,
+        project_name AS projectName,
+        client_name AS clientName,
+        project_type AS projectType,
+        start_date AS startDate,
+        end_date AS endDate,
+        status,
+        po_status AS poStatus,
+        quotation_number AS quotationNumber,
+        po_number AS poNumber,
+        po_file AS poFile
+      FROM projects
+      ORDER BY id DESC
+    `);
 
     res.json(rows);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 /* ✅ UPDATE PROJECT */
 export const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
+
     const {
       projectName,
       clientName,
@@ -72,6 +85,10 @@ export const updateProject = async (req, res) => {
       startDate,
       endDate,
       status,
+      poStatus,
+      quotationNumber,
+      poNumber,
+      poFile,
     } = req.body;
 
     const db = await connectDB();
@@ -83,7 +100,11 @@ export const updateProject = async (req, res) => {
         project_type = ?,
         start_date = ?,
         end_date = ?,
-        status = ?
+        status = ?,
+        po_status = ?,
+        quotation_number = ?,
+        po_number = ?,
+        po_file = ?
        WHERE id = ?`,
       [
         projectName,
@@ -92,6 +113,10 @@ export const updateProject = async (req, res) => {
         startDate,
         endDate,
         status,
+        poStatus || "Negotiated",
+        quotationNumber || null,
+        poNumber || null,
+        poFile || null,
         id,
       ]
     );
@@ -101,6 +126,7 @@ export const updateProject = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 /* ✅ DELETE PROJECT */
 export const deleteProject = async (req, res) => {
