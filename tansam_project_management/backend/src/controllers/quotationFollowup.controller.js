@@ -1,5 +1,5 @@
 import { connectDB } from "../config/db.js";
-
+import { initSchemas } from "../schema/main.schema.js";
 // Get all follow-ups
 export const getFollowups = async (req, res) => {
   try {
