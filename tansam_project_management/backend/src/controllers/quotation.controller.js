@@ -120,7 +120,7 @@ export const getQuotationById = async (id) => {
   const [rows] = await db.execute("SELECT * FROM quotations WHERE id=?", [id]);
   return rows[0]; // or null if not found
 };
-
+//Download Quotation as DOCX
 export const downloadQuotationDocx = async (req, res) => {
   const { id } = req.params;
   const quotation = await getQuotationById(id);
