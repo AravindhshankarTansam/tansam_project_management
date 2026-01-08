@@ -49,12 +49,12 @@ export default function ProjectFollowUp() {
     {
       id: 2,
       projectName: "Marketing Website Revamp",
-      clientName: "ABC Pvt Ltd",
-      quotationCode: "QT-2026-014",
+      clientName: "XYZ Pvt Ltd",
+      quotationCode: "QT-2026-015",
       poPdfUrl:
         "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
       status: "In Progress",
-      progress: 72,
+      progress: 42,
       nextMilestone: "Beta Launch",
       milestoneDueDate: "2026-01-20",
       teamMembers: 6,
@@ -64,12 +64,12 @@ export default function ProjectFollowUp() {
     {
       id: 3,
       projectName: "Marketing Website Revamp",
-      clientName: "ABC Pvt Ltd",
-      quotationCode: "QT-2026-014",
+      clientName: "ZXQ Pvt Ltd",
+      quotationCode: "QT-2026-016",
       poPdfUrl:
         "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
       status: "In Progress",
-      progress: 72,
+      progress: 82,
       nextMilestone: "Beta Launch",
       milestoneDueDate: "2026-01-20",
       teamMembers: 6,
