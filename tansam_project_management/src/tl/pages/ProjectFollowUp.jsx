@@ -46,6 +46,36 @@ export default function ProjectFollowUp() {
       criticalIssues: 2,
       lastUpdated: "2026-01-07T10:30:00",
     },
+    {
+      id: 2,
+      projectName: "Marketing Website Revamp",
+      clientName: "ABC Pvt Ltd",
+      quotationCode: "QT-2026-014",
+      poPdfUrl:
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      status: "In Progress",
+      progress: 72,
+      nextMilestone: "Beta Launch",
+      milestoneDueDate: "2026-01-20",
+      teamMembers: 6,
+      criticalIssues: 2,
+      lastUpdated: "2026-01-07T10:30:00",
+    },
+    {
+      id: 3,
+      projectName: "Marketing Website Revamp",
+      clientName: "ABC Pvt Ltd",
+      quotationCode: "QT-2026-014",
+      poPdfUrl:
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      status: "In Progress",
+      progress: 72,
+      nextMilestone: "Beta Launch",
+      milestoneDueDate: "2026-01-20",
+      teamMembers: 6,
+      criticalIssues: 2,
+      lastUpdated: "2026-01-07T10:30:00",
+    },
   ]);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
