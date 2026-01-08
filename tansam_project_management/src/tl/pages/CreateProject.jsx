@@ -48,16 +48,21 @@ export default function CreateProject() {
   const [selectedType, setSelectedType] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
+const [form, setForm] = useState({
+  id: null,
+  projectName: "",
+  clientName: "",
+  projectType: "",
+  startDate: "",
+  endDate: "",
+  status: "Planned",
 
-  const [form, setForm] = useState({
-    id: null,
-    projectName: "",
-    clientName: "",
-    projectType: "",
-    startDate: "",
-    endDate: "",
-    status: "Planned",
-  });
+  poStatus: "Negotiated",
+  quotationNumber: "",
+  poNumber: "",
+  poFile: null,
+});
+
 
   useEffect(() => {
     let mounted = true;
@@ -157,37 +162,55 @@ export default function CreateProject() {
       toast.error("Delete failed");
     }
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!isTL) return;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!isTL) return;
-
-    const payload = {
-      projectName: form.projectName,
-      clientName: form.clientName,
-      projectType: form.projectType,
-      startDate: form.startDate,
-      endDate: form.endDate,
-      status: form.status,
-    };
-
-    try {
-      if (isEdit) {
-        await updateProject(form.id, payload);
-        toast.success("Project updated");
-      } else {
-        await createProject(payload);
-        toast.success("Project created");
-      }
-
-      setProjects(await fetchProjects());
-      setCurrentPage(1); // Reset to first page after create/update
-      setShowModal(false);
-      setIsEdit(false);
-    } catch (err) {
-      toast.error(err.message || "Action failed");
+  /* ================= PO VALIDATION ================= */
+  if (form.poStatus === "Received") {
+    if (!form.quotationNumber && !form.poFile) {
+      toast.error("Quotation number or file is required");
+      return;
     }
+
+    if (!form.poNumber && !form.poFile) {
+      toast.error("PO number or file is required");
+      return;
+    }
+  }
+  /* ================================================= */
+
+  const payload = {
+    projectName: form.projectName,
+    clientName: form.clientName,
+    projectType: form.projectType,
+    startDate: form.startDate,
+    endDate: form.endDate,
+    status: form.status,
+    poStatus: form.poStatus,
+    quotationNumber:
+      form.poStatus === "Received" ? form.quotationNumber : null,
+    poNumber:
+      form.poStatus === "Received" ? form.poNumber : null,
   };
+
+  try {
+    if (isEdit) {
+      await updateProject(form.id, payload);
+      toast.success("Project updated");
+    } else {
+      await createProject(payload);
+      toast.success("Project created");
+    }
+
+    setProjects(await fetchProjects());
+    setCurrentPage(1);
+    setShowModal(false);
+    setIsEdit(false);
+  } catch (err) {
+    toast.error(err.message || "Action failed");
+  }
+};
 
   const resetFilters = () => {
     setSearchTerm("");
@@ -259,10 +282,13 @@ export default function CreateProject() {
               <th>Type</th>
               <th>Start</th>
               <th>End</th>
-              <th>Status</th>
+              <th>Progress</th>
+              <th>Quotation No</th>
+              <th>PO No</th>
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {paginatedProjects.length === 0 ? (
               <tr>
@@ -278,6 +304,8 @@ export default function CreateProject() {
                   <td>{p.projectType}</td>
                   <td>{formatDate(p.startDate)}</td>
                   <td>{formatDate(p.endDate)}</td>
+
+                  {/* ✅ MAIN PROJECT STATUS */}
                   <td>
                     <span
                       className={`status-badge ${p.status
@@ -290,6 +318,23 @@ export default function CreateProject() {
                       {p.status}
                     </span>
                   </td>
+
+                  {/* ✅ QUOTATION NUMBER */}
+                  <td>{p.quotationNumber || "-"}</td>
+                    <td>{p.poNumber || "-"}</td>
+
+                  {/* ✅ PO STATUS */}
+                  {/* <td>
+                    <span
+                      className={`po-badge ${
+                        p.poStatus === "Received" ? "received" : "negotiated"
+                      }`}
+                    >
+                      {p.poStatus}
+                    </span>
+                  </td> */}
+
+                  {/* ✅ ACTIONS */}
                   <td className="action-col">
                     <button
                       className="icon-btn edit-btn"
@@ -328,7 +373,9 @@ export default function CreateProject() {
               <button
                 key={page}
                 onClick={() => goToPage(page)}
-                className={`page-number ${page === currentPage ? "active" : ""}`}
+                className={`page-number ${
+                  page === currentPage ? "active" : ""
+                }`}
               >
                 {page}
               </button>
@@ -399,9 +446,50 @@ export default function CreateProject() {
                 onChange={handleChange}
                 required
               />
+              <div className="select-wrapper">
+                <select
+                  name="poStatus"
+                  value={form.poStatus}
+                  onChange={handleChange}
+                >
+                  <option value="Negotiated">Negotiated</option>
+                  <option value="Received">Received</option>
+                </select>
+              </div>
+              {form.poStatus === "Received" && (
+                <>
+                  <input
+                    name="quotationNumber"
+                    placeholder="Quotation Number"
+                    value={form.quotationNumber}
+                    onChange={handleChange}
+                    required
+                  />
+
+                  <input
+                    name="poNumber"
+                    placeholder="Purchase Order Number"
+                    value={form.poNumber}
+                    onChange={handleChange}
+                    required
+                  />
+
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) =>
+                      setForm({ ...form, poFile: e.target.files[0] })
+                    }
+                  />
+                </>
+              )}
 
               <div className="select-wrapper">
-                <select name="status" value={form.status} onChange={handleChange}>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
                   <option>Planned</option>
                   <option>In Progress</option>
                   <option>Completed</option>
