@@ -18,6 +18,8 @@ export const getFollowups = async (req, res) => {
 // Add follow-up
 export const addFollowup = async (req, res) => {
   try {
+       const db = await connectDB();
+        await initSchemas(db, { finance: true });
     const {
       project_name, 
       clientResponse,
@@ -33,8 +35,7 @@ export const addFollowup = async (req, res) => {
       reason,
     } = req.body;
 
-    const db = await connectDB();
-        await initSchemas(db, { finance: true });
+ 
     const [result] = await db.execute(
       `INSERT INTO quotation_followups
       (project_name, clientResponse, lastFollowup, revisedCost, nextFollowup, remarks, status, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
@@ -65,6 +66,8 @@ export const addFollowup = async (req, res) => {
 // Update follow-up
 export const updateFollowup = async (req, res) => {
   try {
+       const db = await connectDB();
+        await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
       project_name,
@@ -81,8 +84,7 @@ export const updateFollowup = async (req, res) => {
       reason,
     } = req.body;
 
-    const db = await connectDB();
-        await initSchemas(db, { finance: true });
+   
     await db.execute(
       `UPDATE quotation_followups SET
         project_name=?,

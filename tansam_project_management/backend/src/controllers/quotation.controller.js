@@ -20,6 +20,8 @@ export const getQuotations = async (req, res) => {
 // Add quotation
 export const addQuotation = async (req, res) => {
   try {
+     const db = await connectDB();
+    await initSchemas(db, { finance: true });
     const {
       project_name,
       quotationNo,
@@ -32,8 +34,7 @@ export const addQuotation = async (req, res) => {
       date,
     } = req.body;
 
-    const db = await connectDB();
-    await initSchemas(db, { finance: true });
+   
     const [result] = await db.execute(
       `INSERT INTO quotations
        (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date)
@@ -72,6 +73,8 @@ export const addQuotation = async (req, res) => {
 // Update quotation
 export const updateQuotation = async (req, res) => {
   try {
+     const db = await connectDB();
+    await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
       project_name,
@@ -84,8 +87,7 @@ export const updateQuotation = async (req, res) => {
       date,
     } = req.body;
 
-    const db = await connectDB();
-    await initSchemas(db, { finance: true });
+  
     await db.execute(
       `UPDATE quotations
        SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
