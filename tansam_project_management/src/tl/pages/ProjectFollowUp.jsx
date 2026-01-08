@@ -124,9 +124,9 @@ export default function ProjectFollowUp() {
         <table className="followup-table">
           <thead>
             <tr>
-              <th>Project</th>
+              <th>Project name</th>
               <th>Client</th>
-              <th>Quotation</th>
+              <th>Quotation code </th>
               <th>Status</th>
               <th>Progress</th>
               <th>Next Milestone</th>
