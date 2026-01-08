@@ -28,6 +28,11 @@ import Department from "./tl/pages/department.jsx";
 import TeamMember from "./tl/pages/teammember.jsx";
 import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
+/* CEO */
+import CEODashboard from "./dashboards/CEO/page/CEODashboard.jsx";
+import ProjectSection from "./dashboards/CEO/page/ProjectSection.jsx";
+import QuotationSection from "./dashboards/CEO/page/QuotationSection.jsx";
+import ForecastSection from "./dashboards/CEO/page/ForecastSection.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,6 +48,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* LOGIN */}
         <Route path="/" element={<Login setUser={setUser} />} />
 
         {/* ADMIN */}
@@ -99,6 +105,22 @@ function App() {
           <Route path="project-types" element={<ProjectTypes />} />
         </Route>
 
+        {/* CEO */}
+        <Route
+          path="/ceo"
+          element={
+            <PrivateRoute>
+              <DashboardLayout user={user} setUser={setUser} />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<CEODashboard />} />
+          <Route path="projects" element={<ProjectSection />} />
+          <Route path="quotations" element={<QuotationSection />} />
+          <Route path="forecast" element={<ForecastSection />} />
+        </Route>
+
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

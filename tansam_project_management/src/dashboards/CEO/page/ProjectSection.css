@@ -1,0 +1,23 @@
+.project-card {
+  background: white;
+  padding: 24px;
+  max-width: 1200px;
+  margin: auto;
+  border-radius: 10px;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}

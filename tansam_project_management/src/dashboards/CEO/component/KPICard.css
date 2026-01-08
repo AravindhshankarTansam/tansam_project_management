@@ -1,0 +1,21 @@
+.kpi-card {
+  width: 260px;
+  height: 120px;
+  background: #0f766e;
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.kpi-card h4 {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.kpi-card p {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 700;
+}

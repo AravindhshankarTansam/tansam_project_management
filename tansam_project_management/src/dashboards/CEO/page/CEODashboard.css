@@ -1,0 +1,23 @@
+.dashboard {
+  background: #f4f6f9;
+  padding-top: 32px;
+}
+
+.kpi-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.back-container {
+  max-width: 1200px;
+  margin: 0 auto 16px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
