@@ -4,6 +4,7 @@ import { connectDB } from "../config/db.js";
 export const getFollowups = async (req, res) => {
   try {
     const db = await connectDB();
+        await initSchemas(db, { finance: true });
     const [rows] = await db.execute(
       "SELECT * FROM quotation_followups ORDER BY id DESC"
     );
@@ -33,6 +34,7 @@ export const addFollowup = async (req, res) => {
     } = req.body;
 
     const db = await connectDB();
+        await initSchemas(db, { finance: true });
     const [result] = await db.execute(
       `INSERT INTO quotation_followups
       (project_name, clientResponse, lastFollowup, revisedCost, nextFollowup, remarks, status, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
@@ -80,6 +82,7 @@ export const updateFollowup = async (req, res) => {
     } = req.body;
 
     const db = await connectDB();
+        await initSchemas(db, { finance: true });
     await db.execute(
       `UPDATE quotation_followups SET
         project_name=?,
@@ -123,6 +126,7 @@ export const updateFollowup = async (req, res) => {
 export const deleteFollowup = async (req, res) => {
   try {
     const db = await connectDB();
+        await initSchemas(db, { finance: true });
     await db.execute("DELETE FROM quotation_followups WHERE id=?", [
       req.params.id,
     ]);

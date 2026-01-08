@@ -6,6 +6,7 @@ import { createQuotationDocx } from "../utils/QuotationDocx.js";
 export const getQuotations = async (req, res) => {
   try {
     const db = await connectDB();
+     await initSchemas(db, { finance: true });
     const [rows] = await db.execute(
       "SELECT * FROM quotations ORDER BY id ASC"
     );
@@ -32,7 +33,7 @@ export const addQuotation = async (req, res) => {
     } = req.body;
 
     const db = await connectDB();
-
+    await initSchemas(db, { finance: true });
     const [result] = await db.execute(
       `INSERT INTO quotations
        (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date)
@@ -84,7 +85,7 @@ export const updateQuotation = async (req, res) => {
     } = req.body;
 
     const db = await connectDB();
-
+    await initSchemas(db, { finance: true });
     await db.execute(
       `UPDATE quotations
        SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
@@ -115,6 +116,7 @@ export const deleteQuotation = async (req, res) => {
 
 export const getQuotationById = async (id) => {
   const db = await connectDB();
+      await initSchemas(db, { finance: true });
   const [rows] = await db.execute("SELECT * FROM quotations WHERE id=?", [id]);
   return rows[0]; // or null if not found
 };
