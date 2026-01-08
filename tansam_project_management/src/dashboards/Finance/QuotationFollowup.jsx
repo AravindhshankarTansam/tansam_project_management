@@ -17,7 +17,7 @@ export default function QuotationFollowup() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 const [newFollowup, setNewFollowup] = useState({
-  projectName: "",
+  project_name: "",
   clientResponse: "",
   lastFollowup: "",
   revisedCost: "",
@@ -76,7 +76,7 @@ const handleSave = async () => {
     setEditId(null);
 
     setNewFollowup({
-      projectName: "",
+      project_name: "",
       clientResponse: "",
       lastFollowup: "",
       revisedCost: "",
@@ -362,16 +362,19 @@ const handleSave = async () => {
           </div>
 
           {/* Reason (Full Width) */}
-          <div className="form-group full-width">
-            <label>Reason</label>
-            <input
-              placeholder="Reason if any"
-              value={newFollowup.reason}
-              onChange={e =>
-                setNewFollowup({ ...newFollowup, reason: e.target.value })
-              }
-            />
-          </div>
+      {newFollowup.paymentReceived === "No" && (
+  <div className="form-group full-width">
+    <label>Reason</label>
+    <input
+      placeholder="Reason if any"
+      value={newFollowup.reason}
+      onChange={(e) =>
+        setNewFollowup({ ...newFollowup, reason: e.target.value })
+      }
+    />
+  </div>
+)}
+
         </div>
       </div>
 
