@@ -1,12 +1,7 @@
-/**
- * Simple auth middleware (NO JWT)
- * Expects headers:
- *   x-user-id
- *   x-user-role
- */
 export const authMiddleware = (req, res, next) => {
   const userId = req.headers["x-user-id"];
   const userRole = req.headers["x-user-role"];
+  const userName = req.headers["x-user-name"];
 
   if (!userId || !userRole) {
     return res.status(401).json({
@@ -14,10 +9,10 @@ export const authMiddleware = (req, res, next) => {
     });
   }
 
-  // Attach user info to request
   req.user = {
     id: userId,
     role: userRole,
+    name: userName, 
   };
 
   next();

@@ -3,6 +3,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import coordinatorRoutes from "./routes/coordinator.routes.js";
 import quotationRoutes from "./routes/quotationRoutes.js";
 import projectRoutes from "./routes/project.routes.js";
 import assignTeamRoutes from "./routes/assignTeam.routes.js";
@@ -26,6 +27,7 @@ app.use(
         "Content-Type",
         "x-user-id",
         "x-user-role",
+        "x-user-name",
         ],
     credentials: true, // safe even if not using cookies yet
     
@@ -39,6 +41,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/quotations", quotationRoutes);
 app.use("/api/quotation-followups", quotationFollowup);
 app.use("/api", projectRoutes);

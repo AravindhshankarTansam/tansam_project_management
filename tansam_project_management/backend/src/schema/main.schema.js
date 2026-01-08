@@ -21,6 +21,7 @@ export const initSchemas = async (db, options = {}) => {
 
   if (options.coordinator) {
     await createCoordinatorSchemas(db);
+    console.log("Coordinator schemas initialized");
   }
     if (options.project) {
     await createProjectSchemas(db);
