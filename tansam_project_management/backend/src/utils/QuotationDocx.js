@@ -1,140 +1,162 @@
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ImageRun } from "docx";
-import fs from "fs";
-import path from "path";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  AlignmentType,
+  BorderStyle,
+} from "docx";
 
-export const createQuotationDocx = async (quotation) => {
-  try {
-    // ✅ Attempt multiple logo paths
-    const logoPaths = [
-      path.resolve("src/assets/logo.png"),
-      path.resolve("backend/src/assets/logo.png"),
-      path.resolve("assets/logo.png"),
-      path.resolve("./logo.png"),
-      path.resolve("../logo.png"),
-    ];
-
-    let logoBuffer = null;
-
-    for (const logoPath of logoPaths) {
-      if (fs.existsSync(logoPath)) {
-        logoBuffer = fs.readFileSync(logoPath);
-        console.log("✅ Logo found at:", logoPath);
-        break;
-      }
-    }
-
-    if (!logoBuffer) console.warn("⚠️ Logo not found, creating DOCX without logo");
-
-    // ----- Client / Quotation Details Table -----
-    const detailsTable = new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: [
-        new TableRow({
+export const createQuotationDocx = async (q) => {
+  const cell = (text, bold = false, align = AlignmentType.LEFT) =>
+    new TableCell({
+      width: { size: 50, type: WidthType.PERCENTAGE },
+      margins: { top: 200, bottom: 200, left: 200, right: 200 },
+      children: [
+        new Paragraph({
+          alignment: align,
           children: [
-            new TableCell({ children: [new Paragraph({ text: "Quotation No: " + quotation.quotationNo, bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Date: " + new Date(quotation.date).toLocaleDateString("en-IN") })] }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph("Client Name: " + quotation.clientName)] }),
-            new TableCell({ children: [new Paragraph("Client Type: " + quotation.clientType)] }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph("Work Category: " + quotation.workCategory)] }),
-            new TableCell({ children: [new Paragraph("Lab: " + quotation.lab)] }),
+            new TextRun({
+              text,
+              bold,
+              size: 24, // ✅ 12pt NORMAL SIZE
+            }),
           ],
         }),
       ],
+      borders: {
+        top: { style: BorderStyle.SINGLE },
+        bottom: { style: BorderStyle.SINGLE },
+        left: { style: BorderStyle.SINGLE },
+        right: { style: BorderStyle.SINGLE },
+      },
     });
 
-    // ----- Items Table (Description + Value) -----
-    const itemsTable = new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: [
-        // Header row
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph({ text: "Description", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Quote Value (₹)", bold: true })] }),
-          ],
-        }),
-        // Item row
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph(quotation.description || "N/A")] }),
-            new TableCell({ children: [new Paragraph(parseInt(quotation.value || 0).toLocaleString("en-IN"))] }),
-          ],
-        }),
-        // Total row
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph({ text: "Total", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: parseInt(quotation.value || 0).toLocaleString("en-IN"), bold: true })] }),
-          ],
-        }),
-      ],
-    });
-
-    // ----- Final Document -----
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            // Logo
-            ...(logoBuffer
-              ? [
-                  new Paragraph({
-                    children: [
-                      new ImageRun({
-                        data: logoBuffer,
-                        transformation: { width: 150, height: 50 },
-                      }),
-                    ],
-                  }),
-                ]
-              : []),
-
-            new Paragraph({ text: "\n\n" }),
-
-            // Quotation Header
-            new Paragraph({
-              text: "QUOTATION",
-              bold: true,
-              size: 36,
-              spacing: { after: 200 },
-            }),
-
-            // Details Table
-            detailsTable,
-            new Paragraph({ text: "\n" }),
-
-            // Items Table
-            itemsTable,
-            new Paragraph({ text: "\n" }),
-
-            // Closing Note
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "Thank you for your business!",
-                  italics: true,
-                }),
-              ],
-            }),
-          ],
+  const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { size: 24, font: "Times New Roman" },
+          paragraph: { spacing: { line: 360 } },
         },
-      ],
-    });
+      },
+    },
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
+          },
+        },
+        children: [
+          /* ORGANIZATION NAME */
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 300 },
+            children: [
+              new TextRun({
+                text:
+                  "TAMIL NADU SMART AND ADVANCED MANUFACTURING CENTRE",
+                bold: true,
+                size: 28, // ✅ 14pt
+                color: "1F4FD8",
+              }),
+            ],
+          }),
 
-    const buffer = await Packer.toBuffer(doc);
-    console.log("✅ DOCX generated successfully, size:", buffer.length, "bytes");
-    return buffer;
-  } catch (error) {
-    console.error("❌ DOCX creation failed:", error);
-    throw new Error(`DOCX generation failed: ${error.message}`);
-  }
+          /* TITLE */
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
+            children: [
+              new TextRun({
+                text: "QUOTATION",
+                bold: true,
+                size: 32, // ✅ 16pt
+                color: "1F4FD8",
+              }),
+            ],
+          }),
+
+          /* INFO TABLE */
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  cell(`Quotation No: ${q.quotationNo}`, true),
+                  cell(`Quote Date: ${q.date}`, true),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  cell(`Client Name: ${q.clientName}`, true),
+                  cell(`Client Type: ${q.clientType}`, true),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  cell(`Work Category: ${q.workCategory}`, true),
+                  cell(`Lab: ${q.lab}`, true),
+                ],
+              }),
+            ],
+          }),
+
+          new Paragraph({ spacing: { after: 500 } }),
+
+          /* VALUE TABLE */
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  cell("Description", true, AlignmentType.CENTER),
+                  cell("Quote Value (₹)", true, AlignmentType.CENTER),
+                  cell("Tax", true, AlignmentType.CENTER),
+                  cell("Total", true, AlignmentType.CENTER),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  cell(q.description),
+                  cell(q.value, false, AlignmentType.CENTER),
+                  cell("0", false, AlignmentType.CENTER),
+                  cell(q.value, false, AlignmentType.CENTER),
+                ],
+              }),
+            ],
+          }),
+
+          new Paragraph({ spacing: { before: 600 } }),
+
+          /* TERMS */
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Terms and conditions",
+                bold: true,
+                size: 26,
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "-------------------------------------------",
+                size: 24,
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  return await Packer.toBuffer(doc);
 };
