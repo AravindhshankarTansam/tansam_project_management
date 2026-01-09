@@ -322,5 +322,3 @@ export default function OpportunitiesTracker() {
     </div>
   );
 }
-
-OpportunitiesTracker.jsx
