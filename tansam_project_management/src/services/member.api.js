@@ -16,6 +16,15 @@ export const createMember = async (member) => {
   if (!res.ok) throw new Error("Create failed");
   return res.json();
 };
+export const updateMember = async (id, member) => {
+  const res = await fetch(`${BASE_URL}/members/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(member),
+  });
+  return res.json();
+};
+
 
 export const deleteMember = async (id) => {
   const res = await fetch(`${BASE_URL}/members/${id}`, {

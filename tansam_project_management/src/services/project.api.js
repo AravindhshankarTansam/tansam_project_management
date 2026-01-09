@@ -5,21 +5,27 @@ const BASE_URL = "http://localhost:9899/api";
  * Create Project API
  */
 export const createProject = async (project) => {
+  const formData = new FormData();
+
+  Object.entries(project).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      formData.append(key, value);
+    }
+  });
+
   const res = await fetch(`${BASE_URL}/projects`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(project),
+    body: formData,
   });
 
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.message || "Failed to create project");
+    throw new Error(err.message);
   }
 
   return res.json();
 };
+
 
 export const fetchProjects = async () => {
   const res = await fetch(`${BASE_URL}/projects`);
@@ -28,14 +34,27 @@ export const fetchProjects = async () => {
 };
 /* ✅ UPDATE */
 export const updateProject = async (id, project) => {
+  const formData = new FormData();
+
+  Object.entries(project).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      formData.append(key, value);
+    }
+  });
+
   const res = await fetch(`${BASE_URL}/projects/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(project),
+    body: formData, // ❌ no headers
   });
-  if (!res.ok) throw new Error("Update failed");
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message);
+  }
+
   return res.json();
 };
+
 
 /* ✅ DELETE */
 export const deleteProject = async (id) => {
