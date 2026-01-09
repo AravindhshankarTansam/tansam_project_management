@@ -3,6 +3,7 @@ export const SIDEBAR_MENU = {
   admin: [
     { label: "Dashboard", path: "/admin" },
     { label: "Create Users", path: "/admin/users" },
+      { label: "Project", path: "/admin/project" },
 
     {
       label: "Master Table",
@@ -23,18 +24,33 @@ export const SIDEBAR_MENU = {
   ],
 
   tl: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Leads", path: "/dashboard/leads" },
-    { label: "Projects", path: "/dashboard/projects" },
-    { label: "Team Review", path: "/dashboard/team-review" },
+    { label: "Dashboard", path: "/tl" },
+    { label: "Project Types", path: "/tl/project-types" },
+    { label: "Create Project", path: "/tl/create-project" },
+    { label: "Project Follow-up", path: "/tl/follow-up" },
+    { label: "Summary", path: "/tl/summary" },
+
+    // 🔥 SEPARATE SECTION (AFTER SUMMARY)
+    {
+      label: "Project Execution",
+      children: [
+
+        { label: "Assign Team", path: "/tl/assign-team" },
+        { label: "Departments", path: "/tl/department" },
+        { label: "Team Member", path: "/tl/team-member" },
+        // { label: "Time Tracking", path: "/tl/time-tracking" },
+      ],
+    },
   ],
 
-  finance: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Quotations", path: "/dashboard/quotations" },
-    { label: "Approvals", path: "/dashboard/approvals" },
-    { label: "Reports", path: "/dashboard/reports" },
-  ],
+finance: [
+  { label: "Dashboard", path: "/finance" },
+  { label: "Quotations", path: "/finance/quotations" },
+  { label: "Quotation Follow-up", path: "/finance/quotation-followup" },
+  // { label: "Reports", path: "/finance/reports" },
+],
+
+
 
   ceo: [
     { label: "Dashboard", path: "/dashboard" },
