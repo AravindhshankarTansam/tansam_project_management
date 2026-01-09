@@ -1,8 +1,10 @@
 import "./TLDashboard.css";
-import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import {
+  FiArrowUpRight,
+  FiClock,
+  FiCheckCircle,
+  FiAlertCircle,
+} from "react-icons/fi";
 
 export default function TLDashboard() {
   return (
@@ -14,7 +16,7 @@ export default function TLDashboard() {
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Total Projects</span>
-            <ArrowOutwardIcon className="card-icon" />
+            <FiArrowUpRight className="card-icon" />
           </div>
           <h3 className="stat-value">12</h3>
           <span className="stat-sub">+2 from last month</span>
@@ -23,7 +25,7 @@ export default function TLDashboard() {
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Active Tasks</span>
-            <AccessTimeIcon className="card-icon" />
+            <FiClock className="card-icon" />
           </div>
           <h3 className="stat-value">48</h3>
           <span className="stat-sub">12 due today</span>
@@ -32,7 +34,7 @@ export default function TLDashboard() {
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Completed</span>
-            <CheckCircleOutlineIcon className="card-icon success" />
+            <FiCheckCircle className="card-icon success" />
           </div>
           <h3 className="stat-value">124</h3>
           <span className="stat-sub">98% success rate</span>
@@ -41,7 +43,7 @@ export default function TLDashboard() {
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Alerts</span>
-            <ErrorOutlineIcon className="card-icon danger" />
+            <FiAlertCircle className="card-icon danger" />
           </div>
           <h3 className="stat-value">3</h3>
           <span className="stat-sub">Overdue tasks</span>
@@ -93,6 +95,7 @@ export default function TLDashboard() {
                 <span>2h ago</span>
               </div>
             </li>
+
             <li>
               <div className="avatar">J</div>
               <div>
@@ -100,6 +103,7 @@ export default function TLDashboard() {
                 <span>4h ago</span>
               </div>
             </li>
+
             <li>
               <div className="avatar">S</div>
               <div>
