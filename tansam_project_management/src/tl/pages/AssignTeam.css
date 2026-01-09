@@ -213,3 +213,19 @@
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
   background: linear-gradient(135deg, #22c55e, #16a34a);
 }
+.assign-edit-btn {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 17px;
+  margin-right: 6px;
+  transition: all 0.2s;
+}
+
+.assign-edit-btn:hover {
+  background: #dbeafe;
+  transform: scale(1.1);
+}

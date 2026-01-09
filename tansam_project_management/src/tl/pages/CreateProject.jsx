@@ -24,6 +24,20 @@ import {
 
 import { fetchProjectTypes } from "../../services/projectType.api";
 
+const emptyForm = {
+  id: null,
+  projectName: "",
+  clientName: "",
+  projectType: "",
+  startDate: "",
+  endDate: "",
+  status: "Planned",
+  poStatus: "Negotiated",
+  quotationNumber: "",
+  poNumber: "",
+  poFile: null,
+};
+
 const formatDate = (dateValue) => {
   if (!dateValue) return "";
   return new Date(dateValue).toISOString().split("T")[0];
@@ -48,21 +62,8 @@ export default function CreateProject() {
   const [selectedType, setSelectedType] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-const [form, setForm] = useState({
-  id: null,
-  projectName: "",
-  clientName: "",
-  projectType: "",
-  startDate: "",
-  endDate: "",
-  status: "Planned",
 
-  poStatus: "Negotiated",
-  quotationNumber: "",
-  poNumber: "",
-  poFile: null,
-});
-
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     let mounted = true;
@@ -124,23 +125,15 @@ const [form, setForm] = useState({
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const openAddModal = () => {
+ const openAddModal = () => {
     if (!isTL) return;
     setIsEdit(false);
-    setForm({
-      id: null,
-      projectName: "",
-      clientName: "",
-      projectType: "",
-      startDate: "",
-      endDate: "",
-      status: "Planned",
-    });
+    setForm(emptyForm);
     setShowModal(true);
   };
 
   const openEditModal = (project) => {
-    if (!isTL) return;
+    if (!isTL) return;  
     setIsEdit(true);
     setForm({
       ...project,
@@ -180,19 +173,19 @@ const handleSubmit = async (e) => {
   }
   /* ================================================= */
 
-  const payload = {
-    projectName: form.projectName,
-    clientName: form.clientName,
-    projectType: form.projectType,
-    startDate: form.startDate,
-    endDate: form.endDate,
-    status: form.status,
-    poStatus: form.poStatus,
-    quotationNumber:
-      form.poStatus === "Received" ? form.quotationNumber : null,
-    poNumber:
-      form.poStatus === "Received" ? form.poNumber : null,
-  };
+const payload = {
+  projectName: form.projectName,
+  clientName: form.clientName,
+  projectType: form.projectType,
+  startDate: form.startDate,
+  endDate: form.endDate,
+  status: form.status,
+  poStatus: form.poStatus,
+  quotationNumber: form.quotationNumber || "",
+  poNumber: form.poNumber || "",
+  poFile: form.poFile || null,
+};
+
 
   try {
     if (isEdit) {

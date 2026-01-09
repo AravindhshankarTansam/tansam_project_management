@@ -17,13 +17,21 @@ export const createProject = async (req, res) => {
       poStatus,
       quotationNumber,
       poNumber,
-      poFile,
     } = req.body;
+
+    const poFilePath = req.file ? req.file.path : null;
+
+    // 🔒 Validation
+    if (poStatus === "Received" && !poNumber && !poFilePath) {
+      return res
+        .status(400)
+        .json({ message: "PO number or file is required" });
+    }
 
     await db.execute(
       `INSERT INTO projects
-       (project_name, client_name, project_type, start_date, end_date, status,
-        po_status, quotation_number, po_number, po_file)
+       (project_name, client_name, project_type, start_date, end_date,
+        status, po_status, quotation_number, po_number, po_file)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectName,
@@ -35,7 +43,7 @@ export const createProject = async (req, res) => {
         poStatus || "Negotiated",
         quotationNumber || null,
         poNumber || null,
-        poFile || null,
+        poFilePath,
       ]
     );
 
@@ -44,6 +52,7 @@ export const createProject = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 export const getProjects = async (req, res) => {
   try {
