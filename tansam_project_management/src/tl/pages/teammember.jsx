@@ -118,10 +118,13 @@
         <ToastContainer autoClose={1500} newestOnTop />
 
         {/* HEADER */}
+        {/* HEADER */}
         <div className="member-header">
           <h2>Team Members</h2>
-          <button className="add-btn" onClick={openAddModal}>
-            <FiPlus /> Create Team Member
+
+          <button className="member-add-btn-modern" onClick={openAddModal}>
+            <FiPlus className="plus-icon" />
+            Create Team Member
           </button>
         </div>
 
@@ -245,9 +248,7 @@
                   <button type="button" onClick={() => setShowModal(false)}>
                     Cancel
                   </button>
-                  <button type="submit">
-                    {isEdit ? "Update" : "Create"}
-                  </button>
+                  <button type="submit">{isEdit ? "Update" : "Create"}</button>
                 </div>
               </form>
             </div>
