@@ -7,6 +7,7 @@ import { createDepartmentSchema } from "./project/department/department.schema.j
 import { createMemberSchema } from "./project/member/member.schema.js";
 import { createQuotationFollowupsSchema } from "./finance/finance.schema.js";
 import { createProjectTypeSchema } from "./project/projectType/projectType.schema.js";
+import { createProjectFollowupSchema } from "./project/projectfollowup/projectFollowup.schema.js";
 
 
 /**
@@ -45,6 +46,9 @@ export const initSchemas = async (db, options = {}) => {
 }
   if (options.projectType) {
     await createProjectTypeSchema(db);
+  }
+   if (options.projectFollowup) {
+    await createProjectFollowupSchema(db);
   }
 
  

@@ -12,6 +12,7 @@
   import projectTypeRoutes from "./routes/projectType.routes.js";
 
   import quotationFollowup from "./routes/quotationFollowup.routes.js";
+  import projectFollowupRoutes from "./routes/projectFollowup.routes.js";
 
   const app = express();
 
@@ -49,6 +50,7 @@
   app.use("/api", departmentRoutes);
   app.use("/api", membersRoutes);
   app.use("/api", projectTypeRoutes);
+  app.use("/api", projectFollowupRoutes);
 
 
 
