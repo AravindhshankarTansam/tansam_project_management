@@ -1,14 +1,13 @@
 const FOLLOWUPS_URL = "http://localhost:9899/api/quotation-followups";
 
 // ✅ same safe headers
-const authHeaders = () => {
-  const userId = localStorage.getItem("userId") || "1";
-  const userRole = (localStorage.getItem("userRole") || "FINANCE").toUpperCase();
-
+const getAuthHeaders = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
   return {
     "Content-Type": "application/json",
-    "x-user-id": userId,
-    "x-user-role": userRole,
+    "x-user-id": user.id,
+    "x-user-role": user.role,
+    "x-user-name": user.username,
   };
 };
 
@@ -17,7 +16,7 @@ const authHeaders = () => {
 ================================ */
 export const getFollowups = async () => {
   const res = await fetch(FOLLOWUPS_URL, {
-    headers: authHeaders(),
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) throw new Error("Failed to fetch quotation follow-ups");
@@ -30,7 +29,7 @@ export const getFollowups = async () => {
 export const addFollowup = async (data) => {
   const res = await fetch(FOLLOWUPS_URL, {
     method: "POST",
-    headers: authHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
@@ -44,7 +43,7 @@ export const addFollowup = async (data) => {
 export const updateFollowup = async (id, data) => {
   const res = await fetch(`${FOLLOWUPS_URL}/${id}`, {
     method: "PUT",
-    headers: authHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
@@ -58,7 +57,7 @@ export const updateFollowup = async (id, data) => {
 export const deleteFollowup = async (id) => {
   const res = await fetch(`${FOLLOWUPS_URL}/${id}`, {
     method: "DELETE",
-    headers: authHeaders(),
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) throw new Error("Failed to delete follow-up");
