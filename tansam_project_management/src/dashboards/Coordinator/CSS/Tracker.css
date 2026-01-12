@@ -1,22 +1,33 @@
 .progress-container {
   position: relative;
   width: 90%;
-  margin: 50px auto;
+  margin: 20px auto;
 }
+
+/* =========================
+   STEPS
+========================= */
 
 .steps {
   display: flex;
   justify-content: space-between;
   position: relative;
-  z-index: 2; /* Make sure circles are above the line */
+  z-index: 2;
 }
 
+/* 🔥 MAIN FIX IS HERE */
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+
+  min-width: 90px; /* ✅ prevents label overlap */
 }
+
+/* =========================
+   CIRCLES
+========================= */
 
 .circle {
   width: 25px;
@@ -36,16 +47,28 @@
   background-color: #2ecc71;
 }
 
+/* =========================
+   LABELS
+========================= */
+
 .step-label {
   margin-top: 8px;
   font-size: 12px;
   text-transform: capitalize;
   text-align: center;
+
+  max-width: 90px;
+  line-height: 1.2;
+  white-space: normal;
 }
+
+/* =========================
+   PROGRESS LINE
+========================= */
 
 .progress-line-background {
   position: absolute;
-  top: 12.5px; /* Center line relative to circles */
+  top: 12.5px;
   left: 0;
   width: 100%;
   height: 4px;

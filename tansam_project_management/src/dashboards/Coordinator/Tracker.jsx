@@ -13,7 +13,6 @@ const ProgressTracker = ({ currentStage }) => {
   ];
 
   const currentStep = stages.indexOf(currentStage);
-
   const filledLineWidth = `${(currentStep / (stages.length - 1)) * 100}%`;
 
   return (
@@ -23,7 +22,7 @@ const ProgressTracker = ({ currentStage }) => {
       <div
         className="progress-line-filled"
         style={{ width: filledLineWidth }}
-      ></div>
+      />
 
       <div className="steps">
         {stages.map((label, index) => (
@@ -37,7 +36,11 @@ const ProgressTracker = ({ currentStage }) => {
                   : ""
               }`}
             ></div>
-            <div className="step-label">{label}</div>
+
+            {/* ✅ Space added between words */}
+            <div className="step-label">
+              {label.replace(/_/g, " ")}
+            </div>
           </div>
         ))}
       </div>
