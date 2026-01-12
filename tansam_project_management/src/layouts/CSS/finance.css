@@ -2,28 +2,7 @@
   padding: 20px;
   font-family: Arial, sans-serif;
 }
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 14px;
-}
-thead th {
-  background: #f8fafc;
-  color: #0f172a;
-  font-weight: 700;
-  text-align: left;
-  padding: 12px 10px;
-  border-bottom: 1px solid #e2e8f0;
-  white-space: nowrap;
-}
-tbody td {
-  padding: 10px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-}tbody tr:hover {
-  background: #f9fafb;
-}
+
 .table-header {
   display: flex;
   justify-content: space-between;
@@ -523,62 +502,4 @@ tbody td {
   .card-table td {
     padding: 8px 5px;
   }
-}
-.phase-tabs {
-  display: inline-flex;
-  gap: 6px;
-  background: #f1f5f9;
-  padding: 6px;
-  border-radius: 10px;
-  margin: 12px 0 16px 0;
-}
-
-.phase-tabs button {
-  padding: 8px 18px;
-  border: none;
-  background: transparent;
-  font-weight: 600;
-  color: #475569;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.phase-tabs button:hover {
-  background: #e2e8f0;
-}
-
-.phase-tabs .active-tab {
-  background: #2563eb;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
-}
-.card-table {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 8px 12px 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  overflow-x: auto;
-}
-.badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-.badge-green {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.badge-red {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.badge-blue {
-  background: #dbeafe;
-  color: #1e40af;
 }
