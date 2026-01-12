@@ -36,7 +36,8 @@ export default function ProjectFollowUp() {
       projectName: "Marketing Website Revamp",
       clientName: "ABC Pvt Ltd",
       quotationCode: "QT-2026-014",
-      poPdfUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      poPdfUrl:
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
       status: "In Progress",
       progress: 72,
       nextMilestone: "Beta Launch",
@@ -47,31 +48,33 @@ export default function ProjectFollowUp() {
     },
     {
       id: 2,
-      projectName: "Internal HR Portal",
-      clientName: "Internal",
-      quotationCode: "QT-2026-021",
-      poPdfUrl: "https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf",
+      projectName: "Marketing Website Revamp",
+      clientName: "XYZ Pvt Ltd",
+      quotationCode: "QT-2026-015",
+      poPdfUrl:
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
       status: "In Progress",
-      progress: 45,
-      nextMilestone: "Design Review",
-      milestoneDueDate: "2026-01-12",
-      teamMembers: 4,
-      criticalIssues: 0,
-      lastUpdated: "2026-01-07T14:00:00",
+      progress: 42,
+      nextMilestone: "Beta Launch",
+      milestoneDueDate: "2026-01-20",
+      teamMembers: 6,
+      criticalIssues: 2,
+      lastUpdated: "2026-01-07T10:30:00",
     },
     {
       id: 3,
-      projectName: "Mobile Banking App",
-      clientName: "National Bank",
-      quotationCode: null,
-      poPdfUrl: null,
-      status: "At Risk",
-      progress: 58,
-      nextMilestone: "UAT Phase",
-      milestoneDueDate: "2026-01-09",
-      teamMembers: 8,
-      criticalIssues: 5,
-      lastUpdated: "2026-01-06T09:15:00",
+      projectName: "Marketing Website Revamp",
+      clientName: "ZXQ Pvt Ltd",
+      quotationCode: "QT-2026-016",
+      poPdfUrl:
+        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      status: "In Progress",
+      progress: 82,
+      nextMilestone: "Beta Launch",
+      milestoneDueDate: "2026-01-20",
+      teamMembers: 6,
+      criticalIssues: 2,
+      lastUpdated: "2026-01-07T10:30:00",
     },
   ]);
 
@@ -88,9 +91,8 @@ export default function ProjectFollowUp() {
       toast.warn("PO not uploaded yet");
       return;
     }
-    // Open in new tab with restricted viewer (no download, no print)
     window.open(
-      url + "#toolbar=0&navpanes=0&scrollbar=0&view=FitH",
+      url + "#toolbar=0&navpanes=0&scrollbar=0",
       "_blank",
       "noopener,noreferrer"
     );
@@ -98,13 +100,18 @@ export default function ProjectFollowUp() {
 
   const handleUpdate = (e) => {
     e.preventDefault();
+
     setProjects((prev) =>
       prev.map((p) =>
         p.id === editingProject.id
-          ? { ...editingProject, lastUpdated: new Date().toISOString() }
+          ? {
+              ...editingProject,
+              lastUpdated: new Date().toISOString(),
+            }
           : p
       )
     );
+
     toast.success("Project updated successfully");
     setEditModalOpen(false);
   };
@@ -116,7 +123,7 @@ export default function ProjectFollowUp() {
       {/* HEADER */}
       <div className="followup-header">
         <h2>Project Follow Up</h2>
-        <p>Track execution, risk & purchase orders</p>
+        <p>Track execution, risk & milestones</p>
       </div>
 
       {/* TABLE */}
@@ -126,7 +133,7 @@ export default function ProjectFollowUp() {
             <tr>
               <th>Project name</th>
               <th>Client</th>
-              <th>Quotation code </th>
+              <th>Quotation</th>
               <th>Status</th>
               <th>Progress</th>
               <th>Next Milestone</th>
@@ -136,10 +143,12 @@ export default function ProjectFollowUp() {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {projects.map((p) => {
               const daysLeft = calculateDaysLeft(p.milestoneDueDate);
-              const isUrgent = daysLeft !== null && daysLeft <= 3 && p.status !== "Completed";
+              const isUrgent =
+                daysLeft !== null && daysLeft <= 3 && p.status !== "Completed";
 
               return (
                 <tr key={p.id}>
@@ -159,7 +168,11 @@ export default function ProjectFollowUp() {
                   </td>
 
                   <td>
-                    <span className={`status-badge ${p.status.toLowerCase().replace(" ", "-")}`}>
+                    <span
+                      className={`status-badge ${p.status
+                        .toLowerCase()
+                        .replace(" ", "-")}`}
+                    >
                       {p.status === "Completed" && <FiCheckCircle />}
                       {p.status === "At Risk" && <FiAlertTriangle />}
                       {p.status}
@@ -169,7 +182,10 @@ export default function ProjectFollowUp() {
                   <td>
                     <div className="progress-wrap">
                       <div className="progress-bar">
-                        <div className="progress-fill" style={{ width: `${p.progress}%` }} />
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${p.progress}%` }}
+                        />
                       </div>
                       <span>{p.progress}%</span>
                     </div>
@@ -186,7 +202,11 @@ export default function ProjectFollowUp() {
                     <FiUsers /> {p.teamMembers}
                   </td>
 
-                  <td className={`center ${p.criticalIssues > 0 ? "critical" : ""}`}>
+                  <td
+                    className={`center ${
+                      p.criticalIssues > 0 ? "critical" : ""
+                    }`}
+                  >
                     {p.criticalIssues}
                   </td>
 
@@ -222,38 +242,78 @@ export default function ProjectFollowUp() {
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Edit Project Progress</h3>
-            <div className="project-info">
-              <strong>{editingProject.projectName}</strong>
-              <div>Client: {editingProject.clientName}</div>
-              <div>Quotation: {editingProject.quotationCode || "—"}</div>
-              <div>Status: {editingProject.status}</div>
-              <div>Progress: {editingProject.progress}%</div>
-              <div>Team Members: {editingProject.teamMembers}</div>
-            </div>
 
             <form onSubmit={handleUpdate}>
+              {/* STATUS */}
+              <label>Status</label>
+              <select
+                value={editingProject.status}
+                onChange={(e) =>
+                  setEditingProject({
+                    ...editingProject,
+                    status: e.target.value,
+                  })
+                }
+                required
+              >
+                <option>Planned</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+                <option>At Risk</option>
+                <option>On Hold</option>
+              </select>
+
+              {/* PROGRESS */}
+              <label>Progress (%)</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={editingProject.progress}
+                onChange={(e) =>
+                  setEditingProject({
+                    ...editingProject,
+                    progress: Number(e.target.value),
+                  })
+                }
+              />
+              <div className="progress-value">
+                {editingProject.progress}%
+              </div>
+
+              {/* MILESTONE */}
               <label>Next Milestone</label>
               <input
                 type="text"
                 value={editingProject.nextMilestone}
                 onChange={(e) =>
-                  setEditingProject({ ...editingProject, nextMilestone: e.target.value })
+                  setEditingProject({
+                    ...editingProject,
+                    nextMilestone: e.target.value,
+                  })
                 }
                 required
               />
 
+              {/* ISSUES */}
               <label>Critical Issues</label>
               <input
                 type="number"
                 min="0"
                 value={editingProject.criticalIssues}
                 onChange={(e) =>
-                  setEditingProject({ ...editingProject, criticalIssues: +e.target.value })
+                  setEditingProject({
+                    ...editingProject,
+                    criticalIssues: Number(e.target.value),
+                  })
                 }
               />
 
               <div className="modal-actions">
-                <button type="button" onClick={() => setEditModalOpen(false)}>
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(false)}
+                >
                   Cancel
                 </button>
                 <button type="submit">Save Changes</button>

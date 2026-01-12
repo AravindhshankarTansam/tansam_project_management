@@ -1,14 +1,17 @@
-import express from "express";
-import {
-  getMembers,
-  createMember,
-  deleteMember,
-} from "../controllers/members.controller.js";
+  import express from "express";
+  import {
+    getMembers,
+    createMember,
+    updateMember,
+    deleteMember,
+  } from "../controllers/members.controller.js";
 
-const router = express.Router();
+  const router = express.Router();
 
-router.get("/members", getMembers);
-router.post("/members", createMember);
-router.delete("/members/:id", deleteMember);
+  router.get("/members", getMembers);
+  router.post("/members", createMember);
+  router.put("/members/:id", updateMember);
 
-export default router;
+  router.delete("/members/:id", deleteMember);
+
+  export default router;

@@ -16,7 +16,7 @@ import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 /* COORDINATOR */
 import CoordinatorDashboard from "./dashboards/Coordinator/CoordinatorDashboard.jsx";
 import Opportunities from "./dashboards/Coordinator/Opportunities.jsx";
-import OpportunitiesTacker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
+import OpportunitiesTracker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
 import CreateProjects from "./dashboards/Admin/Projects.jsx";
 import Quotations from "./dashboards/Finance/Quotations.jsx";
 import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
@@ -97,7 +97,7 @@ function App() {
           <Route path="opportunities" element={<Opportunities />} />
           <Route
             path="opportunities-tracker"
-            element={<OpportunitiesTacker />}
+            element={<OpportunitiesTracker />}
           />
         </Route>
 

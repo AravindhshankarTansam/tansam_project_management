@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -8,9 +8,11 @@ import {
   fetchAssignments,
   createAssignment,
   deleteAssignment,
+  updateAssignment
 } from "../../services/assignTeam.api";
 import { fetchDepartments } from "../../services/department.api";
 import { fetchMembers } from "../../services/member.api";
+
 
 
 import "./AssignTeam.css";
@@ -27,6 +29,9 @@ export default function AssignTeam() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState([]);
+  const [isEdit, setIsEdit] = useState(false);
+const [editingId, setEditingId] = useState(null);
+
 
 
   const [form, setForm] = useState({
@@ -54,41 +59,64 @@ export default function AssignTeam() {
   });
 }, []);
 
+const openEditModal = (assignment) => {
+  setIsEdit(true);
+  setEditingId(assignment.id);
+  setForm({
+    projectId: assignment.projectId,
+    memberName: assignment.memberName,
+    role: assignment.role,
+    departmentId: assignment.departmentId,
+    effort: assignment.effort,
+    startDate: formatDate(assignment.startDate),
+    endDate: formatDate(assignment.endDate),
+  });
+  setShowModal(true);
+};
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSave = async (e) => {
-    e.preventDefault();
+const handleSave = async (e) => {
+  e.preventDefault();
 
-    try {
-      await createAssignment({
-        projectId: Number(form.projectId),
-        memberName: form.memberName.trim(),
-        role: form.role.trim(),
-        departmentId: Number(form.departmentId),
-        effort: form.effort,
-        startDate: form.startDate,
-        endDate: form.endDate,
-      });
+  try {
+    const payload = {
+      projectId: Number(form.projectId),
+      memberName: form.memberName.trim(),
+      role: form.role.trim(),
+      departmentId: Number(form.departmentId),
+      effort: form.effort,
+      startDate: form.startDate,
+      endDate: form.endDate,
+    };
 
-      const updated = await fetchAssignments();
-      setAssignments(updated);
+    if (isEdit) {
+      await updateAssignment(editingId, payload);
+      toast.success("Assignment updated successfully");
+    } else {
+      await createAssignment(payload);
       toast.success("Team member assigned successfully!");
-      setShowModal(false);
-      setForm({
-        projectId: "",
-        memberName: "",
-        role: "",
-        departmentId: "",
-        effort: "",
-        startDate: "",
-        endDate: "",
-      });
-    } catch {
-      toast.error("Failed to assign member");
     }
-  };
+
+    setAssignments(await fetchAssignments());
+    setShowModal(false);
+    setIsEdit(false);
+    setEditingId(null);
+    setForm({
+      projectId: "",
+      memberName: "",
+      role: "",
+      departmentId: "",
+      effort: "",
+      startDate: "",
+      endDate: "",
+    });
+  } catch {
+    toast.error("Operation failed");
+  }
+};
+
 
   const handleDelete = async (id) => {
     if (!window.confirm("Remove this team member?")) return;
@@ -148,6 +176,13 @@ export default function AssignTeam() {
                   <td>{formatDate(a.startDate)}</td>
                   <td>{formatDate(a.endDate)}</td>
                   <td>
+                     <button
+    className="assign-edit-btn"
+    onClick={() => openEditModal(a)}
+    title="Edit assignment"
+  >
+    <FiEdit />
+  </button>
                     <button
                       className="assign-delete-btn"
                       onClick={() => handleDelete(a.id)}

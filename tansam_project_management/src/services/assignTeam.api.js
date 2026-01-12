@@ -20,6 +20,20 @@ export const createAssignment = async (data) => {
 
   return res.json();
 };
+export const updateAssignment = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/assignments/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Update failed");
+  }
+
+  return res.json();
+};
 
 export const deleteAssignment = async (id) => {
   const res = await fetch(`${BASE_URL}/assignments/${id}`, {

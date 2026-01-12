@@ -2,8 +2,49 @@
   padding: 24px;
 }
 
+/* HEADER */
 .member-header {
-  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.member-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+/* ADD BUTTON – SAME AS ASSIGN TEAM */
+.member-add-btn-modern {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
+}
+
+.member-add-btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.plus-icon {
+  font-size: 18px;
 }
 
 .member-title {
