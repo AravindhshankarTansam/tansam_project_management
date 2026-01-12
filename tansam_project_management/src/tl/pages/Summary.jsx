@@ -47,22 +47,17 @@ export default function ProjectSummary() {
           fetchProjectFollowups(),
         ]);
 
-        // Map followups by projectId for fast lookup
         const followupMap = {};
         followupData.forEach((f) => {
           followupMap[f.projectId] = f;
         });
 
-        // Merge data
         const merged = projectData.map((p) => {
           const f = followupMap[p.id] || {};
 
-          const totalTasks = 20; // placeholder until tasks module exists
-          const progress = f.progress || 0;
-
           return {
             id: p.id,
-            code: `PRJ-${p.id}`, // UI-generated
+            code: `PRJ-${p.id}`,
             name: p.projectName,
             client: p.clientName,
             type: p.projectType,
@@ -70,15 +65,12 @@ export default function ProjectSummary() {
             endDate: p.endDate,
 
             status: f.status || p.status || "Planned",
-            progress,
-
-            totalTasks,
-            completedTasks: Math.round((progress / 100) * totalTasks),
+            progress: f.progress || 0,
 
             teamSize: f.teamMembers || 0,
             criticalIssues: f.criticalIssues || 0,
 
-            lead: p.projectLead || "—", // optional
+            lead: p.projectLead || "—",
           };
         });
 
@@ -124,40 +116,18 @@ export default function ProjectSummary() {
         <div className="single-grid">
           {/* PROJECT DETAILS */}
           <div className="summary-card large">
-            <h3>
-              <FiTarget /> Project Details
-            </h3>
+            <h3><FiTarget /> Project Details</h3>
             <div className="detail-grid">
-              <div>
-                <span>Project Lead</span>
-                <strong>{p.lead}</strong>
-              </div>
-              <div>
-                <span>Start Date</span>
-                <strong>
-                  {p.startDate
-                    ? new Date(p.startDate).toLocaleDateString()
-                    : "—"}
-                </strong>
-              </div>
-              <div>
-                <span>End Date</span>
-                <strong>
-                  {p.endDate
-                    ? new Date(p.endDate).toLocaleDateString()
-                    : "—"}
-                </strong>
-              </div>
+              <div><span>Project Lead</span><strong>{p.lead}</strong></div>
+              <div><span>Start Date</span><strong>{new Date(p.startDate).toLocaleDateString()}</strong></div>
+              <div><span>End Date</span><strong>{new Date(p.endDate).toLocaleDateString()}</strong></div>
               <div>
                 <span>Days Remaining</span>
                 <strong className={daysLeft <= 7 ? "urgent" : ""}>
-                  {daysLeft ?? "—"}
+                  {daysLeft ?? "—"} days
                 </strong>
               </div>
-              <div>
-                <span>Team Size</span>
-                <strong>{p.teamSize} members</strong>
-              </div>
+              <div><span>Team Size</span><strong>{p.teamSize}</strong></div>
               <div>
                 <span>Critical Issues</span>
                 <strong className={p.criticalIssues > 0 ? "critical" : ""}>
@@ -169,26 +139,16 @@ export default function ProjectSummary() {
 
           {/* PROGRESS */}
           <div className="summary-card">
-            <h3>
-              <FiCheckCircle /> Progress Overview
-            </h3>
+            <h3><FiCheckCircle /> Progress Overview</h3>
             <div className="progress-large">
               <div className="progress-circle">
                 <span>{p.progress}%</span>
               </div>
-              <div>
-                <div>
-                  Tasks: {p.completedTasks} / {p.totalTasks}
-                </div>
-                <div className="task-bar">
-                  <div
-                    style={{
-                      width: `${
-                        (p.completedTasks / p.totalTasks) * 100
-                      }%`,
-                    }}
-                  />
-                </div>
+              <div className="progress-bar">
+                <div
+                  className="fill"
+                  style={{ width: `${p.progress}%` }}
+                />
               </div>
             </div>
           </div>
@@ -225,9 +185,7 @@ export default function ProjectSummary() {
                     <h3>{p.name}</h3>
                     <p>{p.client}</p>
                   </div>
-                  <span
-                    className={`status-badge small ${getStatusColor(p.status)}`}
-                  >
+                  <span className={`status-badge small ${getStatusColor(p.status)}`}>
                     {p.status}
                   </span>
                 </div>
@@ -243,10 +201,18 @@ export default function ProjectSummary() {
                   </div>
 
                   <div className="progress-section">
-                    <div className="progress-label">
-                      <span>Progress</span>
-                      <strong>{p.progress}%</strong>
-                    </div>
+                   <div
+  className="progress-circle"
+  style={{
+    background: `conic-gradient(
+      #4caf50 ${p.progress * 3.6}deg,
+      #e5e7eb 0deg
+    )`,
+  }}
+>
+  <span>{p.progress}%</span>
+</div>
+
                     <div className="progress-bar">
                       <div
                         className="fill"
@@ -256,12 +222,8 @@ export default function ProjectSummary() {
                   </div>
 
                   <div className="meta-row">
-                    <div>
-                      <FiUsers /> {p.teamSize}
-                    </div>
-                    <div
-                      className={p.criticalIssues > 0 ? "critical" : ""}
-                    >
+                    <div><FiUsers /> {p.teamSize}</div>
+                    <div className={p.criticalIssues > 0 ? "critical" : ""}>
                       <FiAlertTriangle /> {p.criticalIssues}
                     </div>
                     <div className={daysLeft <= 7 ? "urgent" : ""}>
