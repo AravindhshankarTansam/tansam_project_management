@@ -66,32 +66,29 @@ export default function ProjectFollowUp() {
 
 
   /* ================= UPDATE ================= */
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+const handleUpdate = async (e) => {
+  e.preventDefault();
 
-    try {
-      await updateProjectFollowup(editingProject.projectId, {
-        status: editingProject.status,
-        progress: editingProject.progress,
-        nextMilestone: editingProject.nextMilestone,
-        milestoneDueDate: editingProject.milestoneDueDate,
-        criticalIssues: editingProject.criticalIssues,
-      });
+  try {
+    await updateProjectFollowup(editingProject.projectId, {
+      status: editingProject.status,
+      progress: editingProject.progress,
+      nextMilestone: editingProject.nextMilestone,
+      milestoneDueDate: editingProject.milestoneDueDate,
+      criticalIssues: editingProject.criticalIssues,
+    });
 
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.projectId === editingProject.projectId
-            ? { ...p, ...editingProject }
-            : p
-        )
-      );
+    // ✅ Always refresh from backend
+    const refreshed = await fetchProjectFollowups();
+    setProjects(refreshed);
 
-      toast.success("Project follow-up updated");
-      setEditModalOpen(false);
-    } catch (err) {
-      toast.error(err.message || "Update failed");
-    }
-  };
+    toast.success("Project follow-up updated");
+    setEditModalOpen(false);
+  } catch (err) {
+    toast.error(err.message || "Update failed");
+  }
+};
+
 
   return (
     <div className="followup-page">
