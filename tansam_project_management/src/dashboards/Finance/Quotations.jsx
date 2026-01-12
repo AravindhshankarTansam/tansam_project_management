@@ -259,10 +259,10 @@ const response = await fetch(
               <th>Quotation No</th>
                <th>Project Name</th>
               <th>Client Name</th>
-              <th>Client Type</th>
+              {/* <th>Client Type</th> */}
               <th>Work Category</th>
               <th>Lab</th>
-              <th>Description</th>
+              {/* <th>Description</th> */}
               <th>Quote Value</th>
               <th>Date</th>
               <th>Actions</th>
@@ -279,21 +279,22 @@ const response = await fetch(
                   <td>{q.project_name}</td>
 
                   <td>{q.clientName}</td>
-                  <td>
+                  {/* <td>
                     <span
                       className={`badge badge-${q.clientType.toLowerCase()}`}
                     >
                       {q.clientType}
                     </span>
-                  </td>
+                  </td> */}
                   <td>{q.workCategory}</td>
                   <td>
                     <span className="badge-lab">{q.lab}</span>
                   </td>
-                  <td className="desc-cell">{q.description}</td>
-                  <td className="value-cell">
-                    ₹ {parseInt(q.value).toLocaleString("en-IN")}
-                  </td>
+                  {/* <td className="desc-cell">{q.description}</td> */}
+                 <td className="value-cell">
+  ₹ {Number(q.value.toString().replace(/,/g, '')).toLocaleString("en-IN")}
+</td>
+
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
                    <button
