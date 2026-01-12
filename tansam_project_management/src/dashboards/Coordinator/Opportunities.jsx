@@ -16,16 +16,16 @@ export default function Opportunities() {
   const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Track expanded descriptions
   const [expandedRows, setExpandedRows] = useState({});
 
-  // ✅ FILTER STATE (ADDED)
+  /* ================= FILTER STATE ================= */
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     source: "",
   });
 
+  /* ================= FORM STATE ================= */
   const [form, setForm] = useState({
     opportunity_id: null,
     opportunityName: "",
@@ -37,6 +37,7 @@ export default function Opportunities() {
     leadSource: "",
     leadDescription: "",
     leadStatus: "NEW",
+    assignedTo: "", // ✅ NEW FIELD
   });
 
   /* ================= LOAD ================= */
@@ -56,19 +57,13 @@ export default function Opportunities() {
     }
   };
 
-  /* ================= FILTER LOGIC (ADDED) ================= */
+  /* ================= FILTER LOGIC ================= */
   const filteredOpportunities = opportunities.filter((item) => {
     const searchMatch =
       !filters.search ||
-      item.opportunity_name
-        ?.toLowerCase()
-        .includes(filters.search.toLowerCase()) ||
-      item.customer_name
-        ?.toLowerCase()
-        .includes(filters.search.toLowerCase()) ||
-      item.company_name
-        ?.toLowerCase()
-        .includes(filters.search.toLowerCase());
+      item.opportunity_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      item.customer_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      item.company_name?.toLowerCase().includes(filters.search.toLowerCase());
 
     const statusMatch =
       !filters.status || item.lead_status === filters.status;
@@ -80,7 +75,6 @@ export default function Opportunities() {
   });
 
   /* ================= HANDLERS ================= */
-
   const resetForm = () => {
     setForm({
       opportunity_id: null,
@@ -93,6 +87,7 @@ export default function Opportunities() {
       leadSource: "",
       leadDescription: "",
       leadStatus: "NEW",
+      assignedTo: "",
     });
   };
 
@@ -115,6 +110,7 @@ export default function Opportunities() {
       leadSource: row.lead_source || "",
       leadDescription: row.lead_description || "",
       leadStatus: row.lead_status,
+      assignedTo: row.assigned_to || "", // ✅ MAP FROM BACKEND
     });
     setShowModal(true);
   };
@@ -157,7 +153,6 @@ export default function Opportunities() {
   };
 
   /* ================= UI ================= */
-
   return (
     <div className="opportunity-wrapper">
       <h2 className="opportunity-title">New Opportunities</h2>
@@ -166,7 +161,7 @@ export default function Opportunities() {
         <button onClick={openAddModal}>+ Add Opportunity</button>
       </div>
 
-      {/* ✅ FILTER BAR (ADDED) */}
+      {/* FILTER BAR */}
       <div className="opportunity-filters">
         <input
           type="text"
@@ -225,6 +220,7 @@ export default function Opportunities() {
                 <th>Customer</th>
                 <th>Company</th>
                 <th>Contact Person</th>
+                <th>Assigned To</th> {/* ✅ NEW */}
                 <th>Contact Email</th>
                 <th>Contact Phone</th>
                 <th>Source</th>
@@ -237,7 +233,7 @@ export default function Opportunities() {
             <tbody>
               {filteredOpportunities.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="empty">
+                  <td colSpan={13} className="empty">
                     No opportunities found
                   </td>
                 </tr>
@@ -256,6 +252,7 @@ export default function Opportunities() {
                       <td>{item.customer_name}</td>
                       <td>{item.company_name}</td>
                       <td>{item.contact_person || "-"}</td>
+                      <td>{item.assigned_to || "-"}</td> {/* ✅ NEW */}
                       <td>{item.contact_email || "-"}</td>
                       <td>{item.contact_phone || "-"}</td>
                       <td>{item.lead_source || "-"}</td>
@@ -316,8 +313,7 @@ export default function Opportunities() {
         )}
       </div>
 
-      {/* MODAL — unchanged */}
-       {/* MODAL */}
+      {/* MODAL */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-card">
@@ -363,6 +359,17 @@ export default function Opportunities() {
                 />
               </div>
 
+              {/* ✅ ASSIGNED TO */}
+              <div className="form-group">
+                <label>Assigned To</label>
+                <input
+                  name="assignedTo"
+                  value={form.assignedTo}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
               <div className="form-group">
                 <label>Contact Email</label>
                 <input
@@ -399,7 +406,7 @@ export default function Opportunities() {
                 </select>
               </div>
 
-              <div className="form-group status-field">
+              <div className="form-group">
                 <label>Status</label>
                 <select
                   name="leadStatus"
@@ -407,13 +414,12 @@ export default function Opportunities() {
                   onChange={handleChange}
                 >
                   <option value="NEW">NEW</option>
-                  <option value="EXISTING">Existing</option>
+                  <option value="EXISTING">EXISTING</option>
                 </select>
               </div>
 
-              <div className="form-group full-width description-field">
+              <div className="form-group full-width">
                 <label>Description</label>
-
                 {!isPreview ? (
                   <RichTextEditor
                     value={form.leadDescription}

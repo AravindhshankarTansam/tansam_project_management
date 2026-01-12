@@ -63,7 +63,6 @@
 .tracker-table th,
 .tracker-table td {
   padding: 12px 14px;
-  text-align: left;
   font-size: 14px;
 }
 
@@ -71,6 +70,7 @@
   background: #2563eb;
   color: #ffffff;
   font-weight: 600;
+  text-align: center;           /* ← CENTERED HEADERS */
 }
 
 .tracker-table tr:nth-child(even) {
@@ -278,6 +278,56 @@
   background: #b91c1c;
 }
 
+.text-cell {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================
+   Pagination
+============================ */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  min-width: 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #e0e7ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.page-btn.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+  font-weight: 600;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6;
+}
 /* ============================
    Responsive
 ============================ */
