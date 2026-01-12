@@ -2,12 +2,10 @@ import { useState } from "react";
 import {
   FiEye,
   FiCalendar,
-  FiDollarSign,
   FiTarget,
   FiAlertTriangle,
   FiUsers,
   FiCheckCircle,
-  FiClock,
   FiArrowLeft,
 } from "react-icons/fi";
 import "./Summary.css";
@@ -24,9 +22,6 @@ export default function ProjectSummary() {
       type: "Web Development",
       status: "In Progress",
       progress: 72,
-      revenue: 75000,
-      paid: 40000,
-      pending: 35000,
       totalTasks: 24,
       completedTasks: 18,
       teamSize: 6,
@@ -43,9 +38,6 @@ export default function ProjectSummary() {
       type: "Web Application",
       status: "In Progress",
       progress: 45,
-      revenue: 0,
-      paid: 0,
-      pending: 0,
       totalTasks: 32,
       completedTasks: 14,
       teamSize: 4,
@@ -62,9 +54,6 @@ export default function ProjectSummary() {
       type: "Mobile App",
       status: "At Risk",
       progress: 58,
-      revenue: 120000,
-      paid: 30000,
-      pending: 90000,
       totalTasks: 48,
       completedTasks: 28,
       teamSize: 8,
@@ -81,9 +70,6 @@ export default function ProjectSummary() {
       type: "Web Development",
       status: "Completed",
       progress: 100,
-      revenue: 200000,
-      paid: 200000,
-      pending: 0,
       totalTasks: 60,
       completedTasks: 60,
       teamSize: 10,
@@ -108,25 +94,24 @@ export default function ProjectSummary() {
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
+  /* ================= SINGLE PROJECT VIEW ================= */
   if (selectedProject) {
     const p = selectedProject;
     const daysLeft = calculateDaysLeft(p.endDate);
-    const paymentPercent = p.revenue > 0 ? Math.round((p.paid / p.revenue) * 100) : 0;
 
     return (
       <div className="project-summary single-view">
-        {/* Back Button */}
-    <button className="back-btn" onClick={() => setSelectedProject(null)}>
-      <FiArrowLeft size={18} />
-      All Projects
-    </button>
+        <button className="back-btn" onClick={() => setSelectedProject(null)}>
+          <FiArrowLeft size={18} />
+          All Projects
+        </button>
 
-        {/* Single Project Header */}
         <div className="single-header">
           <div>
             <h2>{p.name}</h2>
             <p className="subtitle">{p.client} • {p.type}</p>
           </div>
+
           <div className="header-meta">
             <span className="project-code">{p.code}</span>
             <span className={`status-badge ${getStatusColor(p.status)}`}>
@@ -137,22 +122,31 @@ export default function ProjectSummary() {
           </div>
         </div>
 
-        {/* Detailed Grid */}
         <div className="single-grid">
-          {/* Project Info */}
+          {/* PROJECT DETAILS */}
           <div className="summary-card large">
             <h3><FiTarget /> Project Details</h3>
             <div className="detail-grid">
               <div><span>Project Lead</span><strong>{p.lead}</strong></div>
               <div><span>Start Date</span><strong>{new Date(p.startDate).toLocaleDateString()}</strong></div>
               <div><span>End Date</span><strong>{new Date(p.endDate).toLocaleDateString()}</strong></div>
-              <div><span>Days Remaining</span><strong className={daysLeft <= 7 ? "urgent" : ""}>{daysLeft} days</strong></div>
+              <div>
+                <span>Days Remaining</span>
+                <strong className={daysLeft <= 7 ? "urgent" : ""}>
+                  {daysLeft} days
+                </strong>
+              </div>
               <div><span>Team Size</span><strong>{p.teamSize} members</strong></div>
-              <div><span>Critical Issues</span><strong className={p.criticalIssues > 0 ? "critical" : ""}>{p.criticalIssues}</strong></div>
+              <div>
+                <span>Critical Issues</span>
+                <strong className={p.criticalIssues > 0 ? "critical" : ""}>
+                  {p.criticalIssues}
+                </strong>
+              </div>
             </div>
           </div>
 
-          {/* Progress & Tasks */}
+          {/* PROGRESS & TASKS */}
           <div className="summary-card">
             <h3><FiCheckCircle /> Progress Overview</h3>
             <div className="progress-large">
@@ -160,25 +154,13 @@ export default function ProjectSummary() {
                 <span>{p.progress}%</span>
               </div>
               <div>
-                <div>Tasks: {p.completedTasks} / {p.totalTasks}</div>
+                <div>
+                  Tasks: {p.completedTasks} / {p.totalTasks}
+                </div>
                 <div className="task-bar">
-                  <div style={{ width: `${(p.completedTasks / p.totalTasks) * 100}%` }}></div>
+                  <div style={{ width: `${(p.completedTasks / p.totalTasks) * 100}%` }} />
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Financials */}
-          <div className="summary-card">
-            <h3><FiDollarSign /> Financial Summary</h3>
-            <div className="finance-large">
-              <div><span>Total Revenue</span><strong>₹{p.revenue.toLocaleString()}</strong></div>
-              <div><span>Received</span><strong className="paid">₹{p.paid.toLocaleString()}</strong></div>
-              <div><span>Pending</span><strong className={p.pending > 0 ? "pending" : "paid"}>₹{p.pending.toLocaleString()}</strong></div>
-              <div className="payment-progress">
-                <div style={{ width: `${paymentPercent}%` }}></div>
-              </div>
-              <small>{paymentPercent}% Paid</small>
             </div>
           </div>
         </div>
@@ -186,20 +168,17 @@ export default function ProjectSummary() {
     );
   }
 
-  // Main Dashboard View - List of Projects
+  /* ================= DASHBOARD VIEW ================= */
   return (
     <div className="project-summary dashboard-view">
       <div className="page-header">
-        <div>
-          <h2>Project Summary Dashboard</h2>
-          <p className="subtitle">Overview of all active and completed projects</p>
-        </div>
+        <h2>Project Summary Dashboard</h2>
+        <p className="subtitle">Overview of all active and completed projects</p>
       </div>
 
       <div className="projects-grid">
         {projects.map((p) => {
           const daysLeft = calculateDaysLeft(p.endDate);
-          const paymentPercent = p.revenue > 0 ? Math.round((p.paid / p.revenue) * 100) : 0;
 
           return (
             <div
@@ -233,25 +212,12 @@ export default function ProjectSummary() {
                     <strong>{p.progress}%</strong>
                   </div>
                   <div className="progress-bar">
-                    <div className="fill" style={{ width: `${p.progress}%` }}></div>
+                    <div className="fill" style={{ width: `${p.progress}%` }} />
                   </div>
                 </div>
 
-                {p.revenue > 0 && (
-                  <div className="finance-mini">
-                    <span>Revenue</span>
-                    <strong>₹{p.revenue.toLocaleString()}</strong>
-                    <div className="payment-mini">
-                      <div style={{ width: `${paymentPercent}%` }}></div>
-                    </div>
-                    <small>{paymentPercent}% paid</small>
-                  </div>
-                )}
-
                 <div className="meta-row">
-                  <div>
-                    <FiUsers /> {p.teamSize}
-                  </div>
+                  <div><FiUsers /> {p.teamSize}</div>
                   <div className={p.criticalIssues > 0 ? "critical" : ""}>
                     <FiAlertTriangle /> {p.criticalIssues}
                   </div>
