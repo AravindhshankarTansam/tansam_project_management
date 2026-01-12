@@ -38,48 +38,42 @@ export default function ProjectSummary() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* ================= LOAD + MERGE DATA ================= */
+  /* ================= LOAD + MERGE ================= */
   useEffect(() => {
     (async () => {
-      try {
-        const [projectData, followupData] = await Promise.all([
-          fetchProjects(),
-          fetchProjectFollowups(),
-        ]);
+      const [projectData, followupData] = await Promise.all([
+        fetchProjects(),
+        fetchProjectFollowups(),
+      ]);
 
-        const followupMap = {};
-        followupData.forEach((f) => {
-          followupMap[f.projectId] = f;
-        });
+      const followupMap = {};
+      followupData.forEach((f) => {
+        followupMap[f.projectId] = f;
+      });
 
-        const merged = projectData.map((p) => {
-          const f = followupMap[p.id] || {};
+      const merged = projectData.map((p) => {
+        const f = followupMap[p.id] || {};
 
-          return {
-            id: p.id,
-            code: `PRJ-${p.id}`,
-            name: p.projectName,
-            client: p.clientName,
-            type: p.projectType,
-            startDate: p.startDate,
-            endDate: p.endDate,
+        return {
+          id: p.id,
+          code: `PRJ-${p.id}`,
+          name: p.projectName,
+          client: p.clientName,
+          type: p.projectType,
+          startDate: p.startDate,
+          endDate: p.endDate,
 
-            status: f.status || p.status || "Planned",
-            progress: f.progress || 0,
+          status: f.status || p.status || "Planned",
+          progress: f.progress || 0,
 
-            teamSize: f.teamMembers || 0,
-            criticalIssues: f.criticalIssues || 0,
+          teamSize: f.teamMembers || 0,
+          criticalIssues: f.criticalIssues || 0,
+          lead: p.projectLead || "—",
+        };
+      });
 
-            lead: p.projectLead || "—",
-          };
-        });
-
-        setProjects(merged);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+      setProjects(merged);
+      setLoading(false);
     })();
   }, []);
 
@@ -91,30 +85,25 @@ export default function ProjectSummary() {
     return (
       <div className="project-summary single-view">
         <button className="back-btn" onClick={() => setSelectedProject(null)}>
-          <FiArrowLeft size={18} />
-          All Projects
+          <FiArrowLeft /> All Projects
         </button>
 
         <div className="single-header">
           <div>
             <h2>{p.name}</h2>
-            <p className="subtitle">
-              {p.client} • {p.type}
-            </p>
+            <p className="subtitle">{p.client} • {p.type}</p>
           </div>
 
           <div className="header-meta">
             <span className="project-code">{p.code}</span>
             <span className={`status-badge ${getStatusColor(p.status)}`}>
-              {p.status === "Completed" && <FiCheckCircle />}
-              {p.status === "At Risk" && <FiAlertTriangle />}
               {p.status}
             </span>
           </div>
         </div>
 
         <div className="single-grid">
-          {/* PROJECT DETAILS */}
+          {/* DETAILS */}
           <div className="summary-card large">
             <h3><FiTarget /> Project Details</h3>
             <div className="detail-grid">
@@ -137,18 +126,20 @@ export default function ProjectSummary() {
             </div>
           </div>
 
-          {/* PROGRESS */}
+          {/* PIE PROGRESS (ONLY HERE) */}
           <div className="summary-card">
             <h3><FiCheckCircle /> Progress Overview</h3>
             <div className="progress-large">
-              <div className="progress-circle">
+              <div
+                className="progress-circle"
+                style={{
+                  background: `conic-gradient(
+                    #10b981 ${p.progress * 3.6}deg,
+                    #e5e7eb 0deg
+                  )`,
+                }}
+              >
                 <span>{p.progress}%</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="fill"
-                  style={{ width: `${p.progress}%` }}
-                />
               </div>
             </div>
           </div>
@@ -162,13 +153,11 @@ export default function ProjectSummary() {
     <div className="project-summary dashboard-view">
       <div className="page-header">
         <h2>Project Summary Dashboard</h2>
-        <p className="subtitle">
-          Overview of all active and completed projects
-        </p>
+        <p className="subtitle">Overview of all active and completed projects</p>
       </div>
 
       {loading ? (
-        <div className="assign-loading">Loading summary...</div>
+        <div>Loading...</div>
       ) : (
         <div className="projects-grid">
           {projects.map((p) => {
@@ -195,29 +184,15 @@ export default function ProjectSummary() {
                     <span>Code</span>
                     <strong>{p.code}</strong>
                   </div>
-                  <div className="info-row">
-                    <span>Type</span>
-                    <strong>{p.type}</strong>
-                  </div>
 
+                  {/* ✅ BAR ONLY */}
                   <div className="progress-section">
-                   <div
-  className="progress-circle"
-  style={{
-    background: `conic-gradient(
-      #4caf50 ${p.progress * 3.6}deg,
-      #e5e7eb 0deg
-    )`,
-  }}
->
-  <span>{p.progress}%</span>
-</div>
-
+                    <div className="progress-label">
+                      <span>Progress</span>
+                      <strong>{p.progress}%</strong>
+                    </div>
                     <div className="progress-bar">
-                      <div
-                        className="fill"
-                        style={{ width: `${p.progress}%` }}
-                      />
+                      <div className="fill" style={{ width: `${p.progress}%` }} />
                     </div>
                   </div>
 
