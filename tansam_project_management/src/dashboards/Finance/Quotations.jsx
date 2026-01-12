@@ -291,9 +291,10 @@ const response = await fetch(
                     <span className="badge-lab">{q.lab}</span>
                   </td>
                   {/* <td className="desc-cell">{q.description}</td> */}
-                  <td className="value-cell">
-                    ₹ {parseInt(q.value).toLocaleString("en-IN")}
-                  </td>
+                 <td className="value-cell">
+  ₹ {Number(q.value.toString().replace(/,/g, '')).toLocaleString("en-IN")}
+</td>
+
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
                    <button
