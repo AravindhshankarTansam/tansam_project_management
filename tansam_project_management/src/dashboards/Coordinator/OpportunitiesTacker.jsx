@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 import "./CSS/OpportunitiesTracker.css";
-// import Sidebar from "../Sidebar/Sidebar.jsx";
 import ProgressTracker from "./Tracker.jsx";
+
+import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
+import {
+  fetchOpportunityTrackers,
+  createOpportunityTracker,
+  updateOpportunityTracker,
+  deleteOpportunityTracker,
+} from "../../services/coordinator/coordinator.tracker.api";
 
 const STAGES = [
   "NEW",
@@ -25,44 +32,41 @@ export default function OpportunitiesTracker() {
   const [form, setForm] = useState({
     id: null,
     opportunity_id: "",
-    opportunity_name: "",
-    customer_name: "",
     stage: "NEW",
     next_followup_date: "",
     next_action: "",
     remarks: "",
   });
 
-  // LOAD DATA
-  const loadAll = () => {
-    setLoading(true);
-
-    const storedOpps =
-      JSON.parse(localStorage.getItem("opportunities")) || [
-        { opportunity_id: "new", opportunity_name: "New", customer_name: "New Customer" },
-        { opportunity_id: "old", opportunity_name: "Old", customer_name: "Old Customer" },
-      ];
-
-    const storedTrackers = JSON.parse(localStorage.getItem("trackerList")) || [];
-
-    setOpportunities(storedOpps);
-    setTrackerList(storedTrackers);
-
-    localStorage.setItem("opportunities", JSON.stringify(storedOpps));
-    setLoading(false);
-  };
+  /* ================= LOAD DATA ================= */
 
   useEffect(() => {
     loadAll();
   }, []);
 
-  // FORM HANDLERS
+  const loadAll = async () => {
+    try {
+      setLoading(true);
+      const [oppData, trackerData] = await Promise.all([
+        fetchOpportunities(),
+        fetchOpportunityTrackers(),
+      ]);
+
+      setOpportunities(oppData);
+      setTrackerList(trackerData);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= FORM ================= */
+
   const resetForm = () => {
     setForm({
       id: null,
       opportunity_id: "",
-      opportunity_name: "",
-      customer_name: "",
       stage: "NEW",
       next_followup_date: "",
       next_action: "",
@@ -81,8 +85,6 @@ export default function OpportunitiesTracker() {
     setForm({
       id: row.id,
       opportunity_id: row.opportunity_id,
-      opportunity_name: row.opportunity_name || "",
-      customer_name: row.customer_name || "",
       stage: row.stage,
       next_followup_date: row.next_followup_date || "",
       next_action: row.next_action || "",
@@ -94,49 +96,41 @@ export default function OpportunitiesTracker() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // SAVE DATA
-  const handleSubmit = (e) => {
+  /* ================= SAVE ================= */
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      if (isEdit) {
+        await updateOpportunityTracker(form.id, form);
+      } else {
+        await createOpportunityTracker(form);
+      }
 
-    const selectedOpp = opportunities.find(
-      (o) => o.opportunity_id === form.opportunity_id
-    );
-
-    let updatedList = [];
-
-    if (isEdit) {
-      updatedList = trackerList.map((t) =>
-        t.id === form.id ? { ...form, ...selectedOpp } : t
-      );
-    } else {
-      const newEntry = {
-        ...form,
-        id: Date.now(),
-        opportunity_name: selectedOpp?.opportunity_name || form.opportunity_name,
-        customer_name: selectedOpp?.customer_name || form.customer_name,
-      };
-      updatedList = [...trackerList, newEntry];
+      setShowModal(false);
+      resetForm();
+      loadAll();
+    } catch (err) {
+      alert(err.message);
     }
-
-    localStorage.setItem("trackerList", JSON.stringify(updatedList));
-    setTrackerList(updatedList);
-
-    setShowModal(false);
-    resetForm();
   };
 
-  // REMOVE TRACKER
-  const handleRemove = (id) => {
-    const updatedList = trackerList.filter((t) => t.id !== id);
-    setTrackerList(updatedList);
-    localStorage.setItem("trackerList", JSON.stringify(updatedList));
+  /* ================= DELETE ================= */
+
+  const handleRemove = async (id) => {
+    if (!window.confirm("Remove this tracker?")) return;
+    try {
+      await deleteOpportunityTracker(id);
+      loadAll();
+    } catch (err) {
+      alert(err.message);
+    }
   };
+
+  /* ================= UI ================= */
 
   return (
     <div className="tracker-container">
-      {/* Sidebar */}
-      {/* <Sidebar className="sidebar" /> */}
-
       <div className="tracker-wrapper">
         <h2 className="tracker-title">Opportunities Tracker</h2>
 
@@ -154,6 +148,7 @@ export default function OpportunitiesTracker() {
                   <th>S.No</th>
                   <th>Opportunity</th>
                   <th>Client Name</th>
+                  <th>Assigned To</th>
                   <th>Stage</th>
                   <th>Next Follow-up</th>
                   <th>Edit</th>
@@ -164,7 +159,7 @@ export default function OpportunitiesTracker() {
               <tbody>
                 {trackerList.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="empty">
+                    <td colSpan="8" className="empty">
                       No tracker records found
                     </td>
                   </tr>
@@ -174,6 +169,7 @@ export default function OpportunitiesTracker() {
                       <td>{index + 1}</td>
                       <td>{row.opportunity_name}</td>
                       <td>{row.customer_name}</td>
+                      <td>{row.assigned_to || "-"}</td>
                       <td>
                         <span className={`stage ${row.stage.toLowerCase()}`}>
                           {row.stage}
@@ -194,7 +190,7 @@ export default function OpportunitiesTracker() {
                           className="icon-btn remove-btn"
                           onClick={() => handleRemove(row.id)}
                         >
-                          Remove
+                          <FiTrash2 />
                         </button>
                       </td>
                     </tr>
@@ -213,58 +209,34 @@ export default function OpportunitiesTracker() {
 
               <form onSubmit={handleSubmit} className="tracker-form">
                 {!isEdit && (
-                  <>
-                    <div className="form-group">
-                      <label>Opportunity</label>
-                      <select
-                        name="opportunity_id"
-                        value={form.opportunity_id}
-                        onChange={(e) => {
-                          const selectedOpp = opportunities.find(
-                            (o) => o.opportunity_id === e.target.value
-                          );
-                          setForm({
-                            ...form,
-                            opportunity_id: e.target.value,
-                            opportunity_name: selectedOpp?.opportunity_name || "",
-                            customer_name: selectedOpp?.customer_name || "",
-                          });
-                        }}
-                        required
-                      >
-                        <option value="">Select Opportunity</option>
-                        {opportunities.map((o) => (
-                          <option key={o.opportunity_id} value={o.opportunity_id}>
-                            {o.opportunity_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Client Name</label>
-                      <select
-                        name="customer_name"
-                        value={form.customer_name}
-                        onChange={(e) =>
-                          setForm({ ...form, customer_name: e.target.value })
-                        }
-                        required
-                      >
-                        <option value="">Select Client</option>
-                        {opportunities.map((o) => (
-                          <option key={o.opportunity_id} value={o.customer_name}>
-                            {o.customer_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </>
+                  <div className="form-group">
+                    <label>Opportunity</label>
+                    <select
+                      name="opportunity_id"
+                      value={form.opportunity_id}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Opportunity</option>
+                      {opportunities.map((o) => (
+                        <option
+                          key={o.opportunity_id}
+                          value={o.opportunity_id}
+                        >
+                          {o.opportunity_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
 
                 <div className="form-group">
                   <label>Stage</label>
-                  <select name="stage" value={form.stage} onChange={handleChange}>
+                  <select
+                    name="stage"
+                    value={form.stage}
+                    onChange={handleChange}
+                  >
                     {STAGES.map((s) => (
                       <option key={s} value={s}>
                         {s}
