@@ -1,6 +1,7 @@
 // backend/src/schema/finance.schema.js
 
 export const createFinanceSchemas = async (db) => {
+    console.log("✅ Finance schema executed");
   // 🔹 QUOTATIONS TABLE
   await db.execute(`
     CREATE TABLE IF NOT EXISTS quotations (
