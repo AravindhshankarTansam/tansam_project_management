@@ -16,6 +16,8 @@ export default function QuotationFollowup() {
   const [editId, setEditId] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [activePhase, setActivePhase] = useState("followup");
+
 const [newFollowup, setNewFollowup] = useState({
   project_name: "",
   clientResponse: "",
@@ -131,61 +133,95 @@ const handleSave = async () => {
 
   </div>
       {/* Table */}
+      <div className="phase-tabs">
+      <button
+        className={activePhase === "followup" ? "active-tab" : ""}
+        onClick={() => setActivePhase("followup")}
+      >
+        Quotation Follow-up Phase
+      </button>
+
+      <button
+        className={activePhase === "payment" ? "active-tab" : ""}
+        onClick={() => setActivePhase("payment")}
+      >
+        Payment Phase
+      </button>
+    </div>
+
       <div className="card-table">
         
-        <table>
-          <thead>
-            <tr>
-              {[
-                "Project Name",
-  "Client Response",
-  "Last Follow-up",
-  "Revised Cost",
-  "Next Follow-up",
-  "Remarks",
-  "Order Status",
-  "PO Received",
-  "Payment Phase",
-  "Payment Amount",
-  "Payment Received",
-  "Reason",
-  "Actions",
-].map(h => (
-                <th key={h}>
-                  {h}
-                  <span className="resize-handle" />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.map(d => (
-              <tr key={d.id}>
-                <td>{d.project_name}</td>
+   <table>
+  <thead>
+    <tr>
+      <th>Project Name</th>
 
-                <td>{d.clientResponse}</td>
-                <td>{d.lastFollowup}</td>
-                <td>₹ {d.revisedCost}</td>
-                <td>{d.nextFollowup}</td>
-                <td>{d.remarks}</td>
-                <td>{d.status}</td>
-<td>{d.poReceived}</td>
-<td>{d.paymentPhase}</td>
-<td>{d.paymentAmount ? `₹ ${d.paymentAmount}` : "-"}</td>
-<td>{d.paymentReceived}</td>
-<td>{d.reason}</td>
-<td>
-  <button className="btn-edit" onClick={() => handleEdit(d)}>✏️</button>
-<button className="btn-delete" onClick={() => handleDelete(d.id)}>
-  🗑️
-</button>
+      {/* 🔹 Quotation Follow-up Phase columns */}
+      {activePhase === "followup" && (
+        <>
+          <th>Client Response</th>
+          <th>Last Follow-up</th>
+          <th>Revised Cost</th>
+          <th>Next Follow-up</th>
+          <th>Remarks</th>
+          <th>Order Status</th>
+          <th>PO Received</th>
+        </>
+      )}
 
-</td>
+      {/* 🔹 Payment Phase columns */}
+      {activePhase === "payment" && (
+        <>
+          <th>Payment Phase</th>
+          <th>Payment Received</th>
+          <th>Payment Amount</th>
+          <th>Reason</th>
+        </>
+      )}
 
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {paginated.map((d) => (
+      <tr key={d.id}>
+        <td>{d.project_name}</td>
+
+        {/* 🔹 Quotation Follow-up Phase data */}
+        {activePhase === "followup" && (
+          <>
+            <td>{d.clientResponse}</td>
+            <td>{d.lastFollowup}</td>
+            <td>₹ {d.revisedCost}</td>
+            <td>{d.nextFollowup}</td>
+            <td>{d.remarks}</td>
+            <td>{d.status}</td>
+            <td>{d.poReceived}</td>
+          </>
+        )}
+
+        {/* 🔹 Payment Phase data */}
+        {activePhase === "payment" && (
+          <>
+            <td>{d.paymentPhase}</td>
+            <td>{d.paymentReceived}</td>
+            <td>{d.paymentAmount ? `₹ ${d.paymentAmount}` : "-"}</td>
+            <td>{d.reason || "-"}</td>
+          </>
+        )}
+
+        <td>
+          <button className="btn-edit" onClick={() => handleEdit(d)}>✏️</button>
+          <button className="btn-delete" onClick={() => handleDelete(d.id)}>
+            🗑️
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
       </div>
 
       {/* Pagination Controls */}
