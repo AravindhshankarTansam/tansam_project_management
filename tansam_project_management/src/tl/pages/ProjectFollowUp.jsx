@@ -13,6 +13,7 @@ import "./ProjectFollowUp.css";
 import {
   fetchProjectFollowups,
   updateProjectFollowup,
+   getPOFileUrl,
 } from "../../services/projectFollowup.api";
 
 /* ---------- HELPERS ---------- */
@@ -48,17 +49,21 @@ export default function ProjectFollowUp() {
     setEditModalOpen(true);
   };
 
-  const openPdfInNewTab = (url) => {
-    if (!url) {
-      toast.warn("PO not uploaded yet");
-      return;
-    }
-    window.open(
-      url + "#toolbar=0&navpanes=0&scrollbar=0",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
+  const openPdfInNewTab = (filePath) => {
+  const pdfUrl = getPOFileUrl(filePath);
+
+  if (!pdfUrl) {
+    toast.warn("PO not uploaded yet");
+    return;
+  }
+
+  window.open(
+    pdfUrl + "#toolbar=0&navpanes=0&scrollbar=0",
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
+
 
   /* ================= UPDATE ================= */
   const handleUpdate = async (e) => {

@@ -13,6 +13,7 @@
 
   import quotationFollowup from "./routes/quotationFollowup.routes.js";
   import projectFollowupRoutes from "./routes/projectFollowup.routes.js";
+  import path from "path";
 
   const app = express();
 
@@ -39,6 +40,12 @@
   app.use(express.json());
 
   // Routes
+  /* ================= SERVE UPLOADED FILES ================= */
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
+
 
   app.use("/api/auth", authRoutes);
   app.use("/api/admin", adminRoutes);

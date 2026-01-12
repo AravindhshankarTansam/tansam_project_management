@@ -1,5 +1,8 @@
 const BASE_URL = "http://localhost:9899/api";
 
+/* 🔑 derive server root from API url */
+const SERVER_URL = BASE_URL.replace("/api", "");
+
 /* GET all project followups */
 export const fetchProjectFollowups = async () => {
   const res = await fetch(`${BASE_URL}/project-followups`);
@@ -21,4 +24,10 @@ export const updateProjectFollowup = async (projectId, data) => {
   }
 
   return res.json();
+};
+
+/* ✅ NEW: Resolve PO file URL */
+export const getPOFileUrl = (filePath) => {
+  if (!filePath) return null;
+  return `${SERVER_URL}/${filePath}`;
 };

@@ -13,15 +13,14 @@ const [rows] = await db.execute(`
     p.client_name AS clientName,
     p.quotation_number AS quotationCode,
     p.status,
+    p.po_file AS poFile,            -- ✅ ADD THIS
 
     COUNT(DISTINCT a.id) AS teamMembers,
 
-    MAX(f.progress) AS progress,
-    MAX(f.next_milestone) AS nextMilestone,
-    MAX(f.milestone_due_date) AS milestoneDueDate,
-    MAX(f.critical_issues) AS criticalIssues,
-
-    MAX(p.po_file) AS poFile
+    f.progress,
+    f.next_milestone AS nextMilestone,
+    f.milestone_due_date AS milestoneDueDate,
+    f.critical_issues AS criticalIssues
 
   FROM projects p
 
@@ -36,10 +35,16 @@ const [rows] = await db.execute(`
     p.project_name,
     p.client_name,
     p.quotation_number,
-    p.status
+    p.status,
+    p.po_file,
+    f.progress,
+    f.next_milestone,
+    f.milestone_due_date,
+    f.critical_issues
 
   ORDER BY p.id DESC
 `);
+
 
 
     res.json(rows);
