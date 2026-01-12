@@ -277,6 +277,13 @@
 .cancel-btn:hover {
   background: #b91c1c;
 }
+.text-cell {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
 /* ============================
    Responsive

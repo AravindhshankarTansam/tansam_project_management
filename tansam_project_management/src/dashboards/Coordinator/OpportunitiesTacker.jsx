@@ -51,7 +51,6 @@ export default function OpportunitiesTracker() {
         fetchOpportunities(),
         fetchOpportunityTrackers(),
       ]);
-
       setOpportunities(oppData);
       setTrackerList(trackerData);
     } catch (err) {
@@ -106,7 +105,6 @@ export default function OpportunitiesTracker() {
       } else {
         await createOpportunityTracker(form);
       }
-
       setShowModal(false);
       resetForm();
       loadAll();
@@ -151,6 +149,8 @@ export default function OpportunitiesTracker() {
                   <th>Assigned To</th>
                   <th>Stage</th>
                   <th>Next Follow-up</th>
+                  <th>Next Action</th>
+                  <th>Remarks</th>
                   <th>Edit</th>
                   <th>Remove</th>
                 </tr>
@@ -159,7 +159,7 @@ export default function OpportunitiesTracker() {
               <tbody>
                 {trackerList.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="empty">
+                    <td colSpan="10" className="empty">
                       No tracker records found
                     </td>
                   </tr>
@@ -170,13 +170,30 @@ export default function OpportunitiesTracker() {
                       <td>{row.opportunity_name}</td>
                       <td>{row.customer_name}</td>
                       <td>{row.assigned_to || "-"}</td>
+
                       <td>
                         <span className={`stage ${row.stage.toLowerCase()}`}>
                           {row.stage}
                         </span>
                         <ProgressTracker currentStage={row.stage} />
                       </td>
-                      <td>{row.next_followup_date || "-"}</td>
+
+                      <td>
+                        {row.next_followup_date
+                          ? new Date(row.next_followup_date)
+                              .toISOString()
+                              .split("T")[0]
+                          : "-"}
+                      </td>
+
+                      <td className="text-cell">
+                        {row.next_action || "-"}
+                      </td>
+
+                      <td className="text-cell">
+                        {row.remarks || "-"}
+                      </td>
+
                       <td>
                         <button
                           className="icon-btn"
@@ -185,6 +202,7 @@ export default function OpportunitiesTracker() {
                           <FiEdit />
                         </button>
                       </td>
+
                       <td>
                         <button
                           className="icon-btn remove-btn"
