@@ -21,6 +21,8 @@ const STAGES = [
   "LOST",
 ];
 
+const ITEMS_PER_PAGE = 10; // You can change this
+
 export default function OpportunitiesTracker() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -28,17 +30,15 @@ export default function OpportunitiesTracker() {
 
   const [opportunities, setOpportunities] = useState([]);
   const [trackerList, setTrackerList] = useState([]);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [form, setForm] = useState({
-    id: null,
-    opportunity_id: "",
-    stage: "NEW",
-    next_followup_date: "",
-    next_action: "",
-    remarks: "",
-  });
-
-  /* ================= LOAD DATA ================= */
+  const totalItems = trackerList.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentItems = trackerList.slice(startIndex, endIndex);
 
   useEffect(() => {
     loadAll();
@@ -51,16 +51,16 @@ export default function OpportunitiesTracker() {
         fetchOpportunities(),
         fetchOpportunityTrackers(),
       ]);
+
       setOpportunities(oppData);
       setTrackerList(trackerData);
+      setCurrentPage(1); // Reset to first page after reload
     } catch (err) {
       alert(err.message);
     } finally {
       setLoading(false);
     }
   };
-
-  /* ================= FORM ================= */
 
   const resetForm = () => {
     setForm({
@@ -72,6 +72,15 @@ export default function OpportunitiesTracker() {
       remarks: "",
     });
   };
+
+  const [form, setForm] = useState({
+    id: null,
+    opportunity_id: "",
+    stage: "NEW",
+    next_followup_date: "",
+    next_action: "",
+    remarks: "",
+  });
 
   const openAddModal = () => {
     resetForm();
@@ -85,7 +94,9 @@ export default function OpportunitiesTracker() {
       id: row.id,
       opportunity_id: row.opportunity_id,
       stage: row.stage,
-      next_followup_date: row.next_followup_date || "",
+      next_followup_date: row.next_followup_date
+        ? row.next_followup_date.slice(0, 10)
+        : "",
       next_action: row.next_action || "",
       remarks: row.remarks || "",
     });
@@ -94,8 +105,6 @@ export default function OpportunitiesTracker() {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-
-  /* ================= SAVE ================= */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,8 +122,6 @@ export default function OpportunitiesTracker() {
     }
   };
 
-  /* ================= DELETE ================= */
-
   const handleRemove = async (id) => {
     if (!window.confirm("Remove this tracker?")) return;
     try {
@@ -125,7 +132,15 @@ export default function OpportunitiesTracker() {
     }
   };
 
-  /* ================= UI ================= */
+  // Pagination handlers
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const goToPrev = () => goToPage(currentPage - 1);
+  const goToNext = () => goToPage(currentPage + 1);
 
   return (
     <div className="tracker-container">
@@ -139,87 +154,118 @@ export default function OpportunitiesTracker() {
         {loading ? (
           <p>Loading...</p>
         ) : (
-          <div className="table-wrapper">
-            <table className="tracker-table">
-              <thead>
-                <tr>
-                  <th>S.No</th>
-                  <th>Opportunity</th>
-                  <th>Client Name</th>
-                  <th>Assigned To</th>
-                  <th>Stage</th>
-                  <th>Next Follow-up</th>
-                  <th>Next Action</th>
-                  <th>Remarks</th>
-                  <th>Edit</th>
-                  <th>Remove</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {trackerList.length === 0 ? (
+          <>
+            <div className="table-wrapper">
+              <table className="tracker-table">
+                <thead>
                   <tr>
-                    <td colSpan="10" className="empty">
-                      No tracker records found
-                    </td>
+                    <th>S.No</th>
+                    <th>Opportunity</th>
+                    <th>Client Name</th>
+                    <th>Assigned To</th>
+                    <th>Stage</th>
+                    <th>Next Follow-up</th>
+                    <th>Next Action</th>
+                    <th>Remarks</th>
+                    <th>Edit</th>
+                    <th>Remove</th>
                   </tr>
-                ) : (
-                  trackerList.map((row, index) => (
-                    <tr key={row.id}>
-                      <td>{index + 1}</td>
-                      <td>{row.opportunity_name}</td>
-                      <td>{row.customer_name}</td>
-                      <td>{row.assigned_to || "-"}</td>
+                </thead>
 
-                      <td>
-                        <span className={`stage ${row.stage.toLowerCase()}`}>
-                          {row.stage}
-                        </span>
-                        <ProgressTracker currentStage={row.stage} />
-                      </td>
-
-                      <td>
-                        {row.next_followup_date
-                          ? new Date(row.next_followup_date)
-                              .toISOString()
-                              .split("T")[0]
-                          : "-"}
-                      </td>
-
-                      <td className="text-cell">
-                        {row.next_action || "-"}
-                      </td>
-
-                      <td className="text-cell">
-                        {row.remarks || "-"}
-                      </td>
-
-                      <td>
-                        <button
-                          className="icon-btn"
-                          onClick={() => openEditModal(row)}
-                        >
-                          <FiEdit />
-                        </button>
-                      </td>
-
-                      <td>
-                        <button
-                          className="icon-btn remove-btn"
-                          onClick={() => handleRemove(row.id)}
-                        >
-                          <FiTrash2 />
-                        </button>
+                <tbody>
+                  {currentItems.length === 0 && totalItems === 0 ? (
+                    <tr>
+                      <td colSpan="10" className="empty">
+                        No tracker records found
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : (
+                    currentItems.map((row, index) => (
+                      <tr key={row.id}>
+                        <td>{startIndex + index + 1}</td>
+                        <td>{row.opportunity_name}</td>
+                        <td>{row.customer_name}</td>
+                        <td>{row.assigned_to || "-"}</td>
+
+                        <td>
+                          <span className={`stage ${row.stage.toLowerCase()}`}>
+                            {row.stage}
+                          </span>
+                          <ProgressTracker currentStage={row.stage} />
+                        </td>
+
+                        <td>
+                          {row.next_followup_date
+                            ? row.next_followup_date.slice(0, 10)
+                            : "-"}
+                        </td>
+
+                        <td className="text-cell">
+                          {row.next_action || "-"}
+                        </td>
+
+                        <td className="text-cell">
+                          {row.remarks || "-"}
+                        </td>
+
+                        <td>
+                          <button
+                            className="icon-btn"
+                            onClick={() => openEditModal(row)}
+                          >
+                            <FiEdit />
+                          </button>
+                        </td>
+
+                        <td>
+                          <button
+                            className="icon-btn remove-btn"
+                            onClick={() => handleRemove(row.id)}
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  className="page-btn"
+                  onClick={goToPrev}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    className={`page-btn ${currentPage === page ? "active" : ""}`}
+                    onClick={() => goToPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  className="page-btn"
+                  onClick={goToNext}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
 
-        {/* MODAL */}
+        {/* Modal remains unchanged */}
         {showModal && (
           <div className="modal-overlay">
             <div className="modal-card">
@@ -237,10 +283,7 @@ export default function OpportunitiesTracker() {
                     >
                       <option value="">Select Opportunity</option>
                       {opportunities.map((o) => (
-                        <option
-                          key={o.opportunity_id}
-                          value={o.opportunity_id}
-                        >
+                        <option key={o.opportunity_id} value={o.opportunity_id}>
                           {o.opportunity_name}
                         </option>
                       ))}
@@ -250,11 +293,7 @@ export default function OpportunitiesTracker() {
 
                 <div className="form-group">
                   <label>Stage</label>
-                  <select
-                    name="stage"
-                    value={form.stage}
-                    onChange={handleChange}
-                  >
+                  <select name="stage" value={form.stage} onChange={handleChange}>
                     {STAGES.map((s) => (
                       <option key={s} value={s}>
                         {s}

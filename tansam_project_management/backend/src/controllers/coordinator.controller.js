@@ -266,7 +266,7 @@ export const createOpportunityTracker = async (req, res) => {
     const {
       opportunity_id,
       stage,
-      next_followup_date,
+      next_followup_date,         // ← keep as string "YYYY-MM-DD"
       next_action,
       remarks,
     } = req.body;
@@ -317,7 +317,7 @@ export const createOpportunityTracker = async (req, res) => {
         opp.customer_name,
         opp.assigned_to,
         stage || "NEW",
-        next_followup_date || null,
+        next_followup_date || null,           // ← VERY IMPORTANT: string or null
         next_action || null,
         remarks || null,
         req.user.id,
@@ -391,21 +391,22 @@ export const updateOpportunityTracker = async (req, res) => {
     const normalize = (v) => (v?.trim() ? v.trim() : null);
 
     const db = await connectDB();
+    // await initSchemas(db, { coordinator: true }); // ← usually not needed on every request
 
     const [result] = await db.execute(
       `
       UPDATE opportunity_tracker
       SET
-        stage = COALESCE(?, stage),
+        stage              = COALESCE(?, stage),
         next_followup_date = COALESCE(?, next_followup_date),
-        next_action = COALESCE(?, next_action),
-        remarks = COALESCE(?, remarks)
+        next_action        = COALESCE(?, next_action),
+        remarks            = COALESCE(?, remarks)
       WHERE id = ?
         AND created_by = ?
       `,
       [
         req.body.stage || null,
-        req.body.next_followup_date || null,
+        req.body.next_followup_date || null,    // ← string "YYYY-MM-DD" or null
         normalize(req.body.next_action),
         normalize(req.body.remarks),
         id,
@@ -423,7 +424,6 @@ export const updateOpportunityTracker = async (req, res) => {
     res.status(500).json({ message: "Failed to update opportunity tracker" });
   }
 };
-
 /* ======================================================
    DELETE OPPORTUNITY TRACKER
 ====================================================== */

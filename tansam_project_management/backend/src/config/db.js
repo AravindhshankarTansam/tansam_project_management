@@ -36,6 +36,7 @@ export const connectDB = async () => {
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    dateStrings: true,
   });
 
   return pool;
