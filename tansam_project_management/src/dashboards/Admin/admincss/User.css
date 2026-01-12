@@ -96,115 +96,139 @@
   color: #991b1b;
 }
 
-/* ================= BUTTONS ================= */
-.primary-btn {
-  background: #334155; /* slate */
-  color: #ffffff;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
+/* ================= MODAL UPGRADE ================= */
+.modal-body.grid-form {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.modal-box { 
+  /* background: linear-gradient(180deg, #ffffff, #f8fafc); */
+  width: 50% !important;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+  animation: scaleIn 0.25s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Field wrapper */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 12px;
   font-weight: 600;
+  color: #475569;
+}
+
+/* Inputs */
+.form-field input,
+.form-field select {
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
   font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.primary-btn:hover {
-  background: #1e293b;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.secondary-btn {
-  background: #e5e7eb;
-  color: #0f172a;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* ================= ICON BUTTON ================= */
-.icon-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  color: #334155;
-  padding: 6px;
-  border-radius: 6px;
-}
-
-.icon-btn:hover {
-  background: #e5e7eb;
-}
-
-/* ================= MODAL ================= */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-box {
   background: #ffffff;
-  width: 420px;
-  border-radius: 14px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
 }
 
+.form-field input:focus,
+.form-field select:focus {
+  border-color: #334155;
+  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.15);
+}
+
+/* Make buttons span full row */
+.full-width {
+  grid-column: span 2;
+}
+
+/* Modal header enhancement */
 .modal-header {
-  padding: 16px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e5e7eb;
+  background: #27385f;
+  color: #ffffff;
+  border-radius: 18px 18px 0 0;
 }
 
 .modal-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
+  color: #ffffff !important;
+}
+
+/* Close icon */
+.modal-header .icon-btn {
+  color: #ae1515;
+  background: rgba(235, 162, 162, 0.1);
+  font-size: xx-large;
+}
+
+.modal-header .icon-btn:hover {
+  background: rgba(235, 162, 162, 0.15);
+}
+
+/* ================= MODAL FOOTER (FINAL FIX) ================= */
+.modal-actions {
+  grid-column: span 2;          /* full width in 2x2 grid */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0 4px;
+  margin-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Button sizing consistency */
+.modal-actions .primary-btn,
+.modal-actions .secondary-btn {
+  min-width: 120px;
+  height: 40px;
+}
+
+.secondary-btn{
+  color: #c40000;
+}
+
+/* Cancel button – subtle */
+.modal-actions .secondary-btn {
+  background: #f1f5f9;
   color: #0f172a;
 }
 
-.modal-body {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.modal-actions .secondary-btn:hover {
+  background: #e2e8f0;
 }
 
-.modal-body input,
-.modal-body select {
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 14px;
+/* Save button emphasis */
+.modal-actions .primary-btn {
+  box-shadow: 0 4px 10px rgba(51, 65, 85, 0.25);
 }
 
-.modal-body input:focus,
-.modal-body select:focus {
-  outline: none;
-  border-color: #64748b;
-  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.2);
+.role-lab {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #475569;
 }
-
-/* ================= MODAL ACTIONS ================= */
-.modal-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.modal-actions button {
-  width: 100%;
+.role-lab .small{
+  font-size: 21px;
+  color: #94a3b8;
 }

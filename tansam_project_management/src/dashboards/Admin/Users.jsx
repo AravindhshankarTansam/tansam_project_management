@@ -30,6 +30,10 @@ export default function Users() {
     status: "ACTIVE",
   });
 
+  const isTeamLead = (role) =>
+    typeof role === "string" &&
+    role.toLowerCase().includes("lead");
+
   const loadUsers = async () => {
     try {
       setUsers(await fetchUsers());
@@ -74,7 +78,13 @@ export default function Users() {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "role" && !isTeamLead(value)) {
+      setForm({ ...form, role: value, lab: "" });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -85,11 +95,16 @@ export default function Users() {
       return;
     }
 
+    if (isTeamLead(form.role) && !form.lab) {
+      toast.warning("Please select a lab for Team Lead");
+      return;
+    }
+
     try {
       if (isEdit) {
         await updateUser(form.id, {
           role: form.role,
-          lab: form.lab,
+          lab: isTeamLead(form.role) ? form.lab : null,
           status: form.status,
         });
         toast.success("User updated successfully");
@@ -129,24 +144,33 @@ export default function Users() {
               <th>Mobile</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Lab</th>
               <th>Status</th>
               <th style={{ textAlign: "center" }}>Action</th>
             </tr>
           </thead>
+
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
                 <td>{u.name}</td>
                 <td>{u.mobile}</td>
                 <td>{u.email}</td>
-                <td>{u.role}</td>
-                <td>{u.lab || "-"}</td>
+
+                <td>
+                  <div>{u.role}</div>
+                  {isTeamLead(u.role) && u.lab && (
+                    <div className="role-lab">
+                      <small>Lab: {u.lab}</small>
+                    </div>
+                  )}
+                </td>
+
                 <td>
                   <span className={`status ${u.status.toLowerCase()}`}>
                     {u.status}
                   </span>
                 </td>
+
                 <td style={{ textAlign: "center" }}>
                   <button
                     className="icon-btn"
@@ -160,7 +184,7 @@ export default function Users() {
 
             {users.length === 0 && (
               <tr>
-                <td colSpan="7" className="empty">
+                <td colSpan="6" className="empty">
                   No users found
                 </td>
               </tr>
@@ -183,44 +207,99 @@ export default function Users() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="modal-body">
-              {!isEdit && (
-                <>
-                  <input name="name" placeholder="Full Name" value={form.name} onChange={handleChange} />
-                  <input name="mobile" placeholder="Mobile Number" value={form.mobile} onChange={handleChange} />
-                  <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} />
-                  <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} />
-                </>
-              )}
+<form onSubmit={handleSubmit} className="modal-body grid-form">
+  {!isEdit && (
+    <>
+      <div className="form-field">
+        <label>Full Name</label>
+        <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          placeholder="Enter full name"
+        />
+      </div>
 
-              <select name="role" value={form.role} onChange={handleChange}>
-                <option value="">Select Role</option>
-                {roles.map((r) => (
-                  <option key={r.id} value={r.name}>{r.name}</option>
-                ))}
-              </select>
+      <div className="form-field">
+        <label>Mobile</label>
+        <input
+          name="mobile"
+          value={form.mobile}
+          onChange={handleChange}
+          placeholder="Enter mobile number"
+        />
+      </div>
 
-              <select name="lab" value={form.lab} onChange={handleChange}>
-                <option value="">Select Lab</option>
-                {labs.map((l) => (
-                  <option key={l.id} value={l.name}>{l.name}</option>
-                ))}
-              </select>
+      <div className="form-field">
+        <label>Email</label>
+        <input
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="Enter email"
+        />
+      </div>
 
-              <select name="status" value={form.status} onChange={handleChange}>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
+      <div className="form-field">
+        <label>Password</label>
+        <input
+          type="password"
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          placeholder="Enter password"
+        />
+      </div>
+    </>
+  )}
 
-              <div className="modal-actions">
-                <button type="button" className="secondary-btn" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="primary-btn">
-                  <FiSave /> Save
-                </button>
-              </div>
-            </form>
+  <div className="form-field">
+    <label>Role</label>
+    <select name="role" value={form.role} onChange={handleChange}>
+      <option value="">Select Role</option>
+      {roles.map((r) => (
+        <option key={r.id} value={r.name}>
+          {r.name}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {isTeamLead(form.role) && (
+    <div className="form-field">
+      <label>Lab</label>
+      <select name="lab" value={form.lab} onChange={handleChange}>
+        <option value="">Select Lab</option>
+        {labs.map((l) => (
+          <option key={l.id} value={l.name}>
+            {l.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  )}
+
+  <div className="form-field">
+    <label>Status</label>
+    <select name="status" value={form.status} onChange={handleChange}>
+      <option value="ACTIVE">ACTIVE</option>
+      <option value="INACTIVE">INACTIVE</option>
+    </select>
+  </div>
+
+<div className="modal-actions">
+  <button
+    type="button" className="secondary-btn" onClick={() => setShowModal(false)}>
+    Cancel
+  </button>
+  <button type="submit" className="primary-btn">
+    <FiSave /> Save
+  </button>
+</div>
+
+</form>
+
           </div>
         </div>
       )}
