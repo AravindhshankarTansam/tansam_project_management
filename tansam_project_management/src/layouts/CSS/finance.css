@@ -582,3 +582,14 @@ tbody td {
   background: #dbeafe;
   color: #1e40af;
 }
+.btn-docx svg,
+.btn-edit svg,
+.btn-delete svg {
+  vertical-align: middle;
+  font-size: 16px;
+  color: #1F4FD8; /* change color as needed */
+}
+
+.btn-delete svg {
+  color: #e74c3c;
+}

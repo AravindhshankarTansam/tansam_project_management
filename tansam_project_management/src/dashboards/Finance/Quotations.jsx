@@ -7,6 +7,7 @@ import {
   updateQuotation,
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
+import { FaFileWord, FaEdit, FaTrash } from "react-icons/fa";
 
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -296,29 +297,27 @@ const response = await fetch(
                   </td>
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
-                   <button
-  className="btn-docx"
-  onClick={() => downloadDocx(q)}
-  disabled={downloadingId === q.id}
-  title="Download DOCX"
->
-  {downloadingId === q.id ? "⏳" : "📄"}
-</button>
-
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEdit(q)}
-                      title="Edit"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => deleteRow(q.id)}
-                      title="Delete"
-                    >
-                      🗑️
-                    </button>
+       <button
+    className="btn-docx"
+    onClick={() => downloadDocx(q)}
+    disabled={downloadingId === q.id}
+    title="Download DOCX"
+  >
+    {downloadingId === q.id ? "⏳" : <FaFileWord />}
+  </button>
+                     <button
+    className="btn-edit"
+    onClick={() => handleEdit(q)}
+    title="Edit"
+  >
+    <FaEdit />
+  </button>  <button
+    className="btn-delete"
+    onClick={() => deleteRow(q.id)}
+    title="Delete"
+  >
+    <FaTrash />
+  </button>
                   </td>
                 </tr>
               ))
