@@ -15,14 +15,11 @@
   z-index: 2;
 }
 
-/* 🔥 MAIN FIX IS HERE */
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  cursor: pointer;
-
-  min-width: 90px; /* ✅ prevents label overlap */
+  min-width: 90px;
 }
 
 /* =========================
@@ -54,12 +51,9 @@
 .step-label {
   margin-top: 8px;
   font-size: 12px;
-  text-transform: capitalize;
   text-align: center;
-
   max-width: 90px;
   line-height: 1.2;
-  white-space: normal;
 }
 
 /* =========================
@@ -73,7 +67,6 @@
   width: 100%;
   height: 4px;
   background-color: #ccc;
-  z-index: 1;
   border-radius: 2px;
 }
 
@@ -83,7 +76,32 @@
   left: 0;
   height: 4px;
   background-color: #3498db;
-  z-index: 1;
   border-radius: 2px;
   transition: width 0.3s ease;
+}
+
+/* =========================
+   FINAL STATES
+========================= */
+
+/* 🟢 WON */
+.progress-container.status-won .progress-line-background,
+.progress-container.status-won .progress-line-filled {
+  background-color: #22c55e;
+}
+
+.progress-container.status-won .circle {
+  background-color: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+}
+
+/* 🔴 LOST */
+.progress-container.status-lost .progress-line-background,
+.progress-container.status-lost .progress-line-filled {
+  background-color: #ef4444;
+}
+
+.progress-container.status-lost .circle {
+  background-color: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
 }
