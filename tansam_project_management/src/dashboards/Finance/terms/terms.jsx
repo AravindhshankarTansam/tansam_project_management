@@ -10,33 +10,38 @@ const Terms = () => {
   const navigate = useNavigate();
 
   const [isActive, setIsActive] = useState(false); // toggle state
-  const [content, setContent] = useState(''); // Tracks editor content
+  const [content, setContent] = useState(initialContent); // Tracks editor content
   const [isSaveEnabled, setIsSaveEnabled] = useState(false);
 
+  // Update content state on editor change
   const handleEditorChange = (newContent) => setContent(newContent);
 
+  // Enable Save button only if content has text and toggle has been set
   useEffect(() => {
     const hasText = content.replace(/<[^>]+>/g, '').trim().length > 0;
-    setIsSaveEnabled(hasText && (isActive !== null));
+    setIsSaveEnabled(hasText && isActive !== null);
   }, [content, isActive]);
-const handleSave = () => {
-  if (editorRef.current && isSaveEnabled) {
-    const savedContent = editorRef.current.innerHTML;
 
-    // Persist data
-    localStorage.setItem('termsContent', savedContent);
-    localStorage.setItem('termsStatus', isActive ? 'Active' : 'In-Active');
+  // Save content to localStorage and navigate
+  const handleSave = () => {
+    if (editorRef.current && isSaveEnabled) {
+      const savedContent = editorRef.current.getContent(); // Correct way to get TinyMCE content
 
-    navigate('/generate-quotation', {
-      state: {
-        content: savedContent,
-        status: isActive ? 'Active' : 'In-Active'
-      }
-    });
-  }
-};
+      // Persist data
+      localStorage.setItem('termsContent', savedContent);
+      localStorage.setItem('termsStatus', isActive ? 'Active' : 'In-Active');
 
+    navigate("/finance/generate-quotation", {
+  state: {
+    content: savedContent,
+    status: isActive ? "Active" : "In-Active",
+  },
+});
 
+    }
+  };
+
+  // Reset editor content and toggle
   const handleCancel = () => {
     if (editorRef.current) {
       editorRef.current.setContent(initialContent);
@@ -49,45 +54,59 @@ const handleSave = () => {
   return (
     <div style={{ maxWidth: '700px', margin: '20px auto', fontFamily: 'Arial, sans-serif' }}>
       <h2>Enter Description</h2>
-    <Editor
-  apiKey='gdoyqtp9jm9j8qwtbigjgmhk2kpvrufyklno8ms7ug62qw3t'
-  onInit={(evt, editor) => (editorRef.current = editor)}
-  initialValue={initialContent}
-  onEditorChange={handleEditorChange}
-  init={{
-    height: 300,
-    menubar: false,
-    plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
-    toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help | link image',
-    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-  }}
-/>
-
+      
+      <Editor
+        apiKey='gdoyqtp9jm9j8qwtbigjgmhk2kpvrufyklno8ms7ug62qw3t'
+        onInit={(evt, editor) => (editorRef.current = editor)}
+        initialValue={initialContent}
+        onEditorChange={handleEditorChange}
+        init={{
+          height: 300,
+          menubar: false,
+          plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
+          toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help | link image',
+          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        }}
+      />
 
       {/* Save/Cancel Buttons */}
       <div style={{ marginTop: '10px' }}>
-       <button
-  onClick={handleSave}
-  disabled={!isSaveEnabled}
-  style={{
-    marginRight: '10px',
-    padding: '8px 16px',
-    borderRadius: '5px',
-    backgroundColor: isSaveEnabled ? 'blue' : 'lightgray',
-    color: isSaveEnabled ? 'white' : 'black',
-    cursor: isSaveEnabled ? 'pointer' : 'not-allowed',
-    border: 'none'
-  }}
->
-  Save
-</button>
+        <button
+          onClick={handleSave}
+          disabled={!isSaveEnabled}
+          style={{
+            marginRight: '10px',
+            padding: '8px 16px',
+            borderRadius: '5px',
+            backgroundColor: isSaveEnabled ? 'blue' : 'lightgray',
+            color: isSaveEnabled ? 'white' : 'black',
+            cursor: isSaveEnabled ? 'pointer' : 'not-allowed',
+            border: 'none'
+          }}
+        >
+          Save
+        </button>
 
-        <button onClick={handleCancel} style={{ padding: '8px 16px', borderRadius: '5px' }}>Cancel</button>
+        <button
+          onClick={handleCancel}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '5px',
+            backgroundColor: '#f0f0f0',
+            border: '1px solid #ccc',
+            cursor: 'pointer'
+          }}
+        >
+          Cancel
+        </button>
       </div>
 
       {/* Toggle Switch */}
       <div style={{ marginTop: '20px' }}>
-        <ToggleSwitch isOn={isActive} onToggle={() => setIsActive(!isActive)} />
+        <ToggleSwitch
+          isOn={isActive}
+          onToggle={() => setIsActive(!isActive)}
+        />
       </div>
     </div>
   );
