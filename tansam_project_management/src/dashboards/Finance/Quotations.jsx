@@ -388,191 +388,253 @@ const handleSaveQuotation = async () => {
       </div>
 
       {/* ✅ IMPROVED MODAL */}
- {showModal && (
+{showModal && (
   <div className="modal-overlay" onClick={closeModal}>
-    <div className="quotation-modal" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header">
-        <h2>{editId ? "Edit Quotation" : "Create New Quotation"}</h2>
-        <button className="btn-close" onClick={closeModal}>✕</button>
-      </div>
+    <div 
+      className="exact-quotation-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close button */}
+      <button className="close-btn" onClick={closeModal}>×</button>
 
-      <div className="quotation-content">
-        {/* Header Logos */}
-        <div className="logos-header">
-          <img src="/logo1.png" alt="Left Logo" className="logo-left" />
-          <div className="center-logos">
-            <img src="/logo.png" alt="Center 1" />
-            <img src="/logo11.png" alt="Center 2" />
+      <div className="quotation-document">
+        {/* Header */}
+        <div className="doc-header">
+          <div className="logos-row">
+            <img src="/tansam-logo.png" alt="TANSAM" className="tansam-logo" />
+            <div className="powered-section">
+              <span>Powered by</span>
+              <img src="/siemens-logo.png" alt="Siemens" className="siemens-logo" />
+            </div>
+            <img src="/tidco-logo.png" alt="TIDCO" className="tidco-logo" />
           </div>
-          <img src="/logo2.png" alt="Right Logo" className="logo-right" />
+
+          <h1 className="main-title">
+            Tamil Nadu Smart and Advanced Manufacturing Centre
+          </h1>
+          <p className="main-subtitle">
+            (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
+          </p>
+
+          <h2 className="quotation-heading">Quotation</h2>
         </div>
 
-        <h1 className="org-title">TAMIL NADU SMART AND ADVANCED MANUFACTURING CENTRE</h1>
-        <p className="org-subtitle">
-          (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
-        </p>
-
-        <h2 className="doc-title">QUOTATION</h2>
-
-        {/* Ref No & Date */}
+        {/* REF & DATE */}
         <div className="ref-date-row">
-          <div className="ref-block">
-            <strong>Ref. No. / Quotation No.:</strong>
-            <input
-              type="text"
-              value={newQuotation.quotationNo}
-              readOnly
-              className="ref-input"
-            />
+          <div>
+            <strong>REF:</strong> 
+            <span className="ref-value">{newQuotation.quotationNo || 'TANSAM-XXXX/2025-26'}</span>
           </div>
-          <div className="date-block">
-            <strong>Date:</strong>
+          <div>
+            <strong>DATE:</strong> 
             <input
               type="date"
               value={newQuotation.date}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, date: e.target.value })
-              }
-              className="date-input"
+              onChange={(e) => setNewQuotation({...newQuotation, date: e.target.value})}
+              className="date-field"
             />
           </div>
         </div>
 
-        {/* Client Information */}
-        <div className="client-info">
-          <div className="field-row">
-            <label>To:</label>
-            <input
-              type="text"
-              placeholder="Client Name / Company"
-              value={newQuotation.clientName}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, clientName: e.target.value })
-              }
-            />
-          </div>
+        {/* To / Kind Attn / Address */}
+        <div className="to-address-block">
+          <strong>To,</strong><br/>
+          <input
+            className="institute-field"
+            value={newQuotation.clientName}
+            onChange={(e) => setNewQuotation({...newQuotation, clientName: e.target.value})}
+            placeholder="GRT INSTITUTE OF ENGINEERING AND TECHNOLOGY"
+          /><br/>
 
-          <div className="field-row">
-            <label>Kind Attn:</label>
-            <input
-              type="text"
-              placeholder="Attention person name"
-              value={newQuotation.kindAttn || ""}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, kindAttn: e.target.value })
-              }
-            />
-          </div>
+          <strong>kind attn: -</strong>
+          <input
+            className="attn-field"
+            value={newQuotation.kindAttn || ""}
+            onChange={(e) => setNewQuotation({...newQuotation, kindAttn: e.target.value})}
+            placeholder="Dr.S.SATHYA /HOD"
+          /><br/>
 
-          <div className="field-row">
-            <label>Subject / Project:</label>
-            <input
-              type="text"
-              placeholder="Project Name / Subject"
-              value={newQuotation.project_name}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, project_name: e.target.value })
-              }
-            />
-          </div>
-        </div>
-
-        {/* Additional Quotation Fields */}
-        <div className="additional-fields">
-          <div className="field-row">
-            <label>Client Type:</label>
-            <select
-              value={newQuotation.clientType}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, clientType: e.target.value })
-              }
-            >
-              <option value="Corporate">Corporate</option>
-              <option value="Individual">Individual</option>
-              <option value="Government">Government</option>
-              <option value="NGO">NGO</option>
-            </select>
-          </div>
-
-          <div className="field-row">
-            <label>Work Category:</label>
-            <input
-              type="text"
-              value={newQuotation.workCategory}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, workCategory: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="field-row">
-            <label>Lab:</label>
-            <input
-              type="text"
-              value={newQuotation.lab}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, lab: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="field-row">
-            <label>Quote Value (₹):</label>
-            <input
-              type="number"
-              value={newQuotation.value}
-              onChange={(e) =>
-                setNewQuotation({ ...newQuotation, value: e.target.value })
-              }
-            />
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="description-field">
-          <label>Work Description:</label>
           <textarea
-            rows={5}
-            value={newQuotation.description}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, description: e.target.value })
-            }
-            placeholder="Detailed scope of work / services..."
+            className="full-address"
+            rows={3}
+            value={newQuotation.address || ""}
+            onChange={(e) => setNewQuotation({...newQuotation, address: e.target.value})}
+            placeholder="GRT Mahalakshmi Nagar, Chennai - Tirupathi Highway\nTiruttani – 631 209"
           />
         </div>
 
-        {/* Live Preview (optional - can be removed if not needed) */}
-        {/* <div className="live-preview">
-          <h3>Live Preview</h3>
-          <div className="preview-box">
-            <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
-            <p><strong>Date:</strong> {newQuotation.date || "—"}</p>
-            <p><strong>Project:</strong> {newQuotation.project_name || "—"}</p>
-            <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
-            <p><strong>Value:</strong> ₹ {parseInt(newQuotation.value || 0).toLocaleString("en-IN")}</p>
+        {/* Subject */}
+        <div className="subject-row">
+          <strong>Sub:</strong>
+          <input
+            className="subject-field"
+            value={newQuotation.project_name || ""}
+            onChange={(e) => setNewQuotation({...newQuotation, project_name: e.target.value})}
+            placeholder="Quote offer for Industrial Visit 2.5 hours Sir/Madam,"
+          />
+        </div>
+
+        {/* Thank you message */}
+        <p className="thank-text">
+          We thank you very much for your valuable inquiry. With reference to the same, we are pleased to submit our most competitive price as below.
+        </p>
+
+        {/* Main Editable Table */}
+        <div className="quotation-table-container">
+          <table className="quotation-table">
+            <thead>
+              <tr>
+                <th className="slno-col">S. No</th>
+                <th className="desc-col">Product description</th>
+                <th className="qty-col">Qty Per Students</th>
+                <th className="unit-col">Unit price +TAX</th>
+                <th className="total-col">Total price in INR inclusive of TAX</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(newQuotation.items || []).map((item, index) => (
+                <tr key={index}>
+                  <td className="slno-cell">{index + 1}</td>
+                  <td>
+                    <textarea
+                      value={item.description || ""}
+                      onChange={(e) => {
+                        const updated = [...(newQuotation.items || [])];
+                        updated[index] = { ...updated[index], description: e.target.value };
+                        setNewQuotation({ ...newQuotation, items: updated });
+                      }}
+                      placeholder="Other education and training services N.E.C. (Industrial Visit with E-Certificate)..."
+                      rows={3}
+                      className="desc-input"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      value={item.qty || ""}
+                      onChange={(e) => {
+                        const updated = [...(newQuotation.items || [])];
+                        updated[index] = { ...updated[index], qty: e.target.value };
+                        setNewQuotation({ ...newQuotation, items: updated });
+                      }}
+                      className="qty-input"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      value={item.unitPrice || ""}
+                      onChange={(e) => {
+                        const updated = [...(newQuotation.items || [])];
+                        const qty = Number(updated[index].qty || 0);
+                        const price = Number(e.target.value || 0);
+                        updated[index] = { 
+                          ...updated[index], 
+                          unitPrice: e.target.value,
+                          total: (qty * price).toFixed(2)
+                        };
+                        setNewQuotation({ ...newQuotation, items: updated });
+                      }}
+                      className="unit-input"
+                    />
+                  </td>
+                  <td className="total-cell">
+                    ₹ {Number(item.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Add Row Button */}
+          <button
+            className="add-row-btn"
+            onClick={() => {
+              const newItem = { description: "", qty: "", unitPrice: "", total: "0.00" };
+              setNewQuotation({
+                ...newQuotation,
+                items: [...(newQuotation.items || []), newItem]
+              });
+            }}
+          >
+            + Add Row
+          </button>
+
+          {/* Total */}
+          <div className="grand-total">
+            <strong>Total Service Value with Tax</strong>
+            <strong className="total-amount">
+              ₹ {Number(
+                (newQuotation.items || []).reduce((sum, i) => sum + Number(i.total || 0), 0)
+              ).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </strong>
           </div>
-        </div> */}
+        </div>
+
+        {/* Terms & Conditions - Editable */}
+        <div className="terms-block">
+          <h3>Terms & Conditions</h3>
+          <textarea
+            className="terms-editor"
+            rows={8}
+            value={newQuotation.terms || 
+              "1. Validity     : This quotation is valid for [10/15 days] from the date of issue.\n" +
+              "2. Payment      : 100% payment advance\n" +
+              "3. Delivery     : [days] Date of confirmed order with PO\n" +
+              "4. Purchase Order : Send PO for Confirmation within 5 days"
+            }
+            onChange={(e) => setNewQuotation({...newQuotation, terms: e.target.value})}
+          />
+        </div>
+
+        {/* Signature */}
+        <div className="signature-block">
+          <p><strong>Yours truly,</strong></p>
+          <div className="signature-placeholder">
+            <p style={{ margin: "80px 0 12px", textAlign: "center" }}>
+              ___________________________
+            </p>
+            <p style={{ textAlign: "center" }}>
+              <strong>Natesh C</strong><br/>
+              Manager Operations
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="footer-section">
+          <div className="footer-columns">
+            <div>Tel: +91 44 69255700</div>
+            <div>E-Mail: info@tansam.org</div>
+            <div>URL: www.tansam.org</div>
+            <div>
+              C-Wing North, 603, TIDEL Park<br/>
+              No.4, Rajiv Gandhi Salai,<br/>
+              Taramani, Chennai - 600113
+            </div>
+          </div>
+          <div className="gst-line">
+            GSTIN: 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529
+          </div>
+        </div>
 
         {/* Action Buttons */}
-        <div className="modal-actions">
+        <div className="bottom-actions">
+          <button className="btn-cancel" onClick={closeModal}>Cancel</button>
           <button className="btn-save" onClick={handleSaveQuotation}>
-            {editId ? "Update Quotation" : "Create & Save Quotation"}
+            {editId ? "Update Quotation" : "Save Quotation"}
           </button>
-          <button
-            className="btn-download"
+          <button 
+            className="btn-generate-docx"
             onClick={() => downloadDocx(newQuotation)}
           >
             Generate DOCX
-          </button>
-          <button className="btn-cancel" onClick={closeModal}>
-            Cancel
           </button>
         </div>
       </div>
     </div>
   </div>
 )}
-
     </div>
   );
 }

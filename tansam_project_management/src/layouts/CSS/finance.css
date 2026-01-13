@@ -940,3 +940,685 @@ tbody td {
   gap: 15px;
   margin-top: 40px;
 }
+/* Main Modal Container */
+.quotation-document-modal {
+  background: white;
+  width: 100%;
+  max-width: 980px;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-size: 42px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Paper-like content */
+.quotation-document {
+  padding: 45px 60px 70px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Header */
+.doc-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.logos-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.main-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 0 6px;
+}
+
+.main-subtitle {
+  font-size: 13px;
+  margin: 0 0 20px;
+  color: #333;
+}
+
+.quotation-heading {
+  font-size: 28px;
+  font-weight: bold;
+  color: #003366;
+  margin: 15px 0 30px;
+}
+
+/* REF & DATE */
+.ref-date-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 25px 0 35px;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.ref-value {
+  color: #c8102e;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.date-field {
+  padding: 6px 12px;
+  border: 1px solid #555;
+}
+
+/* Address Block */
+.to-address-block {
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.institute-field, .kind-attn-input, .full-address {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 4px 0 12px;
+  border: 1px solid #666;
+  font-size: 14px;
+}
+
+.institute-field { font-weight: bold; }
+.kind-attn-input { font-style: italic; }
+
+/* Subject */
+.subject-row {
+  margin: 25px 0;
+  font-weight: bold;
+}
+
+.subject-field {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #555;
+  font-style: italic;
+}
+
+/* Thank you */
+.thank-text {
+  font-style: italic;
+  margin: 30px 0 40px;
+  line-height: 1.6;
+}
+
+/* Table */
+.quotation-table-container {
+  margin: 30px 0;
+}
+
+.quotation-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.quotation-table th, .quotation-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+}
+
+.desc-col { width: 45%; text-align: left; }
+.qty-col, .unit-col, .total-col { width: 15%; }
+.slno-col { width: 10%; }
+
+.desc-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 6px;
+  border: none;
+  resize: none;
+  font-size: 13px;
+}
+
+.qty-input, .unit-input {
+  width: 100%;
+  padding: 6px;
+  border: none;
+  text-align: center;
+}
+
+.total-cell {
+  font-weight: bold;
+  background: #f8f8f8;
+}
+
+/* Total */
+.total-service {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 25px 0;
+  padding-top: 15px;
+  border-top: 2px solid #000;
+}
+
+/* Terms */
+.terms-block h3 {
+  margin: 45px 0 15px;
+  text-decoration: underline;
+}
+
+.terms-editor {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  border: 1px solid #666;
+}
+
+/* Signature & Footer */
+.signature-section {
+  margin-top: 80px;
+  text-align: right;
+}
+
+.signature-placeholder p {
+  margin: 70px 0 10px;
+}
+
+.document-footer {
+  margin-top: 70px;
+  background: #003366;
+  color: white;
+  padding: 20px 0;
+}
+
+.footer-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.footer-info > div {
+  flex: 1;
+  min-width: 160px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.gst-info {
+  background: #002244;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* Bottom Buttons */
+.action-buttons {
+  margin-top: 50px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}/* Main Modal Container */
+.quotation-document-modal {
+  background: white;
+  width: 100%;
+  max-width: 980px;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-size: 42px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Paper-like content */
+.quotation-document {
+  padding: 45px 60px 70px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Header */
+.doc-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.logos-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.main-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 0 6px;
+}
+
+.main-subtitle {
+  font-size: 13px;
+  margin: 0 0 20px;
+  color: #333;
+}
+
+.quotation-heading {
+  font-size: 28px;
+  font-weight: bold;
+  color: #003366;
+  margin: 15px 0 30px;
+}
+
+/* REF & DATE */
+.ref-date-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 25px 0 35px;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.ref-value {
+  color: #c8102e;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.date-field {
+  padding: 6px 12px;
+  border: 1px solid #555;
+}
+
+/* Address Block */
+.to-address-block {
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.institute-field, .kind-attn-input, .full-address {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 4px 0 12px;
+  border: 1px solid #666;
+  font-size: 14px;
+}
+
+.institute-field { font-weight: bold; }
+.kind-attn-input { font-style: italic; }
+
+/* Subject */
+.subject-row {
+  margin: 25px 0;
+  font-weight: bold;
+}
+
+.subject-field {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #555;
+  font-style: italic;
+}
+
+/* Thank you */
+.thank-text {
+  font-style: italic;
+  margin: 30px 0 40px;
+  line-height: 1.6;
+}
+
+/* Table */
+.quotation-table-container {
+  margin: 30px 0;
+}
+
+.quotation-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.quotation-table th, .quotation-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+}
+
+.desc-col { width: 45%; text-align: left; }
+.qty-col, .unit-col, .total-col { width: 15%; }
+.slno-col { width: 10%; }
+
+.desc-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 6px;
+  border: none;
+  resize: none;
+  font-size: 13px;
+}
+
+.qty-input, .unit-input {
+  width: 100%;
+  padding: 6px;
+  border: none;
+  text-align: center;
+}
+
+.total-cell {
+  font-weight: bold;
+  background: #f8f8f8;
+}
+
+/* Total */
+.total-service {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 25px 0;
+  padding-top: 15px;
+  border-top: 2px solid #000;
+}
+
+/* Terms */
+.terms-block h3 {
+  margin: 45px 0 15px;
+  text-decoration: underline;
+}
+
+.terms-editor {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  border: 1px solid #666;
+}
+
+/* Signature & Footer */
+.signature-section {
+  margin-top: 80px;
+  text-align: right;
+}
+
+.signature-placeholder p {
+  margin: 70px 0 10px;
+}
+
+.document-footer {
+  margin-top: 70px;
+  background: #003366;
+  color: white;
+  padding: 20px 0;
+}
+
+.footer-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.footer-info > div {
+  flex: 1;
+  min-width: 160px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.gst-info {
+  background: #002244;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* Bottom Buttons */
+.action-buttons {
+  margin-top: 50px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}/* Main Modal */
+.exact-quotation-modal {
+  width: 100%;
+  max-width: 1000px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 70px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.doc-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-size: 40px;
+  background: none;
+  border: none;
+  color: #777;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Paper */
+.quotation-document {
+  padding: 40px 55px 70px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Header */
+.logos-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.main-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  margin: 0 0 6px;
+}
+
+.main-subtitle {
+  text-align: center;
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+
+.quotation-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+  color: #003366;
+  margin: 25px 0;
+}
+
+/* REF & Date */
+.ref-date-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px 0;
+  font-weight: bold;
+}
+
+.ref-number {
+  color: #c8102e;
+  margin-left: 8px;
+}
+
+.date-input {
+  padding: 6px 12px;
+  border: 1px solid #555;
+}
+
+/* To Section */
+.to-address-block {
+  margin-bottom: 35px;
+}
+
+.institute-input, .attn-input {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 4px 0 12px;
+  border: 1px solid #666;
+}
+
+.full-address {
+  width: 100%;
+  min-height: 70px;
+  padding: 8px 10px;
+  border: 1px solid #666;
+  resize: vertical;
+}
+
+/* Subject & Thank you */
+.subject-row {
+  margin: 25px 0;
+  font-weight: bold;
+}
+
+.subject-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #555;
+  font-style: italic;
+}
+
+.thank-text {
+  font-style: italic;
+  margin: 30px 0 40px;
+}
+
+/* Table */
+.table-wrapper {
+  margin: 30px 0;
+}
+
+.quotation-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.quotation-table th, .quotation-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  vertical-align: top;
+}
+
+.desc-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 6px;
+  border: none;
+  resize: vertical;
+  font-size: 13.5px;
+}
+
+.total-amount {
+  min-width: 140px;
+  text-align: right;
+}
+
+/* Total */
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 25px;
+  padding-top: 12px;
+  border-top: 2px solid #000;
+}
+
+/* Terms */
+.terms-section h3 {
+  margin: 50px 0 15px;
+  text-decoration: underline;
+}
+
+.terms-textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  border: 1px solid #666;
+}
+
+/* Signature & Footer */
+.signature-section {
+  margin-top: 90px;
+  text-align: right;
+}
+
+.signature-placeholder p {
+  margin: 80px 0 12px;
+  text-align: center;
+}
+
+.doc-footer {
+  margin-top: 80px;
+  background: #003366;
+  color: white;
+  padding: 20px 0;
+}
+
+.footer-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.gst-strip {
+  background: #002244;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+/* Bottom Actions */
+.modal-actions {
+  margin-top: 50px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}
