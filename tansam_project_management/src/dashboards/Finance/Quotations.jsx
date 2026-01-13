@@ -388,155 +388,186 @@ const handleSaveQuotation = async () => {
       </div>
 
       {/* ✅ IMPROVED MODAL */}
-    {showModal && (
+ {showModal && (
   <div className="modal-overlay" onClick={closeModal}>
-    <div className="modal" onClick={(e) => e.stopPropagation()}>
+    <div className="quotation-modal" onClick={(e) => e.stopPropagation()}>
       <div className="modal-header">
-        <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
+        <h2>{editId ? "Edit Quotation" : "Create New Quotation"}</h2>
         <button className="btn-close" onClick={closeModal}>✕</button>
       </div>
 
-      {/* FORM */}
-      <div className="modal-form">
-        <div className="form-group">
-         
-          
-  <label>Quotation No *</label>
-  <input
-    type="text"
-    value={newQuotation.quotationNo}
-    readOnly
-  />
-
-
+      <div className="quotation-content">
+        {/* Header Logos */}
+        <div className="logos-header">
+          <img src="/logo1.png" alt="Left Logo" className="logo-left" />
+          <div className="center-logos">
+            <img src="/logo.png" alt="Center 1" />
+            <img src="/logo11.png" alt="Center 2" />
+          </div>
+          <img src="/logo2.png" alt="Right Logo" className="logo-right" />
         </div>
 
-        <div className="form-group">
-          <label>Project Name *</label>
-          <input
-            type="text"
-            placeholder="Project Name"
-            value={newQuotation.project_name}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, project_name: e.target.value })
-            }
-          />
+        <h1 className="org-title">TAMIL NADU SMART AND ADVANCED MANUFACTURING CENTRE</h1>
+        <p className="org-subtitle">
+          (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
+        </p>
+
+        <h2 className="doc-title">QUOTATION</h2>
+
+        {/* Ref No & Date */}
+        <div className="ref-date-row">
+          <div className="ref-block">
+            <strong>Ref. No. / Quotation No.:</strong>
+            <input
+              type="text"
+              value={newQuotation.quotationNo}
+              readOnly
+              className="ref-input"
+            />
+          </div>
+          <div className="date-block">
+            <strong>Date:</strong>
+            <input
+              type="date"
+              value={newQuotation.date}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, date: e.target.value })
+              }
+              className="date-input"
+            />
+          </div>
         </div>
 
-        <div className="form-group">
-          <label>Client Name *</label>
-          <input
-            type="text"
-            placeholder="Client Name"
-            value={newQuotation.clientName}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientName: e.target.value })
-            }
-          />
+        {/* Client Information */}
+        <div className="client-info">
+          <div className="field-row">
+            <label>To:</label>
+            <input
+              type="text"
+              placeholder="Client Name / Company"
+              value={newQuotation.clientName}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, clientName: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field-row">
+            <label>Kind Attn:</label>
+            <input
+              type="text"
+              placeholder="Attention person name"
+              value={newQuotation.kindAttn || ""}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, kindAttn: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field-row">
+            <label>Subject / Project:</label>
+            <input
+              type="text"
+              placeholder="Project Name / Subject"
+              value={newQuotation.project_name}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, project_name: e.target.value })
+              }
+            />
+          </div>
         </div>
 
-        <div className="form-group">
-          <label>Client Type *</label>
-          <select
-            value={newQuotation.clientType}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientType: e.target.value })
-            }
-          >
-            <option value="Corporate">Corporate</option>
-            <option value="Individual">Individual</option>
-            <option value="Government">Government</option>
-            <option value="NGO">NGO</option>
-          </select>
+        {/* Additional Quotation Fields */}
+        <div className="additional-fields">
+          <div className="field-row">
+            <label>Client Type:</label>
+            <select
+              value={newQuotation.clientType}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, clientType: e.target.value })
+              }
+            >
+              <option value="Corporate">Corporate</option>
+              <option value="Individual">Individual</option>
+              <option value="Government">Government</option>
+              <option value="NGO">NGO</option>
+            </select>
+          </div>
+
+          <div className="field-row">
+            <label>Work Category:</label>
+            <input
+              type="text"
+              value={newQuotation.workCategory}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, workCategory: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field-row">
+            <label>Lab:</label>
+            <input
+              type="text"
+              value={newQuotation.lab}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, lab: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field-row">
+            <label>Quote Value (₹):</label>
+            <input
+              type="number"
+              value={newQuotation.value}
+              onChange={(e) =>
+                setNewQuotation({ ...newQuotation, value: e.target.value })
+              }
+            />
+          </div>
         </div>
 
-        <div className="form-group">
-          <label>Quote Value *</label>
-          <input
-            type="number"
-            value={newQuotation.value}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, value: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Work Category *</label>
-          <input
-            type="text"
-            value={newQuotation.workCategory}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, workCategory: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Lab *</label>
-          <input
-            type="text"
-            value={newQuotation.lab}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, lab: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Work Description *</label>
+        {/* Description */}
+        <div className="description-field">
+          <label>Work Description:</label>
           <textarea
+            rows={5}
             value={newQuotation.description}
             onChange={(e) =>
               setNewQuotation({ ...newQuotation, description: e.target.value })
             }
-            rows="4"
+            placeholder="Detailed scope of work / services..."
           />
         </div>
 
-        <div className="form-group">
-          <label>Quotation Date *</label>
-          <input
-            type="date"
-            value={newQuotation.date}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, date: e.target.value })
-            }
-          />
+        {/* Live Preview (optional - can be removed if not needed) */}
+        {/* <div className="live-preview">
+          <h3>Live Preview</h3>
+          <div className="preview-box">
+            <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
+            <p><strong>Date:</strong> {newQuotation.date || "—"}</p>
+            <p><strong>Project:</strong> {newQuotation.project_name || "—"}</p>
+            <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
+            <p><strong>Value:</strong> ₹ {parseInt(newQuotation.value || 0).toLocaleString("en-IN")}</p>
+          </div>
+        </div> */}
+
+        {/* Action Buttons */}
+        <div className="modal-actions">
+          <button className="btn-save" onClick={handleSaveQuotation}>
+            {editId ? "Update Quotation" : "Create & Save Quotation"}
+          </button>
+          <button
+            className="btn-download"
+            onClick={() => downloadDocx(newQuotation)}
+          >
+            Generate DOCX
+          </button>
+          <button className="btn-cancel" onClick={closeModal}>
+            Cancel
+          </button>
         </div>
-      </div>
-
-      {/* LIVE QUOTATION PREVIEW */}
-      <div className="quotation-preview" style={{
-        border: "1px solid #ccc",
-        padding: "20px",
-        marginTop: "20px",
-        backgroundColor: "#fff",
-        maxHeight: "400px",
-        overflowY: "auto"
-      }}>
-        <h2 style={{ textAlign: "center" }}>Quotation</h2>
-        <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
-        <p><strong>Date:</strong> {newQuotation.date}</p>
-        <p><strong>Project Name:</strong> {newQuotation.project_name}</p>
-        <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
-        <p><strong>Lab:</strong> {newQuotation.lab}</p>
-        <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
-        <p><strong>Description:</strong> {newQuotation.description}</p>
-        <p><strong>Quote Value:</strong> ₹ {parseInt(newQuotation.value || 0).toLocaleString("en-IN")}</p>
-      </div>
-
-      {/* ACTIONS */}
-      <div className="modal-actions">
-        <button className="btn-save" onClick={handleSaveQuotation}>
-          {editId ? "Update Quotation" : "Create & Save Quotation"}
-        </button>
-
-        <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
-          Generate DOCX
-        </button>
-
-        <button className="btn-cancel" onClick={closeModal}>Cancel</button>
       </div>
     </div>
   </div>
