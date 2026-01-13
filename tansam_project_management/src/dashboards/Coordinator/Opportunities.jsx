@@ -30,14 +30,13 @@ export default function Opportunities() {
     opportunity_id: null,
     opportunityName: "",
     customerName: "",
-    industry: "",
     contactPerson: "",
     contactEmail: "",
     contactPhone: "",
     leadSource: "",
     leadDescription: "",
     leadStatus: "NEW",
-    assignedTo: "", // ✅ NEW FIELD
+    assignedTo: "",
   });
 
   /* ================= LOAD ================= */
@@ -61,9 +60,12 @@ export default function Opportunities() {
   const filteredOpportunities = opportunities.filter((item) => {
     const searchMatch =
       !filters.search ||
-      item.opportunity_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.customer_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.company_name?.toLowerCase().includes(filters.search.toLowerCase());
+      item.opportunity_name
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase()) ||
+      item.customer_name
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase());
 
     const statusMatch =
       !filters.status || item.lead_status === filters.status;
@@ -80,7 +82,6 @@ export default function Opportunities() {
       opportunity_id: null,
       opportunityName: "",
       customerName: "",
-      industry: "",
       contactPerson: "",
       contactEmail: "",
       contactPhone: "",
@@ -103,14 +104,13 @@ export default function Opportunities() {
       opportunity_id: row.opportunity_id,
       opportunityName: row.opportunity_name,
       customerName: row.customer_name,
-      industry: row.company_name || "",
       contactPerson: row.contact_person || "",
       contactEmail: row.contact_email || "",
       contactPhone: row.contact_phone || "",
       leadSource: row.lead_source || "",
       leadDescription: row.lead_description || "",
       leadStatus: row.lead_status,
-      assignedTo: row.assigned_to || "", // ✅ MAP FROM BACKEND
+      assignedTo: row.assigned_to || "",
     });
     setShowModal(true);
   };
@@ -145,13 +145,6 @@ export default function Opportunities() {
     }
   };
 
-  const toggleDescription = (id) => {
-    setExpandedRows((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   /* ================= UI ================= */
   return (
     <div className="opportunity-wrapper">
@@ -165,7 +158,7 @@ export default function Opportunities() {
       <div className="opportunity-filters">
         <input
           type="text"
-          placeholder="Search Opportunity / Customer / Company"
+          placeholder="Search Opportunity / Client"
           value={filters.search}
           onChange={(e) =>
             setFilters({ ...filters, search: e.target.value })
@@ -215,16 +208,13 @@ export default function Opportunities() {
             <thead>
               <tr>
                 <th>S.No</th>
-                <th>Opportunity ID</th>
                 <th>Opportunity</th>
-                <th>Customer</th>
-                <th>Company</th>
+                <th>Client Name</th>
                 <th>Contact Person</th>
-                <th>Assigned To</th> {/* ✅ NEW */}
+                <th>Assigned To</th>
                 <th>Contact Email</th>
                 <th>Contact Phone</th>
                 <th>Source</th>
-                <th>Description</th>
                 <th>Status</th>
                 <th style={{ textAlign: "center" }}>Actions</th>
               </tr>
@@ -233,80 +223,48 @@ export default function Opportunities() {
             <tbody>
               {filteredOpportunities.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="empty">
+                  <td colSpan={10} className="empty">
                     No opportunities found
                   </td>
                 </tr>
               ) : (
-                filteredOpportunities.map((item, index) => {
-                  const isExpanded = expandedRows[item.opportunity_id];
-                  const hasLongDesc =
-                    item.lead_description &&
-                    item.lead_description.length > 80;
+                filteredOpportunities.map((item, index) => (
+                  <tr key={item.opportunity_id}>
+                    <td>{index + 1}</td>
+                    <td>{item.opportunity_name}</td>
+                    <td>{item.customer_name}</td>
+                    <td>{item.contact_person || "-"}</td>
+                    <td>{item.assigned_to || "-"}</td>
+                    <td>{item.contact_email || "-"}</td>
+                    <td>{item.contact_phone || "-"}</td>
+                    <td>{item.lead_source || "-"}</td>
 
-                  return (
-                    <tr key={item.opportunity_id}>
-                      <td>{index + 1}</td>
-                      <td>{item.opportunity_id}</td>
-                      <td>{item.opportunity_name}</td>
-                      <td>{item.customer_name}</td>
-                      <td>{item.company_name}</td>
-                      <td>{item.contact_person || "-"}</td>
-                      <td>{item.assigned_to || "-"}</td> {/* ✅ NEW */}
-                      <td>{item.contact_email || "-"}</td>
-                      <td>{item.contact_phone || "-"}</td>
-                      <td>{item.lead_source || "-"}</td>
+                    <td>
+                      <span
+                        className={`status ${item.lead_status.toLowerCase()}`}
+                      >
+                        {item.lead_status}
+                      </span>
+                    </td>
 
-                      <td>
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: item.lead_description
-                              ? isExpanded
-                                ? item.lead_description
-                                : item.lead_description.slice(0, 80) +
-                                  (hasLongDesc ? "..." : "")
-                              : "<em>No description</em>",
-                          }}
-                        />
-                        {hasLongDesc && (
-                          <button
-                            className="view-link"
-                            onClick={() =>
-                              toggleDescription(item.opportunity_id)
-                            }
-                          >
-                            {isExpanded ? "Read less" : "Read more"}
-                          </button>
-                        )}
-                      </td>
-
-                      <td>
-                        <span
-                          className={`status ${item.lead_status.toLowerCase()}`}
-                        >
-                          {item.lead_status}
-                        </span>
-                      </td>
-
-                      <td className="actions">
-                        <button
-                          className="icon-btn edit"
-                          onClick={() => openEditModal(item)}
-                        >
-                          <FiEdit />
-                        </button>
-                        <button
-                          className="icon-btn delete"
-                          onClick={() =>
-                            handleDelete(item.opportunity_id)
-                          }
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                    <td className="actions">
+                      <button
+                        className="icon-btn edit"
+                        onClick={() => openEditModal(item)}
+                      >
+                        <FiEdit />
+                      </button>
+                      <button
+                        className="icon-btn delete"
+                        onClick={() =>
+                          handleDelete(item.opportunity_id)
+                        }
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -331,7 +289,7 @@ export default function Opportunities() {
               </div>
 
               <div className="form-group">
-                <label>Customer Name</label>
+                <label>Client Name</label>
                 <input
                   name="customerName"
                   value={form.customerName}
@@ -341,32 +299,20 @@ export default function Opportunities() {
               </div>
 
               <div className="form-group">
-                <label>Company Name</label>
-                <input
-                  name="industry"
-                  value={form.industry}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
                 <label>Contact Person</label>
                 <input
                   name="contactPerson"
                   value={form.contactPerson}
                   onChange={handleChange}
-                  required
                 />
               </div>
 
-              {/* ✅ ASSIGNED TO */}
               <div className="form-group">
                 <label>Assigned To</label>
                 <input
                   name="assignedTo"
                   value={form.assignedTo}
                   onChange={handleChange}
-                  required
                 />
               </div>
 
@@ -377,7 +323,6 @@ export default function Opportunities() {
                   name="contactEmail"
                   value={form.contactEmail}
                   onChange={handleChange}
-                  required
                 />
               </div>
 
@@ -396,7 +341,6 @@ export default function Opportunities() {
                   name="leadSource"
                   value={form.leadSource}
                   onChange={handleChange}
-                  required
                 >
                   <option value="">Select</option>
                   <option value="WEBSITE">Website</option>
@@ -418,24 +362,28 @@ export default function Opportunities() {
                 </select>
               </div>
 
+              {/* 🔥 BLACK DESCRIPTION BOX (MODAL ONLY) */}
               <div className="form-group full-width">
                 <label>Description</label>
-                {!isPreview ? (
-                  <RichTextEditor
-                    value={form.leadDescription}
-                    onChange={(v) =>
-                      setForm({ ...form, leadDescription: v })
-                    }
-                  />
-                ) : (
-                  <div
-                    className="preview-content"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        form.leadDescription || "<p>No description</p>",
-                    }}
-                  />
-                )}
+                <div className="modal-description-box">
+                  {!isPreview ? (
+                    <RichTextEditor
+                      value={form.leadDescription}
+                      onChange={(v) =>
+                        setForm({ ...form, leadDescription: v })
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="preview-content"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          form.leadDescription ||
+                          "<p>No description</p>",
+                      }}
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="modal-actions">
