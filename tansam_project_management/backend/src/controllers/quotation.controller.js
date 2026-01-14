@@ -23,6 +23,7 @@ export const addQuotation = async (req, res) => {
      const db = await connectDB();
     await initSchemas(db, { finance: true });
     const {
+      opportunity_id,
       project_name,
       quotationNo,
       clientName,
@@ -37,9 +38,10 @@ export const addQuotation = async (req, res) => {
    
     const [result] = await db.execute(
       `INSERT INTO quotations
-       (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (opportunity_id,project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date)
+      //  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? )`,
       [
+        opportunity_id,
         project_name,
         quotationNo,
         clientName,
@@ -54,6 +56,7 @@ export const addQuotation = async (req, res) => {
 
     res.status(201).json({
       id: result.insertId,
+      opportunity_id,
       project_name,
       quotationNo,
       clientName,
@@ -77,6 +80,7 @@ export const updateQuotation = async (req, res) => {
     await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
+      opportunity_id,
       project_name,
       clientName,
       clientType,
@@ -90,9 +94,9 @@ export const updateQuotation = async (req, res) => {
   
     await db.execute(
       `UPDATE quotations
-       SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
+       SET opportunity_id=?, project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
        WHERE id=?`,
-      [project_name, clientName, clientType, workCategory, lab, description, value, date, id]
+      [opportunity_id, project_name, clientName, clientType, workCategory, lab, description, value, date, id]
     );
 
     res.json({ id, ...req.body });

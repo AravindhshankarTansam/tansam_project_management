@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "../../layouts/CSS/finance.css";
+import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
 
 import {
   getQuotations,
@@ -10,6 +11,8 @@ import {
 import { FaFileWord, FaEdit, FaTrash } from "react-icons/fa";
 
 export default function Quotations() {
+  const [opportunities, setOpportunities] = useState([]);
+
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -26,6 +29,7 @@ export default function Quotations() {
   const [selectedLab, setSelectedLab] = useState("");
 
   const [newQuotation, setNewQuotation] = useState({
+    opportunity_id: "", 
     quotationNo: "",
      project_name: "", 
     clientName: "",
@@ -112,6 +116,18 @@ const response = await fetch(
     setNewQuotation({ ...quotation });
     setShowModal(true);
   };
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user) {
+    if (!localStorage.getItem("userId")) {
+      localStorage.setItem("userId", user.id);
+    }
+    if (!localStorage.getItem("userRole")) {
+      localStorage.setItem("userRole", user.role);
+    }
+  }
+}, []);
 
   useEffect(() => {
     getQuotations().then(setData);
@@ -183,6 +199,28 @@ const handleSaveQuotation = async () => {
       date: "",
     });
   };
+useEffect(() => {
+  const loadOpportunities = async () => {
+    try {
+      const data = await fetchOpportunities();
+
+      const mapped = (data || []).map(o => ({
+        opportunity_id: o.opportunity_id,
+        opportunity_name: o.opportunity_name,
+        customer_name: o.customer_name,
+      }));
+
+      setOpportunities(mapped);
+    } catch (err) {
+      console.error("Failed to fetch opportunities", err);
+    }
+  };
+
+  loadOpportunities();
+}, []);
+
+
+
 
   return (
     <div className="finance-container">
@@ -194,14 +232,15 @@ const handleSaveQuotation = async () => {
             Create, manage and download quotations
           </p>
         </div>
-      <button
+    <button
   className="btn-add-quotation"
   onClick={() => {
     const quotationNo = generateQuotationNo(data);
 
     setNewQuotation({
       quotationNo,
-      project_name: "",
+      project_name: "", // no preselection
+      opportunity_id: "",
       clientName: "",
       clientType: "Corporate",
       workCategory: "",
@@ -217,6 +256,7 @@ const handleSaveQuotation = async () => {
 >
   + Create New Quotation
 </button>
+
 
       </div>
 
@@ -398,6 +438,7 @@ const handleSaveQuotation = async () => {
 
       {/* FORM */}
       <div className="modal-form">
+  
         <div className="form-group">
          
           
@@ -410,29 +451,44 @@ const handleSaveQuotation = async () => {
 
 
         </div>
+         <div className="form-group">
+<label>Project Name *</label>
+<select
+  value={newQuotation.opportunity_id || ""}
+  onChange={(e) => {
+    const selectedOpp = opportunities.find(
+      o => o.opportunity_id === e.target.value
+    );
 
-        <div className="form-group">
-          <label>Project Name *</label>
-          <input
-            type="text"
-            placeholder="Project Name"
-            value={newQuotation.project_name}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, project_name: e.target.value })
-            }
-          />
-        </div>
+    if (!selectedOpp) return;
 
-        <div className="form-group">
-          <label>Client Name *</label>
-          <input
-            type="text"
-            placeholder="Client Name"
-            value={newQuotation.clientName}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientName: e.target.value })
-            }
-          />
+    setNewQuotation(prev => ({
+      ...prev,
+      opportunity_id: selectedOpp.opportunity_id,
+      project_name: selectedOpp.opportunity_name,
+      clientName: selectedOpp.customer_name,
+    }));
+  }}
+>
+  <option value="">Select Project</option>
+  {opportunities.map(o => (
+    <option key={o.opportunity_id} value={o.opportunity_id}>
+      {o.opportunity_name}
+    </option>
+  ))}
+</select>
+
+{/* Client Name (auto-filled) */}
+<div className="form-group">
+<label>Client Name *</label>
+<input
+  type="text"
+  value={newQuotation.clientName}
+  readOnly
+/>
+
+</div>
+
         </div>
 
         <div className="form-group">
