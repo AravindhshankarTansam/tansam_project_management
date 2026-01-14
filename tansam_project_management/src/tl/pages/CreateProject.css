@@ -52,11 +52,23 @@
 
 /* ================================
    SEARCH BAR
+/* ================================
+   SEARCH + CLIENT FILTER BAR - FIXED & BEAUTIFUL
 ================================ */
+.search-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+/* Search Box */
 .search-box {
   position: relative;
+  flex: 1;
+  min-width: 320px;           /* Controlled width - not too big */
   max-width: 400px;
-  margin-bottom: 24px;
 }
 
 .search-box input {
@@ -65,7 +77,10 @@
   border-radius: 12px;
   border: 1.5px solid #e2e8f0;
   font-size: 14px;
+  background: white;
   transition: all 0.2s ease;
+  height: 44px;               /* Consistent height */
+  box-sizing: border-box;
 }
 
 .search-box input:focus {
@@ -80,8 +95,93 @@
   left: 16px;
   transform: translateY(-50%);
   color: #94a3b8;
+  font-size: 18px;
 }
 
+/* Client Filter Dropdown */
+.client-filter-box {
+  position: relative;
+  min-width: 220px;           /* Reasonable width for client names */
+  max-width: 300px;
+}
+
+.client-filter-box select {
+  width: 100%;
+  padding: 12px 14px 12px 48px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 14px;
+  background: white;
+  height: 44px;
+  appearance: none;           /* Remove default arrow */
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.client-filter-box select:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+/* Filter Icon */
+.client-filter-box::before {
+  content: "\f0b0"; /* FontAwesome filter icon (or use your FiFilter) */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+/* Custom Dropdown Arrow */
+.client-filter-box::after {
+  content: "▼";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  font-size: 12px;
+}
+
+/* Clear Button */
+.reset-btn {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  height: 44px;
+}
+
+.reset-btn:hover {
+  background: #fecaca;
+}
+
+/* Make sure bar looks good on mobile */
+@media (max-width: 768px) {
+  .search-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box,
+  .client-filter-box {
+    max-width: 100%;
+  }
+}
 /* ================================
    TABLE CARD
 ================================ */

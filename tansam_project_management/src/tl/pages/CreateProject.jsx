@@ -60,7 +60,8 @@ export default function CreateProject() {
   const [isEdit, setIsEdit] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage] = useState(1);
+  const [selectedClient, setSelectedClient] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [form, setForm] = useState(emptyForm);
 
@@ -84,10 +85,9 @@ export default function CreateProject() {
     })();
   }, []);
 
-  /* ================= NORMALIZED PROJECT TYPE ================= */
+  /* ================= PROJECT TYPE FLAGS ================= */
 
   const projectType = form.projectType?.toUpperCase();
-
   const isInternal = projectType === "INTERNAL";
   const isCustomer = projectType === "CUSTOMER";
   const isCustomerPOC = projectType === "CUSTOMER_POC";
@@ -116,7 +116,7 @@ export default function CreateProject() {
     }
 
     const payload = {
-      projectType: projectType,
+      projectType,
       projectName: isCustomerPOC
         ? selectedOpportunity?.opportunity_name
         : form.projectName,
@@ -133,35 +133,49 @@ export default function CreateProject() {
     };
 
     try {
-      if (isEdit) {
-        await updateProject(form.id, payload);
-        toast.success("Project updated");
-      } else {
-        await createProject(payload);
-        toast.success("Project created");
-      }
+      isEdit
+        ? await updateProject(form.id, payload)
+        : await createProject(payload);
 
       setProjects(await fetchProjects());
       setShowModal(false);
       setIsEdit(false);
       setForm(emptyForm);
+      toast.success(isEdit ? "Project updated" : "Project created");
     } catch (err) {
       toast.error(err.message || "Action failed");
     }
   };
 
-  /* ================= FILTER + PAGINATION ================= */
+  /* ================= FILTERS ================= */
+
+  const uniqueClients = useMemo(
+    () => [...new Set(projects.map(p => p.clientName).filter(Boolean))],
+    [projects]
+  );
 
   const filteredProjects = useMemo(() => {
-    if (!searchTerm) return projects;
-    const q = searchTerm.toLowerCase();
-    return projects.filter(
-      p =>
-        p.projectName?.toLowerCase().includes(q) ||
-        p.clientName?.toLowerCase().includes(q)
-    );
-  }, [projects, searchTerm]);
+    let data = projects;
 
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      data = data.filter(
+        p =>
+          p.projectName?.toLowerCase().includes(q) ||
+          p.clientName?.toLowerCase().includes(q)
+      );
+    }
+
+    if (selectedClient) {
+      data = data.filter(p => p.clientName === selectedClient);
+    }
+
+    return data;
+  }, [projects, searchTerm, selectedClient]);
+
+  /* ================= PAGINATION ================= */
+
+  const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE);
 
   const paginatedProjects = filteredProjects.slice(
     (currentPage - 1) * PROJECTS_PER_PAGE,
@@ -189,15 +203,51 @@ export default function CreateProject() {
         )}
       </div>
 
-      {/* SEARCH */}
-      <div className="search-box">
-        <FiSearch />
-        <input
-          placeholder="Search project or client..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+      {/* SEARCH + FILTER */}
+   {/* SEARCH + CLIENT FILTER */}
+<div className="search-filter-bar">
+  {/* Search */}
+  <div className="search-box">
+    <FiSearch />
+    <input
+      placeholder="Search project or client..."
+      value={searchTerm}
+      onChange={(e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
+      }}
+    />
+  </div>
+
+  {/* Client Filter */}
+  <div className="client-filter-box">
+    <select
+      value={selectedClient}
+      onChange={(e) => {
+        setSelectedClient(e.target.value);
+        setCurrentPage(1);
+      }}
+    >
+      <option value="">All Clients</option>
+      {uniqueClients.map((client) => (
+        <option key={client} value={client}>
+          {client}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* Clear Button - only shows when filter is active */}
+  {(searchTerm || selectedClient) && (
+    <button className="reset-btn" onClick={() => {
+      setSearchTerm("");
+      setSelectedClient("");
+      setCurrentPage(1);
+    }}>
+      Clear
+    </button>
+  )}
+</div>
 
       {/* TABLE */}
       <table className="project-table">
@@ -228,7 +278,8 @@ export default function CreateProject() {
               </td>
               {isTL && (
                 <td className="action-col">
-                  <button className="icon-btn edit-btn"
+                  <button
+                    className="icon-btn edit-btn"
                     onClick={() => {
                       setForm({
                         ...p,
@@ -241,7 +292,10 @@ export default function CreateProject() {
                   >
                     <FiEdit />
                   </button>
-                  <button className="icon-btn delete-btn" onClick={() => deleteProject(p.id)}>
+                  <button
+                    className="icon-btn delete-btn"
+                    onClick={() => deleteProject(p.id)}
+                  >
                     <FiTrash2 />
                   </button>
                 </td>
@@ -251,6 +305,37 @@ export default function CreateProject() {
         </tbody>
       </table>
 
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="page-btn"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => p - 1)}
+          >
+            <FiChevronLeft /> Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              className={`page-number ${page === currentPage ? "active" : ""}`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            className="page-btn"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(p => p + 1)}
+          >
+            Next <FiChevronRight />
+          </button>
+        </div>
+      )}
+
       {/* MODAL */}
       {showModal && (
         <div className="modal-overlay">
@@ -258,30 +343,16 @@ export default function CreateProject() {
             <h3>{isEdit ? "Edit Project" : "Create Project"}</h3>
 
             <form onSubmit={handleSubmit}>
-              {/* PROJECT TYPE */}
-              <select
-                name="projectType"
-                value={form.projectType}
-                onChange={handleChange}
-                required
-              >
+              <select name="projectType" value={form.projectType} onChange={handleChange} required>
                 <option value="">Select Project Type</option>
                 {projectTypes.map(t => (
-                  <option key={t.id} value={t.name}>
-                    {t.name}
-                  </option>
+                  <option key={t.id} value={t.name}>{t.name}</option>
                 ))}
               </select>
 
-              {/* CUSTOMER POC */}
               {isCustomerPOC && (
                 <>
-                  <select
-                    name="opportunityId"
-                    value={form.opportunityId}
-                    onChange={handleChange}
-                    required
-                  >
+                  <select name="opportunityId" value={form.opportunityId} onChange={handleChange} required>
                     <option value="">Select Opportunity</option>
                     {opportunities.map(o => (
                       <option key={o.opportunity_id} value={o.opportunity_id}>
@@ -290,76 +361,29 @@ export default function CreateProject() {
                     ))}
                   </select>
 
-                  <input
-                    value={selectedOpportunity?.opportunity_name || ""}
-                    placeholder="Project Name"
-                    disabled
-                  />
-
-                  <input
-                    value={selectedOpportunity?.customer_name || ""}
-                    placeholder="Client Name"
-                    disabled
-                  />
+                  <input value={selectedOpportunity?.opportunity_name || ""} disabled />
+                  <input value={selectedOpportunity?.customer_name || ""} disabled />
                 </>
               )}
 
-              {/* INTERNAL + CUSTOMER */}
               {(isInternal || isCustomer) && (
                 <>
-                  <input
-                    name="projectName"
-                    placeholder="Project Name"
-                    value={form.projectName}
-                    onChange={handleChange}
-                    required
-                  />
-
-                  <input
-                    name="clientName"
-                    placeholder="Client Name"
-                    value={form.clientName}
-                    onChange={handleChange}
-                    required
-                  />
+                  <input name="projectName" placeholder="Project Name" value={form.projectName} onChange={handleChange} required />
+                  <input name="clientName" placeholder="Client Name" value={form.clientName} onChange={handleChange} required />
                 </>
               )}
 
-              {/* DATES */}
               <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
               <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
 
-              {/* CUSTOMER ONLY */}
               {isCustomer && (
                 <>
-                  <input
-                    name="quotationNumber"
-                    placeholder="Quotation Number"
-                    value={form.quotationNumber}
-                    onChange={handleChange}
-                    required
-                  />
-
-                  <input
-                    name="poNumber"
-                    placeholder="Purchase Order Number"
-                    value={form.poNumber}
-                    onChange={handleChange}
-                    required
-                  />
-
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) =>
-                      setForm({ ...form, poFile: e.target.files[0] })
-                    }
-                    required
-                  />
+                  <input name="quotationNumber" placeholder="Quotation Number" value={form.quotationNumber} onChange={handleChange} required />
+                  <input name="poNumber" placeholder="Purchase Order Number" value={form.poNumber} onChange={handleChange} required />
+                  <input type="file" accept="application/pdf" onChange={e => setForm({ ...form, poFile: e.target.files[0] })} required />
                 </>
               )}
 
-              {/* STATUS */}
               <select name="status" value={form.status} onChange={handleChange}>
                 <option>Planned</option>
                 <option>In Progress</option>
@@ -368,12 +392,8 @@ export default function CreateProject() {
               </select>
 
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit">
-                  {isEdit ? "Update" : "Create"}
-                </button>
+                <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit">{isEdit ? "Update" : "Create"}</button>
               </div>
             </form>
           </div>
