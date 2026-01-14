@@ -95,16 +95,40 @@ tbody td {
 /* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.4);
+  inset: 0;
+  background: rgba(0,0,0,0.65);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 2vh;
+  z-index: 1200;
+  overflow-y: auto;
+}.a4-quotation-editor {
+  width: 210mm;
+  min-height: 297mm;
+  max-height: 95vh;
+  background: white;
+  box-shadow: 0 10px 60px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
 }
-
+.close-page-btn {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 38px;
+  color: #555;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+.document-paper {
+  padding: 28mm 22mm 35mm;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
 .modal {
   background: white;
   padding: 20px;
@@ -843,19 +867,18 @@ tbody td {
 }
 
 .org-title {
-  text-align: center;
   font-size: 20px;
   font-weight: bold;
-  margin: 0 0 5px;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .org-subtitle {
-  text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   margin: 0 0 20px;
-  color: #444;
+  color: #333;
 }
-
 .doc-title {
   text-align: center;
   font-size: 28px;
@@ -977,20 +1000,33 @@ tbody td {
   text-align: center;
   margin-bottom: 35px;
 }
-
 .logos-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
-
-.main-title {
-  font-size: 20px;
+.logo-tansam, .logo-tidco { height: 70px; }
+.logo-siemens   { height: 55px; }
+.org-main-title {
+  font-size: 19px;
   font-weight: bold;
-  margin: 0 0 6px;
+  text-align: center;
+  margin: 0 0 4px;
+  letter-spacing: 0.4px;
 }
-
+.org-subtitle {
+  text-align: center;
+  font-size: 12px;
+  margin: 0 0 18px;
+  color: #444;
+}.quotation-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 18px 0 28px;
+  color: #002060;
+}
 .main-subtitle {
   font-size: 13px;
   margin: 0 0 20px;
@@ -1706,18 +1742,28 @@ tbody td {
   margin: 20px 0 28px;
   text-align: justify;
 }
-
 input, textarea {
+  font-family: "Times New Roman", serif;
+  font-size: 13.5px;
+  line-height: 1.45;
   border: none;
-  border-bottom: 1px solid #999;
+  border-bottom: 1px dashed #666;
+  background: transparent;
   width: 100%;
-  font-family: inherit;
-  font-size: 14px;
+  padding: 2px 0;
+  resize: none;
 }
 
 input:focus, textarea:focus {
   outline: none;
-  border-bottom: 2px solid #000;
+  border-bottom: 1.5px solid #000;
+}.to-institute, .kind-attn, .subject-input {
+  font-weight: bold;
+}.address-textarea {
+  min-height: 68px;
+}.thank-you-para {
+  margin: 22px 0 32px;
+  text-align: justify;
 }
 
 .signature-block input[type="file"] {
@@ -1904,15 +1950,20 @@ input:focus, textarea:focus {
   text-align: right;
 }
 /* ===== DOCUMENT FOOTER (EXACT MATCH) ===== */
-
 .document-footer {
   margin-top: 60px;
   background: #1f4e79;
   color: white;
-  font-size: 13px;
+  padding: 16px 40px;
+  font-size: 11.5px;
 }
-
-.footer-top {
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}.footer-center { text-align: center; }
+.footer-right  { text-align: right; }
+/* .footer-top {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   padding: 16px 40px;
@@ -1926,8 +1977,18 @@ input:focus, textarea:focus {
 
 .footer-center {
   text-align: center;
+} */
+.modal-bottom-bar {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 14px 30px;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  z-index: 5;
 }
-
 .document-footer input,
 .document-footer textarea {
   background: transparent;
@@ -1961,4 +2022,284 @@ input:focus, textarea:focus {
   border: none;
   background: transparent;
   color: white;
+}
+.a4-quotation-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  position: relative;
+  overflow: hidden;
+  margin: 20px auto;
+}
+
+.paper-content {
+  padding: 24mm 20mm 30mm;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.to-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 20px 0 28px;
+  gap: 40px;
+}
+
+.to-left {
+  flex: 1;
+}
+
+.kind-attn-right {
+  width: 260px;
+  text-align: left;
+}
+
+.kind-attn-right strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.compact-quotation-table {
+  font-size: 13px;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.compact-quotation-table th, .compact-quotation-table td {
+  border: 1px solid #000;
+  padding: 5px 6px;           /* ← smaller padding = shorter rows */
+  vertical-align: top;
+}
+
+.desc-compact {
+  width: 100%;
+  min-height: 38px;            /* smaller than before */
+  resize: vertical;
+  border: none;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.yours-truly {
+  margin: 40px 0 10px;
+  font-size: 14px;
+}
+
+.signature-upload {
+  margin: 12px 0 20px;
+}
+
+.sig-preview img {
+  max-height: 90px;
+  border: 1px solid #ccc;
+  padding: 4px;
+}
+
+.doc-footer {
+  margin-top: 50px;
+  background: #1f4e79;
+  color: white;
+  padding: 14px 30px;
+  font-size: 11.5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-center { text-align: center; }
+.footer-right  { text-align: right; }
+
+.bottom-actions {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 12px 24px;
+  border-top: 1px solid #ddd;
+  text-align: right;
+}
+/* ======================== 4-LOGO HEADER ======================== */
+.logos-row.four-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  gap: 25px;
+}
+
+.logo-tn-gov.logo-left,
+.logo-tidco.logo-right {
+  height: 70px;
+  object-fit: contain;
+}
+
+.logo-tansam {
+  height: 65px;
+  object-fit: contain;
+}
+
+.powered-center {
+  text-align: center;
+}
+
+.powered-text {
+  font-size: 11px;
+  color: #333;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.logo-siemens {
+  height: 50px;
+  object-fit: contain;
+}
+
+.logo-tidco.logo-right {
+  height: 70px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Optional: If logos look misaligned on very wide screens */
+@media (min-width: 1000px) {
+  .logos-row.four-logos {
+    justify-content: space-evenly;
+  }
+}.logos-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14mm;
+}
+
+.logo {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Exact sizes (A4 safe) */
+.tn-logo {
+  height: 28mm;
+}
+
+.tansam-logo {
+  height: 22mm;
+}
+
+.siemens-logo {
+  height: 14mm;
+}
+
+.tidco-logo {
+  height: 18mm;
+}
+
+.powered-by {
+  text-align: center;
+  font-size: 11px;
+}
+
+.powered-by span {
+  display: block;
+  margin-bottom: 2mm;
+}
+/* Force proper input boxes inside quotation */
+.a4-quotation-page input,
+.a4-quotation-page textarea {
+  border: 1px solid #444 !important;
+  background: #fff !important;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}.subject-field {
+  width: 100%;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.doc-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.logos-row.four-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  gap: 25px;
+}
+
+.logo-tn-gov.logo-left,
+.logo-tidco.logo-right {
+  height: 70px;
+  object-fit: contain;
+}
+
+.logo-tansam {
+  height: 65px;
+  object-fit: contain;
+}
+
+.powered-center {
+  text-align: center;
+}
+
+.powered-text {
+  font-size: 11px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.logo-siemens {
+  height: 50px;
+  object-fit: contain;
+}
+
+
+
+.org-subtitle {
+  font-size: 13px;
+  margin: 0 0 20px;
+  color: #333;
+}
+
+.ref-date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  font-weight: bold;
+  font-size: 14px;
+  gap: 20px;
+}
+
+.ref-block,
+.date-block {
+  flex: 1;
+  text-align: left;
+}
+
+.quotation-heading {
+  font-size: 24px;
+  font-weight: bold;
+  color: #003366;
+  margin: 0;
+  text-align: center;
+}
+
+.ref-field,
+.date-field {
+  border: 1px solid #666;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-left: 6px;
+  width: 180px;
 }

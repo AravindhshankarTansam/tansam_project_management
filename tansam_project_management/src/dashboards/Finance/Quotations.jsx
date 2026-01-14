@@ -11,7 +11,7 @@ import { FaFileWord, FaEdit, FaTrash } from "react-icons/fa";
 import tansamLogo from "../../assets/tansam/tansamoldlogo.png";
 import siemensLogo from "../../assets/tansam/siemens.png";
 import tidcoLogo from "../../assets/tansam/tidcologo.png";
-import tnLogo from "../../assets/tansam/tnlogo.png";
+import tnLogo from "../../assets/tansam/tnlogo.png";          // ← Tamil Nadu Govt emblem (temple)
 
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -396,18 +396,19 @@ const handleSaveQuotation = async () => {
       </div>
 
       {/* ✅ IMPROVED MODAL */}
+// Quotations.jsx - only the modal part (rest of your component stays mostly same)
+
 {showModal && (
   <div className="modal-overlay" onClick={closeModal}>
-    <div 
-      className="exact-quotation-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Close button */}
-      <button className="close-btn" onClick={closeModal}>×</button>
+    <div className="a4-quotation-page" onClick={(e) => e.stopPropagation()}>
+      <button className="page-close-btn" onClick={closeModal}>×</button>
 
-      <div className="quotation-document">
-        {/* Header */}
+      <div className="paper-content">
+
+        {/* Header - Logos + Titles */}
         <div className="doc-header">
+          
+     <div className="doc-header">
      <div className="logos-row" style={{
   display: 'flex',
   justifyContent: 'space-between',
@@ -419,8 +420,7 @@ const handleSaveQuotation = async () => {
   {/* Left - TANSAM + TN Govt (if you have it) */}
   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
     <img src={tansamLogo} alt="TANSAM" />
-    {/* Optional: Tamil Nadu Govt logo if you want extra authenticity */}
-    {/* <img src="/assets/tansam/tnlogo.png" alt="TN Govt" style={{ height: '70px' }} /> */}
+   
   </div>
 
   {/* Center - Powered by Siemens */}
@@ -445,242 +445,222 @@ const handleSaveQuotation = async () => {
           </p>
 
           <h2 className="quotation-heading">Quotation</h2>
+        
         </div>
 
-        {/* REF & DATE */}
-        {/* <div className="ref-date-row">
-          <div>
-            <strong>REF:</strong> 
-            <span className="ref-value">{newQuotation.quotationNo || 'TANSAM-XXXX/2025-26'}</span>
+
+          <div className="ref-date-line">
+            <div>
+              <strong>REF:</strong> 
+              <input 
+                type="text" 
+                value={newQuotation.quotationNo} 
+                onChange={e => setNewQuotation({...newQuotation, quotationNo: e.target.value})}
+                className="ref-field"
+              />
+            </div>
+            <div>
+              <strong>DATE:</strong> 
+              <input 
+                type="date" 
+                value={newQuotation.date} 
+                onChange={e => setNewQuotation({...newQuotation, date: e.target.value})}
+                className="date-field"
+              />
+            </div>
           </div>
-          <div>
-            <strong>DATE:</strong> 
-            <input
-              type="date"
-              value={newQuotation.date}
-              onChange={(e) => setNewQuotation({...newQuotation, date: e.target.value})}
-              className="date-field"
-            />
-          </div>
-        </div> */}
 
-        {/* To / Kind Attn / Address */}
-        <div className="to-address-block">
-          <strong>To,</strong><br/>
-      <input
-  value={newQuotation.clientName}
-  onChange={(e) =>
-    setNewQuotation({ ...newQuotation, clientName: e.target.value })
-  }
-  placeholder="Institute Name"
-/><br/>
-
-          <strong>kind attn: -</strong>
-         <input
-  value={newQuotation.kindAttn || ""}
-  onChange={(e) =>
-    setNewQuotation({ ...newQuotation, kindAttn: e.target.value })
-  }
-  placeholder="Dr. Name / Designation"
-/>
-<br/>
-
-      <textarea
-  rows={3}
-  value={newQuotation.address || ""}
-  onChange={(e) =>
-    setNewQuotation({ ...newQuotation, address: e.target.value })
-  }
-  placeholder="Full Address"
-/>
+          <h2 className="quotation-word">Quotation</h2>
         </div>
 
-        {/* Subject */}
-        <div className="subject-row">
+        {/* To + Kind Attn (left + right on same line) */}
+ <div className="to-section">
+  <div className="to-left">
+    <label>To</label>
+    <input
+      value={newQuotation.clientName}
+      onChange={e => setNewQuotation({...newQuotation, clientName: e.target.value})}
+      placeholder="Institute / Company Name"
+    />
+
+    <textarea
+      rows={4}
+      placeholder="Complete Address"
+      value={newQuotation.address || ""}
+      onChange={e => setNewQuotation({...newQuotation, address: e.target.value})}
+    />
+  </div>
+
+  <div className="kind-attn-right">
+    <label>Kind Attn</label>
+    <input
+      value={newQuotation.kindAttn || ""}
+      onChange={e => setNewQuotation({...newQuotation, kindAttn: e.target.value})}
+      placeholder="Name & Designation"
+    />
+  </div>
+</div>
+
+
+        <div className="subject-block">
           <strong>Sub:</strong>
-      <input
-  value={newQuotation.project_name}
-  onChange={(e) =>
-    setNewQuotation({ ...newQuotation, project_name: e.target.value })
-  }
-  placeholder="Quote offer for Industrial Visit..."
-  className="subject-field"
-/>
-        </div>
-
-        {/* Thank you message */}
-        <p className="thank-text">
-          We thank you very much for your valuable inquiry. With reference to the same, we are pleased to submit our most competitive price as below.
-        </p>
-
-        {/* Main Editable Table */}
-        <div className="quotation-table-container">
-          <table className="quotation-table">
-            <thead>
-              <tr>
-                <th className="slno-col">S. No</th>
-                <th className="desc-col">Product description</th>
-                <th className="qty-col">Qty Per Students</th>
-                <th className="unit-col">Unit price +TAX</th>
-                <th className="total-col">Total price in INR inclusive of TAX</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(newQuotation.items || []).map((item, index) => (
-                <tr key={index}>
-                  <td className="slno-cell">{index + 1}</td>
-                  <td>
-                    <textarea
-                      value={item.description || ""}
-                      onChange={(e) => {
-                        const updated = [...(newQuotation.items || [])];
-                        updated[index] = { ...updated[index], description: e.target.value };
-                        setNewQuotation({ ...newQuotation, items: updated });
-                      }}
-                      placeholder="Other education and training services N.E.C. (Industrial Visit with E-Certificate)..."
-                      rows={3}
-                      className="desc-input"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.qty || ""}
-                      onChange={(e) => {
-                        const updated = [...(newQuotation.items || [])];
-                        updated[index] = { ...updated[index], qty: e.target.value };
-                        setNewQuotation({ ...newQuotation, items: updated });
-                      }}
-                      className="qty-input"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.unitPrice || ""}
-                      onChange={(e) => {
-                        const updated = [...(newQuotation.items || [])];
-                        const qty = Number(updated[index].qty || 0);
-                        const price = Number(e.target.value || 0);
-                        updated[index] = { 
-                          ...updated[index], 
-                          unitPrice: e.target.value,
-                          total: (qty * price).toFixed(2)
-                        };
-                        setNewQuotation({ ...newQuotation, items: updated });
-                      }}
-                      className="unit-input"
-                    />
-                  </td>
-                  <td className="total-cell">
-                    ₹ {Number(item.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Add Row Button */}
-          <button
-            className="add-row-btn"
-            onClick={() => {
-              const newItem = { description: "", qty: "", unitPrice: "", total: "0.00" };
-              setNewQuotation({
-                ...newQuotation,
-                items: [...(newQuotation.items || []), newItem]
-              });
-            }}
-          >
-            + Add Row
-          </button>
-
-          {/* Total */}
-          <div className="grand-total">
-            <strong>Total Service Value with Tax</strong>
-            <strong className="total-amount">
-              ₹ {Number(
-                (newQuotation.items || []).reduce((sum, i) => sum + Number(i.total || 0), 0)
-              ).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-            </strong>
-          </div>
-        </div>
-
-        {/* Terms & Conditions - Editable */}
-        <div className="terms-block">
-          <h3>Terms & Conditions</h3>
-          <textarea
-            className="terms-editor"
-            rows={8}
-            value={newQuotation.terms || 
-              "1. Validity     : This quotation is valid for [10/15 days] from the date of issue.\n" +
-              "2. Payment      : 100% payment advance\n" +
-              "3. Delivery     : [days] Date of confirmed order with PO\n" +
-              "4. Purchase Order : Send PO for Confirmation within 5 days"
-            }
-            onChange={(e) => setNewQuotation({...newQuotation, terms: e.target.value})}
+          <input
+            className="subject-field"
+            value={newQuotation.project_name}
+            onChange={e => setNewQuotation({...newQuotation, project_name: e.target.value})}
+            placeholder="Quote offer for Industrial Visit..."
           />
         </div>
 
-        {/* Signature */}
-   <div className="signature-block">
-  <p><strong>Yours truly,</strong></p>
+        {/* <p className="thank-para">
+          We thank you very much for your valuable inquiry. With reference to the same, we are pleased to submit our most competitive price as below.
+        </p> */}
 
-  <input
-    type="file"
-    accept="image/png, image/jpeg"
-    onChange={(e) => setSignatureFile(e.target.files[0])}
-  />
+        {/* Compact Table */}
+        <table className="compact-quotation-table">
+          <thead>
+            <tr>
+              <th>S. No</th>
+              <th>Product description</th>
+              <th>Qty Per Students</th>
+              <th>Unit price +TAX</th>
+              <th>Total price in INR inclusive of TAX</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(newQuotation.items || []).map((item, idx) => (
+              <tr key={idx}>
+                <td className="slno-cell">{idx + 1}</td>
+                <td>
+                  <textarea
+                    className="desc-compact"
+                    rows={2}           // ← reduced height
+                    value={item.description || ""}
+                    onChange={e => {
+                      const items = [...(newQuotation.items || [])];
+                      items[idx].description = e.target.value;
+                      setNewQuotation({...newQuotation, items});
+                    }}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="qty-compact"
+                    value={item.qty || ""}
+                    onChange={e => {
+                      const items = [...(newQuotation.items || [])];
+                      items[idx].qty = e.target.value;
+                      items[idx].total = (Number(e.target.value||0) * Number(item.unitPrice||0)).toFixed(2);
+                      setNewQuotation({...newQuotation, items});
+                    }}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="unit-compact"
+                    value={item.unitPrice || ""}
+                    onChange={e => {
+                      const items = [...(newQuotation.items || [])];
+                      items[idx].unitPrice = e.target.value;
+                      items[idx].total = (Number(item.qty||0) * Number(e.target.value||0)).toFixed(2);
+                      setNewQuotation({...newQuotation, items});
+                    }}
+                  />
+                </td>
+                <td className="total-cell">
+                  ₹ {Number(item.total || 0).toLocaleString('en-IN')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-  {signatureFile && (
-    <img
-      src={URL.createObjectURL(signatureFile)}
-      alt="Signature"
-      style={{ height: "80px", marginTop: "10px" }}
-    />
-  )}
+        <button
+          className="add-row-small"
+          onClick={() => {
+            setNewQuotation({
+              ...newQuotation,
+              items: [...(newQuotation.items || []), { description: "", qty: "", unitPrice: "", total: "0" }]
+            });
+          }}
+        >
+          + Add Row
+        </button>
 
-  <p>
-    <strong>Natesh C</strong><br />
-    Manager Operations
-  </p>
-</div>
-
-
-        {/* Footer */}
-     <div className="quotation-footer">
-  <div className="footer-block left">
-    Tel : +91 44 69255700
-    <br />
-    E-Mail : info@tansam.org
-  </div>
-
-  <div className="footer-block center">
-    URL : www.tansam.org
-  </div>
-
-  <div className="footer-block right">
-    C-Wing North, 603, Tidel Park
-    <br />
-    No.4, Rajiv Gandhi Salai,
-    <br />
-    Taramani, Chennai-600113
-  </div>
-</div>
-
-
-        {/* Action Buttons */}
-        <div className="bottom-actions">
-          <button className="btn-cancel" onClick={closeModal}>Cancel</button>
-          <button className="btn-save" onClick={handleSaveQuotation}>
-            {editId ? "Update Quotation" : "Save Quotation"}
-          </button>
-          <button 
-            className="btn-generate-docx"
-            onClick={() => downloadDocx(newQuotation)}
-          >
-            Generate DOCX
-          </button>
+        <div className="total-line">
+          <strong>Total Service Value with Tax</strong>
+          <strong>
+            ₹ {Number((newQuotation.items || []).reduce((s, i) => s + Number(i.total||0), 0))
+                .toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </strong>
         </div>
+
+        {/* Terms */}
+        <div className="terms-area">
+          <h3>Terms & Conditions</h3>
+       <textarea
+    className="terms-editor"
+    value={newQuotation.terms || 
+      "1. Validity     : This quotation is valid for [10/15 days] from the date of issue.\n" +
+      "2. Payment      : 100% payment advance\n" +
+      "3. Delivery     : [days] Date of confirmed order with P.O\n" +
+      "4. Purchase Order : Send P.O for Confirmation within 5 days"
+    }
+    onChange={e => setNewQuotation({ ...newQuotation, terms: e.target.value })}
+    rows={9}
+    placeholder="Enter terms and conditions here..."
+  />
+        </div>
+
+        {/* Signature + Yours truly */}
+        <div className="closing-section">
+          <p className="yours-truly"><strong>Yours truly,</strong></p>
+
+          <div className="signature-upload">
+            <input
+              type="file"
+              accept="image/png,image/jpeg"
+              onChange={(e) => setSignatureFile(e.target.files?.[0] ?? null)}
+            />
+            {signatureFile && (
+              <div className="sig-preview">
+                <img src={URL.createObjectURL(signatureFile)} alt="Signature" />
+              </div>
+            )}
+          </div>
+
+          <p className="sign-name">
+            <strong>Natesh C</strong><br />
+            Manager Operations
+          </p>
+        </div>
+
+        {/* Footer - restored */}
+        <div className="doc-footer">
+          <div className="footer-left">
+            Tel : +91 44 69255700<br />
+            E-Mail : info@tansam.org
+          </div>
+          <div className="footer-center">
+            URL : www.tansam.org
+          </div>
+          <div className="footer-right">
+            C-Wing North, 603, TIDEL Park<br />
+            No.4, Rajiv Gandhi Salai,<br />
+            Taramani, Chennai-600113
+          </div>
+        </div>
+
+      </div>
+
+      {/* Action buttons at bottom */}
+      <div className="bottom-actions">
+        <button className="btn-cancel" onClick={closeModal}>Cancel</button>
+        <button className="btn-save" onClick={handleSaveQuotation}>
+          {editId ? "Update" : "Save"} Quotation
+        </button>
       </div>
     </div>
   </div>
