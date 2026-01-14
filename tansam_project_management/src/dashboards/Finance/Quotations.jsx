@@ -400,53 +400,54 @@ const handleSaveQuotation = async () => {
 
 {showModal && (
   <div className="modal-overlay" onClick={closeModal}>
+     <div className="a4-scale-wrapper"><div className="a4-quotation-page">
     <div className="a4-quotation-page" onClick={(e) => e.stopPropagation()}>
       <button className="page-close-btn" onClick={closeModal}>×</button>
 
       <div className="paper-content">
 
         {/* Header - Logos + Titles */}
-        <div className="doc-header">
-          
-     <div className="doc-header">
-     <div className="logos-row" style={{
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '24px',
-  gap: '20px',
-  padding: '0 40px'
-}}>
-  {/* Left - TANSAM + TN Govt (if you have it) */}
-  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-    <img src={tansamLogo} alt="TANSAM" />
-   
+       
+   {/* ================= HEADER ================= */}
+<div className="doc-header">
+
+  {/* Logos */}
+  <div className="letterhead-logos">
+
+    {/* LEFT : TN GOVT */}
+    <div className="logo-left">
+      <img src={tnLogo} alt="Tamil Nadu Government" />
+    </div>
+
+    {/* CENTER : TANSAM + Siemens */}
+    <div className="logo-center">
+      <img src={tansamLogo} alt="TANSAM" className="tansam-logo" />
+      <div className="powered-by">
+        <span>Powered by</span>
+        <img src={siemensLogo} alt="Siemens" />
+      </div>
+    </div>
+
+    {/* RIGHT : TIDCO */}
+    <div className="logo-right">
+      <img src={tidcoLogo} alt="TIDCO" />
+    </div>
+
   </div>
 
-  {/* Center - Powered by Siemens */}
-  <div className="powered-section" style={{ 
-    textAlign: 'center',
-    fontSize: '13px',
-    color: '#333'
-  }}>
-    <div>Powered by</div>
-  <img src={siemensLogo} alt="Siemens" />
-  </div>
+  {/* Titles */}
+  <h1 className="main-title">
+    Tamil Nadu Smart and Advanced Manufacturing Centre
+  </h1>
 
-  {/* Right - TIDCO */}
-<img src={tidcoLogo} alt="TIDCO" />
+  <p className="main-subtitle">
+    (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
+  </p>
+
+  <h2 className="quotation-heading">Quotation</h2>
+
 </div>
 
-          <h1 className="main-title">
-            Tamil Nadu Smart and Advanced Manufacturing Centre
-          </h1>
-          <p className="main-subtitle">
-            (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
-          </p>
-
-          <h2 className="quotation-heading">Quotation</h2>
-        
-        </div>
 
 
           <div className="ref-date-line">
@@ -470,7 +471,7 @@ const handleSaveQuotation = async () => {
             </div>
           </div>
 
-          <h2 className="quotation-word">Quotation</h2>
+        
         </div>
 
         {/* To + Kind Attn (left + right on same line) */}
@@ -662,8 +663,9 @@ const handleSaveQuotation = async () => {
           {editId ? "Update" : "Save"} Quotation
         </button>
       </div>
-    </div>
+    </div> </div>
   </div>
+  
 )}
     </div>
   );
