@@ -267,3 +267,16 @@
 .secondary-btn:hover {
   background: #e2e8f0;
 }
+
+/* Form Group - Stack label + input/select vertically */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #0f172a;
+}

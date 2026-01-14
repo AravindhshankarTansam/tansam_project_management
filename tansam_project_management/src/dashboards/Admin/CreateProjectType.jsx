@@ -154,47 +154,57 @@ useEffect(() => {
       </div>
 
       {/* MODAL */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <div className="modal-header">
-              <h3>{isEdit ? "Edit Project Type" : "Add Project Type"}</h3>
-              <button onClick={() => setShowModal(false)}>
-                <FiX />
-              </button>
-            </div>
+   {/* MODAL */}
+{showModal && (
+  <div className="modal-overlay" onClick={() => setShowModal(false)}>
+    <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h3>{isEdit ? "Edit Project Type" : "Add Project Type"}</h3>
+        <button onClick={() => setShowModal(false)}>
+          <FiX />
+        </button>
+      </div>
 
-            <form onSubmit={handleSubmit}>
-              <label>Project Type Name</label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter project type"
-              />
-
-              <label>Status</label>
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-              >
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
-
-              <div className="form-actions">
-                <button type="button" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit">
-                  <FiSave /> Save
-                </button>
-              </div>
-            </form>
-          </div>
+      <form onSubmit={handleSubmit}>
+        {/* Project Type Name */}
+        <div className="form-group">
+          <label>Project Type Name</label>
+          <input
+            className="form-input"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Enter project type"
+            required
+          />
         </div>
-      )}
+
+        {/* Status */}
+        <div className="form-group">
+          <label>Status</label>
+          <select
+            className="form-select"
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+          >
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </div>
+
+        <div className="form-actions">
+          <button type="button" className="secondary-btn" onClick={() => setShowModal(false)}>
+            Cancel
+          </button>
+          <button type="submit" className="primary-btn">
+            <FiSave size={16} /> Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }
