@@ -29,6 +29,7 @@
   -webkit-text-fill-color: transparent;
 }
 
+/* Add Button */
 .add-btn {
   display: flex;
   align-items: center;
@@ -50,70 +51,46 @@
 }
 
 /* ================================
-   SEARCH & FILTER BAR
+   SEARCH BAR
 ================================ */
-.search-filter-bar {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 22px;
-}
-
-.search-box,
-.filter-box {
+.search-box {
   position: relative;
+  max-width: 400px;
+  margin-bottom: 24px;
 }
 
-.search-box input,
-.filter-box select {
-  padding: 12px 14px 12px 42px;
+.search-box input {
+  width: 100%;
+  padding: 12px 14px 12px 48px;
   border-radius: 12px;
   border: 1.5px solid #e2e8f0;
   font-size: 14px;
-  min-width: 260px;
   transition: all 0.2s ease;
 }
 
-.search-box input:focus,
-.filter-box select:focus {
+.search-box input:focus {
   outline: none;
   border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
 }
 
-.search-box svg,
-.filter-box svg {
+.search-box svg {
   position: absolute;
   top: 50%;
-  left: 14px;
+  left: 16px;
   transform: translateY(-50%);
   color: #94a3b8;
 }
 
-.reset-btn {
-  background: #f1f5f9;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-}
-
-.reset-btn:hover {
-  background: #e2e8f0;
-}
-
 /* ================================
-   TABLE
+   TABLE CARD
 ================================ */
 .table-card {
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
 }
 
 .project-table {
@@ -145,13 +122,7 @@
 }
 
 /* ================================
-   STATUS BADGES
-================================ */
-/* ================================
-   STATUS BADGES (FIXED)
-================================ */
-/* ================================
-   STATUS BADGES (FINAL)
+   STATUS BADGES - FIXED & COLORED AS REQUESTED
 ================================ */
 .status-badge {
   display: inline-flex;
@@ -166,68 +137,137 @@
 
 /* Planned → Gray */
 .status-badge.planned {
-  background: #e5e7eb;
-  color: #374151;
+  background: #e5e7eb !important;
+  color: #374151 !important;
 }
 
-/* In Progress → Blue */
+/* In Progress → Mild Orange */
 .status-badge.in-progress {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #fef3c7 !important;  /* soft mild orange */
+  color: #92400e !important;       /* dark orange text */
 }
 
-/* Completed → Green + Tick */
+/* Completed → Green with Tick */
 .status-badge.completed {
-  background: #dcfce7;
-  color: #166534;
+  background: #dcfce7 !important;
+  color: #166534 !important;
 }
 
 /* On Hold → Red */
 .status-badge.on-hold {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #fee2e2 !important;
+  color: #991b1b !important;
 }
 
-
 /* ================================
-   ACTION BUTTONS
+   ACTION BUTTONS - Blue Edit + Red Delete + Proper Spacing
 ================================ */
 .action-col {
   display: flex;
-  gap: 10px;
+  gap: 12px;           /* Increased spacing between buttons */
+  align-items: center;
 }
 
-.action-col button {
+.icon-btn {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 16px;
-  padding: 6px;
-  border-radius: 8px;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 10px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
 }
 
-.action-col button:disabled {
+/* Edit - Blue */
+.edit-btn {
+  color: #2563eb;     /* blue-600 */
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: #dbeafe; /* blue-100 */
+}
+
+/* Delete - Red */
+.delete-btn {
+  color: #dc2626;     /* red-600 */
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: #fee2e2; /* red-100 */
+}
+
+/* Disabled */
+.icon-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.action-col button:hover:not(:disabled) {
-  background: #f1f5f9;
-}
-
 /* ================================
-   EMPTY STATE
+   NO RESULTS / EMPTY STATE
 ================================ */
 .no-results {
   text-align: center;
-  padding: 60px 20px;
+  padding: 80px 20px;
   color: #94a3b8;
   font-size: 15px;
+  font-weight: 500;
 }
 
 /* ================================
-   MODAL
+   PAGINATION
+================================ */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 0;
+  flex-wrap: wrap;
+}
+
+.page-btn,
+.page-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.page-btn:hover:not(:disabled),
+.page-number:hover {
+  background: #e2e8f0;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-number.active {
+  background: #22c55e;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
+}
+
+/* ================================
+   MODAL (unchanged)
 ================================ */
 .modal-overlay {
   position: fixed;
@@ -235,8 +275,8 @@
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(6px);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
@@ -250,14 +290,8 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .modal h3 {
@@ -318,113 +352,4 @@
 .modal-actions button:last-child {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #fff;
-}
-
-/* ================================
-   ACCESS DENIED
-================================ */
-.unauthorized {
-  padding: 60px;
-  text-align: center;
-  color: #64748b;
-}
-
-/* ================================
-   ACTION BUTTONS (EDIT = BLUE, DELETE = RED)
-================================ */
-.action-col {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.icon-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 8px;
-  border-radius: 10px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ✏️ EDIT */
-.edit-btn {
-  color: #2563eb; /* blue-600 */
-}
-
-.edit-btn:hover:not(:disabled) {
-  background: #dbeafe; /* blue-100 */
-}
-
-/* 🗑 DELETE */
-.delete-btn {
-  color: #dc2626; /* red-600 */
-}
-
-.delete-btn:hover:not(:disabled) {
-  background: #fee2e2; /* red-100 */
-}
-
-/* Disabled */
-.icon-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-
-/* ================================
-   PAGINATION
-================================ */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  padding: 20px 0;
-  flex-wrap: wrap;
-}
-
-.page-btn,
-.page-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.page-btn:hover:not(:disabled),
-.page-number:hover {
-  background: #e2e8f0;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Active Page - Square Highlight */
-.page-number.active {
-  background: #22c55e;
-  color: white;
-  font-weight: 600;
-  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
-}
-
-.page-number.active:hover {
-  background: #16a34a;
 }

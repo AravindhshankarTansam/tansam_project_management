@@ -201,15 +201,16 @@ const handleUpdate = async (e) => {
 
                       <td className="actions">
                         <button
-                          className="icon-btn view-po"
+                          className="icon-btn view-btn"
                           onClick={() => openPdfInNewTab(p.poFile)}
                           title="View PO"
+                          disabled={!p.poFile}
                         >
                           <FiEye />
                         </button>
 
                         <button
-                          className="icon-btn edit"
+                          className="icon-btn edit-btn"
                           onClick={() => openEditModal(p)}
                           title="Edit"
                         >
