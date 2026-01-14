@@ -1706,3 +1706,259 @@ tbody td {
   margin: 20px 0 28px;
   text-align: justify;
 }
+
+input, textarea {
+  border: none;
+  border-bottom: 1px solid #999;
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-bottom: 2px solid #000;
+}
+
+.signature-block input[type="file"] {
+  border: none;
+}
+.quotation-footer {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.4fr;
+  background: #1f4e79;
+  color: #ffffff;
+  font-size: 11px;
+  margin-top: 20mm;
+}
+
+.footer-block {
+  padding: 8px 12px;
+  line-height: 1.4;
+}
+
+.footer-block.left {
+  text-align: left;
+}
+
+.footer-block.center {
+  text-align: center;
+}
+
+.footer-block.right {
+  text-align: right;
+}
+.doc-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #000;
+  outline: none;
+  font-size: 13px;
+  padding: 2px 0;
+  background: transparent;
+}
+
+.doc-input.center {
+  text-align: center;
+}
+
+.doc-input.right {
+  text-align: right;
+}
+.exact-quotation-modal {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20mm 18mm;
+  box-shadow: 0 0 25px rgba(0,0,0,0.35);
+  position: relative;
+  font-family: "Times New Roman", serif;
+  font-size: 13px;
+  color: #000;
+}
+.header-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.logo-left,
+.logo-center,
+.logo-right {
+  vertical-align: middle;
+}
+
+.logo-left img {
+  height: 70px;
+}
+
+.logo-center {
+  text-align: center;
+}
+
+.logo-center img {
+  height: 60px;
+}
+
+.logo-right {
+  text-align: right;
+}
+
+.logo-right img {
+  height: 70px;
+}
+
+.powered-text {
+  font-size: 11px;
+  margin: 2px 0;
+}
+.main-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 6px 0 2px;
+}
+
+.main-subtitle {
+  text-align: center;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.quotation-heading {
+  text-align: center;
+  font-size: 16px;
+  text-decoration: underline;
+  margin: 10px 0;
+}
+.ref-date-table {
+  width: 100%;
+  margin: 10px 0;
+}
+
+.ref-date-table td {
+  font-size: 13px;
+}
+
+.ref-date-table .right {
+  text-align: right;
+}
+
+.inline-date {
+  border: none;
+  border-bottom: 1px solid #000;
+  font-family: inherit;
+}
+.to-address-block input,
+.to-address-block textarea {
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  margin: 2px 0;
+}
+
+.to-address-block textarea {
+  resize: none;
+}
+.quotation-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.quotation-table th,
+.quotation-table td {
+  border: 1px solid #000;
+  padding: 6px;
+  vertical-align: top;
+}
+
+.quotation-table th {
+  background: #cfd8ea;
+  text-align: center;
+  font-weight: bold;
+}
+.footer-table {
+  width: 100%;
+  background: #1f4e79;
+  color: #fff;
+  font-size: 11px;
+  margin-top: 20mm;
+}
+
+.footer-table td {
+  padding: 8px 10px;
+}
+
+.footer-left {
+  text-align: left;
+}
+
+.footer-center {
+  text-align: center;
+}
+
+.footer-right {
+  text-align: right;
+}
+/* ===== DOCUMENT FOOTER (EXACT MATCH) ===== */
+
+.document-footer {
+  margin-top: 60px;
+  background: #1f4e79;
+  color: white;
+  font-size: 13px;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 16px 40px;
+  gap: 20px;
+  align-items: center;
+}
+
+.footer-top div {
+  text-align: left;
+}
+
+.footer-center {
+  text-align: center;
+}
+
+.document-footer input,
+.document-footer textarea {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 13px;
+  width: 100%;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.document-footer input {
+  border-bottom: 1px dashed rgba(255,255,255,0.5);
+}
+
+.document-footer textarea {
+  line-height: 1.4;
+}
+
+.footer-bottom {
+  background: #153654;
+  text-align: center;
+  padding: 8px 20px;
+  font-size: 12px;
+}
+
+.footer-bottom input {
+  text-align: center;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: white;
+}

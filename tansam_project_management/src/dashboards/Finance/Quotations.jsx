@@ -20,10 +20,14 @@ export default function Quotations() {
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
+// const formData = new FormData();
+// formData.append("quotation", JSON.stringify(newQuotation));
+// formData.append("signature", signatureFile);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
   const workCategoryOptions = [...new Set(data.map((d) => d.workCategory))];
   const labOptions = [...new Set(data.map((d) => d.lab))];
+const [signatureFile, setSignatureFile] = useState(null);
 
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
@@ -444,7 +448,7 @@ const handleSaveQuotation = async () => {
         </div>
 
         {/* REF & DATE */}
-        <div className="ref-date-row">
+        {/* <div className="ref-date-row">
           <div>
             <strong>REF:</strong> 
             <span className="ref-value">{newQuotation.quotationNo || 'TANSAM-XXXX/2025-26'}</span>
@@ -458,44 +462,50 @@ const handleSaveQuotation = async () => {
               className="date-field"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* To / Kind Attn / Address */}
         <div className="to-address-block">
           <strong>To,</strong><br/>
-          <input
-            className="institute-field"
-            value={newQuotation.clientName}
-            onChange={(e) => setNewQuotation({...newQuotation, clientName: e.target.value})}
-            placeholder="GRT INSTITUTE OF ENGINEERING AND TECHNOLOGY"
-          /><br/>
+      <input
+  value={newQuotation.clientName}
+  onChange={(e) =>
+    setNewQuotation({ ...newQuotation, clientName: e.target.value })
+  }
+  placeholder="Institute Name"
+/><br/>
 
           <strong>kind attn: -</strong>
-          <input
-            className="attn-field"
-            value={newQuotation.kindAttn || ""}
-            onChange={(e) => setNewQuotation({...newQuotation, kindAttn: e.target.value})}
-            placeholder="Dr.S.SATHYA /HOD"
-          /><br/>
+         <input
+  value={newQuotation.kindAttn || ""}
+  onChange={(e) =>
+    setNewQuotation({ ...newQuotation, kindAttn: e.target.value })
+  }
+  placeholder="Dr. Name / Designation"
+/>
+<br/>
 
-          <textarea
-            className="full-address"
-            rows={3}
-            value={newQuotation.address || ""}
-            onChange={(e) => setNewQuotation({...newQuotation, address: e.target.value})}
-            placeholder="GRT Mahalakshmi Nagar, Chennai - Tirupathi Highway\nTiruttani – 631 209"
-          />
+      <textarea
+  rows={3}
+  value={newQuotation.address || ""}
+  onChange={(e) =>
+    setNewQuotation({ ...newQuotation, address: e.target.value })
+  }
+  placeholder="Full Address"
+/>
         </div>
 
         {/* Subject */}
         <div className="subject-row">
           <strong>Sub:</strong>
-          <input
-            className="subject-field"
-            value={newQuotation.project_name || ""}
-            onChange={(e) => setNewQuotation({...newQuotation, project_name: e.target.value})}
-            placeholder="Quote offer for Industrial Visit 2.5 hours Sir/Madam,"
-          />
+      <input
+  value={newQuotation.project_name}
+  onChange={(e) =>
+    setNewQuotation({ ...newQuotation, project_name: e.target.value })
+  }
+  placeholder="Quote offer for Industrial Visit..."
+  className="subject-field"
+/>
         </div>
 
         {/* Thank you message */}
@@ -612,35 +622,51 @@ const handleSaveQuotation = async () => {
         </div>
 
         {/* Signature */}
-        <div className="signature-block">
-          <p><strong>Yours truly,</strong></p>
-          <div className="signature-placeholder">
-            <p style={{ margin: "80px 0 12px", textAlign: "center" }}>
-              ___________________________
-            </p>
-            <p style={{ textAlign: "center" }}>
-              <strong>Natesh C</strong><br/>
-              Manager Operations
-            </p>
-          </div>
-        </div>
+   <div className="signature-block">
+  <p><strong>Yours truly,</strong></p>
+
+  <input
+    type="file"
+    accept="image/png, image/jpeg"
+    onChange={(e) => setSignatureFile(e.target.files[0])}
+  />
+
+  {signatureFile && (
+    <img
+      src={URL.createObjectURL(signatureFile)}
+      alt="Signature"
+      style={{ height: "80px", marginTop: "10px" }}
+    />
+  )}
+
+  <p>
+    <strong>Natesh C</strong><br />
+    Manager Operations
+  </p>
+</div>
+
 
         {/* Footer */}
-        <div className="footer-section">
-          <div className="footer-columns">
-            <div>Tel: +91 44 69255700</div>
-            <div>E-Mail: info@tansam.org</div>
-            <div>URL: www.tansam.org</div>
-            <div>
-              C-Wing North, 603, TIDEL Park<br/>
-              No.4, Rajiv Gandhi Salai,<br/>
-              Taramani, Chennai - 600113
-            </div>
-          </div>
-          <div className="gst-line">
-            GSTIN: 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529
-          </div>
-        </div>
+     <div className="quotation-footer">
+  <div className="footer-block left">
+    Tel : +91 44 69255700
+    <br />
+    E-Mail : info@tansam.org
+  </div>
+
+  <div className="footer-block center">
+    URL : www.tansam.org
+  </div>
+
+  <div className="footer-block right">
+    C-Wing North, 603, Tidel Park
+    <br />
+    No.4, Rajiv Gandhi Salai,
+    <br />
+    Taramani, Chennai-600113
+  </div>
+</div>
+
 
         {/* Action Buttons */}
         <div className="bottom-actions">
