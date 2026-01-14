@@ -34,7 +34,13 @@ router.post("/labs", authMiddleware, roleMiddleware(["ADMIN"]), createLab);
 router.put("/labs/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateLab);
 
 // PROJECT TYPES (ADMIN)
-router.get("/project-types", authMiddleware, roleMiddleware(["ADMIN"]), getProjectTypes);
+router.get(
+  "/project-types",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "TEAM LEAD"]),
+  getProjectTypes
+);
+
 router.post("/project-types", authMiddleware, roleMiddleware(["ADMIN"]), createProjectType);
 router.put("/project-types/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateProjectType);
 

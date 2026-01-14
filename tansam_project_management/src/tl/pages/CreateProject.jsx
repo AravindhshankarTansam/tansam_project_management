@@ -22,7 +22,9 @@ import {
   deleteProject,
 } from "../../services/project.api";
 
-import { fetchProjectTypes } from "../../services/projectType.api";
+// import { fetchProjectTypes } from "../../services/projectType.api";
+import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
+
 
 const emptyForm = {
   id: null,
@@ -66,28 +68,31 @@ export default function CreateProject() {
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
-    let mounted = true;
+  let mounted = true;
 
-    (async () => {
-      try {
-        const [projectsData, typesData] = await Promise.all([
-          fetchProjects(),
-          fetchProjectTypes(),
-        ]);
+  (async () => {
+    try {
+      const [projectsData, typesData] = await Promise.all([
+        fetchProjects(),
+        fetchProjectTypes(), // ADMIN API
+      ]);
 
-        if (mounted) {
-          setProjects(projectsData || []);
-          setProjectTypes(typesData || []);
-        }
-      } catch {
-        toast.error("Failed to load data");
+      if (mounted) {
+        setProjects(projectsData || []);
+        setProjectTypes(
+          (typesData || []).filter(t => t.status === "ACTIVE")
+        );
       }
-    })();
+    } catch {
+      toast.error("Failed to load data");
+    }
+  })();
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  return () => {
+    mounted = false;
+  };
+}, []);
+
 
   /* Filtered Projects */
   const filteredProjects = useMemo(() => {

@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./admincss/ProjectType.css";
 import { FiPlus, FiEdit2, FiX, FiSave } from "react-icons/fi";
+import { toast, ToastContainer } from "react-toastify";
+
+import {
+  fetchProjectTypes,
+  createProjectType,
+  updateProjectType,
+} from "../../services/admin/admin.roles.api";
 
 export default function CreateProjectTypes() {
-  const [projectTypes, setProjectTypes] = useState([
-    { id: 1, name: "New Installation", status: "ACTIVE" },
-    { id: 2, name: "Maintenance", status: "INACTIVE" },
-  ]);
-
+  const [projectTypes, setProjectTypes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -16,6 +19,35 @@ export default function CreateProjectTypes() {
     name: "",
     status: "ACTIVE",
   });
+
+  /* 🔁 LOAD TYPES */
+  const loadProjectTypes = async () => {
+    try {
+      const data = await fetchProjectTypes();
+      setProjectTypes(data || []);
+    } catch {
+      toast.error("Failed to load project types");
+    }
+  };
+useEffect(() => {
+  let mounted = true;
+
+  (async () => {
+    try {
+      const data = await fetchProjectTypes();
+      if (mounted) {
+        setProjectTypes(data || []);
+      }
+    } catch {
+      toast.error("Failed to load project types");
+    }
+  })();
+
+  return () => {
+    mounted = false;
+  };
+}, []);
+
 
   const openAddModal = () => {
     setIsEdit(false);
@@ -33,39 +65,45 @@ export default function CreateProjectTypes() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
-      alert("Project type name is required");
+      toast.warn("Project type name is required");
       return;
     }
 
-    if (isEdit) {
-      setProjectTypes(
-        projectTypes.map((t) =>
-          t.id === form.id ? { ...form } : t
-        )
-      );
-    } else {
-      setProjectTypes([
-        ...projectTypes,
-        { ...form, id: Date.now() },
-      ]);
-    }
+    try {
+      if (isEdit) {
+        await updateProjectType(form.id, {
+          name: form.name.trim(),
+          status: form.status,
+        });
+        toast.success("Project type updated");
+      } else {
+        await createProjectType({
+          name: form.name.trim(),
+          status: form.status,
+        });
+        toast.success("Project type created");
+      }
 
-    setShowModal(false);
+      setShowModal(false);
+      loadProjectTypes();
+    } catch (err) {
+      toast.error(err.message || "Action failed");
+    }
   };
 
   return (
     <div className="project-types-container">
+      <ToastContainer autoClose={1500} />
+
       {/* HEADER */}
       <div className="project-types-header">
         <h2 className="project-types-title">Project Types Master</h2>
-
         <button className="primary-btn" onClick={openAddModal}>
-          <FiPlus size={16} />
-          Add Project Type
+          <FiPlus size={16} /> Add Project Type
         </button>
       </div>
 
@@ -74,9 +112,9 @@ export default function CreateProjectTypes() {
         <table className="project-types-table">
           <thead>
             <tr>
-              <th className="col-name">Project Type</th>
-              <th className="col-status">Status</th>
-              <th className="col-action center">Action</th>
+              <th>Project Type</th>
+              <th>Status</th>
+              <th className="center">Action</th>
             </tr>
           </thead>
 
@@ -90,9 +128,8 @@ export default function CreateProjectTypes() {
             ) : (
               projectTypes.map((type) => (
                 <tr key={type.id}>
-                  <td className="col-name">{type.name}</td>
-
-                  <td className="col-status">
+                  <td>{type.name}</td>
+                  <td>
                     <span
                       className={`status-badge ${
                         type.status === "ACTIVE" ? "active" : "inactive"
@@ -101,12 +138,10 @@ export default function CreateProjectTypes() {
                       {type.status}
                     </span>
                   </td>
-
-                  <td className="col-action center">
+                  <td className="center">
                     <button
                       className="icon-btn edit"
                       onClick={() => openEditModal(type)}
-                      title="Edit Project Type"
                     >
                       <FiEdit2 />
                     </button>
@@ -124,47 +159,36 @@ export default function CreateProjectTypes() {
           <div className="modal-box">
             <div className="modal-header">
               <h3>{isEdit ? "Edit Project Type" : "Add Project Type"}</h3>
-              <button
-                className="icon-btn"
-                onClick={() => setShowModal(false)}
-              >
+              <button onClick={() => setShowModal(false)}>
                 <FiX />
               </button>
             </div>
 
             <form onSubmit={handleSubmit}>
-              <label className="form-label">Project Type Name</label>
+              <label>Project Type Name</label>
               <input
-                type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="form-input"
-                placeholder="Enter project type name"
+                placeholder="Enter project type"
               />
 
-              <label className="form-label">Status</label>
+              <label>Status</label>
               <select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                className="form-select"
               >
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
 
               <div className="form-actions">
-                <button
-                  type="button"
-                  className="secondary-btn"
-                  onClick={() => setShowModal(false)}
-                >
+                <button type="button" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="primary-btn">
-                  <FiSave size={16} />
-                  Save
+                <button type="submit">
+                  <FiSave /> Save
                 </button>
               </div>
             </form>

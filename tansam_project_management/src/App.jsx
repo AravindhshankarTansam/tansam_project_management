@@ -32,7 +32,7 @@ import ProjectFollowUp from "./tl/pages/ProjectFollowUp.jsx";
 import AssignTeam from "./tl/pages/AssignTeam.jsx";
 import Department from "./tl/pages/department.jsx";
 import TeamMember from "./tl/pages/teammember.jsx";
-import ProjectTypes from "./tl/pages/projectTypes.jsx";
+// import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
 
 function App() {
@@ -117,7 +117,7 @@ function App() {
           <Route path="assign-team" element={<AssignTeam />} />
           <Route path="department" element={<Department />} />
           <Route path="team-member" element={<TeamMember />} />
-          <Route path="project-types" element={<ProjectTypes />} />
+          {/* <Route path="project-types" element={<ProjectTypes />} /> */}
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
