@@ -8,6 +8,10 @@ import {
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
 import { FaFileWord, FaEdit, FaTrash } from "react-icons/fa";
+import tansamLogo from "../../assets/tansam/tansamoldlogo.png";
+import siemensLogo from "../../assets/tansam/siemens.png";
+import tidcoLogo from "../../assets/tansam/tidcologo.png";
+import tnLogo from "../../assets/tansam/tnlogo.png";
 
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -400,14 +404,34 @@ const handleSaveQuotation = async () => {
       <div className="quotation-document">
         {/* Header */}
         <div className="doc-header">
-          <div className="logos-row">
-            <img src="/tansam-logo.png" alt="TANSAM" className="tansam-logo" />
-            <div className="powered-section">
-              <span>Powered by</span>
-              <img src="/siemens-logo.png" alt="Siemens" className="siemens-logo" />
-            </div>
-            <img src="/tidco-logo.png" alt="TIDCO" className="tidco-logo" />
-          </div>
+     <div className="logos-row" style={{
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '24px',
+  gap: '20px',
+  padding: '0 40px'
+}}>
+  {/* Left - TANSAM + TN Govt (if you have it) */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+    <img src={tansamLogo} alt="TANSAM" />
+    {/* Optional: Tamil Nadu Govt logo if you want extra authenticity */}
+    {/* <img src="/assets/tansam/tnlogo.png" alt="TN Govt" style={{ height: '70px' }} /> */}
+  </div>
+
+  {/* Center - Powered by Siemens */}
+  <div className="powered-section" style={{ 
+    textAlign: 'center',
+    fontSize: '13px',
+    color: '#333'
+  }}>
+    <div>Powered by</div>
+  <img src={siemensLogo} alt="Siemens" />
+  </div>
+
+  {/* Right - TIDCO */}
+<img src={tidcoLogo} alt="TIDCO" />
+</div>
 
           <h1 className="main-title">
             Tamil Nadu Smart and Advanced Manufacturing Centre

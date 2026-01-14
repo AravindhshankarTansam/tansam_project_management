@@ -1622,3 +1622,87 @@ tbody td {
   justify-content: flex-end;
   gap: 20px;
 }
+.exact-quotation-modal {
+  width: 210mm;               /* A4 width */
+  max-width: 95vw;
+  min-height: 297mm;          /* A4 height — helps scrolling feel like page */
+  background: white;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  margin: 20px auto;
+  padding: 40px 50px;         /* generous real-document margins */
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 13.5px;
+  line-height: 1.48;
+  color: #000;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* For better print feeling */
+@media print {
+  .exact-quotation-modal {
+    box-shadow: none;
+    margin: 0;
+    padding: 40px 50px;
+  }
+}
+.main-title {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-subtitle {
+  text-align: center;
+  font-size: 13px;
+  margin: 0 0 16px;
+  font-style: italic;
+}
+
+.quotation-heading {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  margin: 20px 0 28px;
+  text-transform: uppercase;
+}
+
+.ref-date-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  font-size: 13.5px;
+}
+
+.to-address-block {
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.institute-field, .attn-field, .subject-field {
+  font-weight: bold;
+  border: none;
+  border-bottom: 1px dashed #666;
+  width: 100%;
+  padding: 4px 0;
+  font-size: 14px;
+  background: transparent;
+}
+
+.full-address {
+  width: 100%;
+  border: none;
+  border-bottom: 1px dashed #666;
+  resize: none;
+  font-size: 13.5px;
+  padding: 6px 0;
+  background: transparent;
+}
+
+.thank-text {
+  margin: 20px 0 28px;
+  text-align: justify;
+}
