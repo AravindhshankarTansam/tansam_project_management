@@ -5,7 +5,6 @@ import { initSchemas } from "../schema/main.schema.js";
 export const createProject = async (req, res) => {
   try {
     const db = await connectDB();
-    await initSchemas(db, { project: true });
 
     const {
       projectType,
@@ -21,15 +20,27 @@ export const createProject = async (req, res) => {
 
     const poFilePath = req.file ? req.file.path : null;
 
+    // ✅ NORMALIZE TYPE
+    const normalizedType = projectType
+      ?.toUpperCase()
+      .replace(/\s+/g, "_");
+
     let finalProjectName = projectName;
     let finalClientName = clientName;
     let oppId = null;
 
-    // ⭐ CUSTOMER POC LOGIC
-    if (projectType === "CUSTOMER_POC") {
+    /* ================= CUSTOMER POC ================= */
+    if (normalizedType === "CUSTOMER_POC") {
+      if (!opportunityId) {
+        return res.status(400).json({ message: "Opportunity is required" });
+      }
+
       const [[opp]] = await db.execute(
-        `SELECT opportunity_id, opportunity_name, customer_name
-         FROM opportunities
+        `SELECT
+            opportunity_id,
+            opportunity_name,
+            customer_name
+         FROM opportunities_coordinator
          WHERE opportunity_id = ?`,
         [opportunityId]
       );
@@ -43,19 +54,17 @@ export const createProject = async (req, res) => {
       oppId = opp.opportunity_id;
     }
 
-    // ❌ PO validation only for CUSTOMER
+    /* ================= CUSTOMER VALIDATION ================= */
     if (
-      projectType === "CUSTOMER" &&
-      !quotationNumber &&
-      !poNumber &&
-      !poFilePath
+      normalizedType === "CUSTOMER" &&
+      (!quotationNumber || !poNumber || !poFilePath)
     ) {
       return res.status(400).json({
-        message: "Quotation / PO details required for Customer projects",
+        message: "Quotation, PO Number and File are required for Customer projects",
       });
     }
 
-    // 🔹 INSERT PROJECT
+    /* ================= INSERT PROJECT ================= */
     const [result] = await db.execute(
       `INSERT INTO projects
        (project_name, client_name, project_type, opportunity_id,
@@ -65,30 +74,33 @@ export const createProject = async (req, res) => {
       [
         finalProjectName,
         finalClientName,
-        projectType,
+        normalizedType,
         oppId,
         startDate,
         endDate,
         status || "Planned",
-        projectType === "CUSTOMER" ? quotationNumber : null,
-        projectType === "CUSTOMER" ? poNumber : null,
-        projectType === "CUSTOMER" ? poFilePath : null,
+        normalizedType === "CUSTOMER" ? quotationNumber : null,
+        normalizedType === "CUSTOMER" ? poNumber : null,
+        normalizedType === "CUSTOMER" ? poFilePath : null,
       ]
     );
 
     const projectId = result.insertId;
 
-    // ⭐ Generate project_reference ONLY for POC
-    if (projectType === "CUSTOMER_POC") {
-      const projectRef = `${oppId}/prj-${projectId}`;
+    /* ================= PROJECT REFERENCE ================= */
+    if (normalizedType === "CUSTOMER_POC") {
+      const projectReference = `${oppId}/prj-${projectId}`;
 
       await db.execute(
         `UPDATE projects SET project_reference=? WHERE id=?`,
-        [projectRef, projectId]
+        [projectReference, projectId]
       );
     }
 
-    res.status(201).json({ message: "Project created successfully" });
+    res.status(201).json({
+      message: "Project created successfully",
+      projectId,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
