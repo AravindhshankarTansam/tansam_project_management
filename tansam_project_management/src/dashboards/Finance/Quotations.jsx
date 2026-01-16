@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import "../../layouts/CSS/finance.css";
-
+import GenerateQuotation from "./generateQuotation";
 import {
   getQuotations,
   addQuotation,
   updateQuotation,
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
-import { FaFileWord, FaEdit, FaTrash } from "react-icons/fa";
+import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -17,9 +17,12 @@ export default function Quotations() {
   const [showModal, setShowModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
 
+const [showDoc, setShowDoc] = useState(false);
+
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
   const workCategoryOptions = [...new Set(data.map((d) => d.workCategory))];
   const labOptions = [...new Set(data.map((d) => d.lab))];
+const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
@@ -183,8 +186,26 @@ const handleSaveQuotation = async () => {
       date: "",
     });
   };
+if (showDoc) {
+  return (
+    <QuotationDocument
+      quotation={newQuotation}
+      onBack={() => setShowDoc(false)}
+    />
+  );
+}
+  if (showGenerateQuotation) {
+    return (
+      <GenerateQuotation
+        initialQuotation={newQuotation}
+        onBack={() => setShowGenerateQuotation(false)}
+      />
+    );
+  }
 
   return (
+
+
     <div className="finance-container">
       {/* Header */}
       <div className="table-header">
@@ -194,7 +215,7 @@ const handleSaveQuotation = async () => {
             Create, manage and download quotations
           </p>
         </div>
-      <button
+  <button
   className="btn-add-quotation"
   onClick={() => {
     const quotationNo = generateQuotationNo(data);
@@ -217,6 +238,8 @@ const handleSaveQuotation = async () => {
 >
   + Create New Quotation
 </button>
+
+
 
       </div>
 
@@ -357,6 +380,14 @@ const handleSaveQuotation = async () => {
   >
     <FaTrash />
   </button>
+<button
+  className="btn-add-quotation-action"
+  onClick={() => setShowGenerateQuotation(true)}
+  title="Create New Quotation"
+>
+  <FaPlus />
+</button>
+
                   </td>
                 </tr>
               ))
