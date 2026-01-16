@@ -107,9 +107,30 @@ const handleSave = async () => {
       {/* Header */}
       <div className="table-header">
         <h2>Quotation Follow-up</h2>
-        <button className="btn-add-quotation" onClick={() => setShowModal(true)}>
-          + Add Quotation follow-up
-        </button>
+    <button
+  className="btn-add-quotation"
+  onClick={() => {
+    setNewFollowup({
+      project_name: "",
+      clientResponse: "",
+      lastFollowup: "",
+      revisedCost: "",
+      nextFollowup: "",
+      remarks: "",
+      status: "",
+      poReceived: "No",
+      paymentPhase: "Initial",
+      paymentReceived: "No",
+      paymentAmount: "",
+      reason: "",
+    });
+    setEditId(null);   // ensure it’s not in edit mode
+    setShowModal(true);
+  }}
+>
+  + Add Quotation follow-up
+</button>
+
       </div>
   <div style={{ position: "relative" }}>
 <div className="page-size-ui">

@@ -10,7 +10,7 @@
   import departmentRoutes from "./routes/department.routes.js";
   import membersRoutes from "./routes/members.routes.js";
   import projectTypeRoutes from "./routes/projectType.routes.js";
-
+  import terms from "./routes/terms.routes.js"
   import quotationFollowup from "./routes/quotationFollowup.routes.js";
   import projectFollowupRoutes from "./routes/projectFollowup.routes.js";
   import path from "path";
@@ -52,6 +52,7 @@ app.use(
   app.use("/api/coordinator", coordinatorRoutes);
   app.use("/api/quotations", quotationRoutes);
   app.use("/api/quotation-followups", quotationFollowup);
+   app.use("/api/terms", terms);
   app.use("/api", projectRoutes);
   app.use("/api", assignTeamRoutes);
   app.use("/api", departmentRoutes);

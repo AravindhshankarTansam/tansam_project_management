@@ -19,6 +19,7 @@ import Opportunities from "./dashboards/Coordinator/Opportunities.jsx";
 import OpportunitiesTracker from "./dashboards/Coordinator/OpportunitiesTacker.jsx";
 import CreateProjects from "./dashboards/Admin/Projects.jsx";
 import Quotations from "./dashboards/Finance/Quotations.jsx";
+import Terms from "./dashboards/Finance/terms.jsx";
 import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
 // import FinanceReports from "./dashboards/Finance/Reports.jsx";
 import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
@@ -80,6 +81,7 @@ function App() {
   <Route index element={<FinanceDashboard />} />
   <Route path="quotations" element={<Quotations />} />
   <Route path="quotation-followup" element={<QuotationFollowup />} />
+ <Route path="terms" element={<Terms />} />
   {/* Add other finance children routes here, like Reports */}
   <Route path="reports" element={<Reports />} />
 </Route>
