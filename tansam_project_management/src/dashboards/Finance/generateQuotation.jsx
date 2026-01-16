@@ -9,8 +9,15 @@ import siemens from "../../assets/tansam/siemens.png";
 import tidco from "../../assets/tansam/tidcologo.png"
 import "../../layouts/CSS/GenerateQuotation.css";
 
-
+import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
 // Editable Table Component
+// Helper to convert file to Base64
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
 const EditableQuotationTable = ({ quotation, setQuotation }) => {
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...quotation.items];
@@ -38,6 +45,8 @@ const EditableQuotationTable = ({ quotation, setQuotation }) => {
   const totalServiceValue = quotation.items
     .reduce((acc, item) => acc + parseFloat(item.total || 0), 0)
     .toFixed(2);
+
+
 
   return (
   <div style={{ marginBottom: "30px" }}>
@@ -135,7 +144,7 @@ const EditableQuotationTable = ({ quotation, setQuotation }) => {
 };
 
 // Main Finance Document Component
-const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDate, showPreview, setShowPreview, savedQuotation, generatePDF }) => {
+const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDate, showPreview, setShowPreview, savedQuotation, generatePDF, handleSaveQuotation }) => {
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", width: "100%", boxSizing: "border-box", margin: 0, backgroundColor: "#f0f0f0" }}>
       <div style={{ backgroundColor: "#fff", padding: "40px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", width: "800px", maxWidth: "95%", margin: "0 auto" }}>
@@ -360,13 +369,21 @@ const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDa
 >
   GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529
 </div>
-<div>
-<button
-  onClick={generatePDF}
-  style={{ marginTop: "10px", padding: "10px 20px", fontSize: "16px" }}
+<div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+  <button
+    onClick={generatePDF}
+    style={{ padding: "10px 20px", fontSize: "16px" }}
+  >
+    Download PDF
+  </button>
+
+ <button
+  onClick={handleSaveQuotation} // now defined in parent and passed as prop
+  style={{ padding: "10px 20px", fontSize: "16px", backgroundColor: "#1F4E79", color: "#fff" }}
 >
-  Download PDF
+  Save Quotation
 </button>
+
 
 
 {showPreview && (savedQuotation || quotation) && (
@@ -438,7 +455,28 @@ export default function GenerateQuotation() {
     setSavedQuotation(data);
     setShowPreview(true);
   };
+ const handleSaveQuotation = async () => {
+    try {
+const dataToSave = {
+  ...quotation,
+  refNo: refNo || "",
+  date: date || "",
+  signature: quotation.signature ? await fileToBase64(quotation.signature) : "",
+  seal: quotation.seal ? await fileToBase64(quotation.seal) : "",
+  items: quotation.items || [],
+  terms: quotation.terms || [],
+};
 
+
+      const saved = await saveGeneratedQuotation(dataToSave);
+      setSavedQuotation({ ...dataToSave, id: saved.id });
+      setShowPreview(true);
+      alert("Quotation saved successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save quotation. Try again.");
+    }
+  };
   const generatePDF = async () => {
   const element = document.createElement("div");
   element.style.width = "600px";
@@ -491,18 +529,20 @@ export default function GenerateQuotation() {
 };
 
   return (
-    <FinanceDocument
-      quotation={quotation}
-      setQuotation={setQuotation}
-      refNo={refNo}
-      setRefNo={setRefNo}
-      date={date}
-      setDate={setDate}
-      handleSubmit={handleSubmit}
-      showPreview={showPreview}
-      setShowPreview={setShowPreview}
-      savedQuotation={savedQuotation}
-      generatePDF={generatePDF} // ✅ pass it
-    />
+ <FinanceDocument
+  quotation={quotation}
+  setQuotation={setQuotation}
+  refNo={refNo}
+  setRefNo={setRefNo}
+  date={date}
+  setDate={setDate}
+  handleSubmit={handleSubmit}
+  showPreview={showPreview}
+  setShowPreview={setShowPreview}
+  savedQuotation={savedQuotation}
+  generatePDF={generatePDF}
+  handleSaveQuotation={handleSaveQuotation} // ✅ pass it
+/>
+
   );
 }

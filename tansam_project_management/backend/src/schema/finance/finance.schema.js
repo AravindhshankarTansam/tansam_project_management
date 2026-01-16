@@ -49,5 +49,25 @@ export const createQuotationFollowupsSchema = async (db) => {
     )
   `);
 
+// schema/main.schema.js (or separate schema file)
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS generated_quotations (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      refNo VARCHAR(50),
+      date DATE,
+      clientName VARCHAR(100),
+      kindAttn VARCHAR(100),
+      subject VARCHAR(255),
+      items JSON,
+      terms JSON,
+      signature LONGBLOB,
+      seal LONGBLOB,
+      financeManagerName VARCHAR(100),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
 
 };
