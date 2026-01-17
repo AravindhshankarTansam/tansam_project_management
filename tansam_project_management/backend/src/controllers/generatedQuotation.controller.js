@@ -37,27 +37,34 @@ export const addGeneratedQuotation = async (req, res) => {
     const terms = req.body.terms ? JSON.parse(req.body.terms) : [];
 
     // File paths
-    const signaturePath = req.files?.signature?.[0] ? `uploads/po/${req.files.signature[0].filename}` : null;
-    const sealPath = req.files?.seal?.[0] ? `uploads/po/${req.files.seal[0].filename}` : null;
-
+  const signaturePath = req.files?.signature?.[0]
+  ? `uploads/po/${req.files.signature[0].filename}`
+  : null;   const sealPath = req.files?.seal?.[0]
+  ? `uploads/po/${req.files.seal[0].filename}`
+  : null;
     // Insert into DB
-    await db.execute(
-      `INSERT INTO generated_quotations
-       (refNo, date, clientName, kindAttn, subject, items, terms, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        refNo,
-        date,
-        clientName,
-        kindAttn,
-        subject,
-        JSON.stringify(items),
-        JSON.stringify(terms),
-        signaturePath,
-        sealPath,
-        financeManagerName,
-      ]
-    );
+await db.execute(
+  `UPDATE generated_quotations
+   SET refNo=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?,
+       signature=COALESCE(?, signature),
+       seal=COALESCE(?, seal),
+       financeManagerName=?, isGenerated=1
+   WHERE id=?`,
+  [
+    refNo,
+    date,
+    clientName,
+    kindAttn,
+    subject,
+    JSON.stringify(items),
+    JSON.stringify(terms),
+    signaturePath,
+    sealPath,
+    financeManagerName,
+    id
+  ]
+);
+
 
     res.json({ success: true });
   } catch (error) {
@@ -89,37 +96,39 @@ export const updateGeneratedQuotation = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { finance: true });
     const { id } = req.params;
-    const {
-      refNo,
-      date,
-      clientName,
-      kindAttn,
-      subject,
-      items,
-      terms,
-      signature,
-      seal,
-      financeManagerName,
-    } = req.body;
+   const {
+  refNo = null,
+  date = null,
+  clientName = null,
+  kindAttn = null,
+  subject = null,
+  items = [],
+  terms = [],
+  signature,
+  seal,
+  financeManagerName = null,
+ isGenerated
+} = req.body || {};
+ 
 
-    await db.execute(
-      `UPDATE generated_quotations
-       SET refNo=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?, signature=?, seal=?, financeManagerName=?
-       WHERE id=?`,
-      [
-        refNo,
-        date,
-        clientName,
-        kindAttn,
-        subject,
-        JSON.stringify(items || []),
-        JSON.stringify(terms || []),
-        signature || null,
-        seal || null,
-        financeManagerName || null,
-        id,
-      ]
-    );
+   await db.execute(
+  `UPDATE generated_quotations
+   SET refNo=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?, signature=?, seal=?, financeManagerName=?, isGenerated=1
+   WHERE id=?`,
+  [
+    refNo,
+    date,
+    clientName,
+    kindAttn,
+    subject,
+    JSON.stringify(items || []),
+    JSON.stringify(terms || []),
+    signature || null,
+    seal || null,
+    financeManagerName || null,
+    id
+  ]
+);
 
     res.json({ id });
   } catch (error) {

@@ -9,7 +9,7 @@ import siemens from "../../assets/tansam/siemens.png";
 import tidco from "../../assets/tansam/tidcologo.png"
 import "../../layouts/CSS/GenerateQuotation.css";
 
-import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { saveGeneratedQuotation,  updateGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
 // Editable Table Component
 // Helper to convert file to Base64
 
@@ -423,22 +423,31 @@ const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDa
 };
 
 // Main Page
-export default function GenerateQuotation({ onSaved }) {
-  
-  const [quotation, setQuotation] = useState({
-    subject: "",
-    clientName: "",
-    items: [],
-    terms: [
-      { title: "Validity", value: "This quotation is valid for 15 days." },
-      { title: "Payment", value: "100% payment in advance." },
-      { title: "Delivery", value: "Delivered within 1 day of PO." },
-      { title: "Purchase Order", value: "PO must be issued within 5 days." }
-    ]
-  });
+export default function GenerateQuotation({ initialQuotation, onSaved }) {
+  const isEdit = Boolean(initialQuotation?.id);
 
-  const [refNo, setRefNo] = useState("TN/SA/2025/001");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+const [quotation, setQuotation] = useState({
+  subject: initialQuotation?.subject || "",
+  clientName: initialQuotation?.clientName || "",
+  kindAttn: initialQuotation?.kindAttn || "",
+  financeManagerName: initialQuotation?.financeManagerName || "",
+  items: initialQuotation?.items || [],
+  terms: initialQuotation?.terms || [
+    { title: "Validity", value: "This quotation is valid for 15 days." },
+    { title: "Payment", value: "100% payment in advance." },
+    { title: "Delivery", value: "Delivered within 1 day of PO." },
+    { title: "Purchase Order", value: "PO must be issued within 5 days." }
+  ],
+  signature: null,
+  seal: null
+});
+
+  const [refNo, setRefNo] = useState(
+  initialQuotation?.refNo || "TN/SA/2025/001"
+);
+const [date, setDate] = useState(
+  initialQuotation?.date || new Date().toISOString().split("T")[0]
+);
   const [showPreview, setShowPreview] = useState(false);
   const [savedQuotation, setSavedQuotation] = useState(null);
 
@@ -452,6 +461,7 @@ export default function GenerateQuotation({ onSaved }) {
   };
 const handleSaveQuotation = async () => {
   try {
+    
     const dataToSend = new FormData();
 
     // Always append fields, they now exist in state
@@ -469,8 +479,17 @@ const handleSaveQuotation = async () => {
     // Files
     if (quotation.signature) dataToSend.append("signature", quotation.signature);
     if (quotation.seal) dataToSend.append("seal", quotation.seal);
+let saved;
 
-    const saved = await saveGeneratedQuotation(dataToSend);
+if (isEdit) {
+  saved = await updateGeneratedQuotation(
+    initialQuotation.id,
+    dataToSend
+  );
+} else {
+  saved = await saveGeneratedQuotation(dataToSend);
+}
+
 
     setSavedQuotation(saved);
     setShowPreview(true);

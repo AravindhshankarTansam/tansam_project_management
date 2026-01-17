@@ -199,24 +199,31 @@ if (showDoc) {
 }
 if (showGenerateQuotation) {
   return (
-    <GenerateQuotation
-      initialQuotation={newQuotation}
-      onSaved={() => {
-        // 🔥 mark quotation as generated
-   setData(prev =>
-  prev.map(q =>
-    q.id === newQuotation.id
-      ? { ...q, isGenerated: true }  // <-- marks it generated
-      : q
-  )
-);
+ <GenerateQuotation
+  initialQuotation={newQuotation}
+onSaved={async () => {
+  // 1️⃣ Re-fetch fresh data from backend
+  const updatedData = await getQuotations();
 
-        setShowGenerateQuotation(false);
-      }}
-      onBack={() => setShowGenerateQuotation(false)}
-    />
+  // 2️⃣ Force isGenerated = true for saved quotation
+  setData(
+    updatedData.map(q =>
+      q.id === newQuotation.id
+        ? { ...q, isGenerated: true }
+        : q
+    )
+  );
+
+  // 3️⃣ Close GenerateQuotation screen
+  setShowGenerateQuotation(false);
+}}
+
+  onBack={() => setShowGenerateQuotation(false)}
+/>
+
   );
 }
+
 
 
 
