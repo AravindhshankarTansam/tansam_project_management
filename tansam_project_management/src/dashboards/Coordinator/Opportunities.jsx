@@ -11,12 +11,11 @@ import "./CSS/Opportunities.css";
 
 export default function Opportunities() {
   const [showModal, setShowModal] = useState(false);
+  const [viewData, setViewData] = useState(null);            
   const [opportunities, setOpportunities] = useState([]);
   const [isPreview, setIsPreview] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const [expandedRows, setExpandedRows] = useState({});
 
   /* ================= FILTER STATE ================= */
   const [filters, setFilters] = useState({
@@ -157,7 +156,6 @@ export default function Opportunities() {
       {/* FILTER BAR */}
       <div className="opportunity-filters">
         <input
-          type="text"
           placeholder="Search Opportunity / Client"
           value={filters.search}
           onChange={(e) =>
@@ -199,7 +197,7 @@ export default function Opportunities() {
         </button>
       </div>
 
-      {/* TABLE */}
+      {/* MAIN TABLE */}
       <div className="opportunity-table-wrapper">
         {loading ? (
           <p>Loading...</p>
@@ -209,11 +207,7 @@ export default function Opportunities() {
               <tr>
                 <th>S.No</th>
                 <th>Opportunity</th>
-                <th>Client Name</th>
-                <th>Contact Person</th>
-                <th>Assigned To</th>
-                <th>Contact Email</th>
-                <th>Contact Phone</th>
+                <th>Client</th>
                 <th>Source</th>
                 <th>Status</th>
                 <th style={{ textAlign: "center" }}>Actions</th>
@@ -223,7 +217,7 @@ export default function Opportunities() {
             <tbody>
               {filteredOpportunities.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="empty">
+                  <td colSpan={6} className="empty">
                     No opportunities found
                   </td>
                 </tr>
@@ -233,12 +227,7 @@ export default function Opportunities() {
                     <td>{index + 1}</td>
                     <td>{item.opportunity_name}</td>
                     <td>{item.customer_name}</td>
-                    <td>{item.contact_person || "-"}</td>
-                    <td>{item.assigned_to || "-"}</td>
-                    <td>{item.contact_email || "-"}</td>
-                    <td>{item.contact_phone || "-"}</td>
                     <td>{item.lead_source || "-"}</td>
-
                     <td>
                       <span
                         className={`status ${item.lead_status.toLowerCase()}`}
@@ -246,8 +235,13 @@ export default function Opportunities() {
                         {item.lead_status}
                       </span>
                     </td>
-
                     <td className="actions">
+                      <button
+                        className="table-action view-action"
+                        onClick={() => setViewData(item)}
+                      >
+                        View
+                      </button>
                       <button
                         className="icon-btn edit"
                         onClick={() => openEditModal(item)}
@@ -271,7 +265,7 @@ export default function Opportunities() {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* ADD / EDIT MODAL */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-card">
@@ -362,7 +356,6 @@ export default function Opportunities() {
                 </select>
               </div>
 
-              {/* 🔥 BLACK DESCRIPTION BOX (MODAL ONLY) */}
               <div className="form-group full-width">
                 <label>Description</label>
                 <div className="modal-description-box">
@@ -394,9 +387,7 @@ export default function Opportunities() {
                 >
                   {isPreview ? "Back to Edit" : "Preview"}
                 </button>
-
                 <button type="submit">Save</button>
-
                 <button
                   type="button"
                   className="cancel-btn"
@@ -413,6 +404,73 @@ export default function Opportunities() {
           </div>
         </div>
       )}
+
+        {viewData && (
+        <div className="modal-overlay">
+          <div className="modal-card view-modal-modern">
+
+            {/* MODAL HEADER */}
+            <div className="view-modal-header">
+              <div className="header-left">
+                <h3>{viewData.opportunity_name}</h3>
+                <span className="view-subtitle">{viewData.customer_name}</span>
+              </div>
+
+              <div className="header-right">
+                <span
+                  className={`status ${viewData.lead_status.toLowerCase()}`}
+                >
+                  {viewData.lead_status}
+                </span>
+
+                <button
+                  className="close-icon"
+                  onClick={() => setViewData(null)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* DETAILS TABLE */}
+            <table className="opportunity-table view-table">
+              <thead>
+                <tr>
+                  <th>Contact Person</th>
+                  <th>Assigned To</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{viewData.contact_person || "-"}</td>
+                  <td>{viewData.assigned_to || "-"}</td>
+                  <td>{viewData.contact_email || "-"}</td>
+                  <td>{viewData.contact_phone || "-"}</td>
+                  <td>{viewData.lead_source || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* DESCRIPTION */}
+            <div className="view-description">
+              <h4>Description</h4>
+              <div
+                className="view-description-content"
+                dangerouslySetInnerHTML={{
+                  __html: viewData.lead_description || "<p>No description</p>",
+                }}
+              />
+            </div>
+
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }

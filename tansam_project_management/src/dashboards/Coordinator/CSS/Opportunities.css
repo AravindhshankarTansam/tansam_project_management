@@ -84,65 +84,69 @@
 }
 
 /* ============================
-   TABLE CARD
-============================ */
-
-.opportunity-table-wrapper {
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-}
-
-/* ============================
-   TABLE
+   TABLE (MAIN)
 ============================ */
 
 .opportunity-table {
   width: 100%;
   border-collapse: collapse;
-  background: #ffffff;
+  table-layout: fixed;
 }
 
 .opportunity-table thead {
   background: #f8fafc;
 }
 
-.opportunity-table th {
-  padding: 14px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #020617;
-  text-transform: uppercase;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
+.opportunity-table th,
 .opportunity-table td {
   padding: 14px;
   font-size: 14px;
   color: #334155;
   border-bottom: 1px solid #f1f5f9;
-  vertical-align: top;
+  text-align: left;
+  vertical-align: middle;
 }
 
-.opportunity-table tr:last-child td {
-  border-bottom: none;
+.opportunity-table th {
+  font-size: 12px;
+  font-weight: 700;
+  color: #020617;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .opportunity-table tr:hover {
-  background: #f8fafc;
+  background: rgba(34, 197, 94, 0.04);
+}
+
+/* Column widths */
+.opportunity-table th:nth-child(1),
+.opportunity-table td:nth-child(1) {
+  width: 60px;
+}
+
+.opportunity-table th:nth-child(5),
+.opportunity-table td:nth-child(5) {
+  width: 120px;
+}
+
+.opportunity-table th:nth-child(6),
+.opportunity-table td:nth-child(6) {
+  width: 160px;
+  text-align: center;
 }
 
 /* ============================
-   STATUS PILLS
+   STATUS
 ============================ */
 
 .status {
-  display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1;
+  display: inline-block;
 }
 
 .status.new {
@@ -156,31 +160,29 @@
 }
 
 /* ============================
-   DESCRIPTION
-============================ */
-
-.view-link {
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-size: 12px;
-  cursor: pointer;
-  margin-top: 4px;
-  padding: 0;
-}
-
-.view-link:hover {
-  text-decoration: underline;
-}
-
-/* ============================
-   ACTION ICONS
+   ACTIONS
 ============================ */
 
 .actions {
-  display: flex;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
+}
+
+.table-action {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.table-action:hover {
+  background: #ccfbf1;
 }
 
 .icon-btn {
@@ -189,7 +191,6 @@
   padding: 6px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
 .icon-btn.edit {
@@ -212,15 +213,17 @@
    EMPTY STATE
 ============================ */
 
-.opportunity-table .empty {
+.empty {
   text-align: center;
   padding: 24px;
   color: #64748b;
   font-style: italic;
+  background: #f8fafc;
+  border-radius: 12px;
 }
 
 /* ============================
-   MODAL
+   MODAL BASE
 ============================ */
 
 .modal-overlay {
@@ -237,17 +240,10 @@
   background: #ffffff;
   border-radius: 14px;
   padding: 24px;
-  width: 720px;
+  width: 760px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-}
-
-.modal-card h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  text-align: center;
 }
 
 /* ============================
@@ -260,12 +256,12 @@
   gap: 18px;
 }
 
-.opportunity-form .form-group {
+.form-group {
   display: flex;
   flex-direction: column;
 }
 
-.opportunity-form .full-width {
+.full-width {
   grid-column: 1 / -1;
 }
 
@@ -273,92 +269,116 @@
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: #334155;
 }
 
 .opportunity-form input,
-.opportunity-form select,
-.opportunity-form textarea {
+.opportunity-form select {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #d1d5db;
-  font-size: 14px;
-}
-
-.opportunity-form textarea {
-  resize: vertical;
-  min-height: 100px;
 }
 
 /* ============================
-   MODAL ACTIONS
+   DESCRIPTION – WHITE THEME
 ============================ */
 
-.modal-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.preview-btn {
-  background: #10b981;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.preview-btn:hover {
-  background: #059669;
-}
-
-.modal-actions button[type="submit"] {
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.cancel-btn {
-  background: #ef4444;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
 .modal-description-box {
-  background: #020617;
+  background: #ffffff;
+  color: #020617;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
 }
 
-.modal-description-box .rte-wrapper,
-.modal-description-box .rte-toolbar,
-.modal-description-box .ProseMirror {
-  /* background: #020617; */
-  color: #f8fafc;
-  border: none;
-}
-
-.modal-description-box .rte-toolbar button {
-  background: #1e293b;
-  color: #f8fafc;
-}
-
-.modal-description-box .preview-content {
-  background: #020617;
-  color: #f8fafc;
+.preview-content {
+  background: #ffffff;
+  color: #020617;
   padding: 12px;
   border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* TipTap editor text */
+.rte-wrapper,
+.rte-wrapper * {
+  color: #020617;
+}
+
+/* ============================
+   VIEW MODAL
+============================ */
+
+.view-modal-modern {
+  width: 880px;
+}
+
+.view-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.view-modal-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.view-subtitle {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.close-icon {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #64748b;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.close-icon:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.view-description {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.view-description h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #020617;
+  margin-bottom: 10px;
+}
+
+.view-description-content {
+  color: #020617;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 /* ============================
@@ -370,7 +390,8 @@
     grid-template-columns: 1fr;
   }
 
-  .modal-card {
+  .modal-card,
+  .view-modal-modern {
     width: 95%;
   }
 }
