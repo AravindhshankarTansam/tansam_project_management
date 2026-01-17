@@ -12,12 +12,7 @@ import "../../layouts/CSS/GenerateQuotation.css";
 import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
 // Editable Table Component
 // Helper to convert file to Base64
-const fileToBase64 = (file) => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = () => resolve(reader.result);
-  reader.onerror = error => reject(error);
-});
+
 const EditableQuotationTable = ({ quotation, setQuotation }) => {
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...quotation.items];
@@ -254,25 +249,25 @@ const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDa
     {/* Signature Upload */}
     <div style={{ flex: 1 }}>
       <p>Upload Signature</p>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) =>
-          setQuotation({ ...quotation, signature: e.target.files[0] })
-        }
-      />
+    <input
+  type="file"
+  accept="image/*"
+  onChange={(e) =>
+    setQuotation({ ...quotation, signature: e.target.files[0] })
+  }
+/>
     </div>
 
     {/* Seal Upload */}
     <div style={{ flex: 1 }}>
       <p>Upload Seal</p>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) =>
-          setQuotation({ ...quotation, seal: e.target.files[0] })
-        }
-      />
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) =>
+    setQuotation({ ...quotation, seal: e.target.files[0] })
+  }
+/>
     </div>
   </div>
 
@@ -428,7 +423,7 @@ const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDa
 };
 
 // Main Page
-export default function GenerateQuotation() {
+export default function GenerateQuotation({ onSaved }) {
   
   const [quotation, setQuotation] = useState({
     subject: "",
@@ -455,28 +450,40 @@ export default function GenerateQuotation() {
     setSavedQuotation(data);
     setShowPreview(true);
   };
- const handleSaveQuotation = async () => {
-    try {
-const dataToSave = {
-  ...quotation,
-  refNo: refNo || "",
-  date: date || "",
-  signature: quotation.signature ? await fileToBase64(quotation.signature) : "",
-  seal: quotation.seal ? await fileToBase64(quotation.seal) : "",
-  items: quotation.items || [],
-  terms: quotation.terms || [],
+const handleSaveQuotation = async () => {
+  try {
+    const dataToSend = new FormData();
+
+    // Always append fields, they now exist in state
+    dataToSend.append("refNo", refNo);
+    dataToSend.append("date", date);
+    dataToSend.append("clientName", quotation.clientName);
+    dataToSend.append("kindAttn", quotation.kindAttn);
+    dataToSend.append("subject", quotation.subject);
+    dataToSend.append("financeManagerName", quotation.financeManagerName);
+
+    // Items and terms as JSON
+    dataToSend.append("items", JSON.stringify(quotation.items));
+    dataToSend.append("terms", JSON.stringify(quotation.terms));
+
+    // Files
+    if (quotation.signature) dataToSend.append("signature", quotation.signature);
+    if (quotation.seal) dataToSend.append("seal", quotation.seal);
+
+    const saved = await saveGeneratedQuotation(dataToSend);
+
+    setSavedQuotation(saved);
+    setShowPreview(true);
+    alert("Quotation saved successfully!");
+    onSaved && onSaved();
+  } catch (err) {
+    console.error("Save quotation error:", err);
+    alert("Failed to save quotation. Try again.");
+  }
 };
 
 
-      const saved = await saveGeneratedQuotation(dataToSave);
-      setSavedQuotation({ ...dataToSave, id: saved.id });
-      setShowPreview(true);
-      alert("Quotation saved successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save quotation. Try again.");
-    }
-  };
+
   const generatePDF = async () => {
   const element = document.createElement("div");
   element.style.width = "600px";

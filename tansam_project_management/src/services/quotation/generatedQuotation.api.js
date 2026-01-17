@@ -10,18 +10,18 @@ const getAuthHeaders = () => {
     "x-user-name": user.username,
   };
 };
+export const saveGeneratedQuotation = async (quotationFormData) => {
+  const user = JSON.parse(localStorage.getItem("user"));
 
-export const getGeneratedQuotations = async () => {
-  const res = await fetch(GENERATED_QUOTATION_URL, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error("Failed to fetch generated quotations");
-  return res.json();
-};
-
-export const saveGeneratedQuotation = async (quotation) => {
   const res = await fetch(GENERATED_QUOTATION_URL, {
     method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(quotation),
+    headers: {
+      "x-user-id": user.id,
+      "x-user-role": user.role,
+      "x-user-name": user.username,
+      // ❌ do NOT set Content-Type here for FormData
+    },
+    body: quotationFormData, // pass FormData directly
   });
 
   if (!res.ok) {
@@ -29,7 +29,7 @@ export const saveGeneratedQuotation = async (quotation) => {
     throw new Error(errorText || "Failed to save quotation");
   }
 
-  return await res.json(); // ✅ read ONLY ONCE
+  return await res.json();
 };
 
 

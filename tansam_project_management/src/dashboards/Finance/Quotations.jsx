@@ -8,6 +8,7 @@ import {
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
 import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { MdEditDocument } from "react-icons/md";
 
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -116,9 +117,11 @@ const response = await fetch(
     setShowModal(true);
   };
 
-  useEffect(() => {
-    getQuotations().then(setData);
-  }, []);
+useEffect(() => {
+  getQuotations().then(res =>
+    setData(res.map(q => ({ ...q, isGenerated: q.isGenerated || false })))
+  );
+}, []);
 
 const handleSaveQuotation = async () => {
   try {
@@ -194,14 +197,28 @@ if (showDoc) {
     />
   );
 }
-  if (showGenerateQuotation) {
-    return (
-      <GenerateQuotation
-        initialQuotation={newQuotation}
-        onBack={() => setShowGenerateQuotation(false)}
-      />
-    );
-  }
+if (showGenerateQuotation) {
+  return (
+    <GenerateQuotation
+      initialQuotation={newQuotation}
+      onSaved={() => {
+        // 🔥 mark quotation as generated
+   setData(prev =>
+  prev.map(q =>
+    q.id === newQuotation.id
+      ? { ...q, isGenerated: true }  // <-- marks it generated
+      : q
+  )
+);
+
+        setShowGenerateQuotation(false);
+      }}
+      onBack={() => setShowGenerateQuotation(false)}
+    />
+  );
+}
+
+
 
   return (
 
@@ -382,11 +399,16 @@ if (showDoc) {
   </button>
 <button
   className="btn-add-quotation-action"
-  onClick={() => setShowGenerateQuotation(true)}
-  title="Create New Quotation"
+  onClick={() => {
+    setNewQuotation(q);
+    setShowGenerateQuotation(true);
+  }}
+  title={q.isGenerated ? "Edit Document" : "Generate Document"}
 >
-  <FaPlus />
+  {q.isGenerated ? <MdEditDocument /> : <FaPlus />}
 </button>
+
+
 
                   </td>
                 </tr>
