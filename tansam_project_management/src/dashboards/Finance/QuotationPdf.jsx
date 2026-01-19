@@ -1,215 +1,347 @@
+// QuotationPdf.jsx - DYNAMIC + ULTRA COMPACT (best chance for 1 page)
 import {
   Document,
   Page,
   Text,
   View,
   StyleSheet,
-  Image
+  Image,
 } from "@react-pdf/renderer";
 
 import tnlogo from "../../assets/tansam/tnlogo.png";
-import tansamoldlogo from "../../assets/tansam/tansamoldlogo.png";
+import tansamLogo from "../../assets/tansam/tansamoldlogo.png";
 import siemens from "../../assets/tansam/siemens.png";
 import tidco from "../../assets/tansam/tidcologo.png";
 
 const BLUE = "#1F4E79";
+const DARK_BLUE = "#163A5F";
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 40,
-    paddingBottom: 80,
-    paddingHorizontal: 40,
-    fontSize: 10,
-    fontFamily: "Helvetica"
+    paddingTop: 18,
+    paddingBottom: 70,
+    paddingHorizontal: 34,
+    fontSize: 9.2,
+    fontFamily: "Helvetica",
   },
 
-  /* HEADER */
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15
+    marginBottom: 6,
   },
-  logo: { height: 45, objectFit: "contain" },
+  logo: {
+    height: 30,               // very compact but still recognizable
+  },
 
-  /* TITLE */
-  titleWrap: { textAlign: "center", marginBottom: 15 },
-  titleMain: { fontSize: 14, fontWeight: "bold" },
-  titleSub: { fontSize: 10, marginTop: 3 },
-  quotation: { fontSize: 12, fontWeight: "bold", marginTop: 6 },
+  titleCenter: {
+    textAlign: "center",
+    marginVertical: 4,
+  },
+  mainTitle:    { fontSize: 11.8, fontWeight: "bold" },
+  subTitle:     { fontSize: 8.4, marginTop: 1 },
+  quotationTitle: { fontSize: 11, fontWeight: "bold", marginTop: 2 },
 
-  /* META */
-  metaRow: {
+  refDateRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10
+    marginVertical: 4,
+    fontSize: 9,
   },
 
-  /* TABLE */
+  toBlock: {
+    marginTop: 5,
+    marginBottom: 8,
+    lineHeight: 1.2,
+  },
+
+  subject: {
+    marginVertical: 5,
+    fontStyle: "italic",
+    fontSize: 9.5,
+  },
+
+  introText: {
+    marginBottom: 6,
+    lineHeight: 1.22,
+    fontSize: 9,
+  },
+
+  // ── Very tight table ─────────────────────────────────────────────────────
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#C7D4EA",
-    border: "1px solid #000"
+    backgroundColor: "#E8F0FA",
+    borderWidth: 1,
+    borderColor: "#000",
   },
   tableRow: {
     flexDirection: "row",
-    borderLeft: "1px solid #000",
-    borderRight: "1px solid #000",
-    borderBottom: "1px solid #000"
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#000",
+    minHeight: 15,
   },
 
-  th: { padding: 6, fontWeight: "bold", textAlign: "center" },
-  td: { padding: 6 },
+  th: {
+    paddingVertical: 3.2,
+    paddingHorizontal: 4,
+    fontWeight: "bold",
+    fontSize: 8.6,
+    textAlign: "center",
+  },
+  td: {
+    paddingVertical: 3.5,
+    paddingHorizontal: 4.5,
+    fontSize: 8.6,
+  },
 
-  colSno: { width: "6%", textAlign: "center" },
-  colDesc: { width: "50%" },
-  colQty: { width: "12%", textAlign: "center" },
-  colUnit: { width: "14%", textAlign: "right" },
-  colTotal: { width: "18%", textAlign: "right" },
+  colSNo:    { width: "6%",   textAlign: "center" },
+  colDesc:   { width: "53%",  textAlign: "left" },
+  colQty:    { width: "11.5%", textAlign: "center" },
+  colUnit:   { width: "13.5%", textAlign: "right" },
+  colTotal:  { width: "16%",   textAlign: "right" },
 
-  /* TERMS */
-  terms: { marginTop: 18 },
-  termRow: { flexDirection: "row", marginBottom: 3 },
-  termLeft: { width: 90 },
-  termColon: { width: 10 },
-  termRight: { flex: 1 },
+  descCell: {
+    paddingVertical: 3.2,
+    paddingHorizontal: 5,
+    fontSize: 8.3,            // small but readable
+    lineHeight: 1.12,         // very tight → crucial for long descriptions
+  },
 
-  /* SIGNATURE */
-  signWrap: { marginTop: 25 },
-  signRow: { flexDirection: "row", gap: 20, marginTop: 10 },
-  signImg: { height: 50 },
+  totalRow: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: "#000",
+    backgroundColor: "#F8F8F8",
+    marginTop: 1,
+  },
+  totalLabel: { width: "84%", padding: 4, fontWeight: "bold", textAlign: "right", fontSize: 9 },
+  totalValue: { width: "16%", padding: 4, fontWeight: "bold", textAlign: "right", fontSize: 9 },
 
-  /* FOOTER */
+  termsTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    marginTop: 9,
+    marginBottom: 4,
+  },
+
+  termItem: {
+    flexDirection: "row",
+    marginBottom: 2.5,
+    lineHeight: 1.18,
+    fontSize: 8.8,
+  },
+  termLabel: { width: 85 },
+
+  signatureBlock: {
+    marginTop: 14,
+  },
+
+  signRow: {
+    flexDirection: "row",
+    gap: 25,
+    marginVertical: 6,
+  },
+
   footer: {
     position: "absolute",
-    bottom: 25,
-    left: 40,
-    right: 40,
+    bottom: 24,
+    left: 34,
+    right: 34,
     backgroundColor: BLUE,
     color: "#fff",
     flexDirection: "row",
-    fontSize: 9
+    fontSize: 8.4,
+    paddingVertical: 4,
   },
   footerCell: {
     flex: 1,
-    padding: 6,
-    borderRight: "1px solid #ffffff55",
-    textAlign: "center"
-  },
-  footerAddress: { flex: 2, padding: 6, textAlign: "center" },
-
-  gst: {
-    position: "absolute",
-    bottom: 5,
-    left: 40,
-    right: 40,
-    backgroundColor: "#163A5F",
-    color: "#fff",
-    fontSize: 8,
     textAlign: "center",
-    padding: 4
-  }
+    paddingHorizontal: 3,
+    borderRightWidth: 1,
+    borderRightColor: "rgba(255,255,255,0.4)",
+  },
+  footerAddress: {
+    flex: 2,
+    textAlign: "center",
+    paddingHorizontal: 3,
+  },
+
+  gstBar: {
+    position: "absolute",
+    bottom: 6,
+    left: 34,
+    right: 34,
+    backgroundColor: DARK_BLUE,
+    color: "#fff",
+    fontSize: 7.8,
+    textAlign: "center",
+    paddingVertical: 3,
+  },
 });
 
 export default function QuotationPDF({
-  quotation,
   refNo,
   date,
+  clientName,
+  kindAttn,
+  subject,
+  items = [],
+  totalAmount,
+  financeManagerName,
+  designation = "Manager - Operations",
   signatureUrl,
-  sealUrl
+  sealUrl,
 }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-
-        {/* HEADER */}
+        {/* Very small logos */}
         <View style={styles.header}>
           <Image src={tnlogo} style={styles.logo} />
-          <Image src={tansamoldlogo} style={styles.logo} />
+          <Image src={tansamLogo} style={styles.logo} />
           <Image src={siemens} style={styles.logo} />
           <Image src={tidco} style={styles.logo} />
         </View>
 
-        {/* TITLE */}
-        <View style={styles.titleWrap}>
-          <Text style={styles.titleMain}>
+        {/* Title */}
+        <View style={styles.titleCenter}>
+          <Text style={styles.mainTitle}>
             Tamil Nadu Smart and Advanced Manufacturing Centre
           </Text>
-          <Text style={styles.titleSub}>
+          <Text style={styles.subTitle}>
             (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
           </Text>
-          <Text style={styles.quotation}>Quotation</Text>
+          <Text style={styles.quotationTitle}>Quotation</Text>
         </View>
 
-        {/* META */}
-        <View style={styles.metaRow}>
-          <Text>REF: {refNo}</Text>
-          <Text>DATE: {date}</Text>
+        {/* Ref & Date */}
+        <View style={styles.refDateRow}>
+          <Text>REF: {refNo || "TANSAM/XXXX/2025-26"}</Text>
+          <Text>DATE: {date || "DD-MM-YYYY"}</Text>
         </View>
 
-        {/* TABLE HEADER */}
+        {/* To + Kind Attn */}
+        <View style={styles.toBlock}>
+          <Text>To,</Text>
+          <Text>
+            {clientName || "INSTITUTE NAME"}
+            {"\n"}kind attn.: {kindAttn || "NAME, DESIGNATION"}
+            {"\n"}
+            ADDRESS LINE HERE (if provided)
+          </Text>
+        </View>
+
+        {/* Subject */}
+        <Text style={styles.subject}>
+          Sub: {subject || "Quote for Industrial Visit"}
+        </Text>
+
+        {/* Shortened intro */}
+        <Text style={styles.introText}>
+          Sir/Madam, We thank you for your inquiry. We are pleased to submit our competitive price as below.
+        </Text>
+
+        {/* Compact Table */}
         <View style={styles.tableHeader}>
-          <Text style={[styles.th, styles.colSno]}>S.No</Text>
-          <Text style={[styles.th, styles.colDesc]}>Product description</Text>
-          <Text style={[styles.th, styles.colQty]}>Qty Per Students</Text>
-          <Text style={[styles.th, styles.colUnit]}>Unit price +TAX</Text>
-          <Text style={[styles.th, styles.colTotal]}>
-            Total price in INR inclusive of TAX
-          </Text>
+          <Text style={[styles.th, styles.colSNo]}>S.No</Text>
+          <Text style={[styles.th, styles.colDesc]}>Description</Text>
+          <Text style={[styles.th, styles.colQty]}>Qty</Text>
+          <Text style={[styles.th, styles.colUnit]}>Unit +Tax</Text>
+          <Text style={[styles.th, styles.colTotal]}>Total</Text>
         </View>
 
-        {/* TABLE ROWS */}
-        {quotation.items.map((item, i) => (
-          <View key={i} style={styles.tableRow}>
-            <Text style={[styles.td, styles.colSno]}>{i + 1}</Text>
-            <Text style={[styles.td, styles.colDesc]}>{item.description}</Text>
-            <Text style={[styles.td, styles.colQty]}>{item.qty}</Text>
-            <Text style={[styles.td, styles.colUnit]}>{item.unitPrice}</Text>
-            <Text style={[styles.td, styles.colTotal]}>{item.total}</Text>
-          </View>
-        ))}
-
-        {/* TERMS */}
-        <View style={styles.terms}>
-          <Text style={{ fontWeight: "bold", marginBottom: 6 }}>
-            Terms & Conditions
-          </Text>
-          {quotation.terms.map((t, i) => (
-            <View key={i} style={styles.termRow}>
-              <Text style={styles.termLeft}>{i + 1}. {t.title}</Text>
-              <Text style={styles.termColon}>:</Text>
-              <Text style={styles.termRight}>{t.value}</Text>
+        {items.length > 0 ? (
+          items.map((item, i) => (
+            <View key={i} style={styles.tableRow}>
+              <Text style={[styles.td, styles.colSNo]}>{i + 1}</Text>
+              <Text style={[styles.descCell, styles.colDesc]}>
+                {item.description || ""}
+              </Text>
+              <Text style={[styles.td, styles.colQty]}>
+                {item.qty || ""}
+              </Text>
+              <Text style={[styles.td, styles.colUnit]}>
+                {item.unitPrice || ""}
+              </Text>
+              <Text style={[styles.td, styles.colTotal]}>
+                {item.total || ""}
+              </Text>
             </View>
-          ))}
-        </View>
-
-        {/* SIGNATURE */}
-        <View style={styles.signWrap}>
-          <Text>Yours truly,</Text>
-          <View style={styles.signRow}>
-            {signatureUrl && <Image src={signatureUrl} style={styles.signImg} />}
-            {sealUrl && <Image src={sealUrl} style={styles.signImg} />}
+          ))
+        ) : (
+          <View style={styles.tableRow}>
+            <Text style={[styles.td, styles.colSNo]}>1</Text>
+            <Text style={[styles.descCell, styles.colDesc]}>—</Text>
+            <Text style={[styles.td, styles.colQty]}>—</Text>
+            <Text style={[styles.td, styles.colUnit]}>—</Text>
+            <Text style={[styles.td, styles.colTotal]}>—</Text>
           </View>
-          <Text style={{ marginTop: 6 }}>
-            {quotation.financeManagerName}
+        )}
+
+        {/* Total */}
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Total with Tax</Text>
+          <Text style={styles.totalValue}>
+            {totalAmount ? `₹ ${totalAmount}` : "—"}
           </Text>
         </View>
 
-        {/* FOOTER */}
+        {/* Very tight Terms */}
+        <View style={{ marginTop: 10 }}>
+          <Text style={styles.termsTitle}>Terms & Conditions</Text>
+
+          <View style={styles.termItem}>
+            <Text style={styles.termLabel}>Validity :</Text>
+            <Text>10/15 days from date of issue</Text>
+          </View>
+
+          <View style={styles.termItem}>
+            <Text style={styles.termLabel}>Payment :</Text>
+            <Text>100% advance</Text>
+          </View>
+
+          <View style={styles.termItem}>
+            <Text style={styles.termLabel}>Delivery :</Text>
+            <Text>As per P.O date</Text>
+          </View>
+
+          <View style={styles.termItem}>
+            <Text style={styles.termLabel}>P.O :</Text>
+            <Text>Within 5 days</Text>
+          </View>
+        </View>
+
+        {/* Compact Signature */}
+        <View style={styles.signatureBlock}>
+          <Text>Yours truly,</Text>
+
+          <View style={styles.signRow}>
+            {signatureUrl && <Image src={signatureUrl} style={{ height: 40 }} />}
+            {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
+          </View>
+
+          <Text style={{ fontWeight: "bold", marginTop: 3 }}>
+            {financeManagerName || "Natesh C"}
+          </Text>
+          <Text>{designation}</Text>
+        </View>
+
+        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerCell}>Tel: +91 44 69255700</Text>
           <Text style={styles.footerCell}>E-Mail: info@tansam.org</Text>
           <Text style={styles.footerCell}>URL: www.tansam.org</Text>
           <Text style={styles.footerAddress}>
-            C-Wing North, 603, TIDEL Park, Rajiv Gandhi Salai,
-            Taramani, Chennai-600113
+            C-Wing North, 603, TIDEL Park, Rajiv Gandhi Salai, Taramani, Chennai-600113
           </Text>
         </View>
 
-        <View style={styles.gst}>
+        <View style={styles.gstBar}>
           GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529
         </View>
-
       </Page>
     </Document>
   );

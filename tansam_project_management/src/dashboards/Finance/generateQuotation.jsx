@@ -359,31 +359,37 @@ const FinanceDocument = ({
 
         {/* Action Buttons - NOW WORKS */}
         <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-          <PDFDownloadLink
-            document={
-              <QuotationPDF
-                quotation={quotation}
-                refNo={refNo}
-                date={date}
-                signatureUrl={quotation.signature ? URL.createObjectURL(quotation.signature) : null}
-                sealUrl={quotation.seal ? URL.createObjectURL(quotation.seal) : null}
-              />
-            }
-            fileName={`${refNo || "Quotation"}.pdf`}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#1F4E79",
-              color: "#fff",
-              textDecoration: "none",
-              borderRadius: "4px",
-              border: "none",
-              cursor: "pointer"
-            }}
-          >
-            {({ loading }) => (loading ? "Generating PDF..." : "Download PDF")}
-          </PDFDownloadLink>
-
+    <PDFDownloadLink
+  document={
+    <QuotationPDF
+      refNo={refNo}
+      date={date}
+      clientName={quotation.clientName}
+      kindAttn={quotation.kindAttn}
+      subject={quotation.subject}
+      items={quotation.items}
+      terms={quotation.terms}
+      termsContent={termsContent}
+      financeManagerName={quotation.financeManagerName}
+      designation="Manager - Operations"
+      signatureUrl={
+        quotation.signature ? URL.createObjectURL(quotation.signature) : null
+      }
+      sealUrl={quotation.seal ? URL.createObjectURL(quotation.seal) : null}
+    />
+  }
+  fileName={`${refNo || "TANSAM-Quotation"}.pdf`}
+  style={{
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#1F4E79",
+    color: "#fff",
+    textDecoration: "none",
+    borderRadius: "4px",
+  }}
+>
+  {({ loading }) => (loading ? "Generating PDF..." : "Download PDF")}
+</PDFDownloadLink>
           <button
             onClick={handleSaveQuotation}
             style={{ 
