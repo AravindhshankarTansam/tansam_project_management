@@ -10,8 +10,8 @@ import {
 import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 import { fetchWorkCategories, createWorkCategory,updateWorkCategory  } from "../../services/admin/admin.roles.api";
-
 import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
 export default function Quotations() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -20,6 +20,7 @@ export default function Quotations() {
   const [showModal, setShowModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
 const [workCategories, setWorkCategories] = useState([]);
+const [opportunities, setOpportunities] = useState([]);
 
 const [showDoc, setShowDoc] = useState(false);
 
@@ -79,6 +80,20 @@ useEffect(() => {
   };
 
   loadWorkCategories();
+}, []);
+
+useEffect(() => {
+  const loadOpportunities = async () => {
+    try {
+      const data = await fetchOpportunities(); // API call
+      setOpportunities(data);
+    } catch (err) {
+      console.error("Failed to fetch opportunities:", err);
+      alert("Failed to load opportunities");
+    }
+  };
+
+  loadOpportunities();
 }, []);
 
   const filtered = data.filter(
@@ -511,17 +526,22 @@ if (showGenerateQuotation) {
 
         </div>
 
-        <div className="form-group">
-          <label>Project Name *</label>
-          <input
-            type="text"
-            placeholder="Project Name"
-            value={newQuotation.project_name}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, project_name: e.target.value })
-            }
-          />
-        </div>
+      <div className="form-group">
+  <label>Project Name *</label>
+  <select
+    value={newQuotation.project_name}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, project_name: e.target.value })
+    }
+  >
+    <option value="">Select Project</option>
+    {opportunities.map((opp) => (
+      <option key={opp.id} value={opp.opportunity_name}>
+        {opp.opportunity_name}
+      </option>
+    ))}
+  </select>
+</div>
 
         <div className="form-group">
           <label>Client Name *</label>
