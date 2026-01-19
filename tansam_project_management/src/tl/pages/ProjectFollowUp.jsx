@@ -320,19 +320,26 @@ export default function ProjectFollowUp() {
                 <option>On Hold</option>
               </select>
 
-              <label>Progress (%)</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={editingProject.progress || 0}
-                onChange={(e) =>
-                  setEditingProject({
-                    ...editingProject,
-                    progress: Number(e.target.value),
-                  })
-                }
-              />
+            <label>Progress (%)</label>
+
+<div className="edit-progress-wrap">
+  <input
+    type="range"
+    min="0"
+    max="100"
+    value={editingProject.progress || 0}
+    onChange={(e) =>
+      setEditingProject({
+        ...editingProject,
+        progress: Number(e.target.value),
+      })
+    }
+  />
+  <span className="edit-progress-value">
+    {editingProject.progress || 0}%
+  </span>
+</div>
+
 
               <label>Next Milestone</label>
               <input

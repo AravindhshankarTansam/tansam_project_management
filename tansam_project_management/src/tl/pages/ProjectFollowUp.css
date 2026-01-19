@@ -465,3 +465,23 @@
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+/* ================================
+   Edit Modal – Progress Slider
+================================ */
+.edit-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.edit-progress-wrap input[type="range"] {
+  flex: 1;
+}
+
+.edit-progress-value {
+  min-width: 42px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+  text-align: right;
+}
