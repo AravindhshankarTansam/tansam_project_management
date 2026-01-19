@@ -52,6 +52,7 @@ app.use(
   app.use("/api/coordinator", coordinatorRoutes);
   app.use("/api/quotations", quotationRoutes);
   app.use("/api/quotation-followups", quotationFollowup);
+  // app.use("/api", labRoutes);
   app.use("/api", projectRoutes);
   app.use("/api", assignTeamRoutes);
   app.use("/api", departmentRoutes);
