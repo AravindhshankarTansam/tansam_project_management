@@ -61,9 +61,10 @@ export const createQuotationFollowupsSchema = async (db) => {
       subject VARCHAR(255),
       items JSON,
       terms JSON,
-      signature LONGBLOB,
-      seal LONGBLOB,
+      signature VARCHAR(255),
+      seal VARCHAR(255),
       financeManagerName VARCHAR(100),
+      isGenerated TINYINT(1),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )

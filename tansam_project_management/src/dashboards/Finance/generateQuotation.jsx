@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+// import jsPDF from "jspdf";
+// import html2canvas from "html2canvas";
 // import { generateQuotationDocx } from "../../utlis/generateQuotation";
 import tnlogo from "../../assets/tansam/tnlogo.png";
 import tansamoldlogo from "../../assets/tansam/tansamoldlogo.png";
@@ -10,6 +10,8 @@ import tidco from "../../assets/tansam/tidcologo.png"
 import "../../layouts/CSS/GenerateQuotation.css";
 
 import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { pdf } from '@react-pdf/renderer';
+import QuotationPDF from './QuotationPdf.jsx';
 // Editable Table Component
 // Helper to convert file to Base64
 
@@ -139,7 +141,39 @@ const EditableQuotationTable = ({ quotation, setQuotation }) => {
 };
 
 // Main Finance Document Component
-const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDate, showPreview, setShowPreview, savedQuotation, generatePDF, handleSaveQuotation }) => {
+const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDate, showPreview, setShowPreview, savedQuotation, handleSaveQuotation }) => {
+ 
+const handleDownloadPDF = async () => {
+  try {
+    const blob = await pdf(
+      <QuotationPDF
+        quotation={quotation}
+        refNo={refNo}
+        date={date}
+        signatureUrl={
+          quotation.signature
+            ? URL.createObjectURL(quotation.signature)
+            : null
+        }
+        sealUrl={
+          quotation.seal
+            ? URL.createObjectURL(quotation.seal)
+            : null
+        }
+      />
+    ).toBlob();
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${refNo || "Quotation"}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("PDF generation failed", err);
+    alert("PDF download failed");
+  }
+};
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", width: "100%", boxSizing: "border-box", margin: 0, backgroundColor: "#f0f0f0" }}>
       <div style={{ backgroundColor: "#fff", padding: "40px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", width: "800px", maxWidth: "95%", margin: "0 auto" }}>
@@ -366,7 +400,7 @@ const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDa
 </div>
 <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
   <button
-    onClick={generatePDF}
+    onClick={handleDownloadPDF}
     style={{ padding: "10px 20px", fontSize: "16px" }}
   >
     Download PDF
@@ -423,7 +457,7 @@ const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDa
 };
 
 // Main Page
-export default function GenerateQuotation({ onSaved }) {
+export default function GenerateQuotation({ onSaved, quotationData }) {
   
   const [quotation, setQuotation] = useState({
     subject: "",
@@ -433,7 +467,7 @@ export default function GenerateQuotation({ onSaved }) {
       { title: "Validity", value: "This quotation is valid for 15 days." },
       { title: "Payment", value: "100% payment in advance." },
       { title: "Delivery", value: "Delivered within 1 day of PO." },
-      { title: "Purchase Order", value: "PO must be issued within 5 days." }
+      { title: "Purchase Ordr", value: "PO must be issued within 5 days." }
     ]
   });
 
@@ -455,6 +489,7 @@ const handleSaveQuotation = async () => {
     const dataToSend = new FormData();
 
     // Always append fields, they now exist in state
+     dataToSend.append("quotationId", quotationData.id);
     dataToSend.append("refNo", refNo);
     dataToSend.append("date", date);
     dataToSend.append("clientName", quotation.clientName);
@@ -482,59 +517,6 @@ const handleSaveQuotation = async () => {
   }
 };
 
-
-
-  const generatePDF = async () => {
-  const element = document.createElement("div");
-  element.style.width = "600px";
-  element.style.padding = "20px";
-  element.style.fontFamily = "Arial, sans-serif";
-  element.style.background = "#fff";
-
-  element.innerHTML = `
-    <h2>Quotation</h2>
-    <p><strong>Client:</strong> ${currentQuotation.clientName || "N/A"}</p>
-    <p><strong>Ref No:</strong> ${currentQuotation.refNo}</p>
-    <p><strong>Date:</strong> ${currentQuotation.date}</p>
-
-    <h3>Items</h3>
-    ${
-      currentQuotation.items && currentQuotation.items.length > 0
-        ? currentQuotation.items.map(
-            (item, idx) =>
-              `<p>${idx + 1}. ${item.description} — ₹${item.total}</p>`
-          ).join("")
-        : "<p>No items added</p>"
-    }
-
-    <h3>Terms & Conditions</h3>
-    ${
-      currentQuotation.terms && currentQuotation.terms.length > 0
-        ? currentQuotation.terms.map(
-            (t, i) => `<p>${i + 1}. <b>${t.title}</b>: ${t.value}</p>`
-          ).join("")
-        : "<p>No terms added</p>"
-    }
-  `;
-
-  // Append to document so html2canvas can render it
-  element.style.position = "absolute";
-  element.style.left = "-9999px"; // hide offscreen
-  document.body.appendChild(element);
-
-  const canvas = await html2canvas(element);
-  const imgData = canvas.toDataURL("image/png");
-
-  const pdf = new jsPDF("p", "pt", "a4");
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-  pdf.save(`${currentQuotation.refNo}.pdf`);
-
-  // Clean up
-  document.body.removeChild(element);
-};
-
   return (
  <FinanceDocument
   quotation={quotation}
@@ -547,7 +529,7 @@ const handleSaveQuotation = async () => {
   showPreview={showPreview}
   setShowPreview={setShowPreview}
   savedQuotation={savedQuotation}
-  generatePDF={generatePDF}
+ 
   handleSaveQuotation={handleSaveQuotation} // ✅ pass it
 />
 

@@ -47,6 +47,23 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     setSelectedLab("");
     setPage(1);
   };
+const handleEditGeneratedQuotation = async (quotation) => {
+  const generated = await getGeneratedQuotationByQuotationId(quotation.id);
+
+  setNewQuotation({
+    ...quotation,
+    items: JSON.parse(generated.items || "[]"),
+    terms: JSON.parse(generated.terms || "[]"),
+    kindAttn: generated.kindAttn,
+    subject: generated.subject,
+    financeManagerName: generated.financeManagerName,
+    signature: generated.signature,
+    seal: generated.seal,
+  });
+
+  setShowGenerateQuotation(true);
+};
+
 
   const filtered = data.filter(
     (q) =>
@@ -118,49 +135,41 @@ const response = await fetch(
   };
 
 useEffect(() => {
-  getQuotations().then(res =>
-    setData(res.map(q => ({ ...q, isGenerated: q.isGenerated || false })))
-  );
+  getQuotations().then(res => setData(res));
 }, []);
 
 const handleSaveQuotation = async () => {
   try {
-    const payload = {
-      ...newQuotation,
-      quotationNo: editId
-        ? newQuotation.quotationNo   // ✅ KEEP EXISTING NUMBER ON EDIT
-        : newQuotation.quotationNo || generateQuotationNo(data),
-    };
+    const dataToSend = new FormData();
+    
+    // This is the MOST IMPORTANT line!
+    dataToSend.append("quotationId", quotationData?.id || initialQuotation?.id);  // ← must exist!
 
-    if (editId) {
-      await updateQuotation(editId, payload);
-    } else {
-      await addQuotation(payload);
-    }
+    dataToSend.append("refNo", refNo);
+    dataToSend.append("date", date);
+    dataToSend.append("clientName", quotation.clientName);
+    dataToSend.append("kindAttn", quotation.kindAttn || "");
+    dataToSend.append("subject", quotation.subject || "");
+    dataToSend.append("financeManagerName", quotation.financeManagerName || "");
 
-    const updatedData = await getQuotations();
-    setData(updatedData);
+    dataToSend.append("items", JSON.stringify(quotation.items || []));
+    dataToSend.append("terms", JSON.stringify(quotation.terms || []));
 
-    setShowModal(false);
-    setEditId(null);
-    setNewQuotation({
-      quotationNo: "",
-      project_name: "",
-      clientName: "",
-      clientType: "Corporate",
-      workCategory: "",
-      lab: "",
-      description: "",
-      value: "",
-      date: "",
-    });
+    if (quotation.signature) dataToSend.append("signature", quotation.signature);
+    if (quotation.seal) dataToSend.append("seal", quotation.seal);
+
+    const saved = await saveGeneratedQuotation(dataToSend);
+
+    // Optional: you can show success message
+    alert("Quotation generated & saved successfully!");
+
+    onSaved?.();   // This triggers parent to refresh / mark as generated
+
   } catch (err) {
     console.error(err);
-    alert("Error saving quotation");
+    alert("Error saving generated quotation:\n" + (err.message || "Unknown error"));
   }
 };
-
-
   const deleteRow = async (id) => {
     if (window.confirm("Are you sure you want to delete this quotation?")) {
       try {
@@ -199,22 +208,29 @@ if (showDoc) {
 }
 if (showGenerateQuotation) {
   return (
-    <GenerateQuotation
-      initialQuotation={newQuotation}
-      onSaved={() => {
-        // 🔥 mark quotation as generated
-   setData(prev =>
-  prev.map(q =>
-    q.id === newQuotation.id
-      ? { ...q, isGenerated: true }  // <-- marks it generated
-      : q
-  )
-);
+ <GenerateQuotation
+  // ...
+  onSaved={async () => {
+    // 1. Local optimistic update
+    setData(prev =>
+      prev.map(q =>
+        q.id === newQuotation.id
+          ? { ...q, isGenerated: true }
+          : q
+      )
+    );
 
-        setShowGenerateQuotation(false);
-      }}
-      onBack={() => setShowGenerateQuotation(false)}
-    />
+    // 2. Reload fresh data from server (recommended!)
+    try {
+      const freshData = await getQuotations();
+      setData(freshData);
+    } catch (e) {
+      console.warn("Couldn't refresh quotations list", e);
+    }
+
+    setShowGenerateQuotation(false);
+  }}
+/>
   );
 }
 
@@ -397,16 +413,25 @@ if (showGenerateQuotation) {
   >
     <FaTrash />
   </button>
-<button
-  className="btn-add-quotation-action"
-  onClick={() => {
-    setNewQuotation(q);
-    setShowGenerateQuotation(true);
-  }}
-  title={q.isGenerated ? "Edit Document" : "Generate Document"}
->
-  {q.isGenerated ? <MdEditDocument /> : <FaPlus />}
-</button>
+ {q.isGenerated ? (
+  <button
+    onClick={() => handleEditGeneratedQuotation(q)}
+    title="Modify Generated Quotation"
+    style={{ color: "#2563eb", fontWeight: 500 }}
+  >
+    Medit
+  </button>
+) : (
+  <button
+    onClick={() => {
+      setNewQuotation(q);
+      setShowGenerateQuotation(true);
+    }}
+    title="Generate Quotation"
+  >
+    +
+  </button>
+)}
 
 
 
