@@ -635,3 +635,57 @@
   font-weight: 600;
 }
 
+/* Stage & Status Badges - Exact colors from OpportunitiesTracker.css */
+.status,
+.stage {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Color variants - Match tracker page perfectly */
+.status.new,
+.stage.new {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status.contacted,
+.stage.contacted {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.qualified,
+.stage.qualified {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.proposal_sent,
+.stage.proposal_sent {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.status.negotiation,
+.stage.negotiation {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.won,
+.stage.won {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.status.lost,
+.stage.lost {
+  background: #ef4444;
+  color: #ffffff;
+}
+

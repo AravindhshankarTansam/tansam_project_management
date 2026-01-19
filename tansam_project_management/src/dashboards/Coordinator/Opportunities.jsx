@@ -14,6 +14,7 @@ import {
 import { FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import "./CSS/Opportunities.css";
 import ProgressTracker from "./Tracker.jsx";
+
 const STAGES = [
   "NEW",
   "CONTACTED",
@@ -50,10 +51,11 @@ export default function Opportunities() {
     contactPhone: "",
     leadSource: "",
     leadDescription: "",
-    leadStatus: "NEW",
+    status: "NEW",          // ← Opportunity status (NEW/EXISTING)
+    stage: "NEW",           // ← Tracker stage (full pipeline)
     assignedTo: "",
-    next_followup_date: "",      // ← NEW: for editable field
-    next_action: "",             // ← NEW: for editable field
+    next_followup_date: "",
+    next_action: "",
   });
 
   /* ================= LOAD ================= */
@@ -91,7 +93,8 @@ export default function Opportunities() {
       contactPhone: "",
       leadSource: "",
       leadDescription: "",
-      leadStatus: "NEW",
+      status: "NEW",          // ← Opportunity status
+      stage: "NEW",           // ← Tracker stage
       assignedTo: "",
       next_followup_date: "",
       next_action: "",
@@ -117,7 +120,8 @@ export default function Opportunities() {
       contactPhone: row.contact_phone || "",
       leadSource: row.lead_source || "",
       leadDescription: row.lead_description || "",
-      leadStatus: row.lead_status,
+      status: row.lead_status || "NEW",                    // ← Opportunity status
+      stage: tracker.stage || row.lead_status || "NEW",    // ← Tracker stage (prefer tracker if exists)
       assignedTo: row.assigned_to || "",
       next_followup_date: tracker.next_followup_date?.slice(0, 10) || "",
       next_action: tracker.next_action || "",
@@ -128,34 +132,38 @@ export default function Opportunities() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
   try {
     let opportunityId;
 
-    // 1. Prepare opportunity payload — exclude stage (leadStatus)
-    const opportunityPayload = { ...form };
-    delete opportunityPayload.next_followup_date;  // belongs to tracker
-    delete opportunityPayload.next_action;         // belongs to tracker
-    delete opportunityPayload.leadStatus;          // ← IMPORTANT: remove stage from opportunity
+    // 1. Prepare opportunity payload
+    const opportunityPayload = {
+      ...form,
+      leadStatus: form.status,  // ← map to backend expected field name
+    };
+    delete opportunityPayload.status;           // remove frontend name
+    delete opportunityPayload.next_followup_date;
+    delete opportunityPayload.next_action;
+    delete opportunityPayload.stage;
 
     if (isEdit) {
       await updateOpportunity(form.opportunity_id, opportunityPayload);
       opportunityId = form.opportunity_id;
     } else {
       const created = await createOpportunity(opportunityPayload);
-      opportunityId = created.opportunity_id; // assuming API returns new ID
+      opportunityId = created.opportunity_id;
     }
 
-    // 2. Handle tracker separately (stage + next follow-up + next action)
+    // 2. Tracker payload
     const tracker = getTrackerForOpportunity(opportunityId);
     const trackerPayload = {
       ...tracker,
       opportunity_id: opportunityId,
-      stage: form.leadStatus,                        // ← stage goes here
+      stage: form.stage,
       next_followup_date: form.next_followup_date || null,
       next_action: form.next_action || "",
-      remarks: tracker.remarks || "", // keep existing
+      remarks: tracker.remarks || "",
     };
 
     if (tracker.id) {
@@ -280,8 +288,8 @@ export default function Opportunities() {
                         </span>
                       </td>
                       <td>
-                        <span className={`status ${item.lead_status.toLowerCase()}`}>
-                          {item.lead_status}
+                        <span className={`status ${item.lead_status?.toLowerCase() || "new"}`}>
+                          {item.lead_status || "NEW"}
                         </span>
                       </td>
                       <td className="actions">
@@ -313,7 +321,7 @@ export default function Opportunities() {
         )}
       </div>
 
-      {/* ADD / EDIT MODAL - Now with editable Next Follow-up & Next Action */}
+      {/* ADD / EDIT MODAL - Now with both Stage and Status */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-card">
@@ -392,11 +400,25 @@ export default function Opportunities() {
                 </select>
               </div>
 
+              {/* Status (NEW / EXISTING) */}
+              <div className="form-group">
+                <label>Status</label>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option value="NEW">NEW</option>
+                  <option value="EXISTING">EXISTING</option>
+                </select>
+              </div>
+
+              {/* Stage (full pipeline) */}
               <div className="form-group">
                 <label>Stage</label>
                 <select
-                  name="leadStatus"
-                  value={form.leadStatus}
+                  name="stage"
+                  value={form.stage}
                   onChange={handleChange}
                 >
                   {STAGES.map((stage) => (
@@ -407,7 +429,7 @@ export default function Opportunities() {
                 </select>
               </div>
 
-              {/* NEW: Editable Next Follow-up Date */}
+              {/* Next Follow-up Date */}
               <div className="form-group">
                 <label>Next Follow-up Date</label>
                 <input
@@ -418,7 +440,7 @@ export default function Opportunities() {
                 />
               </div>
 
-              {/* NEW: Editable Next Action */}
+              {/* Next Action */}
               <div className="form-group full-width">
                 <label>Next Action</label>
                 <textarea
@@ -478,106 +500,102 @@ export default function Opportunities() {
         </div>
       )}
 
-      {/* VIEW MODAL - Unchanged (read-only) */}
-     {/* VIEW MODAL - Now with Stage progress bar like Opportunities Tracker */}
-{viewData && (
-  <div className="modal-overlay" onClick={() => setViewData(null)}>
-    <div className="view-modal" onClick={(e) => e.stopPropagation()}>
-      {/* Header */}
-      <div className="view-header">
-        <div>
-          <h3 className="view-title">{viewData.opportunity_name}</h3>
-          <p className="view-subtitle">
-            <strong>Client Name:</strong> {viewData.customer_name || "—"}
-          </p>
-        </div>
-        <div className="view-header-right">
-          <span className={`status-badge ${viewData.lead_status.toLowerCase()}`}>
-            {viewData.lead_status}
-          </span>
-          <button className="close-btn" onClick={() => setViewData(null)}>
-            <FiX size={20} />
-          </button>
-        </div>
-      </div>
+      {/* VIEW MODAL */}
+      {viewData && (
+        <div className="modal-overlay" onClick={() => setViewData(null)}>
+          <div className="view-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="view-header">
+              <div>
+                <h3 className="view-title">{viewData.opportunity_name}</h3>
+                <p className="view-subtitle">
+                  <strong>Client Name:</strong> {viewData.customer_name || "—"}
+                </p>
+              </div>
+              <div className="view-header-right">
+                <span className={`status-badge ${viewData.lead_status?.toLowerCase()}`}>
+                  {viewData.lead_status}
+                </span>
+                <button className="close-btn" onClick={() => setViewData(null)}>
+                  <FiX size={20} />
+                </button>
+              </div>
+            </div>
 
-      {/* Contact Details - 3x3 Grid */}
-      <div className="contact-grid">
-        <div className="grid-item">
-          <label>Contact Person</label>
-          <p>{viewData.contact_person || "—"}</p>
-        </div>
-        <div className="grid-item">
-          <label>Assigned To</label>
-          <p>{viewData.assigned_to || "—"}</p>
-        </div>
-        <div className="grid-item">
-          <label>Email</label>
-          <p>{viewData.contact_email || "—"}</p>
-        </div>
-        <div className="grid-item">
-          <label>Phone</label>
-          <p>{viewData.contact_phone || "—"}</p>
-        </div>
-        <div className="grid-item">
-          <label>Source</label>
-          <p>{viewData.lead_source || "—"}</p>
-        </div>
-        <div className="grid-item empty"></div>
-      </div>
+            {/* Contact Details - 3x3 Grid */}
+            <div className="contact-grid">
+              <div className="grid-item">
+                <label>Contact Person</label>
+                <p>{viewData.contact_person || "—"}</p>
+              </div>
+              <div className="grid-item">
+                <label>Assigned To</label>
+                <p>{viewData.assigned_to || "—"}</p>
+              </div>
+              <div className="grid-item">
+                <label>Email</label>
+                <p>{viewData.contact_email || "—"}</p>
+              </div>
+              <div className="grid-item">
+                <label>Phone</label>
+                <p>{viewData.contact_phone || "—"}</p>
+              </div>
+              <div className="grid-item">
+                <label>Source</label>
+                <p>{viewData.lead_source || "—"}</p>
+              </div>
+              <div className="grid-item empty"></div>
+            </div>
 
-      {/* Tracker Information - Now with Stage progress bar */}
-      <div className="tracker-section">
-        <h4>Tracker Information</h4>
-        <div className="tracker-info">
-          {/* Stage with Progress Bar (same as Opportunities Tracker) */}
-          <div className="info-item full-width">
-            <label>Stage</label>
-            <div className="stage-progress-wrapper">
-              <span
-                className={`status ${(getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW").toLowerCase()}`}
-              >
-                {getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
-              </span>
-              <ProgressTracker
-                currentStage={getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
+            {/* Tracker Information */}
+            <div className="tracker-section">
+              <h4>Tracker Information</h4>
+              <div className="tracker-info">
+                <div className="info-item full-width">
+                  <label>Stage</label>
+                  <div className="stage-progress-wrapper">
+                    <span
+                      className={`status ${(getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW").toLowerCase()}`}
+                    >
+                      {getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
+                    </span>
+                    <ProgressTracker
+                      currentStage={getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
+                    />
+                  </div>
+                </div>
+
+                <div className="info-item">
+                  <label>Next Follow-up Date</label>
+                  <p>
+                    {getTrackerForOpportunity(viewData.opportunity_id).next_followup_date
+                      ? getTrackerForOpportunity(viewData.opportunity_id).next_followup_date.slice(0, 10)
+                      : "—"}
+                  </p>
+                </div>
+
+                <div className="info-item">
+                  <label>Next Action</label>
+                  <p>
+                    {getTrackerForOpportunity(viewData.opportunity_id).next_action || "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="description-section">
+              <label>Description</label>
+              <div
+                className="description-content"
+                dangerouslySetInnerHTML={{
+                  __html: viewData.lead_description || "<p>No description available</p>",
+                }}
               />
             </div>
           </div>
-
-          {/* Next Follow-up Date (read-only) */}
-          <div className="info-item">
-            <label>Next Follow-up Date</label>
-            <p>
-              {getTrackerForOpportunity(viewData.opportunity_id).next_followup_date
-                ? getTrackerForOpportunity(viewData.opportunity_id).next_followup_date.slice(0, 10)
-                : "—"}
-            </p>
-          </div>
-
-          {/* Next Action (read-only) */}
-          <div className="info-item">
-            <label>Next Action</label>
-            <p>
-              {getTrackerForOpportunity(viewData.opportunity_id).next_action || "—"}
-            </p>
-          </div>
         </div>
-      </div>
-
-      {/* Description */}
-      <div className="description-section">
-        <label>Description</label>
-        <div
-          className="description-content"
-          dangerouslySetInnerHTML={{
-            __html: viewData.lead_description || "<p>No description available</p>",
-          }}
-        />
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 }
