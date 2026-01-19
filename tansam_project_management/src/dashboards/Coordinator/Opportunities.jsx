@@ -6,7 +6,7 @@ import {
   updateOpportunity,
   deleteOpportunity,
 } from "../../services/coordinator/coordinator.opportunity.api";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEdit, FiTrash2,FiX, } from "react-icons/fi";
 import "./CSS/Opportunities.css";
 
 export default function Opportunities() {
@@ -404,71 +404,66 @@ export default function Opportunities() {
           </div>
         </div>
       )}
-
-        {viewData && (
-        <div className="modal-overlay">
-          <div className="modal-card view-modal-modern">
-
-            {/* MODAL HEADER */}
-            <div className="view-modal-header">
-              <div className="header-left">
-                <h3>{viewData.opportunity_name}</h3>
-                <span className="view-subtitle">{viewData.customer_name}</span>
-              </div>
-
-              <div className="header-right">
-                <span
-                  className={`status ${viewData.lead_status.toLowerCase()}`}
-                >
-                  {viewData.lead_status}
-                </span>
-
-                <button
-                  className="close-icon"
-                  onClick={() => setViewData(null)}
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* DETAILS TABLE */}
-            <table className="opportunity-table view-table">
-              <thead>
-                <tr>
-                  <th>Contact Person</th>
-                  <th>Assigned To</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{viewData.contact_person || "-"}</td>
-                  <td>{viewData.assigned_to || "-"}</td>
-                  <td>{viewData.contact_email || "-"}</td>
-                  <td>{viewData.contact_phone || "-"}</td>
-                  <td>{viewData.lead_source || "-"}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* DESCRIPTION */}
-            <div className="view-description">
-              <h4>Description</h4>
-              <div
-                className="view-description-content"
-                dangerouslySetInnerHTML={{
-                  __html: viewData.lead_description || "<p>No description</p>",
-                }}
-              />
-            </div>
-
-          </div>
+{viewData && (
+  <div className="modal-overlay" onClick={() => setViewData(null)}>
+    <div className="view-modal" onClick={(e) => e.stopPropagation()}>
+      {/* Header */}
+      <div className="view-header">
+        <div>
+          <h3 className="view-title">{viewData.opportunity_name}</h3>
+        <p className="view-subtitle">
+      <strong>Client Name:</strong> {viewData.customer_name || "—"}
+    </p>
         </div>
-      )}
+        <div className="view-header-right">
+          <span className={`status-badge ${viewData.lead_status.toLowerCase()}`}>
+            {viewData.lead_status}
+          </span>
+          <button className="close-btn" onClick={() => setViewData(null)}>
+            <FiX size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Contact Details - 3x3 Grid */}
+      <div className="contact-grid">
+        <div className="grid-item">
+          <label>Contact Person</label>
+          <p>{viewData.contact_person || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Assigned To</label>
+          <p>{viewData.assigned_to || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Email</label>
+          <p>{viewData.contact_email || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Phone</label>
+          <p>{viewData.contact_phone || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Source</label>
+          <p>{viewData.lead_source || "—"}</p>
+        </div>
+        {/* Empty cell for alignment */}
+        <div className="grid-item empty"></div>
+      </div>
+
+      {/* Description - Full Width */}
+      <div className="description-section">
+        <label>Description</label>
+        <div
+          className="description-content"
+          dangerouslySetInnerHTML={{
+            __html: viewData.lead_description || "<p>No description available</p>",
+          }}
+        />
+      </div>
+    </div>
+  </div>
+)}
 
 
     </div>
