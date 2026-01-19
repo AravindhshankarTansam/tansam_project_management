@@ -20,7 +20,7 @@ export const SIDEBAR_MENU = {
   coordinator: [
     // { label: "Dashboard", path: "/coordinator" },
     { label: "New Opportunities", path: "/coordinator/opportunities" },
-    { label: "Opportunities-Tracker", path: "/coordinator/Opportunities-tracker" },
+    // { label: "Opportunities-Tracker", path: "/coordinator/Opportunities-tracker" },
   ],
 
   tl: [
