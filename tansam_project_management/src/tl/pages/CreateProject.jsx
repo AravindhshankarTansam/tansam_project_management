@@ -21,6 +21,7 @@ import {
 
 import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
+import { getQuotations } from "../../services/quotation/quotation.api";
 
 /* ================= CONSTANTS ================= */
 
@@ -55,6 +56,7 @@ export default function CreateProject() {
   const [projects, setProjects] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
+  const [quotations, setQuotations] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -70,15 +72,17 @@ export default function CreateProject() {
   useEffect(() => {
     (async () => {
       try {
-        const [p, t, o] = await Promise.all([
+        const [p, t, o, q] = await Promise.all([
           fetchProjects(),
           fetchProjectTypes(),
           fetchOpportunities(),
+          getQuotations(),
         ]);
 
         setProjects(p || []);
-        setProjectTypes((t || []).filter(x => x.status === "ACTIVE"));
+        setProjectTypes((t || []).filter((x) => x.status === "ACTIVE"));
         setOpportunities(o || []);
+        setQuotations(q || []);
       } catch {
         toast.error("Failed to load data");
       }
@@ -87,19 +91,73 @@ export default function CreateProject() {
 
   /* ================= PROJECT TYPE FLAGS ================= */
 
-  const projectType = form.projectType?.toUpperCase();
-  const isInternal = projectType === "INTERNAL";
+  const projectType = form.projectType?.toUpperCase() || "";
   const isCustomer = projectType === "CUSTOMER";
   const isCustomerPOC = projectType === "CUSTOMER_POC";
 
-  /* ================= OPPORTUNITY LOOKUP ================= */
+  /* ================= SELECTED OPPORTUNITY ================= */
 
   const selectedOpportunity = useMemo(() => {
-    if (!isCustomerPOC || !form.opportunityId) return null;
-    return opportunities.find(
-      o => o.opportunity_id === form.opportunityId
-    );
-  }, [isCustomerPOC, form.opportunityId, opportunities]);
+    if (!form.opportunityId) return null;
+    return opportunities.find((o) => o.opportunity_id === form.opportunityId);
+  }, [form.opportunityId, opportunities]);
+
+  /* ================= DERIVED AUTO-FILL VALUES ================= */
+
+  // Pure computation — no state updates here
+const autoFilled = useMemo(() => {
+  if (!selectedOpportunity || (!isCustomer && !isCustomerPOC)) {
+    return {
+      projectName: form.projectName,
+      clientName: form.clientName,
+      quotationNumber: form.quotationNumber,
+    };
+  }
+
+  const projectName = selectedOpportunity.opportunity_name || form.projectName;
+  const clientName = selectedOpportunity.customer_name || form.clientName;
+
+  let quotationNumber = "";
+
+  if (isCustomer && quotations.length > 0) {
+    // Super robust matching: trim + normalize spaces + case-insensitive
+    const oppClient = (selectedOpportunity.customer_name || "")
+      .trim()
+      .replace(/\s+/g, " ") // normalize multiple spaces
+      .toLowerCase();
+
+    const related = quotations.filter((q) => {
+      const qClient = (q.clientName || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+
+      return qClient === oppClient || qClient.includes(oppClient) || oppClient.includes(qClient);
+    });
+
+    if (related.length > 0) {
+      // Get the most recent quotation
+      const latest = related.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      quotationNumber = latest.quotationNo || ""; // ← correct field: quotationNo
+    }
+  }
+
+  return { projectName, clientName, quotationNumber };
+}, [selectedOpportunity, isCustomer, isCustomerPOC, quotations, form.projectName, form.clientName, form.quotationNumber]);
+
+  // Apply auto-fill ONLY when opportunityId changes (safe & controlled)
+// Apply auto-fill ONLY when opportunityId changes (safe & controlled)
+useEffect(() => {
+  if (!form.opportunityId) return;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  setForm((prev) => ({
+    ...prev,
+    projectName: autoFilled.projectName,
+    clientName: autoFilled.clientName,
+    quotationNumber: autoFilled.quotationNumber,
+  }));
+}, [form.opportunityId]);
 
   /* ================= HANDLERS ================= */
 
@@ -117,13 +175,13 @@ export default function CreateProject() {
 
     const payload = {
       projectType,
-      projectName: isCustomerPOC
-        ? selectedOpportunity?.opportunity_name
+      projectName: isCustomer || isCustomerPOC
+        ? selectedOpportunity?.opportunity_name || form.projectName
         : form.projectName,
-      clientName: isCustomerPOC
-        ? selectedOpportunity?.customer_name
+      clientName: isCustomer || isCustomerPOC
+        ? selectedOpportunity?.customer_name || form.clientName
         : form.clientName,
-      opportunityId: isCustomerPOC ? form.opportunityId : null,
+      opportunityId: (isCustomer || isCustomerPOC) ? form.opportunityId : null,
       startDate: form.startDate,
       endDate: form.endDate,
       status: form.status,
@@ -147,10 +205,10 @@ export default function CreateProject() {
     }
   };
 
-  /* ================= FILTERS ================= */
+  /* ================= FILTERS & PAGINATION ================= */
 
   const uniqueClients = useMemo(
-    () => [...new Set(projects.map(p => p.clientName).filter(Boolean))],
+    () => [...new Set(projects.map((p) => p.clientName).filter(Boolean))],
     [projects]
   );
 
@@ -160,23 +218,20 @@ export default function CreateProject() {
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       data = data.filter(
-        p =>
+        (p) =>
           p.projectName?.toLowerCase().includes(q) ||
           p.clientName?.toLowerCase().includes(q)
       );
     }
 
     if (selectedClient) {
-      data = data.filter(p => p.clientName === selectedClient);
+      data = data.filter((p) => p.clientName === selectedClient);
     }
 
     return data;
   }, [projects, searchTerm, selectedClient]);
 
-  /* ================= PAGINATION ================= */
-
   const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE);
-
   const paginatedProjects = filteredProjects.slice(
     (currentPage - 1) * PROJECTS_PER_PAGE,
     currentPage * PROJECTS_PER_PAGE
@@ -203,51 +258,50 @@ export default function CreateProject() {
         )}
       </div>
 
-      {/* SEARCH + FILTER */}
-   {/* SEARCH + CLIENT FILTER */}
-<div className="search-filter-bar">
-  {/* Search */}
-  <div className="search-box">
-    <FiSearch />
-    <input
-      placeholder="Search project or client..."
-      value={searchTerm}
-      onChange={(e) => {
-        setSearchTerm(e.target.value);
-        setCurrentPage(1);
-      }}
-    />
-  </div>
+      {/* SEARCH + CLIENT FILTER */}
+      <div className="search-filter-bar">
+        <div className="search-box">
+          <FiSearch />
+          <input
+            placeholder="Search project or client..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
 
-  {/* Client Filter */}
-  <div className="client-filter-box">
-    <select
-      value={selectedClient}
-      onChange={(e) => {
-        setSelectedClient(e.target.value);
-        setCurrentPage(1);
-      }}
-    >
-      <option value="">All Clients</option>
-      {uniqueClients.map((client) => (
-        <option key={client} value={client}>
-          {client}
-        </option>
-      ))}
-    </select>
-  </div>
+        <div className="client-filter-box">
+          <select
+            value={selectedClient}
+            onChange={(e) => {
+              setSelectedClient(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value="">All Clients</option>
+            {uniqueClients.map((client) => (
+              <option key={client} value={client}>
+                {client}
+              </option>
+            ))}
+          </select>
+        </div>
 
-  {/* Clear Button - only shows when filter is active */}
-  {(searchTerm || selectedClient) && (
-    <button className="reset-btn" onClick={() => {
-      setSearchTerm("");
-      setSelectedClient("");
-      setCurrentPage(1);
-    }}>
-      Clear
-    </button>
-  )}
-</div>
+        {(searchTerm || selectedClient) && (
+          <button
+            className="reset-btn"
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedClient("");
+              setCurrentPage(1);
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       {/* TABLE */}
       <table className="project-table">
@@ -263,7 +317,7 @@ export default function CreateProject() {
           </tr>
         </thead>
         <tbody>
-          {paginatedProjects.map(p => (
+          {paginatedProjects.map((p) => (
             <tr key={p.id}>
               <td>{p.projectName}</td>
               <td>{p.clientName}</td>
@@ -311,12 +365,12 @@ export default function CreateProject() {
           <button
             className="page-btn"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(p => p - 1)}
+            onClick={() => setCurrentPage((p) => p - 1)}
           >
             <FiChevronLeft /> Prev
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
               className={`page-number ${page === currentPage ? "active" : ""}`}
@@ -329,7 +383,7 @@ export default function CreateProject() {
           <button
             className="page-btn"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(p => p + 1)}
+            onClick={() => setCurrentPage((p) => p + 1)}
           >
             Next <FiChevronRight />
           </button>
@@ -345,32 +399,54 @@ export default function CreateProject() {
             <form onSubmit={handleSubmit}>
               <select name="projectType" value={form.projectType} onChange={handleChange} required>
                 <option value="">Select Project Type</option>
-                {projectTypes.map(t => (
-                  <option key={t.id} value={t.name}>{t.name}</option>
+                {projectTypes.map((t) => (
+                  <option key={t.id} value={t.name}>
+                    {t.name}
+                  </option>
                 ))}
               </select>
 
-              {isCustomerPOC && (
-                <>
-                  <select name="opportunityId" value={form.opportunityId} onChange={handleChange} required>
-                    <option value="">Select Opportunity</option>
-                    {opportunities.map(o => (
-                      <option key={o.opportunity_id} value={o.opportunity_id}>
-                        {o.opportunity_name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <input value={selectedOpportunity?.opportunity_name || ""} disabled />
-                  <input value={selectedOpportunity?.customer_name || ""} disabled />
-                </>
+              {(isCustomer || isCustomerPOC) && (
+                <select
+                  name="opportunityId"
+                  value={form.opportunityId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Opportunity</option>
+                  {opportunities.map((o) => (
+                    <option key={o.opportunity_id} value={o.opportunity_id}>
+                      {o.opportunity_name} ({o.customer_name})
+                    </option>
+                  ))}
+                </select>
               )}
 
-              {(isInternal || isCustomer) && (
-                <>
-                  <input name="projectName" placeholder="Project Name" value={form.projectName} onChange={handleChange} required />
-                  <input name="clientName" placeholder="Client Name" value={form.clientName} onChange={handleChange} required />
-                </>
+              <input
+                name="projectName"
+                placeholder="Project Name"
+                value={autoFilled.projectName} // ← Use derived value
+                onChange={handleChange}
+                disabled={isCustomer || isCustomerPOC}
+                required
+              />
+
+              <input
+                name="clientName"
+                placeholder="Client Name"
+                value={autoFilled.clientName} // ← Use derived value
+                onChange={handleChange}
+                disabled={isCustomer || isCustomerPOC}
+                required
+              />
+
+              {isCustomer && (
+                <input
+                  name="quotationNumber"
+                  placeholder="Quotation Number (auto-filled)"
+                  value={autoFilled.quotationNumber} // ← Use derived value
+                  disabled
+                />
               )}
 
               <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
@@ -378,9 +454,19 @@ export default function CreateProject() {
 
               {isCustomer && (
                 <>
-                  <input name="quotationNumber" placeholder="Quotation Number" value={form.quotationNumber} onChange={handleChange} required />
-                  <input name="poNumber" placeholder="Purchase Order Number" value={form.poNumber} onChange={handleChange} required />
-                  <input type="file" accept="application/pdf" onChange={e => setForm({ ...form, poFile: e.target.files[0] })} required />
+                  <input
+                    name="poNumber"
+                    placeholder="Purchase Order Number"
+                    value={form.poNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => setForm({ ...form, poFile: e.target.files[0] })}
+                    required
+                  />
                 </>
               )}
 
@@ -392,7 +478,9 @@ export default function CreateProject() {
               </select>
 
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="button" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
                 <button type="submit">{isEdit ? "Update" : "Create"}</button>
               </div>
             </form>
