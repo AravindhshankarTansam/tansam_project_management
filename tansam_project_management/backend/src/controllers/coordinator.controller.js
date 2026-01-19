@@ -113,8 +113,8 @@ export const createOpportunity = async (req, res) => {
         leadSource || null,
         leadDescription || null,
         leadStatus || "NEW",
-        normalize(assignedTo),
-        req.user.id,
+        normalize(assignedTo), // 👈 assigned user ID
+        req.user.id,           // 👈 coordinator = creator
         req.user.name || req.user.username || "Unknown",
         req.user.role,
       ]
@@ -164,6 +164,7 @@ export const getOpportunities = async (req, res) => {
 
     const params = [];
 
+    // 👇 Coordinator sees only what they created
     if (req.user.role === "COORDINATOR") {
       query += ` WHERE created_by = ?`;
       params.push(req.user.id);
@@ -386,7 +387,6 @@ export const updateOpportunityTracker = async (req, res) => {
     }
 
     const { id } = req.params;
-
     const db = await connectDB();
 
     const [result] = await db.execute(
@@ -431,7 +431,6 @@ export const deleteOpportunityTracker = async (req, res) => {
     }
 
     const { id } = req.params;
-
     const db = await connectDB();
 
     const [result] = await db.execute(

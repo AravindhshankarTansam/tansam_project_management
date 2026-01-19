@@ -24,7 +24,7 @@ import { roleMiddleware } from "../middlewares/admin.middleware.js";
 const router = express.Router();
 
 // ADMIN ONLY
-router.get("/roles", authMiddleware, roleMiddleware(["ADMIN"]), getRoles);
+router.get("/roles", authMiddleware, roleMiddleware(["ADMIN","COORDINATOR"]), getRoles);
 router.post("/roles", authMiddleware, roleMiddleware(["ADMIN"]), createRole);
 router.put("/roles/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateRole);
 
@@ -50,7 +50,7 @@ router.post("/work-categories", authMiddleware, roleMiddleware(["ADMIN"]), creat
 router.put("/work-categories/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateWorkCategory);
 
 // 👤 USERS (ADMIN)
-router.get("/users", authMiddleware, roleMiddleware(["ADMIN"]), getUsers);
+router.get("/users", authMiddleware, roleMiddleware(["ADMIN","COORDINATOR"]), getUsers);
 router.post("/users", authMiddleware, roleMiddleware(["ADMIN"]), createUser);
 router.put("/users/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateUser);
 
