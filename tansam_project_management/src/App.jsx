@@ -34,6 +34,10 @@ import Department from "./tl/pages/department.jsx";
 import TeamMember from "./tl/pages/teammember.jsx";
 // import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
+/* CEO */
+import CeoDashboard from "./dashboards/Ceo/CeoDashboard.jsx";
+
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -101,6 +105,19 @@ function App() {
             element={<OpportunitiesTracker />}
           />
         </Route>
+
+        {/* CEO */}
+<Route
+  path="/ceo"
+  element={
+    <PrivateRoute>
+      <DashboardLayout user={user} setUser={setUser} />
+    </PrivateRoute>
+  }
+>
+  <Route index element={<CeoDashboard />} />
+</Route>
+
 
         {/* TEAM LEADER */}
         <Route
