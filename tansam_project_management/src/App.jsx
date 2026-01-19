@@ -93,7 +93,8 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route index element={<CoordinatorDashboard />} />
+          <Route index element={<Navigate to="opportunities" replace />} />
+          {/* <Route index element={<Opportunities />} /> */}
           <Route path="opportunities" element={<Opportunities />} />
           <Route
             path="opportunities-tracker"
