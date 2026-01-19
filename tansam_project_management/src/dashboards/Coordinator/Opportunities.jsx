@@ -11,6 +11,7 @@ import {
   createOpportunityTracker,
   updateOpportunityTracker,
 } from "../../services/coordinator/coordinator.tracker.api";
+import { fetchUsers } from "../../services/admin/admin.roles.api.js";
 import { FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import "./CSS/Opportunities.css";
 import ProgressTracker from "./Tracker.jsx";
@@ -33,6 +34,8 @@ export default function Opportunities() {
   const [isPreview, setIsPreview] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+
 
   /* ================= FILTER STATE ================= */
   const [filters, setFilters] = useState({
@@ -66,10 +69,13 @@ export default function Opportunities() {
   const loadAll = async () => {
     try {
       setLoading(true);
-      const [oppData, trackerData] = await Promise.all([
-        fetchOpportunities(),
-        fetchOpportunityTrackers(),
-      ]);
+      const [oppData, trackerData, usersData] = await Promise.all([
+      fetchOpportunities(),
+      fetchOpportunityTrackers(),
+      fetchUsers(),                // 👈 ADD
+    ]);
+
+      setUsers(usersData || []);
       setOpportunities(oppData || []);
       setTrackers(trackerData || []);
     } catch (err) {
@@ -81,6 +87,13 @@ export default function Opportunities() {
 
   const getTrackerForOpportunity = (oppId) =>
     trackers.find((t) => t.opportunity_id === oppId) || {};
+
+  const getUserById = (id) =>
+  users.find((u) => String(u.id) === String(id));
+
+  const assignableUsers = users.filter(
+    (u) => u.role !== "COORDINATOR"
+  );
 
   /* ================= HANDLERS ================= */
   const resetForm = () => {
@@ -260,6 +273,7 @@ export default function Opportunities() {
                 <th>Opportunity</th>
                 <th>Client</th>
                 <th>Source</th>
+                <th>Assigned To</th>
                 <th>Stage</th>
                 <th>Status</th>
                 <th style={{ textAlign: "center" }}>Actions</th>
@@ -282,6 +296,12 @@ export default function Opportunities() {
                       <td>{item.opportunity_name}</td>
                       <td>{item.customer_name}</td>
                       <td>{item.lead_source || "-"}</td>
+                      <td>
+                        {getUserById(item.assigned_to)
+                          ? getUserById(item.assigned_to).name ||
+                            getUserById(item.assigned_to).username
+                          : "-"}
+                      </td>
                       <td>
                         <span className={`status ${tracker.stage?.toLowerCase() || "new"}`}>
                           {tracker.stage || "NEW"}
@@ -359,11 +379,18 @@ export default function Opportunities() {
 
               <div className="form-group">
                 <label>Assigned To</label>
-                <input
+                <select
                   name="assignedTo"
                   value={form.assignedTo}
                   onChange={handleChange}
-                />
+                >
+                  <option value="">Select User</option>
+                 {assignableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name || u.username}
+                  </option>
+                ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -530,7 +557,12 @@ export default function Opportunities() {
               </div>
               <div className="grid-item">
                 <label>Assigned To</label>
-                <p>{viewData.assigned_to || "—"}</p>
+                <p>
+                  {getUserById(viewData.assigned_to)
+                    ? `${getUserById(viewData.assigned_to).name || getUserById(viewData.assigned_to).username}
+                      (${getUserById(viewData.assigned_to).role})`
+                    : "—"}
+                </p>
               </div>
               <div className="grid-item">
                 <label>Email</label>
