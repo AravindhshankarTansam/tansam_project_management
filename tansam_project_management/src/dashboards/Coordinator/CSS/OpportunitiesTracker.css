@@ -1,95 +1,118 @@
 /* ============================
-   Opportunities Tracker
+   MAIN CARD (NO PAGE CONTAINER)
 ============================ */
 
 .tracker-wrapper {
-  max-width: 95%;
-  margin: 20px auto;
-  padding: 24px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
-
-.tracker-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #1f2937;
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 10px;
-  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  padding: 20px;
 }
 
 /* ============================
-   Top Actions
+   PAGE TITLE
+============================ */
+
+.tracker-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #16a34a;
+  margin-bottom: 18px;
+}
+
+/* ============================
+   TOP ACTION BAR
 ============================ */
 
 .tracker-actions {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .tracker-actions button {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #22c55e;
   color: #ffffff;
   border: none;
-  padding: 10px 22px;
+  padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .tracker-actions button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+  background: #16a34a;
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
 }
 
 /* ============================
-   Tracker Table
+   TABLE WRAPPER
+============================ */
+
+.table-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+/* ============================
+   TABLE
 ============================ */
 
 .tracker-table {
   width: 100%;
   border-collapse: collapse;
-  background: #f9fafb;
-  border-radius: 8px;
-  overflow: hidden;
+  background: #ffffff;
 }
 
-.tracker-table th,
-.tracker-table td {
-  padding: 12px 14px;
-  font-size: 14px;
+.tracker-table thead {
+  background: #f1f5f9;
 }
 
 .tracker-table th {
-  background: #2563eb;
-  color: #ffffff;
-  font-weight: 600;
-  text-align: center;           /* ← CENTERED HEADERS */
+  padding: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #020617;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.tracker-table tr:nth-child(even) {
-  background: #eef2ff;
+.tracker-table td {
+  padding: 14px;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.tracker-table tr:last-child td {
+  border-bottom: none;
 }
 
 .tracker-table tr:hover {
-  background: #e0e7ff;
-}
-
-.tracker-table .empty {
-  text-align: center;
-  padding: 18px;
-  color: #6b7280;
-  font-style: italic;
+  background: #f8fafc;
 }
 
 /* ============================
-   Stage Pills
+   EMPTY STATE
+============================ */
+
+.tracker-table .empty {
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* ============================
+   STAGE BADGES
 ============================ */
 
 .stage {
@@ -98,11 +121,12 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .stage.new {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #e0f2fe;
+  color: #0369a1;
 }
 
 .stage.contacted {
@@ -131,38 +155,91 @@
 }
 
 .stage.lost {
-  background: #9ca3af;
+  background: #ef4444;
   color: #ffffff;
 }
 
 /* ============================
-   Action Buttons
+   TEXT CELLS
+============================ */
+
+.text-cell {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================
+   ACTION ICONS
 ============================ */
 
 .icon-btn {
-  border: none;
   background: transparent;
+  border: none;
+  cursor: pointer;
   padding: 6px;
   border-radius: 6px;
-  cursor: pointer;
-  line-height: 0;
   color: #2563eb;
-  transition: background 0.15s ease, transform 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .icon-btn:hover {
   background: #e0e7ff;
-  transform: translateY(-1px);
+}
+
+.remove-btn {
+  color: #ef4444;
+}
+
+.remove-btn:hover {
+  background: #fee2e2;
 }
 
 /* ============================
-   Modal Overlay
+   PAGINATION
+============================ */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.page-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================
+   MODAL OVERLAY
 ============================ */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -170,33 +247,34 @@
 }
 
 /* ============================
-   Modal Card
+   MODAL CARD
 ============================ */
 
 .modal-card {
   background: #ffffff;
+  border-radius: 14px;
   padding: 24px;
   width: 700px;
   max-height: 90vh;
   overflow-y: auto;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
 .modal-card h3 {
-  margin-bottom: 18px;
   font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
   text-align: center;
 }
 
 /* ============================
-   Tracker Form
+   FORM
 ============================ */
 
 .tracker-form {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px 24px;
+  gap: 18px;
 }
 
 .tracker-form .form-group {
@@ -212,33 +290,25 @@
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: #374151;
+  color: #334155;
 }
 
 .tracker-form input,
 .tracker-form select,
 .tracker-form textarea {
   padding: 10px 12px;
-  font-size: 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #d1d5db;
-}
-
-.tracker-form input:focus,
-.tracker-form select:focus,
-.tracker-form textarea:focus {
-  border-color: #2563eb;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  font-size: 14px;
 }
 
 .tracker-form textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 90px;
 }
 
 /* ============================
-   Modal Actions
+   MODAL ACTIONS
 ============================ */
 
 .modal-actions {
@@ -246,90 +316,29 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
 }
 
 .modal-actions button {
-  padding: 8px 18px;
-  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
   font-weight: 600;
-  border-radius: 8px;
   border: none;
   cursor: pointer;
 }
 
 .modal-actions button[type="submit"] {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #2563eb;
   color: #ffffff;
-}
-
-.modal-actions button[type="submit"]:hover {
-  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
 }
 
 .cancel-btn {
-  background: #dc2626;
+  background: #ef4444;
   color: #ffffff;
 }
 
-.cancel-btn:hover {
-  background: #b91c1c;
-}
-
-.text-cell {
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* ============================
-   Pagination
-============================ */
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.page-btn {
-  padding: 8px 14px;
-  min-width: 40px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #374151;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: #e0e7ff;
-  border-color: #2563eb;
-  color: #2563eb;
-}
-
-.page-btn.active {
-  background: #2563eb;
-  color: white;
-  border-color: #2563eb;
-  font-weight: 600;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: #f3f4f6;
-}
-/* ============================
-   Responsive
+   RESPONSIVE
 ============================ */
 
 @media (max-width: 768px) {

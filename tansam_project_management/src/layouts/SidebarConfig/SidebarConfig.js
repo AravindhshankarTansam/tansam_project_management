@@ -3,7 +3,7 @@ export const SIDEBAR_MENU = {
   admin: [
     { label: "Dashboard", path: "/admin" },
     { label: "Create Users", path: "/admin/users" },
-      { label: "Project", path: "/admin/project" },
+      // { label: "Project", path: "/admin/project" },
 
     {
       label: "Master Table",
@@ -25,14 +25,14 @@ export const SIDEBAR_MENU = {
 
   tl: [
     { label: "Dashboard", path: "/tl" },
-    { label: "Project Types", path: "/tl/project-types" },
+    // { label: "Project Types", path: "/tl/project-types" },
     { label: "Create Project", path: "/tl/create-project" },
-    { label: "Project Follow-up", path: "/tl/follow-up" },
-    { label: "Summary", path: "/tl/summary" },
+    { label: "Project Dashboard", path: "/tl/follow-up" },
+    // { label: "Summary", path: "/tl/summary" },
 
     // 🔥 SEPARATE SECTION (AFTER SUMMARY)
     {
-      label: "Project Execution",
+      label: "Project Team",
       children: [
 
         { label: "Assign Team", path: "/tl/assign-team" },

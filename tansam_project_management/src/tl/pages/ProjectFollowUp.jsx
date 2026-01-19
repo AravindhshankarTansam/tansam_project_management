@@ -5,6 +5,7 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
   FiUsers,
+  FiX,
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,7 +14,7 @@ import "./ProjectFollowUp.css";
 import {
   fetchProjectFollowups,
   updateProjectFollowup,
-   getPOFileUrl,
+  getPOFileUrl,
 } from "../../services/projectFollowup.api";
 
 /* ---------- HELPERS ---------- */
@@ -30,6 +31,9 @@ export default function ProjectFollowUp() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewingProject, setViewingProject] = useState(null);
+
   /* ================= LOAD DATA ================= */
   useEffect(() => {
     (async () => {
@@ -44,51 +48,49 @@ export default function ProjectFollowUp() {
     })();
   }, []);
 
+  
+  /* ================= VIEW ================= */
+  const openViewModal = (project) => {
+    setViewingProject(project);
+    setViewModalOpen(true);
+  };
+
   const openEditModal = (p) => {
     setEditingProject({ ...p });
     setEditModalOpen(true);
   };
 
   const openPdfInNewTab = (filePath) => {
-  const pdfUrl = getPOFileUrl(filePath);
-
-  if (!pdfUrl) {
-    toast.warn("PO not uploaded yet");
-    return;
-  }
-
-  window.open(
-    pdfUrl + "#toolbar=0&navpanes=0&scrollbar=0",
-    "_blank",
-    "noopener,noreferrer"
-  );
-};
-
+    const pdfUrl = getPOFileUrl(filePath);
+    if (!pdfUrl) {
+      toast.warn("PO not uploaded yet");
+      return;
+    }
+    window.open(pdfUrl, "_blank", "noopener,noreferrer");
+  };
 
   /* ================= UPDATE ================= */
-const handleUpdate = async (e) => {
-  e.preventDefault();
+  const handleUpdate = async (e) => {
+    e.preventDefault();
 
-  try {
-    await updateProjectFollowup(editingProject.projectId, {
-      status: editingProject.status,
-      progress: editingProject.progress,
-      nextMilestone: editingProject.nextMilestone,
-      milestoneDueDate: editingProject.milestoneDueDate,
-      criticalIssues: editingProject.criticalIssues,
-    });
+    try {
+      await updateProjectFollowup(editingProject.projectId, {
+        status: editingProject.status,
+        progress: editingProject.progress,
+        nextMilestone: editingProject.nextMilestone,
+        milestoneDueDate: editingProject.milestoneDueDate,
+        criticalIssues: editingProject.criticalIssues,
+      });
 
-    // ✅ Always refresh from backend
-    const refreshed = await fetchProjectFollowups();
-    setProjects(refreshed);
+      const refreshed = await fetchProjectFollowups();
+      setProjects(refreshed);
 
-    toast.success("Project follow-up updated");
-    setEditModalOpen(false);
-  } catch (err) {
-    toast.error(err.message || "Update failed");
-  }
-};
-
+      toast.success("Project follow-up updated");
+      setEditModalOpen(false);
+    } catch (err) {
+      toast.error(err.message || "Update failed");
+    }
+  };
 
   return (
     <div className="followup-page">
@@ -108,7 +110,7 @@ const handleUpdate = async (e) => {
           <table className="followup-table">
             <thead>
               <tr>
-                <th>Project name</th>
+                <th>Project</th>
                 <th>Client</th>
                 <th>Quotation</th>
                 <th>Status</th>
@@ -134,25 +136,26 @@ const handleUpdate = async (e) => {
                     daysLeft !== null &&
                     daysLeft <= 3 &&
                     p.status !== "Completed";
+                     const hasPOFile =
+    p.poFile &&
+    typeof p.poFile === "string" &&
+    p.poFile.trim() !== "" &&
+    p.poFile !== "null";
 
                   return (
-                    <tr key={p.projectId}>
+                    <tr
+                      key={p.projectId}
+                      className="clickable-row"
+                      onClick={() => openViewModal(p)}
+                    >
                       <td>
                         <strong>{p.projectName}</strong>
-                        <div className="code">PRJ-{p.projectId}</div>
+                        <div className="code">{p.projectReference || `PRJ-${p.projectId}`}</div>
                       </td>
 
                       <td>{p.clientName}</td>
 
-                      <td>
-                        {p.quotationCode ? (
-                          <span className="quotation-code">
-                            {p.quotationCode}
-                          </span>
-                        ) : (
-                          <span className="quotation-missing">—</span>
-                        )}
-                      </td>
+                      <td>{p.quotationCode || "—"}</td>
 
                       <td>
                         <span
@@ -166,24 +169,12 @@ const handleUpdate = async (e) => {
                         </span>
                       </td>
 
-                      <td>
-                        <div className="progress-wrap">
-                          <div className="progress-bar">
-                            <div
-                              className="progress-fill"
-                              style={{ width: `${p.progress || 0}%` }}
-                            />
-                          </div>
-                          <span>{p.progress || 0}%</span>
-                        </div>
-                      </td>
+                      <td>{p.progress || 0}%</td>
 
                       <td>
                         <div>{p.nextMilestone || "—"}</div>
                         <div className={isUrgent ? "urgent" : "days-left"}>
-                          {daysLeft !== null
-                            ? `${daysLeft} days left`
-                            : "—"}
+                          {daysLeft !== null ? `${daysLeft} days left` : "—"}
                         </div>
                       </td>
 
@@ -191,31 +182,33 @@ const handleUpdate = async (e) => {
                         <FiUsers /> {p.teamMembers || 0}
                       </td>
 
-                      <td
-                        className={`center ${
-                          p.criticalIssues > 0 ? "critical" : ""
-                        }`}
-                      >
+                      <td className={`center ${p.criticalIssues > 0 ? "critical" : ""}`}>
                         {p.criticalIssues || 0}
                       </td>
 
-                      <td className="actions">
-                        <button
-                          className="icon-btn view-po"
-                          onClick={() => openPdfInNewTab(p.poFile)}
-                          title="View PO"
-                        >
-                          <FiEye />
-                        </button>
+                      <td
+  className="actions"
+  onClick={(e) => e.stopPropagation()}
+>
+  {/* View PO - always visible */}
+  <button
+    className={`icon-btn view-btn ${!hasPOFile ? "disabled-view" : ""}`}
+    onClick={() => hasPOFile && openPdfInNewTab(p.poFile)}
+    title={hasPOFile ? "View PO" : "PO not uploaded"}
+    disabled={!hasPOFile}
+  >
+    <FiEye />
+  </button>
 
-                        <button
-                          className="icon-btn edit"
-                          onClick={() => openEditModal(p)}
-                          title="Edit"
-                        >
-                          <FiEdit2 />
-                        </button>
-                      </td>
+  {/* Edit */}
+  <button
+    className="icon-btn edit-btn"
+    onClick={() => openEditModal(p)}
+  >
+    <FiEdit2 />
+  </button>
+</td>
+
                     </tr>
                   );
                 })
@@ -225,7 +218,40 @@ const handleUpdate = async (e) => {
         )}
       </div>
 
-      {/* EDIT MODAL */}
+      {/* ================= VIEW MODAL ================= */}
+      {viewModalOpen && viewingProject && (
+        <div className="modal-overlay" onClick={() => setViewModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Project Details</h3>
+              <button onClick={() => setViewModalOpen(false)}>
+                <FiX />
+              </button>
+            </div>
+
+            <div className="view-grid">
+              <div><strong>Project</strong><span>{viewingProject.projectName}</span></div>
+              <div><strong>Client</strong><span>{viewingProject.clientName}</span></div>
+              <div><strong>Status</strong><span>{viewingProject.status}</span></div>
+              <div><strong>Progress</strong><span>{viewingProject.progress || 0}%</span></div>
+              <div><strong>Next Milestone</strong><span>{viewingProject.nextMilestone || "—"}</span></div>
+              <div><strong>Due Date</strong><span>{viewingProject.milestoneDueDate || "—"}</span></div>
+              <div><strong>Critical Issues</strong><span>{viewingProject.criticalIssues || 0}</span></div>
+            </div>
+
+            {viewingProject.poFile && (
+              <button
+                className="view-po-btn"
+                onClick={() => openPdfInNewTab(viewingProject.poFile)}
+              >
+                View Purchase Order
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ================= EDIT MODAL (UNCHANGED) ================= */}
       {editModalOpen && editingProject && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -236,10 +262,7 @@ const handleUpdate = async (e) => {
               <select
                 value={editingProject.status}
                 onChange={(e) =>
-                  setEditingProject({
-                    ...editingProject,
-                    status: e.target.value,
-                  })
+                  setEditingProject({ ...editingProject, status: e.target.value })
                 }
               >
                 <option>Planned</option>
@@ -262,13 +285,9 @@ const handleUpdate = async (e) => {
                   })
                 }
               />
-              <div className="progress-value">
-                {editingProject.progress || 0}%
-              </div>
 
               <label>Next Milestone</label>
               <input
-                type="text"
                 value={editingProject.nextMilestone || ""}
                 onChange={(e) =>
                   setEditingProject({
@@ -304,10 +323,7 @@ const handleUpdate = async (e) => {
               />
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setEditModalOpen(false)}
-                >
+                <button type="button" onClick={() => setEditModalOpen(false)}>
                   Cancel
                 </button>
                 <button type="submit">Save Changes</button>
