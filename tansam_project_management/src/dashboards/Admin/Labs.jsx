@@ -1,13 +1,14 @@
-import { useState } from "react";
-import "./admincss/Labs.css";
+import { useEffect, useState } from "react";
+import {
+  fetchLabs,
+  createLab,
+  updateLab,
+} from "../../services/admin/admin.roles.api";
 import { FiPlus, FiEdit2, FiX, FiSave } from "react-icons/fi";
+import "./admincss/Labs.css";
 
 export default function Labs() {
-  const [labs, setLabs] = useState([
-    { id: 1, name: "Lab A", status: "ACTIVE" },
-    { id: 2, name: "Lab B", status: "INACTIVE" },
-  ]);
-
+  const [labs, setLabs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -17,6 +18,20 @@ export default function Labs() {
     status: "ACTIVE",
   });
 
+  /* ================= LOAD LABS ================= */
+  useEffect(() => {
+    loadLabs();
+  }, []);
+
+  const loadLabs = async () => {
+    try {
+      setLabs(await fetchLabs());
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  /* ================= HANDLERS ================= */
   const openAddModal = () => {
     setIsEdit(false);
     setForm({ id: null, name: "", status: "ACTIVE" });
@@ -25,7 +40,11 @@ export default function Labs() {
 
   const openEditModal = (lab) => {
     setIsEdit(true);
-    setForm(lab);
+    setForm({
+      id: lab.id,
+      name: lab.name,
+      status: lab.status,
+    });
     setShowModal(true);
   };
 
@@ -33,7 +52,7 @@ export default function Labs() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -41,24 +60,34 @@ export default function Labs() {
       return;
     }
 
-    if (isEdit) {
-      setLabs(labs.map((l) => (l.id === form.id ? { ...form } : l)));
-    } else {
-      setLabs([...labs, { ...form, id: Date.now() }]);
-    }
+    try {
+      if (isEdit) {
+        await updateLab(form.id, {
+          name: form.name,
+          status: form.status,
+        });
+      } else {
+        await createLab({
+          name: form.name,
+          status: form.status,
+        });
+      }
 
-    setShowModal(false);
+      setShowModal(false);
+      loadLabs();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
+  /* ================= UI ================= */
   return (
     <div className="labs-container">
       {/* HEADER */}
       <div className="labs-header">
         <h2 className="labs-title">Labs Master</h2>
-
         <button className="primary-btn" onClick={openAddModal}>
-          <FiPlus size={16} />
-          Add Lab
+          <FiPlus size={16} /> Add Lab
         </button>
       </div>
 
@@ -73,36 +102,36 @@ export default function Labs() {
             </tr>
           </thead>
           <tbody>
-            {labs.length === 0 ? (
+            {labs.map((lab) => (
+              <tr key={lab.id}>
+                <td className="col-name">{lab.name}</td>
+                <td className="col-status">
+                  <span
+                    className={`status-badge ${
+                      lab.status === "ACTIVE" ? "active" : "inactive"
+                    }`}
+                  >
+                    {lab.status}
+                  </span>
+                </td>
+                <td className="col-action center">
+                  <button
+                    className="icon-btn edit"
+                    onClick={() => openEditModal(lab)}
+                    title="Edit Lab"
+                  >
+                    <FiEdit2 />
+                  </button>
+                </td>
+              </tr>
+            ))}
+
+            {labs.length === 0 && (
               <tr>
                 <td colSpan="3" className="empty-text">
                   No labs found
                 </td>
               </tr>
-            ) : (
-              labs.map((lab) => (
-                <tr key={lab.id}>
-                  <td className="col-name">{lab.name}</td>
-                  <td className="col-status">
-                    <span
-                      className={`status-badge ${
-                        lab.status === "ACTIVE" ? "active" : "inactive"
-                      }`}
-                    >
-                      {lab.status}
-                    </span>
-                  </td>
-                  <td className="col-action center">
-                    <button
-                      className="icon-btn edit"
-                      onClick={() => openEditModal(lab)}
-                      title="Edit Lab"
-                    >
-                      <FiEdit2 />
-                    </button>
-                  </td>
-                </tr>
-              ))
             )}
           </tbody>
         </table>
@@ -114,7 +143,10 @@ export default function Labs() {
           <div className="modal-box">
             <div className="modal-header">
               <h3>{isEdit ? "Edit Lab" : "Add Lab"}</h3>
-              <button className="icon-btn" onClick={() => setShowModal(false)}>
+              <button
+                className="icon-btn"
+                onClick={() => setShowModal(false)}
+              >
                 <FiX />
               </button>
             </div>
@@ -130,16 +162,20 @@ export default function Labs() {
                 placeholder="Enter lab name"
               />
 
-              <label className="form-label">Status</label>
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
+              {isEdit && (
+                <>
+                  <label className="form-label">Status</label>
+                  <select
+                    name="status"
+                    value={form.status}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                  </select>
+                </>
+              )}
 
               <div className="form-actions">
                 <button
@@ -150,8 +186,7 @@ export default function Labs() {
                   Cancel
                 </button>
                 <button type="submit" className="primary-btn">
-                  <FiSave size={16} />
-                  Save
+                  <FiSave size={16} /> Save
                 </button>
               </div>
             </form>
