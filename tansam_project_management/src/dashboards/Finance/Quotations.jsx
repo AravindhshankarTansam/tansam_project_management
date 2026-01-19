@@ -10,6 +10,7 @@ import {
 import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 
+import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
 export default function Quotations() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -140,36 +141,42 @@ useEffect(() => {
 
 const handleSaveQuotation = async () => {
   try {
-    const dataToSend = new FormData();
-    
-    // This is the MOST IMPORTANT line!
-    dataToSend.append("quotationId", quotationData?.id || initialQuotation?.id);  // ← must exist!
+    const payload = {
+      ...newQuotation,
+      quotationNo: editId
+        ? newQuotation.quotationNo   // ✅ KEEP EXISTING NUMBER ON EDIT
+        : newQuotation.quotationNo || generateQuotationNo(data),
+    };
 
-    dataToSend.append("refNo", refNo);
-    dataToSend.append("date", date);
-    dataToSend.append("clientName", quotation.clientName);
-    dataToSend.append("kindAttn", quotation.kindAttn || "");
-    dataToSend.append("subject", quotation.subject || "");
-    dataToSend.append("financeManagerName", quotation.financeManagerName || "");
+    if (editId) {
+      await updateQuotation(editId, payload);
+    } else {
+      await addQuotation(payload);
+    }
 
-    dataToSend.append("items", JSON.stringify(quotation.items || []));
-    dataToSend.append("terms", JSON.stringify(quotation.terms || []));
+    const updatedData = await getQuotations();
+    setData(updatedData);
 
-    if (quotation.signature) dataToSend.append("signature", quotation.signature);
-    if (quotation.seal) dataToSend.append("seal", quotation.seal);
-
-    const saved = await saveGeneratedQuotation(dataToSend);
-
-    // Optional: you can show success message
-    alert("Quotation generated & saved successfully!");
-
-    onSaved?.();   // This triggers parent to refresh / mark as generated
-
+    setShowModal(false);
+    setEditId(null);
+    setNewQuotation({
+      quotationNo: "",
+      project_name: "",
+      clientName: "",
+      clientType: "Corporate",
+      workCategory: "",
+      lab: "",
+      description: "",
+      value: "",
+      date: "",
+    });
   } catch (err) {
     console.error(err);
-    alert("Error saving generated quotation:\n" + (err.message || "Unknown error"));
+    alert("Error saving quotation");
   }
 };
+
+
   const deleteRow = async (id) => {
     if (window.confirm("Are you sure you want to delete this quotation?")) {
       try {

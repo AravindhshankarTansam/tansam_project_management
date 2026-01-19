@@ -4,11 +4,7 @@ export const createQuotationFollowupsSchema = async (db) => {
     CREATE TABLE IF NOT EXISTS quotation_followups (
       id INT AUTO_INCREMENT PRIMARY KEY,
       project_name VARCHAR(50),
-      clientResponse VARCHAR(50),
-      lastFollowup DATE,
       revisedCost DECIMAL(10,2),
-      nextFollowup DATE,
-      remarks VARCHAR(255),
       status VARCHAR(50),
       poReceived ENUM('Yes','No'),
       paymentPhase VARCHAR(255),

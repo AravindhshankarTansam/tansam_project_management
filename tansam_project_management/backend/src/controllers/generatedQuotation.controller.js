@@ -27,63 +27,45 @@ export const addGeneratedQuotation = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { finance: true });
 
-    const {
-      quotationId,         // ← This MUST come from frontend!
-      refNo,
-      date,
-      clientName,
-      kindAttn,
-      subject,
-      financeManagerName,
-    } = req.body;
+    // Read all fields from req.body
+    const refNo = req.body.refNo || null;
+    const date = req.body.date || null;
+    const clientName = req.body.clientName || null;
+    const kindAttn = req.body.kindAttn || null;
+    const subject = req.body.subject || null;
+    const financeManagerName = req.body.financeManagerName || null;
 
+    // Parse items and terms JSON
     const items = req.body.items ? JSON.parse(req.body.items) : [];
     const terms = req.body.terms ? JSON.parse(req.body.terms) : [];
 
-    const signaturePath = req.files?.signature?.[0]?.filename
-      ? `uploads/po/${req.files.signature[0].filename}`
-      : null;
+    // File paths
+    const signaturePath = req.files?.signature?.[0] ? `uploads/po/${req.files.signature[0].filename}` : null;
+    const sealPath = req.files?.seal?.[0] ? `uploads/po/${req.files.seal[0].filename}` : null;
 
-    const sealPath = req.files?.seal?.[0]?.filename
-      ? `uploads/po/${req.files.seal[0].filename}`
-      : null;
-
-    // 1. Insert generated quotation
-    const [result] = await db.execute(
+    // Insert into DB
+    await db.execute(
       `INSERT INTO generated_quotations
-       (quotationId, refNo, date, clientName, kindAttn, subject, items, terms, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (refNo, date, clientName, kindAttn, subject, items, terms, signature, seal, financeManagerName)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        quotationId,
         refNo,
         date,
         clientName,
-        kindAttn || null,
-        subject || null,
+        kindAttn,
+        subject,
         JSON.stringify(items),
         JSON.stringify(terms),
         signaturePath,
         sealPath,
-        financeManagerName || null,
+        financeManagerName,
       ]
     );
 
-    // 2. VERY IMPORTANT → Update original quotation!
-    await db.execute(
-      `UPDATE quotations 
-       SET isGenerated = 1 
-       WHERE id = ?`,
-      [quotationId]
-    );
-
-    res.json({ 
-      success: true, 
-      id: result.insertId,
-      message: "Quotation generated and marked successfully"
-    });
+    res.json({ success: true });
   } catch (error) {
     console.error("Add Generated Quotation Error:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Server error" });
   }
 };
 // Get quotation by ID

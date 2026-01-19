@@ -8,9 +8,10 @@ import tansamoldlogo from "../../assets/tansam/tansamoldlogo.png";
 import siemens from "../../assets/tansam/siemens.png";
 import tidco from "../../assets/tansam/tidcologo.png"
 import "../../layouts/CSS/GenerateQuotation.css";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 
 import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
-import { pdf } from '@react-pdf/renderer';
+// import { pdf } from '@react-pdf/renderer';
 import QuotationPDF from './QuotationPdf.jsx';
 // Editable Table Component
 // Helper to convert file to Base64
@@ -143,37 +144,7 @@ const EditableQuotationTable = ({ quotation, setQuotation }) => {
 // Main Finance Document Component
 const FinanceDocument = ({ quotation, setQuotation, refNo, setRefNo, date, setDate, showPreview, setShowPreview, savedQuotation, handleSaveQuotation }) => {
  
-const handleDownloadPDF = async () => {
-  try {
-    const blob = await pdf(
-      <QuotationPDF
-        quotation={quotation}
-        refNo={refNo}
-        date={date}
-        signatureUrl={
-          quotation.signature
-            ? URL.createObjectURL(quotation.signature)
-            : null
-        }
-        sealUrl={
-          quotation.seal
-            ? URL.createObjectURL(quotation.seal)
-            : null
-        }
-      />
-    ).toBlob();
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${refNo || "Quotation"}.pdf`;
-    link.click();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("PDF generation failed", err);
-    alert("PDF download failed");
-  }
-};
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", width: "100%", boxSizing: "border-box", margin: 0, backgroundColor: "#f0f0f0" }}>
       <div style={{ backgroundColor: "#fff", padding: "40px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", width: "800px", maxWidth: "95%", margin: "0 auto" }}>
@@ -399,12 +370,36 @@ const handleDownloadPDF = async () => {
   GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529
 </div>
 <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-  <button
-    onClick={handleDownloadPDF}
-    style={{ padding: "10px 20px", fontSize: "16px" }}
-  >
-    Download PDF
-  </button>
+ <PDFDownloadLink
+  document={
+    <QuotationPDF
+      quotation={quotation}
+      refNo={refNo}
+      date={date}
+      signatureUrl={
+        quotation.signature
+          ? URL.createObjectURL(quotation.signature)
+          : null
+      }
+      sealUrl={
+        quotation.seal
+          ? URL.createObjectURL(quotation.seal)
+          : null
+      }
+    />
+  }
+  fileName={`${refNo || "Quotation"}.pdf`}
+  style={{
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#1F4E79",
+    color: "#fff",
+    textDecoration: "none",
+  }}
+>
+  {({ loading }) => (loading ? "Generating PDF..." : "Download PDF")}
+</PDFDownloadLink>
+
 
  <button
   onClick={handleSaveQuotation} // now defined in parent and passed as prop
@@ -489,7 +484,6 @@ const handleSaveQuotation = async () => {
     const dataToSend = new FormData();
 
     // Always append fields, they now exist in state
-     dataToSend.append("quotationId", quotationData.id);
     dataToSend.append("refNo", refNo);
     dataToSend.append("date", date);
     dataToSend.append("clientName", quotation.clientName);
