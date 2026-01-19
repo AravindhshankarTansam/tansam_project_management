@@ -35,7 +35,29 @@ export default function Opportunities() {
   const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  const [originalAssignedTo, setOriginalAssignedTo] = useState(null);
 
+  //  Toast state
+    const [toast, setToast] = useState({
+      open: false,
+      type: "success",
+      message: "",
+      position: "top",
+    });
+
+    //  Toast helper
+    const showToast = ({
+      message,
+      type = "success",
+      position = "top",
+      duration = 3000,
+    }) => {
+      setToast({ open: true, message, type, position });
+
+      setTimeout(() => {
+        setToast((t) => ({ ...t, open: false }));
+      }, duration);
+    };
 
   /* ================= FILTER STATE ================= */
   const [filters, setFilters] = useState({
@@ -124,6 +146,7 @@ export default function Opportunities() {
     const tracker = getTrackerForOpportunity(row.opportunity_id);
 
     setIsEdit(true);
+    setOriginalAssignedTo(row.assigned_to);
     setForm({
       opportunity_id: row.opportunity_id,
       opportunityName: row.opportunity_name,
@@ -145,21 +168,45 @@ export default function Opportunities() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   try {
+    setLoading(true);
+
+    const isReassign =
+      isEdit &&
+      originalAssignedTo &&
+      String(originalAssignedTo) !== String(form.assignedTo);
+
+    // 🔔 PRE-TOAST
+    if (!isEdit) {
+      showToast({
+        message: "Creating opportunity & sending mail...",
+        type: "info",
+        position: "top",
+      });
+    } else if (isReassign) {
+      showToast({
+        message: "Reassigning opportunity & sending mail...",
+        type: "info",
+        position: "top",
+      });
+    }
+
     let opportunityId;
 
-    // 1. Prepare opportunity payload
+    // 🔹 OPPORTUNITY PAYLOAD
     const opportunityPayload = {
       ...form,
-      leadStatus: form.status,  // ← map to backend expected field name
+      leadStatus: form.status,
     };
-    delete opportunityPayload.status;           // remove frontend name
+
+    delete opportunityPayload.status;
     delete opportunityPayload.next_followup_date;
     delete opportunityPayload.next_action;
     delete opportunityPayload.stage;
 
+    // 🔹 CREATE / UPDATE OPPORTUNITY
     if (isEdit) {
       await updateOpportunity(form.opportunity_id, opportunityPayload);
       opportunityId = form.opportunity_id;
@@ -168,7 +215,7 @@ export default function Opportunities() {
       opportunityId = created.opportunity_id;
     }
 
-    // 2. Tracker payload
+    // 🔹 TRACKER
     const tracker = getTrackerForOpportunity(opportunityId);
     const trackerPayload = {
       ...tracker,
@@ -185,14 +232,45 @@ export default function Opportunities() {
       await createOpportunityTracker(trackerPayload);
     }
 
-    setShowModal(false);
-    setIsPreview(false);
-    resetForm();
-    loadAll();
+    // 🔔 SUCCESS TOAST
+    if (!isEdit) {
+      showToast({
+        message: "Opportunity created & mail sent successfully",
+        type: "success",
+        position: "top",
+      });
+    } else if (isReassign) {
+      showToast({
+        message: "Opportunity reassigned & mail sent successfully",
+        type: "success",
+        position: "top",
+      });
+    } else {
+      showToast({
+        message: "Opportunity updated successfully",
+        type: "success",
+        position: "top",
+      });
+    }
+
+    setTimeout(() => {
+      setShowModal(false);
+      setIsPreview(false);
+      resetForm();
+      loadAll();
+    }, 800);
   } catch (err) {
-    alert(err.message || "Failed to save opportunity");
+    console.error(err);
+    showToast({
+      message: "Operation failed. Please try again.",
+      type: "error",
+      position: "top",
+    });
+  } finally {
+    setLoading(false);
   }
 };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this opportunity?")) return;
     try {
@@ -202,6 +280,8 @@ export default function Opportunities() {
       alert(err.message);
     }
   };
+
+
 
   /* ================= FILTER LOGIC ================= */
   const filteredOpportunities = opportunities.filter((item) => {
@@ -509,7 +589,14 @@ export default function Opportunities() {
                 >
                   {isPreview ? "Back to Edit" : "Preview"}
                 </button>
-                <button type="submit">Save</button>
+                <button type="submit">Save
+                  {loading && (
+                    <div className="global-loader">
+                      <div className="spinner"></div>
+                      <p>Processing request & sending mail…</p>
+                    </div>
+                  )}
+                </button>
                 <button
                   type="button"
                   className="cancel-btn"
@@ -628,6 +715,11 @@ export default function Opportunities() {
           </div>
         </div>
       )}
+      {toast.open && (
+          <div className={`toast toast-${toast.type} toast-${toast.position}`}>
+            {toast.message}
+          </div>
+        )}
     </div>
   );
 }
