@@ -9,7 +9,8 @@ import {
 } from "../../services/quotation/quotation.api";
 import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
-import { fetchWorkCategories, createWorkCategory,updateWorkCategory  } from "../../services/admin/admin.roles.api";
+import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
+import { fetchLabs } from "../../services/admin/admin.roles.api";
 import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
 import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
 export default function Quotations() {
@@ -21,6 +22,7 @@ export default function Quotations() {
   const [downloadingId, setDownloadingId] = useState(null);
 const [workCategories, setWorkCategories] = useState([]);
 const [opportunities, setOpportunities] = useState([]);
+const [labs, setLabs] = useState([]);
 
 const [showDoc, setShowDoc] = useState(false);
 
@@ -80,6 +82,19 @@ useEffect(() => {
   };
 
   loadWorkCategories();
+}, []);
+useEffect(() => {
+  const loadLabs = async () => {
+    try {
+      const labData = await fetchLabs(); // from admin.roles.api.js
+      setLabs(labData);
+    } catch (err) {
+      console.error("Failed to fetch labs:", err);
+      alert("Failed to load labs");
+    }
+  };
+
+  loadLabs();
 }, []);
 
 useEffect(() => {
@@ -601,13 +616,20 @@ if (showGenerateQuotation) {
 
         <div className="form-group">
           <label>Lab *</label>
-          <input
-            type="text"
-            value={newQuotation.lab}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, lab: e.target.value })
-            }
-          />
+        <select
+  value={newQuotation.lab}
+  onChange={(e) =>
+    setNewQuotation({ ...newQuotation, lab: e.target.value })
+  }
+>
+  <option value="">Select Lab</option>
+  {labs.map((lab) => (
+    <option key={lab.id} value={lab.name}>
+      {lab.name}
+    </option>
+  ))}
+</select>
+
         </div>
 
         <div className="form-group">

@@ -29,7 +29,7 @@ router.post("/roles", authMiddleware, roleMiddleware(["ADMIN"]), createRole);
 router.put("/roles/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateRole);
 
 // LABS (ADMIN)
-router.get("/labs", authMiddleware, roleMiddleware(["ADMIN"]), getLabs);
+router.get("/labs", authMiddleware, roleMiddleware(["ADMIN", "FINANCE"]), getLabs);
 router.post("/labs", authMiddleware, roleMiddleware(["ADMIN"]), createLab);
 router.put("/labs/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateLab);
 
