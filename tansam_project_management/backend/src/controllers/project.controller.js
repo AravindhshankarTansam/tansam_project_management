@@ -10,7 +10,7 @@ export const createProject = async (req, res) => {
       projectType,
       projectName,
       clientName,
-      opportunityId,
+      opportunityId,          // ← coming from frontend
       startDate,
       endDate,
       status,
@@ -20,51 +20,48 @@ export const createProject = async (req, res) => {
 
     const poFilePath = req.file ? req.file.path : null;
 
-    // ✅ NORMALIZE TYPE
+    // Normalize type (replace spaces with underscore, uppercase)
     const normalizedType = projectType
       ?.toUpperCase()
-      .replace(/\s+/g, "_");
+      .replace(/\s+/g, "_") || "";
 
     let finalProjectName = projectName;
     let finalClientName = clientName;
     let oppId = null;
 
-    /* ================= CUSTOMER POC ================= */
-    if (normalizedType === "CUSTOMER_POC") {
+    // ================= SAVE OPPORTUNITY ID FOR BOTH CUSTOMER AND CUSTOMER_POC =================
+    if (normalizedType === "CUSTOMER" || normalizedType === "CUSTOMER_POC") {
       if (!opportunityId) {
-        return res.status(400).json({ message: "Opportunity is required" });
+        return res.status(400).json({ 
+          message: "Opportunity ID is required for Customer / Customer POC projects" 
+        });
       }
 
       const [[opp]] = await db.execute(
-        `SELECT
-            opportunity_id,
-            opportunity_name,
-            customer_name
+        `SELECT opportunity_id, opportunity_name, customer_name
          FROM opportunities_coordinator
          WHERE opportunity_id = ?`,
         [opportunityId]
       );
 
       if (!opp) {
-        return res.status(400).json({ message: "Invalid opportunity" });
+        return res.status(400).json({ message: "Invalid opportunity ID" });
       }
 
-      finalProjectName = opp.opportunity_name;
-      finalClientName = opp.customer_name;
-      oppId = opp.opportunity_id;
+      // Auto-fill if frontend didn't provide (optional safety)
+      finalProjectName = finalProjectName || opp.opportunity_name;
+      finalClientName = finalClientName || opp.customer_name;
+      oppId = opp.opportunity_id; // ← This is what saves it!
     }
 
-    /* ================= CUSTOMER VALIDATION ================= */
-    if (
-      normalizedType === "CUSTOMER" &&
-      (!quotationNumber || !poNumber || !poFilePath)
-    ) {
+    // ================= CUSTOMER VALIDATION =================
+    if (normalizedType === "CUSTOMER" && (!quotationNumber || !poNumber || !poFilePath)) {
       return res.status(400).json({
-        message: "Quotation, PO Number and File are required for Customer projects",
+        message: "Quotation Number, PO Number, and PO File are required for Customer projects",
       });
     }
 
-    /* ================= INSERT PROJECT ================= */
+    // ================= INSERT INTO PROJECTS =================
     const [result] = await db.execute(
       `INSERT INTO projects
        (project_name, client_name, project_type, opportunity_id,
@@ -75,7 +72,7 @@ export const createProject = async (req, res) => {
         finalProjectName,
         finalClientName,
         normalizedType,
-        oppId,
+        oppId,                    // ← Now saved for both types
         startDate,
         endDate,
         status || "Planned",
@@ -87,8 +84,8 @@ export const createProject = async (req, res) => {
 
     const projectId = result.insertId;
 
-    /* ================= PROJECT REFERENCE ================= */
-    if (normalizedType === "CUSTOMER_POC") {
+    // ================= PROJECT REFERENCE (only for POC) =================
+    if (normalizedType === "CUSTOMER_POC" && oppId) {
       const projectReference = `${oppId}/prj-${projectId}`;
 
       await db.execute(
@@ -102,7 +99,7 @@ export const createProject = async (req, res) => {
       projectId,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Create Project Error:", err);
     res.status(500).json({ message: err.message });
   }
 };
