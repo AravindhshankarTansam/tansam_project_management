@@ -1,6 +1,28 @@
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
 
+/* ======================================================
+   HELPERS
+====================================================== */
+
+const ALLOWED_STAGES = [
+  "NEW",
+  "CONTACTED",
+  "QUALIFIED",
+  "PROPOSAL_SENT",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+];
+
+const normalizeStage = (stage) => {
+  if (!stage) return "NEW";
+  const clean = stage.trim().toUpperCase();
+  return ALLOWED_STAGES.includes(clean) ? clean : "NEW";
+};
+
+const normalize = (v) => (v?.trim() ? v.trim() : null);
+
 /**
  * Generate business opportunity ID
  * Format: OPP_YYYY_001
@@ -46,7 +68,7 @@ export const createOpportunity = async (req, res) => {
       leadSource,
       leadDescription,
       leadStatus,
-      assignedTo, // ✅ ADDED
+      assignedTo,
     } = req.body;
 
     if (!opportunityName || !customerName) {
@@ -82,16 +104,16 @@ export const createOpportunity = async (req, res) => {
       `,
       [
         opportunityId,
-        opportunityName.trim(),
-        customerName.trim(),
-        industry?.trim() || null,
-        contactPerson?.trim() || null,
-        contactEmail?.trim() || null,
-        contactPhone?.trim() || null,
+        normalize(opportunityName),
+        normalize(customerName),
+        normalize(industry),
+        normalize(contactPerson),
+        normalize(contactEmail),
+        normalize(contactPhone),
         leadSource || null,
         leadDescription || null,
         leadStatus || "NEW",
-        assignedTo?.trim() || null, // ✅ ADDED
+        normalize(assignedTo),
         req.user.id,
         req.user.name || req.user.username || "Unknown",
         req.user.role,
@@ -113,7 +135,7 @@ export const createOpportunity = async (req, res) => {
 ====================================================== */
 export const getOpportunities = async (req, res) => {
   try {
-    if (!req.user?.id || !req.user?.role) {
+    if (!req.user?.id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
@@ -150,7 +172,6 @@ export const getOpportunities = async (req, res) => {
     query += ` ORDER BY id DESC`;
 
     const [rows] = await db.execute(query, params);
-
     res.json(rows);
   } catch (err) {
     console.error("Get opportunities error:", err);
@@ -168,8 +189,6 @@ export const updateOpportunity = async (req, res) => {
     }
 
     const { opportunity_id } = req.params;
-
-    const normalize = (v) => (v?.trim() ? v.trim() : null);
 
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
@@ -201,7 +220,7 @@ export const updateOpportunity = async (req, res) => {
         req.body.leadSource || null,
         req.body.leadDescription || null,
         req.body.leadStatus || null,
-        normalize(req.body.assignedTo), // ✅ ADDED
+        normalize(req.body.assignedTo),
         opportunity_id,
         req.user.id,
       ]
@@ -252,8 +271,6 @@ export const deleteOpportunity = async (req, res) => {
   }
 };
 
-
-
 /* ======================================================
    CREATE OPPORTUNITY TRACKER
 ====================================================== */
@@ -266,7 +283,7 @@ export const createOpportunityTracker = async (req, res) => {
     const {
       opportunity_id,
       stage,
-      next_followup_date,         // ← keep as string "YYYY-MM-DD"
+      next_followup_date,
       next_action,
       remarks,
     } = req.body;
@@ -280,10 +297,7 @@ export const createOpportunityTracker = async (req, res) => {
 
     const [[opp]] = await db.execute(
       `
-      SELECT
-        opportunity_name,
-        customer_name,
-        assigned_to
+      SELECT opportunity_name, customer_name, assigned_to
       FROM opportunities_coordinator
       WHERE opportunity_id = ?
       `,
@@ -316,10 +330,10 @@ export const createOpportunityTracker = async (req, res) => {
         opp.opportunity_name,
         opp.customer_name,
         opp.assigned_to,
-        stage || "NEW",
-        next_followup_date || null,           // ← VERY IMPORTANT: string or null
-        next_action || null,
-        remarks || null,
+        normalizeStage(stage),
+        next_followup_date || null,
+        normalize(next_action),
+        normalize(remarks),
         req.user.id,
         req.user.name || req.user.username || "Unknown",
         req.user.role,
@@ -333,9 +347,8 @@ export const createOpportunityTracker = async (req, res) => {
   }
 };
 
-
 /* ======================================================
-   GET OPPORTUNITY TRACKERS (OWN)
+   GET OPPORTUNITY TRACKERS
 ====================================================== */
 export const getOpportunityTrackers = async (req, res) => {
   try {
@@ -348,20 +361,7 @@ export const getOpportunityTrackers = async (req, res) => {
 
     const [rows] = await db.execute(
       `
-      SELECT
-        id,
-        opportunity_id,
-        opportunity_name,
-        customer_name,
-        assigned_to,
-        stage,
-        next_followup_date,
-        next_action,
-        remarks,
-        created_by,
-        created_by_name,
-        created_by_role,
-        created_at
+      SELECT *
       FROM opportunity_tracker
       WHERE created_by = ?
       ORDER BY id DESC
@@ -376,7 +376,6 @@ export const getOpportunityTrackers = async (req, res) => {
   }
 };
 
-
 /* ======================================================
    UPDATE OPPORTUNITY TRACKER
 ====================================================== */
@@ -388,10 +387,7 @@ export const updateOpportunityTracker = async (req, res) => {
 
     const { id } = req.params;
 
-    const normalize = (v) => (v?.trim() ? v.trim() : null);
-
     const db = await connectDB();
-    // await initSchemas(db, { coordinator: true }); // ← usually not needed on every request
 
     const [result] = await db.execute(
       `
@@ -405,8 +401,8 @@ export const updateOpportunityTracker = async (req, res) => {
         AND created_by = ?
       `,
       [
-        req.body.stage || null,
-        req.body.next_followup_date || null,    // ← string "YYYY-MM-DD" or null
+        normalizeStage(req.body.stage),
+        req.body.next_followup_date || null,
         normalize(req.body.next_action),
         normalize(req.body.remarks),
         id,
@@ -424,6 +420,7 @@ export const updateOpportunityTracker = async (req, res) => {
     res.status(500).json({ message: "Failed to update opportunity tracker" });
   }
 };
+
 /* ======================================================
    DELETE OPPORTUNITY TRACKER
 ====================================================== */
