@@ -1,0 +1,199 @@
+/* ================================
+   FONT & BASE
+================================ */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+.ceo-projects {
+  padding: 28px;
+  font-family: "Inter", sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+  color: #0f172a;
+}
+
+/* ================================
+   HEADER
+================================ */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #0ea5e9, #22c55e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.page-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+/* ================================
+   TABLE CARD
+================================ */
+.table-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.projects-table thead {
+  background: #f1f5f9;
+}
+
+.projects-table th {
+  text-align: left;
+  padding: 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #475569;
+}
+
+.projects-table td {
+  padding: 14px;
+  font-size: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.projects-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ================================
+   STATUS BADGES (same as CreateProject)
+================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.planned {
+  background: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.status-badge.in-progress {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.status-badge.completed {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.status-badge.on-hold {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+/* ================================
+   TYPE BADGES
+================================ */
+.type-badge {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.type-badge.internal {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.type-badge.customer {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.type-badge.customer_poc {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+/* ================================
+   LOADING & EMPTY
+================================ */
+.loading,
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #94a3b8;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* ================================
+   FILTER BAR
+================================ */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-bar input,
+.filter-bar select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+
+.filter-bar input {
+  min-width: 240px;
+}
+
+.clear-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  background: #dc2626;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ceo-projects {
+    padding: 16px;
+  }
+
+  .projects-table th,
+  .projects-table td {
+    font-size: 13px;
+    padding: 10px;
+  }
+}

@@ -18,7 +18,7 @@ router.use(authMiddleware);
 // GET quotations - Allow FINANCE + TEAM LEAD + COORDINATOR (if needed)
 router.get(
   "/",
-  roleMiddleware(["FINANCE", "TEAM LEAD", "COORDINATOR"]), // ← TEAM LEAD now allowed
+  roleMiddleware(["FINANCE", "TEAM LEAD", "COORDINATOR","CEO"]), // ← TEAM LEAD now allowed
   getQuotations
 );
 
