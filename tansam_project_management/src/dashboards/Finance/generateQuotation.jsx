@@ -517,18 +517,14 @@ const FinanceDocument = ({
 };
 
 // ✅ MAIN COMPONENT WITH ALL STATES & FIXED PROPS
-export default function GenerateQuotation({ onSaved, quotationData }) {
+export default function GenerateQuotation({ onSaved }) {
   const [quotation, setQuotation] = useState({
     subject: "",
     clientName: "",
     kindAttn: "",
     items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }], // ✅ Added initial item
-    terms: [
-      { title: "Validity", value: "This quotation is valid for 15 days." },
-      { title: "Payment", value: "100% payment in advance." },
-      { title: "Delivery", value: "Delivered within 1 day of PO." },
-      { title: "Purchase Order", value: "PO must be issued within 5 days." }
-    ],
+   terms: [],
+    termsContent: "", 
     signature: null,
     seal: null,
     financeManagerName: ""
@@ -547,28 +543,31 @@ export default function GenerateQuotation({ onSaved, quotationData }) {
   const [termsError, setTermsError] = useState(null);
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
-  useEffect(() => {
-    const fetchTerms = async () => {
-      try {
-        setTermsLoading(true);
-        setTermsError(null);
-        console.log("🔍 Fetching active terms...");
-        
-        const terms = await getActiveTerms();
-        console.log("✅ Terms fetched:", terms);
-        
-        setTermsContent(terms?.content || "<p>No active terms available</p>");
-      } catch (err) {
-        console.error("❌ Terms fetch failed:", err);
-        setTermsError(err.message || "Failed to fetch terms");
-        setTermsContent("<p>Terms temporarily unavailable</p>");
-      } finally {
-        setTermsLoading(false);
-      }
-    };
-    
-    fetchTerms();
-  }, []);
+useEffect(() => {  
+  const fetchTerms = async () => {
+    try {
+      setTermsLoading(true);
+      setTermsError(null);
+      console.log("🔍 Fetching active terms...");
+      
+      const terms = await getActiveTerms();
+      console.log("✅ Terms fetched:", terms);
+      
+      const htmlContent = terms?.content || "<p>No active terms available</p>";
+      setTermsContent(htmlContent);
+      
+      // ✅ ADD THIS ONE LINE - copies to quotation state for saving
+      setQuotation(prev => ({ ...prev, termsContent: htmlContent }));
+      
+    } catch (error) {
+      // ... error handling unchanged
+      console.error("❌ Terms fetch failed:", error); 
+    } finally {
+      setTermsLoading(false);
+    }
+  };
+  fetchTerms();
+}, []);
 
   // ✅ FIXED handleSaveQuotation
   const handleSaveQuotation = async () => {
@@ -582,8 +581,8 @@ export default function GenerateQuotation({ onSaved, quotationData }) {
       dataToSend.append("financeManagerName", quotation.financeManagerName || "");
 
       dataToSend.append("items", JSON.stringify(quotation.items));
-      dataToSend.append("terms", JSON.stringify(quotation.terms));
-
+   dataToSend.append("terms", JSON.stringify(quotation.terms));
+ dataToSend.append("termsContent", quotation.termsContent);
       if (quotation.signature) dataToSend.append("signature", quotation.signature);
       if (quotation.seal) dataToSend.append("seal", quotation.seal);
 

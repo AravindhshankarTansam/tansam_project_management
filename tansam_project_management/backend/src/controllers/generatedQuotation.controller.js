@@ -34,7 +34,7 @@ export const addGeneratedQuotation = async (req, res) => {
     const kindAttn = req.body.kindAttn || null;
     const subject = req.body.subject || null;
     const financeManagerName = req.body.financeManagerName || null;
-
+  const termsContent = req.body.termsContent || null;
     // Parse items and terms JSON
     const items = req.body.items ? JSON.parse(req.body.items) : [];
     const terms = req.body.terms ? JSON.parse(req.body.terms) : [];
@@ -46,8 +46,8 @@ export const addGeneratedQuotation = async (req, res) => {
     // Insert into DB
     await db.execute(
       `INSERT INTO generated_quotations
-       (refNo, date, clientName, kindAttn, subject, items, terms, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (refNo, date, clientName, kindAttn, subject, items, terms, termsContent, signature, seal, financeManagerName)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         refNo,
         date,
@@ -56,6 +56,7 @@ export const addGeneratedQuotation = async (req, res) => {
         subject,
         JSON.stringify(items),
         JSON.stringify(terms),
+        termsContent,
         signaturePath,
         sealPath,
         financeManagerName,
@@ -99,6 +100,7 @@ export const updateGeneratedQuotation = async (req, res) => {
       subject,
       items,
       terms,
+
       signature,
       seal,
       financeManagerName,
