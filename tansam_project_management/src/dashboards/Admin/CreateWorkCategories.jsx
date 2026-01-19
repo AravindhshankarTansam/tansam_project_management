@@ -1,13 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./admincss/WorkCategories.css";
 import { FiPlus, FiEdit2, FiX, FiSave } from "react-icons/fi";
-
+import { fetchWorkCategories, createWorkCategory,updateWorkCategory  } from "../../services/admin/admin.roles.api";
 export default function CreateWorkCategories() {
   const [categories, setCategories] = useState([
     { id: 1, name: "Electrical", status: "ACTIVE" },
     { id: 2, name: "Mechanical", status: "INACTIVE" },
   ]);
-
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchWorkCategories();
+        setCategories(data); // set fetched categories
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load work categories");
+      }
+    };
+    loadCategories();
+  }, []);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
@@ -33,24 +44,44 @@ export default function CreateWorkCategories() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!form.name.trim()) {
-      alert("Work category name is required");
-      return;
-    }
+  if (!form.name.trim()) {
+    alert("Work category name is required");
+    return;
+  }
 
+  try {
     if (isEdit) {
-      setCategories(
-        categories.map((c) => (c.id === form.id ? { ...form } : c))
-      );
+      // Update in DB
+      const updated = await updateWorkCategory(form.id, {
+        name: form.name,
+        status: form.status,
+      });
+
+      // Update local state
+      setCategories(categories.map(c => (c.id === form.id ? updated : c)));
     } else {
-      setCategories([...categories, { ...form, id: Date.now() }]);
+      // Create in DB
+      const created = await createWorkCategory({
+        name: form.name,
+        status: form.status,
+      });
+
+      // Add to local state
+      setCategories([...categories, created]);
     }
 
     setShowModal(false);
-  };
+    setForm({ id: null, name: "", status: "ACTIVE" });
+    setIsEdit(false);
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Failed to save work category");
+  }
+};
+
 
   return (
     <div className="work-categories-container">
