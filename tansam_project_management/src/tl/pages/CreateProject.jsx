@@ -2,14 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import {
   FiEdit,
   FiTrash2,
-  FiChevronDown,
   FiPlus,
   FiSearch,
-  FiFilter,
-  FiX,
-  FiCheckCircle,
   FiChevronLeft,
   FiChevronRight,
+  FiCheckCircle,
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,28 +19,31 @@ import {
   deleteProject,
 } from "../../services/project.api";
 
-import { fetchProjectTypes } from "../../services/projectType.api";
+import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
+import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
+
+/* ================= CONSTANTS ================= */
+
+const PROJECTS_PER_PAGE = 10;
 
 const emptyForm = {
   id: null,
+  projectType: "",
   projectName: "",
   clientName: "",
-  projectType: "",
+  opportunityId: "",
   startDate: "",
   endDate: "",
   status: "Planned",
-  poStatus: "Negotiated",
   quotationNumber: "",
   poNumber: "",
   poFile: null,
 };
 
-const formatDate = (dateValue) => {
-  if (!dateValue) return "";
-  return new Date(dateValue).toISOString().split("T")[0];
-};
+const formatDate = (d) =>
+  d ? new Date(d).toISOString().split("T")[0] : "";
 
-const PROJECTS_PER_PAGE = 10;
+/* ================= COMPONENT ================= */
 
 export default function CreateProject() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -54,447 +54,345 @@ export default function CreateProject() {
 
   const [projects, setProjects] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
+  const [opportunities, setOpportunities] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-
+  const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [form, setForm] = useState(emptyForm);
 
-  useEffect(() => {
-    let mounted = true;
+  /* ================= LOAD DATA ================= */
 
+  useEffect(() => {
     (async () => {
       try {
-        const [projectsData, typesData] = await Promise.all([
+        const [p, t, o] = await Promise.all([
           fetchProjects(),
           fetchProjectTypes(),
+          fetchOpportunities(),
         ]);
 
-        if (mounted) {
-          setProjects(projectsData || []);
-          setProjectTypes(typesData || []);
-        }
+        setProjects(p || []);
+        setProjectTypes((t || []).filter(x => x.status === "ACTIVE"));
+        setOpportunities(o || []);
       } catch {
         toast.error("Failed to load data");
       }
     })();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
-  /* Filtered Projects */
-  const filteredProjects = useMemo(() => {
-    let filtered = projects;
+  /* ================= PROJECT TYPE FLAGS ================= */
 
-    if (searchTerm.trim()) {
+  const projectType = form.projectType?.toUpperCase();
+  const isInternal = projectType === "INTERNAL";
+  const isCustomer = projectType === "CUSTOMER";
+  const isCustomerPOC = projectType === "CUSTOMER_POC";
+
+  /* ================= OPPORTUNITY LOOKUP ================= */
+
+  const selectedOpportunity = useMemo(() => {
+    if (!isCustomerPOC || !form.opportunityId) return null;
+    return opportunities.find(
+      o => o.opportunity_id === form.opportunityId
+    );
+  }, [isCustomerPOC, form.opportunityId, opportunities]);
+
+  /* ================= HANDLERS ================= */
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isTL) return;
+
+    if (isCustomer && (!form.quotationNumber || !form.poNumber || !form.poFile)) {
+      toast.error("Quotation, PO Number & File are required");
+      return;
+    }
+
+    const payload = {
+      projectType,
+      projectName: isCustomerPOC
+        ? selectedOpportunity?.opportunity_name
+        : form.projectName,
+      clientName: isCustomerPOC
+        ? selectedOpportunity?.customer_name
+        : form.clientName,
+      opportunityId: isCustomerPOC ? form.opportunityId : null,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      status: form.status,
+      quotationNumber: isCustomer ? form.quotationNumber : null,
+      poNumber: isCustomer ? form.poNumber : null,
+      poFile: isCustomer ? form.poFile : null,
+    };
+
+    try {
+      isEdit
+        ? await updateProject(form.id, payload)
+        : await createProject(payload);
+
+      setProjects(await fetchProjects());
+      setShowModal(false);
+      setIsEdit(false);
+      setForm(emptyForm);
+      toast.success(isEdit ? "Project updated" : "Project created");
+    } catch (err) {
+      toast.error(err.message || "Action failed");
+    }
+  };
+
+  /* ================= FILTERS ================= */
+
+  const uniqueClients = useMemo(
+    () => [...new Set(projects.map(p => p.clientName).filter(Boolean))],
+    [projects]
+  );
+
+  const filteredProjects = useMemo(() => {
+    let data = projects;
+
+    if (searchTerm) {
       const q = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
+      data = data.filter(
+        p =>
           p.projectName?.toLowerCase().includes(q) ||
           p.clientName?.toLowerCase().includes(q)
       );
     }
 
-    if (selectedType) {
-      filtered = filtered.filter((p) => p.projectType === selectedType);
+    if (selectedClient) {
+      data = data.filter(p => p.clientName === selectedClient);
     }
 
-    return filtered;
-  }, [projects, searchTerm, selectedType]);
+    return data;
+  }, [projects, searchTerm, selectedClient]);
 
-  /* Pagination Logic */
+  /* ================= PAGINATION ================= */
+
   const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE);
-  const paginatedProjects = useMemo(() => {
-    const start = (currentPage - 1) * PROJECTS_PER_PAGE;
-    return filteredProjects.slice(start, start + PROJECTS_PER_PAGE);
-  }, [filteredProjects, currentPage]);
 
-  const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * PROJECTS_PER_PAGE,
+    currentPage * PROJECTS_PER_PAGE
+  );
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
- const openAddModal = () => {
-    if (!isTL) return;
-    setIsEdit(false);
-    setForm(emptyForm);
-    setShowModal(true);
-  };
-
-  const openEditModal = (project) => {
-    if (!isTL) return;  
-    setIsEdit(true);
-    setForm({
-      ...project,
-      startDate: formatDate(project.startDate),
-      endDate: formatDate(project.endDate),
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (!isTL) return;
-    if (!window.confirm("Delete this project?")) return;
-
-    try {
-      await deleteProject(id);
-      setProjects((prev) => prev.filter((p) => p.id !== id));
-      toast.success("Project deleted");
-    } catch {
-      toast.error("Delete failed");
-    }
-  };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!isTL) return;
-
-  /* ================= PO VALIDATION ================= */
-  if (form.poStatus === "Received") {
-    if (!form.quotationNumber && !form.poFile) {
-      toast.error("Quotation number or file is required");
-      return;
-    }
-
-    if (!form.poNumber && !form.poFile) {
-      toast.error("PO number or file is required");
-      return;
-    }
-  }
-  /* ================================================= */
-
-const payload = {
-  projectName: form.projectName,
-  clientName: form.clientName,
-  projectType: form.projectType,
-  startDate: form.startDate,
-  endDate: form.endDate,
-  status: form.status,
-  poStatus: form.poStatus,
-  quotationNumber: form.quotationNumber || "",
-  poNumber: form.poNumber || "",
-  poFile: form.poFile || null,
-};
-
-
-  try {
-    if (isEdit) {
-      await updateProject(form.id, payload);
-      toast.success("Project updated");
-    } else {
-      await createProject(payload);
-      toast.success("Project created");
-    }
-
-    setProjects(await fetchProjects());
-    setCurrentPage(1);
-    setShowModal(false);
-    setIsEdit(false);
-  } catch (err) {
-    toast.error(err.message || "Action failed");
-  }
-};
-
-  const resetFilters = () => {
-    setSearchTerm("");
-    setSelectedType("");
-    setCurrentPage(1);
-  };
+  /* ================= ACCESS ================= */
 
   if (!isTL && !isAdmin) {
-    return (
-      <div className="unauthorized">
-        <h3>Access Denied</h3>
-        <p>You do not have permission to access this page.</p>
-      </div>
-    );
+    return <div className="unauthorized">Access Denied</div>;
   }
+
+  /* ================= UI ================= */
 
   return (
     <div className="create-project">
-      <ToastContainer autoClose={1200} newestOnTop />
+      <ToastContainer autoClose={1200} />
 
       <div className="page-header">
         <h2>Project Management</h2>
         {isTL && (
-          <button className="add-btn" onClick={openAddModal}>
+          <button className="add-btn" onClick={() => setShowModal(true)}>
             <FiPlus /> Create New Project
           </button>
         )}
       </div>
 
-      <div className="search-filter-bar">
-        <div className="search-box">
-          <FiSearch />
-          <input
-            placeholder="Search project or client..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      {/* SEARCH + FILTER */}
+   {/* SEARCH + CLIENT FILTER */}
+<div className="search-filter-bar">
+  {/* Search */}
+  <div className="search-box">
+    <FiSearch />
+    <input
+      placeholder="Search project or client..."
+      value={searchTerm}
+      onChange={(e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
+      }}
+    />
+  </div>
 
-        <div className="filter-box">
-          <FiFilter />
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-          >
-            <option value="">All Types</option>
-            {projectTypes.map((t) => (
-              <option key={t.id} value={t.name}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-          <FiChevronDown />
-        </div>
+  {/* Client Filter */}
+  <div className="client-filter-box">
+    <select
+      value={selectedClient}
+      onChange={(e) => {
+        setSelectedClient(e.target.value);
+        setCurrentPage(1);
+      }}
+    >
+      <option value="">All Clients</option>
+      {uniqueClients.map((client) => (
+        <option key={client} value={client}>
+          {client}
+        </option>
+      ))}
+    </select>
+  </div>
 
-        {(searchTerm || selectedType) && (
-          <button className="reset-btn" onClick={resetFilters}>
-            <FiX /> Clear
-          </button>
-        )}
-      </div>
+  {/* Clear Button - only shows when filter is active */}
+  {(searchTerm || selectedClient) && (
+    <button className="reset-btn" onClick={() => {
+      setSearchTerm("");
+      setSelectedClient("");
+      setCurrentPage(1);
+    }}>
+      Clear
+    </button>
+  )}
+</div>
 
-      <div className="table-card">
-        <table className="project-table">
-          <thead>
-            <tr>
-              <th>Project</th>
-              <th>Client</th>
-              <th>Type</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Progress</th>
-              <th>Quotation No</th>
-              <th>PO No</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {paginatedProjects.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="no-results">
-                  No projects found
+      {/* TABLE */}
+      <table className="project-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Client</th>
+            <th>Type</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+            {isTL && <th>Actions</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedProjects.map(p => (
+            <tr key={p.id}>
+              <td>{p.projectName}</td>
+              <td>{p.clientName}</td>
+              <td>{p.projectType}</td>
+              <td>{formatDate(p.startDate)}</td>
+              <td>{formatDate(p.endDate)}</td>
+              <td>
+                <span className={`status-badge ${p.status.toLowerCase().replace(" ", "-")}`}>
+                  {p.status === "Completed" && <FiCheckCircle />}
+                  {p.status}
+                </span>
+              </td>
+              {isTL && (
+                <td className="action-col">
+                  <button
+                    className="icon-btn edit-btn"
+                    onClick={() => {
+                      setForm({
+                        ...p,
+                        startDate: formatDate(p.startDate),
+                        endDate: formatDate(p.endDate),
+                      });
+                      setIsEdit(true);
+                      setShowModal(true);
+                    }}
+                  >
+                    <FiEdit />
+                  </button>
+                  <button
+                    className="icon-btn delete-btn"
+                    onClick={() => deleteProject(p.id)}
+                  >
+                    <FiTrash2 />
+                  </button>
                 </td>
-              </tr>
-            ) : (
-              paginatedProjects.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.projectName}</td>
-                  <td>{p.clientName}</td>
-                  <td>{p.projectType}</td>
-                  <td>{formatDate(p.startDate)}</td>
-                  <td>{formatDate(p.endDate)}</td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-                  {/* ✅ MAIN PROJECT STATUS */}
-                  <td>
-                    <span
-                      className={`status-badge ${p.status
-                        .toLowerCase()
-                        .replace(" ", "-")}`}
-                    >
-                      {p.status === "Completed" && (
-                        <FiCheckCircle style={{ marginRight: "6px" }} />
-                      )}
-                      {p.status}
-                    </span>
-                  </td>
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="page-btn"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => p - 1)}
+          >
+            <FiChevronLeft /> Prev
+          </button>
 
-                  {/* ✅ QUOTATION NUMBER */}
-                  <td>{p.quotationNumber || "-"}</td>
-                    <td>{p.poNumber || "-"}</td>
-
-                  {/* ✅ PO STATUS */}
-                  {/* <td>
-                    <span
-                      className={`po-badge ${
-                        p.poStatus === "Received" ? "received" : "negotiated"
-                      }`}
-                    >
-                      {p.poStatus}
-                    </span>
-                  </td> */}
-
-                  {/* ✅ ACTIONS */}
-                  <td className="action-col">
-                    <button
-                      className="icon-btn edit-btn"
-                      disabled={!isTL}
-                      onClick={() => openEditModal(p)}
-                    >
-                      <FiEdit />
-                    </button>
-                    <button
-                      className="icon-btn delete-btn"
-                      disabled={!isTL}
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
             <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="page-btn"
+              key={page}
+              className={`page-number ${page === currentPage ? "active" : ""}`}
+              onClick={() => setCurrentPage(page)}
             >
-              <FiChevronLeft />
-              Prev
+              {page}
             </button>
+          ))}
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`page-number ${
-                  page === currentPage ? "active" : ""
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="page-btn"
-            >
-              Next
-              <FiChevronRight />
-            </button>
-          </div>
-        )}
-      </div>
+          <button
+            className="page-btn"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(p => p + 1)}
+          >
+            Next <FiChevronRight />
+          </button>
+        </div>
+      )}
 
       {/* MODAL */}
-      {showModal && isTL && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
             <h3>{isEdit ? "Edit Project" : "Create Project"}</h3>
 
             <form onSubmit={handleSubmit}>
-              <input
-                name="projectName"
-                placeholder="Project Name"
-                value={form.projectName}
-                onChange={handleChange}
-                required
-              />
-              <input
-                name="clientName"
-                placeholder="Client Name"
-                value={form.clientName}
-                onChange={handleChange}
-                required
-              />
+              <select name="projectType" value={form.projectType} onChange={handleChange} required>
+                <option value="">Select Project Type</option>
+                {projectTypes.map(t => (
+                  <option key={t.id} value={t.name}>{t.name}</option>
+                ))}
+              </select>
 
-              <div className="select-wrapper">
-                <select
-                  name="projectType"
-                  value={form.projectType}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select Project Type</option>
-                  {projectTypes.map((t) => (
-                    <option key={t.id} value={t.name}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-                {/* <FiChevronDown className="select-icon" /> */}
-              </div>
-
-              <input
-                type="date"
-                name="startDate"
-                value={form.startDate}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="date"
-                name="endDate"
-                value={form.endDate}
-                onChange={handleChange}
-                required
-              />
-              <div className="select-wrapper">
-                <select
-                  name="poStatus"
-                  value={form.poStatus}
-                  onChange={handleChange}
-                >
-                  <option value="Negotiated">Negotiated</option>
-                  <option value="Received">Received</option>
-                </select>
-              </div>
-              {form.poStatus === "Received" && (
+              {isCustomerPOC && (
                 <>
-                  <input
-                    name="quotationNumber"
-                    placeholder="Quotation Number"
-                    value={form.quotationNumber}
-                    onChange={handleChange}
-                    required
-                  />
+                  <select name="opportunityId" value={form.opportunityId} onChange={handleChange} required>
+                    <option value="">Select Opportunity</option>
+                    {opportunities.map(o => (
+                      <option key={o.opportunity_id} value={o.opportunity_id}>
+                        {o.opportunity_name}
+                      </option>
+                    ))}
+                  </select>
 
-                  <input
-                    name="poNumber"
-                    placeholder="Purchase Order Number"
-                    value={form.poNumber}
-                    onChange={handleChange}
-                    required
-                  />
-
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) =>
-                      setForm({ ...form, poFile: e.target.files[0] })
-                    }
-                  />
+                  <input value={selectedOpportunity?.opportunity_name || ""} disabled />
+                  <input value={selectedOpportunity?.customer_name || ""} disabled />
                 </>
               )}
 
-              <div className="select-wrapper">
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                >
-                  <option>Planned</option>
-                  <option>In Progress</option>
-                  <option>Completed</option>
-                  <option>On Hold</option>
-                </select>
-                {/* <FiChevronDown className="select-icon" /> */}
-              </div>
+              {(isInternal || isCustomer) && (
+                <>
+                  <input name="projectName" placeholder="Project Name" value={form.projectName} onChange={handleChange} required />
+                  <input name="clientName" placeholder="Client Name" value={form.clientName} onChange={handleChange} required />
+                </>
+              )}
+
+              <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
+              <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
+
+              {isCustomer && (
+                <>
+                  <input name="quotationNumber" placeholder="Quotation Number" value={form.quotationNumber} onChange={handleChange} required />
+                  <input name="poNumber" placeholder="Purchase Order Number" value={form.poNumber} onChange={handleChange} required />
+                  <input type="file" accept="application/pdf" onChange={e => setForm({ ...form, poFile: e.target.files[0] })} required />
+                </>
+              )}
+
+              <select name="status" value={form.status} onChange={handleChange}>
+                <option>Planned</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+                <option>On Hold</option>
+              </select>
 
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
+                <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit">{isEdit ? "Update" : "Create"}</button>
               </div>
             </form>

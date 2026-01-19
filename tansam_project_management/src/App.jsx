@@ -28,11 +28,11 @@ import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
 import TLDashboard from "./tl/pages/TLDashboard.jsx";
 import CreateProject from "./tl/pages/CreateProject.jsx";
 import ProjectFollowUp from "./tl/pages/ProjectFollowUp.jsx";
-import Summary from "./tl/pages/Summary.jsx";
+// import Summary from "./tl/pages/Summary.jsx";
 import AssignTeam from "./tl/pages/AssignTeam.jsx";
 import Department from "./tl/pages/department.jsx";
 import TeamMember from "./tl/pages/teammember.jsx";
-import ProjectTypes from "./tl/pages/projectTypes.jsx";
+// import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
 
 function App() {
@@ -113,11 +113,11 @@ function App() {
           <Route index element={<TLDashboard />} />
           <Route path="create-project" element={<CreateProject />} />
           <Route path="follow-up" element={<ProjectFollowUp />} />
-          <Route path="summary" element={<Summary />} />
+          {/* <Route path="summary" element={<Summary />} /> */}
           <Route path="assign-team" element={<AssignTeam />} />
           <Route path="department" element={<Department />} />
           <Route path="team-member" element={<TeamMember />} />
-          <Route path="project-types" element={<ProjectTypes />} />
+          {/* <Route path="project-types" element={<ProjectTypes />} /> */}
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

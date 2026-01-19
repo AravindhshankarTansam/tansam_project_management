@@ -12,6 +12,7 @@ import {
 
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { coordinatorMiddleware } from "../middlewares/coordinator.middleware.js";
+import { roleMiddleware } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
@@ -19,10 +20,16 @@ const router = express.Router();
 // COORDINATOR – OPPORTUNITY ROUTES
 // ===================================
 
+// router.get(
+//   "/opportunities",
+//   authMiddleware,
+//   coordinatorMiddleware,
+//   getOpportunities
+// );
 router.get(
   "/opportunities",
   authMiddleware,
-  coordinatorMiddleware,
+  roleMiddleware(["COORDINATOR", "TEAM LEAD"]),
   getOpportunities
 );
 
