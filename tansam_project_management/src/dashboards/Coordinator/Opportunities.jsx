@@ -13,7 +13,7 @@ import {
 } from "../../services/coordinator/coordinator.tracker.api";
 import { FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import "./CSS/Opportunities.css";
-
+import ProgressTracker from "./Tracker.jsx";
 const STAGES = [
   "NEW",
   "CONTACTED",
@@ -479,87 +479,105 @@ export default function Opportunities() {
       )}
 
       {/* VIEW MODAL - Unchanged (read-only) */}
-      {viewData && (
-        <div className="modal-overlay" onClick={() => setViewData(null)}>
-          <div className="view-modal" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="view-header">
-              <div>
-                <h3 className="view-title">{viewData.opportunity_name}</h3>
-                <p className="view-subtitle">
-                  <strong>Client Name:</strong> {viewData.customer_name || "—"}
-                </p>
-              </div>
-              <div className="view-header-right">
-                <span className={`status-badge ${viewData.lead_status.toLowerCase()}`}>
-                  {viewData.lead_status}
-                </span>
-                <button className="close-btn" onClick={() => setViewData(null)}>
-                  <FiX size={20} />
-                </button>
-              </div>
-            </div>
+     {/* VIEW MODAL - Now with Stage progress bar like Opportunities Tracker */}
+{viewData && (
+  <div className="modal-overlay" onClick={() => setViewData(null)}>
+    <div className="view-modal" onClick={(e) => e.stopPropagation()}>
+      {/* Header */}
+      <div className="view-header">
+        <div>
+          <h3 className="view-title">{viewData.opportunity_name}</h3>
+          <p className="view-subtitle">
+            <strong>Client Name:</strong> {viewData.customer_name || "—"}
+          </p>
+        </div>
+        <div className="view-header-right">
+          <span className={`status-badge ${viewData.lead_status.toLowerCase()}`}>
+            {viewData.lead_status}
+          </span>
+          <button className="close-btn" onClick={() => setViewData(null)}>
+            <FiX size={20} />
+          </button>
+        </div>
+      </div>
 
-            {/* Contact Details - 3x3 Grid */}
-            <div className="contact-grid">
-              <div className="grid-item">
-                <label>Contact Person</label>
-                <p>{viewData.contact_person || "—"}</p>
-              </div>
-              <div className="grid-item">
-                <label>Assigned To</label>
-                <p>{viewData.assigned_to || "—"}</p>
-              </div>
-              <div className="grid-item">
-                <label>Email</label>
-                <p>{viewData.contact_email || "—"}</p>
-              </div>
-              <div className="grid-item">
-                <label>Phone</label>
-                <p>{viewData.contact_phone || "—"}</p>
-              </div>
-              <div className="grid-item">
-                <label>Source</label>
-                <p>{viewData.lead_source || "—"}</p>
-              </div>
-              <div className="grid-item empty"></div>
-            </div>
+      {/* Contact Details - 3x3 Grid */}
+      <div className="contact-grid">
+        <div className="grid-item">
+          <label>Contact Person</label>
+          <p>{viewData.contact_person || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Assigned To</label>
+          <p>{viewData.assigned_to || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Email</label>
+          <p>{viewData.contact_email || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Phone</label>
+          <p>{viewData.contact_phone || "—"}</p>
+        </div>
+        <div className="grid-item">
+          <label>Source</label>
+          <p>{viewData.lead_source || "—"}</p>
+        </div>
+        <div className="grid-item empty"></div>
+      </div>
 
-            {/* Read-only Tracker Info */}
-            <div className="tracker-section">
-              <h4>Tracker Information</h4>
-              <div className="tracker-info">
-                <div className="info-item">
-                  <label>Next Follow-up Date</label>
-                  <p>
-                    {getTrackerForOpportunity(viewData.opportunity_id).next_followup_date
-                      ? getTrackerForOpportunity(viewData.opportunity_id).next_followup_date.slice(0, 10)
-                      : "—"}
-                  </p>
-                </div>
-
-                <div className="info-item">
-                  <label>Next Action</label>
-                  <p>
-                    {getTrackerForOpportunity(viewData.opportunity_id).next_action || "—"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="description-section">
-              <label>Description</label>
-              <div
-                className="description-content"
-                dangerouslySetInnerHTML={{
-                  __html: viewData.lead_description || "<p>No description available</p>",
-                }}
+      {/* Tracker Information - Now with Stage progress bar */}
+      <div className="tracker-section">
+        <h4>Tracker Information</h4>
+        <div className="tracker-info">
+          {/* Stage with Progress Bar (same as Opportunities Tracker) */}
+          <div className="info-item full-width">
+            <label>Stage</label>
+            <div className="stage-progress-wrapper">
+              <span
+                className={`status ${(getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW").toLowerCase()}`}
+              >
+                {getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
+              </span>
+              <ProgressTracker
+                currentStage={getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
               />
             </div>
           </div>
+
+          {/* Next Follow-up Date (read-only) */}
+          <div className="info-item">
+            <label>Next Follow-up Date</label>
+            <p>
+              {getTrackerForOpportunity(viewData.opportunity_id).next_followup_date
+                ? getTrackerForOpportunity(viewData.opportunity_id).next_followup_date.slice(0, 10)
+                : "—"}
+            </p>
+          </div>
+
+          {/* Next Action (read-only) */}
+          <div className="info-item">
+            <label>Next Action</label>
+            <p>
+              {getTrackerForOpportunity(viewData.opportunity_id).next_action || "—"}
+            </p>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Description */}
+      <div className="description-section">
+        <label>Description</label>
+        <div
+          className="description-content"
+          dangerouslySetInnerHTML={{
+            __html: viewData.lead_description || "<p>No description available</p>",
+          }}
+        />
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
