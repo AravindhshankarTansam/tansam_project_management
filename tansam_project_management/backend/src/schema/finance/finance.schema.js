@@ -27,8 +27,9 @@ export const createQuotationFollowupsSchema = async (db) => {
       value DECIMAL(12,2) DEFAULT NULL,
       date DATE DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ON UPDATE CURRENT_TIMESTAMP,
+        isGenerated TINYINT(1 DEFAULT 0
     )
   `);
 
@@ -62,6 +63,7 @@ export const createQuotationFollowupsSchema = async (db) => {
       financeManagerName VARCHAR(100),
       isGenerated TINYINT(1),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      termsContent LONGTEXT,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
