@@ -260,29 +260,29 @@ if (showDoc) {
 }
 if (showGenerateQuotation) {
   return (
- <GenerateQuotation
-  // ...
-  onSaved={async () => {
-    // 1. Local optimistic update
-    setData(prev =>
-      prev.map(q =>
-        q.id === newQuotation.id
-          ? { ...q, isGenerated: true }
-          : q
-      )
-    );
+    <GenerateQuotation
+      quotation={newQuotation}
+      onSaved={async () => {
+        // 1. Local optimistic update
+        setData(prev =>
+          prev.map(q =>
+            q.id === newQuotation.id
+              ? { ...q, isGenerated: true }
+              : q
+            )
+          );
 
-    // 2. Reload fresh data from server (recommended!)
-    try {
-      const freshData = await getQuotations();
-      setData(freshData);
-    } catch (e) {
-      console.warn("Couldn't refresh quotations list", e);
-    }
+        // 2. Reload fresh data from server (recommended!)
+        try {
+          const freshData = await getQuotations();
+          setData(freshData);
+        } catch (e) {
+          console.warn("Couldn't refresh quotations list", e);
+        }
 
-    setShowGenerateQuotation(false);
-  }}
-/>
+        setShowGenerateQuotation(false);
+      }}
+    />
   );
 }
 
@@ -465,25 +465,26 @@ if (showGenerateQuotation) {
   >
     <FaTrash />
   </button>
- {q.isGenerated ? (
-  <button
-    onClick={() => handleEditGeneratedQuotation(q)}
-    title="Modify Generated Quotation"
-    style={{ color: "#2563eb", fontWeight: 500 }}
-  >
-    Medit
-  </button>
-) : (
-  <button
-    onClick={() => {
-      setNewQuotation(q);
-      setShowGenerateQuotation(true);
-    }}
-    title="Generate Quotation"
-  >
-    +
-  </button>
-)}
+{q.isGenerated ? (
+    <button
+      className="btn-medit"
+      onClick={() => handleEditGeneratedQuotation(q)}
+      title="Edit Generated Quotation"
+    >
+      <MdEditDocument /> {/* Medit icon */}
+    </button>
+  ) : (
+    <button
+      className="btn-generate"
+      onClick={() => {
+        setNewQuotation(q);
+        setShowGenerateQuotation(true);
+      }}
+      title="Generate Quotation"
+    >
+      +
+    </button>
+  )}
 
 
 

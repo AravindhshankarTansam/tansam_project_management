@@ -150,12 +150,12 @@ const handleSave = async () => {
   </div>
       {/* Table */}
       <div className="phase-tabs">
-      <button
+      {/* <button
         className={activePhase === "followup" ? "active-tab" : ""}
         onClick={() => setActivePhase("followup")}
       >
         Quotation Follow-up Phase
-      </button>
+      </button> */}
 
       <button
         className={activePhase === "payment" ? "active-tab" : ""}

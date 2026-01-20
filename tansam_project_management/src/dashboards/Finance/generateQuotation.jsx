@@ -8,7 +8,6 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { getActiveTerms } from "../../services/quotation/terms.api";
 import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
 import QuotationPDF from './QuotationPdf.jsx';
-import RichTextEditor from "../../components/RichTextEditor";
 
 // ✅ EditableQuotationTable Component (UNCHANGED)
 export const EditableQuotationTable = ({ quotation, setQuotation }) => {
@@ -177,38 +176,64 @@ const FinanceDocument = ({
         {/* Client Info - UNCHANGED */}
         <div style={{ display: "flex", gap: "20px", marginBottom: "15px" }}>
     <label style={{ display: "block", marginBottom: "12px" }}>
-    
-<strong>TO</strong>
-<RichTextEditor
-  value={quotation.clientName}
-  onChange={(json) =>
-    setQuotation({ ...quotation, clientName: json })
-  }
-/>
-
+    <strong>TO </strong>
+    <textarea
+      rows={3}                        // Default shows 3 lines
+      value={quotation.clientName || ""}
+      onChange={(e) => setQuotation({ ...quotation, clientName: e.target.value })}
+      placeholder="Enter Client Name/institution details  and Address "
+      style={{
+        width: "100%",
+        padding: "10px",
+        fontSize: "15px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        resize: "vertical",           // Allow vertical resize only
+        minHeight: "70px",
+        lineHeight: "1.4",
+      }}
+    />
   </label>
 <label style={{ display: "block", marginBottom: "12px" }}>
- <strong>Kind Attn (Name & Designation)</strong>
-<RichTextEditor
-  value={quotation.kindAttn}
-  onChange={(json) =>
-    setQuotation({ ...quotation, kindAttn: json })
-  }
-/>
-
+    <strong>Kind Attn (Name & Designation):</strong>
+    <textarea
+      rows={2}
+      value={quotation.kindAttn || ""}
+      onChange={(e) => setQuotation({ ...quotation, kindAttn: e.target.value })}
+      placeholder="e.g., Dr. S. Sathya, HOD - Electronics & Communication Engineering"
+      style={{
+        width: "100%",
+        padding: "10px",
+        fontSize: "15px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        resize: "vertical",
+        minHeight: "50px",
+        lineHeight: "1.4",
+      }}
+    />
   </label>
         </div>
 
         <div style={{ marginBottom: "15px" }}>
 <label style={{ display: "block" }}>
-    <strong>Subject</strong>
-<RichTextEditor
-  value={quotation.subject}
-  onChange={(json) =>
-    setQuotation({ ...quotation, subject: json })
-  }
-/>
-
+    <strong>Subject:</strong>
+    <textarea
+      rows={2}
+      value={quotation.subject || ""}
+      onChange={(e) => setQuotation({ ...quotation, subject: e.target.value })}
+      placeholder="e.g., Quote offer for Industrial Visit 2.5 hours at TANSAM Centre"
+      style={{
+        width: "100%",
+        padding: "10px",
+        fontSize: "15px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        resize: "vertical",
+        minHeight: "50px",
+        lineHeight: "1.4",
+      }}
+    />
   </label>
         </div>
 
@@ -584,7 +609,7 @@ useEffect(() => {
   const handleSaveQuotation = async () => {
     try {
       const dataToSend = new FormData();
-      onGeneratedSuccess?.();
+     
       dataToSend.append("refNo", refNo);
       dataToSend.append("date", date);
       dataToSend.append("clientName", quotation.clientName);
