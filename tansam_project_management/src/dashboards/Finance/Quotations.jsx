@@ -546,9 +546,17 @@ if (showGenerateQuotation) {
   <label>Project Name *</label>
   <select
     value={newQuotation.project_name}
-    onChange={(e) =>
-      setNewQuotation({ ...newQuotation, project_name: e.target.value })
-    }
+    onChange={(e) => {
+      const selectedProject = opportunities.find(
+        (opp) => opp.opportunity_name === e.target.value
+      );
+
+      setNewQuotation({
+        ...newQuotation,
+        project_name: e.target.value,
+        clientName: selectedProject ? selectedProject.customer_name : "", // auto-fetch customer_name
+      });
+    }}
   >
     <option value="">Select Project</option>
     {opportunities.map((opp) => (
@@ -559,17 +567,17 @@ if (showGenerateQuotation) {
   </select>
 </div>
 
-        <div className="form-group">
-          <label>Client Name *</label>
-          <input
-            type="text"
-            placeholder="Client Name"
-            value={newQuotation.clientName}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientName: e.target.value })
-            }
-          />
-        </div>
+<div className="form-group">
+  <label>Client Name *</label>
+  <input
+    type="text"
+    placeholder="Client Name"
+    value={newQuotation.clientName}
+    readOnly // prevents manual changes since it’s auto-filled
+  />
+</div>
+
+
 
         <div className="form-group">
           <label>Client Type *</label>
