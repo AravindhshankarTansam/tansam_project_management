@@ -10,49 +10,112 @@ export default function RichTextEditor({ value, onChange }) {
 
   if (!editor) return null;
 
+  /* Prevent form submit + focus loss */
+  const preventSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
     <div className="rte-wrapper">
+      {/* TOOLBAR */}
       <div className="rte-toolbar">
-        <button onClick={() => editor.chain().focus().toggleBold().run()}>B</button>
-        <button onClick={() => editor.chain().focus().toggleItalic().run()}>I</button>
-        <button onClick={() => editor.chain().focus().toggleStrike().run()}>S</button>
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          <b>B</b>
+        </button>
 
-        <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          <i>I</i>
+        </button>
+
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        >
+          <s>S</s>
+        </button>
+
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+        >
           H1
         </button>
-        <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
+        >
           H2
         </button>
-        <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
+
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+        >
           H3
         </button>
 
-        <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
           •
         </button>
-        <button onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
           1.
         </button>
 
-        {/* <button onClick={() => editor.chain().focus().toggleBlockquote().run()}>
-          ❝
-        </button> */}
-        {/* <button onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
-          {"</>"}
-        </button> */}
-
-        <button onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        >
           ―
         </button>
 
-        <button onClick={() => editor.chain().focus().undo().run()}>
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().undo().run()}
+        >
           ↺
         </button>
-        <button onClick={() => editor.chain().focus().redo().run()}>
+
+        <button
+          type="button"
+          onMouseDown={preventSubmit}
+          onClick={() => editor.chain().focus().redo().run()}
+        >
           ↻
         </button>
       </div>
 
+      {/* EDITOR */}
       <EditorContent editor={editor} />
     </div>
   );

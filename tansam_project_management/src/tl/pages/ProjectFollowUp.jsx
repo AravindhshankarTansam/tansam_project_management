@@ -219,38 +219,86 @@ export default function ProjectFollowUp() {
       </div>
 
       {/* ================= VIEW MODAL ================= */}
-      {viewModalOpen && viewingProject && (
-        <div className="modal-overlay" onClick={() => setViewModalOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Project Details</h3>
-              <button onClick={() => setViewModalOpen(false)}>
-                <FiX />
-              </button>
-            </div>
+{/* ================= VIEW MODAL ================= */}
+{viewModalOpen && viewingProject && (
+  <div className="modal-overlay" onClick={() => setViewModalOpen(false)}>
+    <div className="view-modal-card" onClick={(e) => e.stopPropagation()}>
+      {/* Header with gradient accent */}
+      <div className="view-modal-header">
+        <h3>Project Details</h3>
+        <button className="close-btn" onClick={() => setViewModalOpen(false)}>
+          <FiX size={20} />
+        </button>
+      </div>
 
-            <div className="view-grid">
-              <div><strong>Project</strong><span>{viewingProject.projectName}</span></div>
-              <div><strong>Client</strong><span>{viewingProject.clientName}</span></div>
-              <div><strong>Status</strong><span>{viewingProject.status}</span></div>
-              <div><strong>Progress</strong><span>{viewingProject.progress || 0}%</span></div>
-              <div><strong>Next Milestone</strong><span>{viewingProject.nextMilestone || "—"}</span></div>
-              <div><strong>Due Date</strong><span>{viewingProject.milestoneDueDate || "—"}</span></div>
-              <div><strong>Critical Issues</strong><span>{viewingProject.criticalIssues || 0}</span></div>
-            </div>
+      {/* Status Section with "Project Status :" label */}
+      <div className="view-status-section">
+        <div className="status-label">Project Status :</div>
+        <div className="view-status-banner">
+          <span className={`status-badge large ${viewingProject.status?.toLowerCase().replace(" ", "-") || "unknown"}`}>
+            {viewingProject.status === "Completed" && <FiCheckCircle />}
+            {viewingProject.status === "At Risk" && <FiAlertTriangle />}
+            {viewingProject.status || "Unknown"}
+          </span>
+        </div>
+      </div>
 
-            {viewingProject.poFile && (
-              <button
-                className="view-po-btn"
-                onClick={() => openPdfInNewTab(viewingProject.poFile)}
-              >
-                View Purchase Order
-              </button>
-            )}
+      {/* Main Content Grid */}
+      <div className="view-details-grid">
+        <div className="detail-item">
+          <label>Project</label>
+          <p>{viewingProject.projectName}</p>
+        </div>
+
+        <div className="detail-item">
+          <label>Client</label>
+          <p>{viewingProject.clientName}</p>
+        </div>
+
+        <div className="detail-item">
+          <label>Progress</label>
+          <div className="progress-container">
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${viewingProject.progress || 0}%` }}
+              ></div>
+            </div>
+            <span>{viewingProject.progress || 0}%</span>
           </div>
         </div>
-      )}
 
+        <div className="detail-item">
+          <label>Next Milestone</label>
+          <p>{viewingProject.nextMilestone || "—"}</p>
+        </div>
+
+        <div className="detail-item">
+          <label>Due Date</label>
+          <p>{viewingProject.milestoneDueDate || "—"}</p>
+        </div>
+
+        <div className="detail-item">
+          <label>Critical Issues</label>
+          <p className={viewingProject.criticalIssues > 0 ? "critical" : ""}>
+            {viewingProject.criticalIssues || 0}
+          </p>
+        </div>
+      </div>
+
+      {/* View PO Button - Prominent green CTA */}
+      {viewingProject.poFile && (
+        <button
+          className="view-po-btn"
+          onClick={() => openPdfInNewTab(viewingProject.poFile)}
+        >
+          <FiEye size={18} />
+          View Purchase Order
+        </button>
+      )}
+    </div>
+  </div>
+)}
       {/* ================= EDIT MODAL (UNCHANGED) ================= */}
       {editModalOpen && editingProject && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
@@ -272,19 +320,26 @@ export default function ProjectFollowUp() {
                 <option>On Hold</option>
               </select>
 
-              <label>Progress (%)</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={editingProject.progress || 0}
-                onChange={(e) =>
-                  setEditingProject({
-                    ...editingProject,
-                    progress: Number(e.target.value),
-                  })
-                }
-              />
+            <label>Progress (%)</label>
+
+<div className="edit-progress-wrap">
+  <input
+    type="range"
+    min="0"
+    max="100"
+    value={editingProject.progress || 0}
+    onChange={(e) =>
+      setEditingProject({
+        ...editingProject,
+        progress: Number(e.target.value),
+      })
+    }
+  />
+  <span className="edit-progress-value">
+    {editingProject.progress || 0}%
+  </span>
+</div>
+
 
               <label>Next Milestone</label>
               <input

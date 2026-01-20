@@ -1,5 +1,30 @@
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
+import { sendMail } from "../utils/mail.util.js";
+import { assignedOpportunityTemplate,  unassignedOpportunityTemplate } from "../utils/mail.template.js";
+import { getUserById } from "../utils/user.helper.js";
+
+/* ======================================================
+   HELPERS
+====================================================== */
+
+const ALLOWED_STAGES = [
+  "NEW",
+  "CONTACTED",
+  "QUALIFIED",
+  "PROPOSAL_SENT",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+];
+
+const normalizeStage = (stage) => {
+  if (!stage) return "NEW";
+  const clean = stage.trim().toUpperCase();
+  return ALLOWED_STAGES.includes(clean) ? clean : "NEW";
+};
+
+const normalize = (v) => (v?.trim() ? v.trim() : null);
 
 /**
  * Generate business opportunity ID
@@ -28,7 +53,7 @@ const generateOpportunityId = async (db) => {
 };
 
 /* ======================================================
-   CREATE OPPORTUNITY
+   CREATE OPPORTUNITY + MAIL
 ====================================================== */
 export const createOpportunity = async (req, res) => {
   try {
@@ -46,7 +71,7 @@ export const createOpportunity = async (req, res) => {
       leadSource,
       leadDescription,
       leadStatus,
-      assignedTo, // ✅ ADDED
+      assignedTo,
     } = req.body;
 
     if (!opportunityName || !customerName) {
@@ -82,21 +107,44 @@ export const createOpportunity = async (req, res) => {
       `,
       [
         opportunityId,
-        opportunityName.trim(),
-        customerName.trim(),
-        industry?.trim() || null,
-        contactPerson?.trim() || null,
-        contactEmail?.trim() || null,
-        contactPhone?.trim() || null,
+        normalize(opportunityName),
+        normalize(customerName),
+        normalize(industry),
+        normalize(contactPerson),
+        normalize(contactEmail),
+        normalize(contactPhone),
         leadSource || null,
         leadDescription || null,
         leadStatus || "NEW",
-        assignedTo?.trim() || null, // ✅ ADDED
+        normalize(assignedTo),
         req.user.id,
-        req.user.name || req.user.username || "Unknown",
+        req.user.name || req.user.username,
         req.user.role,
       ]
     );
+
+    /* ================= SEND MAIL ================= */
+
+    if (assignedTo) {
+      const assignedUser = await getUserById(db, assignedTo);
+      const assignorUser = await getUserById(db, req.user.id);
+
+     if (assignedUser?.email) {
+      const html = assignedOpportunityTemplate({
+        userName: assignedUser.name,
+        opportunityName,
+        customerName,
+        stage: leadStatus || "NEW",
+        assignedBy: assignorUser?.name || "Coordinator",
+      });
+
+      await sendMail({
+        to: [assignedUser.email, assignorUser?.email].filter(Boolean),
+        subject: `New Opportunity Assigned - ${opportunityName}`,
+        html,
+      });
+    }
+    }
 
     res.status(201).json({
       opportunity_id: opportunityId,
@@ -113,7 +161,7 @@ export const createOpportunity = async (req, res) => {
 ====================================================== */
 export const getOpportunities = async (req, res) => {
   try {
-    if (!req.user?.id || !req.user?.role) {
+    if (!req.user?.id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
@@ -121,25 +169,9 @@ export const getOpportunities = async (req, res) => {
     await initSchemas(db, { coordinator: true });
 
     let query = `
-      SELECT
-        opportunity_id,
-        opportunity_name,
-        customer_name,
-        company_name,
-        contact_person,
-        contact_email,
-        contact_phone,
-        lead_source,
-        lead_description,
-        lead_status,
-        assigned_to,
-        created_at,
-        created_by,
-        created_by_name,
-        created_by_role
+      SELECT *
       FROM opportunities_coordinator
     `;
-
     const params = [];
 
     if (req.user.role === "COORDINATOR") {
@@ -150,7 +182,6 @@ export const getOpportunities = async (req, res) => {
     query += ` ORDER BY id DESC`;
 
     const [rows] = await db.execute(query, params);
-
     res.json(rows);
   } catch (err) {
     console.error("Get opportunities error:", err);
@@ -159,8 +190,9 @@ export const getOpportunities = async (req, res) => {
 };
 
 /* ======================================================
-   UPDATE OPPORTUNITY
+   UPDATE OPPORTUNITY (SEND MAIL IF ASSIGNED USER CHANGES)
 ====================================================== */
+
 export const updateOpportunity = async (req, res) => {
   try {
     if (!req.user?.id) {
@@ -168,55 +200,124 @@ export const updateOpportunity = async (req, res) => {
     }
 
     const { opportunity_id } = req.params;
-
-    const normalize = (v) => (v?.trim() ? v.trim() : null);
+    const {
+      opportunityName,
+      customerName,
+      industry,
+      contactPerson,
+      contactEmail,
+      contactPhone,
+      leadSource,
+      leadDescription,
+      leadStatus,
+      assignedTo,
+    } = req.body;
 
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
 
-    const [result] = await db.execute(
+    // 1️⃣ Fetch OLD opportunity (before update)
+    const [[oldOpp]] = await db.execute(
+      `SELECT assigned_to, opportunity_name, customer_name
+       FROM opportunities_coordinator
+       WHERE opportunity_id = ?`,
+      [opportunity_id]
+    );
+
+    if (!oldOpp) {
+      return res.status(404).json({ message: "Opportunity not found" });
+    }
+
+    // 2️⃣ UPDATE ALL FIELDS
+    await db.execute(
       `
       UPDATE opportunities_coordinator
       SET
-        opportunity_name  = COALESCE(?, opportunity_name),
-        customer_name     = COALESCE(?, customer_name),
-        company_name      = COALESCE(?, company_name),
-        contact_person    = COALESCE(?, contact_person),
-        contact_email     = COALESCE(?, contact_email),
-        contact_phone     = COALESCE(?, contact_phone),
-        lead_source       = COALESCE(?, lead_source),
-        lead_description  = COALESCE(?, lead_description),
-        lead_status       = COALESCE(?, lead_status),
-        assigned_to       = COALESCE(?, assigned_to)
+        opportunity_name = COALESCE(?, opportunity_name),
+        customer_name    = COALESCE(?, customer_name),
+        company_name     = COALESCE(?, company_name),
+        contact_person   = COALESCE(?, contact_person),
+        contact_email    = COALESCE(?, contact_email),
+        contact_phone    = COALESCE(?, contact_phone),
+        lead_source      = COALESCE(?, lead_source),
+        lead_description = COALESCE(?, lead_description),
+        lead_status      = COALESCE(?, lead_status),
+        assigned_to      = COALESCE(?, assigned_to)
       WHERE opportunity_id = ?
-        AND created_by = ?
       `,
       [
-        normalize(req.body.opportunityName),
-        normalize(req.body.customerName),
-        normalize(req.body.industry),
-        normalize(req.body.contactPerson),
-        normalize(req.body.contactEmail),
-        normalize(req.body.contactPhone),
-        req.body.leadSource || null,
-        req.body.leadDescription || null,
-        req.body.leadStatus || null,
-        normalize(req.body.assignedTo), // ✅ ADDED
+        normalize(opportunityName),
+        normalize(customerName),
+        normalize(industry),
+        normalize(contactPerson),
+        normalize(contactEmail),
+        normalize(contactPhone),
+        leadSource || null,
+        leadDescription || null,
+        leadStatus || null,
+        normalize(assignedTo),
         opportunity_id,
-        req.user.id,
       ]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Opportunity not found" });
+    // 3️⃣ SEND MAIL ONLY IF ASSIGNMENT CHANGED
+    if (
+      assignedTo &&
+      oldOpp.assigned_to &&
+      String(oldOpp.assigned_to) !== String(assignedTo)
+    ) {
+      // OLD user
+      const [[oldUser]] = await db.execute(
+        `SELECT name, email FROM users_admin WHERE id = ?`,
+        [oldOpp.assigned_to]
+      );
+
+      // NEW user
+      const [[newUser]] = await db.execute(
+        `SELECT name, email FROM users_admin WHERE id = ?`,
+        [assignedTo]
+      );
+
+      // 🔴 Notify OLD user
+      if (oldUser?.email) {
+        await sendMail({
+          to: oldUser.email,
+          subject: "Opportunity Reassigned",
+          html: unassignedOpportunityTemplate({
+            userName: oldUser.name,
+            opportunityId: opportunity_id,
+            opportunityName: oldOpp.opportunity_name,
+            customerName: oldOpp.customer_name,
+            reassignedTo: newUser?.name || "Another user",
+          }),
+        });
+      }
+
+      // 🟢 Notify NEW user
+      if (newUser?.email) {
+        await sendMail({
+          to: newUser.email,
+          subject: "New Opportunity Assigned",
+          html: assignedOpportunityTemplate({
+            userName: newUser.name,
+            opportunityId: opportunity_id,
+            opportunityName: opportunityName || oldOpp.opportunity_name,
+            customerName: customerName || oldOpp.customer_name,
+            stage: leadStatus || "NEW",
+            followUpDate: null,
+            assignedBy: req.user.name || req.user.username,
+          }),
+        });
+      }
     }
 
     res.json({ message: "Opportunity updated successfully" });
   } catch (err) {
     console.error("Update opportunity error:", err);
-    res.status(500).json({ message: "Failed to update opportunity" });
+    res.status(500).json({ message: "Update failed" });
   }
 };
+
 
 /* ======================================================
    DELETE OPPORTUNITY
@@ -252,8 +353,6 @@ export const deleteOpportunity = async (req, res) => {
   }
 };
 
-
-
 /* ======================================================
    CREATE OPPORTUNITY TRACKER
 ====================================================== */
@@ -266,7 +365,7 @@ export const createOpportunityTracker = async (req, res) => {
     const {
       opportunity_id,
       stage,
-      next_followup_date,         // ← keep as string "YYYY-MM-DD"
+      next_followup_date,
       next_action,
       remarks,
     } = req.body;
@@ -280,10 +379,7 @@ export const createOpportunityTracker = async (req, res) => {
 
     const [[opp]] = await db.execute(
       `
-      SELECT
-        opportunity_name,
-        customer_name,
-        assigned_to
+      SELECT opportunity_name, customer_name, assigned_to
       FROM opportunities_coordinator
       WHERE opportunity_id = ?
       `,
@@ -316,10 +412,10 @@ export const createOpportunityTracker = async (req, res) => {
         opp.opportunity_name,
         opp.customer_name,
         opp.assigned_to,
-        stage || "NEW",
-        next_followup_date || null,           // ← VERY IMPORTANT: string or null
-        next_action || null,
-        remarks || null,
+        normalizeStage(stage),
+        next_followup_date || null,
+        normalize(next_action),
+        normalize(remarks),
         req.user.id,
         req.user.name || req.user.username || "Unknown",
         req.user.role,
@@ -333,9 +429,8 @@ export const createOpportunityTracker = async (req, res) => {
   }
 };
 
-
 /* ======================================================
-   GET OPPORTUNITY TRACKERS (OWN)
+   GET OPPORTUNITY TRACKERS
 ====================================================== */
 export const getOpportunityTrackers = async (req, res) => {
   try {
@@ -348,20 +443,7 @@ export const getOpportunityTrackers = async (req, res) => {
 
     const [rows] = await db.execute(
       `
-      SELECT
-        id,
-        opportunity_id,
-        opportunity_name,
-        customer_name,
-        assigned_to,
-        stage,
-        next_followup_date,
-        next_action,
-        remarks,
-        created_by,
-        created_by_name,
-        created_by_role,
-        created_at
+      SELECT *
       FROM opportunity_tracker
       WHERE created_by = ?
       ORDER BY id DESC
@@ -376,7 +458,6 @@ export const getOpportunityTrackers = async (req, res) => {
   }
 };
 
-
 /* ======================================================
    UPDATE OPPORTUNITY TRACKER
 ====================================================== */
@@ -387,11 +468,7 @@ export const updateOpportunityTracker = async (req, res) => {
     }
 
     const { id } = req.params;
-
-    const normalize = (v) => (v?.trim() ? v.trim() : null);
-
     const db = await connectDB();
-    // await initSchemas(db, { coordinator: true }); // ← usually not needed on every request
 
     const [result] = await db.execute(
       `
@@ -405,8 +482,8 @@ export const updateOpportunityTracker = async (req, res) => {
         AND created_by = ?
       `,
       [
-        req.body.stage || null,
-        req.body.next_followup_date || null,    // ← string "YYYY-MM-DD" or null
+        normalizeStage(req.body.stage),
+        req.body.next_followup_date || null,
         normalize(req.body.next_action),
         normalize(req.body.remarks),
         id,
@@ -424,6 +501,7 @@ export const updateOpportunityTracker = async (req, res) => {
     res.status(500).json({ message: "Failed to update opportunity tracker" });
   }
 };
+
 /* ======================================================
    DELETE OPPORTUNITY TRACKER
 ====================================================== */
@@ -434,7 +512,6 @@ export const deleteOpportunityTracker = async (req, res) => {
     }
 
     const { id } = req.params;
-
     const db = await connectDB();
 
     const [result] = await db.execute(

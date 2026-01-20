@@ -35,6 +35,13 @@ import Department from "./tl/pages/department.jsx";
 import TeamMember from "./tl/pages/teammember.jsx";
 // import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
+/* CEO */
+import CeoDashboard from "./dashboards/Ceo/CeoDashboard.jsx";
+import CeoProjects from "./dashboards/Ceo/Ceoprojects.jsx";
+import CeoQuotation from "./dashboards/Ceo/Ceoquotation.jsx";
+
+
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -96,13 +103,29 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route index element={<CoordinatorDashboard />} />
+          <Route index element={<Navigate to="opportunities" replace />} />
+          {/* <Route index element={<Opportunities />} /> */}
           <Route path="opportunities" element={<Opportunities />} />
           <Route
             path="opportunities-tracker"
             element={<OpportunitiesTracker />}
           />
         </Route>
+
+        {/* CEO */}
+<Route
+  path="/ceo"
+  element={
+    <PrivateRoute>
+      <DashboardLayout user={user} setUser={setUser} />
+    </PrivateRoute>
+  }
+>
+  <Route index element={<CeoDashboard />} />
+  <Route path="ceoprojects" element={<CeoProjects />} />
+  <Route path="ceoquotation" element={<CeoQuotation />} />
+</Route>
+
 
         {/* TEAM LEADER */}
         <Route

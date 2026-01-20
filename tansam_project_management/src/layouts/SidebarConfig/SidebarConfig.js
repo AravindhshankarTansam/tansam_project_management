@@ -18,9 +18,9 @@ export const SIDEBAR_MENU = {
   ],
 
   coordinator: [
-    { label: "Dashboard", path: "/coordinator" },
+    // { label: "Dashboard", path: "/coordinator" },
     { label: "New Opportunities", path: "/coordinator/opportunities" },
-    { label: "Opportunities-Tracker", path: "/coordinator/Opportunities-tracker" },
+    // { label: "Opportunities-Tracker", path: "/coordinator/Opportunities-tracker" },
   ],
 
   tl: [
@@ -53,9 +53,9 @@ finance: [
 
 
   ceo: [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Reports", path: "/dashboard/reports" },
-    { label: "Financial Overview", path: "/dashboard/finance" },
-    { label: "Users", path: "/dashboard/users" },
+    { label: "Dashboard", path: "/ceo" },
+    { label: "Projects", path: "/ceo/ceoprojects" },
+    { label: "Quotation", path: "/ceo/ceoquotation" },
+    { label: "Forecast", path: "/dashboard/users" },
   ],
 };
