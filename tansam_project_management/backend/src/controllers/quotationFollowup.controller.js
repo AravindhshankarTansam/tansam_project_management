@@ -22,12 +22,7 @@ export const addFollowup = async (req, res) => {
         await initSchemas(db, { finance: true });
     const {
       project_name, 
-      clientResponse,
-      lastFollowup,
       revisedCost,
-      nextFollowup,
-      remarks,
-      status,
       poReceived,
       paymentPhase,
       paymentAmount,
@@ -38,16 +33,11 @@ export const addFollowup = async (req, res) => {
  
     const [result] = await db.execute(
       `INSERT INTO quotation_followups
-      (project_name, clientResponse, lastFollowup, revisedCost, nextFollowup, remarks, status, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (project_name, revisedCost, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         project_name,
-        clientResponse,
-        lastFollowup,
         revisedCost,
-        nextFollowup,
-        remarks,
-        status,
         poReceived,
         paymentPhase,
         paymentAmount,
@@ -70,13 +60,8 @@ export const updateFollowup = async (req, res) => {
         await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
-      project_name,
-      clientResponse,
-      lastFollowup,
+      project_name,    
       revisedCost,
-      nextFollowup,
-      remarks,
-      status,
       poReceived,
       paymentPhase,
       paymentAmount,
@@ -87,13 +72,8 @@ export const updateFollowup = async (req, res) => {
    
     await db.execute(
       `UPDATE quotation_followups SET
-        project_name=?,
-        clientResponse=?,
-        lastFollowup=?,
-        revisedCost=?,
-        nextFollowup=?,
-        remarks=?,
-        status=?,
+        project_name=?,     
+        revisedCost=?,      
         poReceived=?,
         paymentPhase=?,
         paymentAmount=?,
@@ -102,12 +82,7 @@ export const updateFollowup = async (req, res) => {
        WHERE id=?`,
       [
         project_name,
-        clientResponse,
-        lastFollowup,
         revisedCost,
-        nextFollowup,
-        remarks,
-        status,
         poReceived,
         paymentPhase,
         paymentAmount,

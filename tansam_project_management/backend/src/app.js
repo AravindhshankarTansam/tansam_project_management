@@ -10,10 +10,14 @@
   import departmentRoutes from "./routes/department.routes.js";
   import membersRoutes from "./routes/members.routes.js";
   import projectTypeRoutes from "./routes/projectType.routes.js";
-
+  import terms from "./routes/terms.routes.js"
   import quotationFollowup from "./routes/quotationFollowup.routes.js";
   import projectFollowupRoutes from "./routes/projectFollowup.routes.js";
-  import path from "path";
+
+ 
+import generatedQuotationRoutes from "./routes/generatedQuotation.routes.js";
+
+    import path from "path";
 
   const app = express();
 
@@ -51,8 +55,9 @@ app.use(
   app.use("/api/admin", adminRoutes);
   app.use("/api/coordinator", coordinatorRoutes);
   app.use("/api/quotations", quotationRoutes);
-  app.use("/api/quotation-followups", quotationFollowup);
-  // app.use("/api", labRoutes);
+  app.use("/api/quotation-followups",  quotationFollowup);
+  app.use("/api/generatequotation", generatedQuotationRoutes)
+  app.use("/api/terms", terms);
   app.use("/api", projectRoutes);
   app.use("/api", assignTeamRoutes);
   app.use("/api", departmentRoutes);

@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import "../../layouts/CSS/finance.css";
-
+import GenerateQuotation from "./generateQuotation";
 import {
   getQuotations,
   addQuotation,
   updateQuotation,
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
-
+import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { MdEditDocument } from "react-icons/md";
+import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
+import { fetchLabs } from "../../services/admin/admin.roles.api";
+import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
 export default function Quotations() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -15,10 +20,16 @@ export default function Quotations() {
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
+const [workCategories, setWorkCategories] = useState([]);
+const [opportunities, setOpportunities] = useState([]);
+const [labs, setLabs] = useState([]);
+
+const [showDoc, setShowDoc] = useState(false);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
   const workCategoryOptions = [...new Set(data.map((d) => d.workCategory))];
   const labOptions = [...new Set(data.map((d) => d.lab))];
+const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
@@ -42,6 +53,63 @@ export default function Quotations() {
     setSelectedLab("");
     setPage(1);
   };
+const handleEditGeneratedQuotation = async (quotation) => {
+  const generated = await getGeneratedQuotationByQuotationId(quotation.id);
+
+  setNewQuotation({
+    ...quotation,
+    items: JSON.parse(generated.items || "[]"),
+    terms: JSON.parse(generated.terms || "[]"),
+    kindAttn: generated.kindAttn,
+    subject: generated.subject,
+    financeManagerName: generated.financeManagerName,
+    signature: generated.signature,
+    seal: generated.seal,
+  });
+
+  setShowGenerateQuotation(true);
+};
+
+useEffect(() => {
+  const loadWorkCategories = async () => {
+    try {
+      const categories = await fetchWorkCategories(); // API from admin.roles.api.js
+      setWorkCategories(categories);
+    } catch (err) {
+      console.error("Failed to fetch work categories:", err);
+      alert("Failed to load work categories");
+    }
+  };
+
+  loadWorkCategories();
+}, []);
+useEffect(() => {
+  const loadLabs = async () => {
+    try {
+      const labData = await fetchLabs(); // from admin.roles.api.js
+      setLabs(labData);
+    } catch (err) {
+      console.error("Failed to fetch labs:", err);
+      alert("Failed to load labs");
+    }
+  };
+
+  loadLabs();
+}, []);
+
+useEffect(() => {
+  const loadOpportunities = async () => {
+    try {
+      const data = await fetchOpportunities(); // API call
+      setOpportunities(data);
+    } catch (err) {
+      console.error("Failed to fetch opportunities:", err);
+      alert("Failed to load opportunities");
+    }
+  };
+
+  loadOpportunities();
+}, []);
 
   const filtered = data.filter(
     (q) =>
@@ -50,6 +118,17 @@ export default function Quotations() {
         q.workCategory === selectedWorkCategory) &&
       (selectedLab === "" || q.lab === selectedLab)
   );
+const generateQuotationNo = (data) => {
+  const numbers = data
+    .map(q => q.quotationNo)
+    .filter(Boolean)
+    .map(no => Number(no.replace("TANSAM/", "")))
+    .filter(n => !isNaN(n));
+
+  const nextNumber = numbers.length ? Math.max(...numbers) + 1 : 1001;
+  return `TANSAM/${nextNumber}`;
+};
+
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -101,37 +180,47 @@ const response = await fetch(
     setShowModal(true);
   };
 
-  useEffect(() => {
-    getQuotations().then(setData);
-  }, []);
+useEffect(() => {
+  getQuotations().then(res => setData(res));
+}, []);
 
-  const handleSaveQuotation = async () => {
-    try {
-      if (editId) await updateQuotation(editId, newQuotation);
-      else await addQuotation(newQuotation);
+const handleSaveQuotation = async () => {
+  try {
+    const payload = {
+      ...newQuotation,
+      quotationNo: editId
+        ? newQuotation.quotationNo   // ✅ KEEP EXISTING NUMBER ON EDIT
+        : newQuotation.quotationNo || generateQuotationNo(data),
+    };
 
-      const updatedData = await getQuotations();
-      setData(updatedData);
-
-      setShowModal(false);
-      setEditId(null);
-      setNewQuotation({
-        quotationNo: "",
-         project_name: "",
-        clientName: "",
-
-        clientType: "Corporate",
-        workCategory: "",
-        lab: "",
-        description: "",
-        value: "",
-        date: "",
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Error saving quotation");
+    if (editId) {
+      await updateQuotation(editId, payload);
+    } else {
+      await addQuotation(payload);
     }
-  };
+
+    const updatedData = await getQuotations();
+    setData(updatedData);
+
+    setShowModal(false);
+    setEditId(null);
+    setNewQuotation({
+      quotationNo: "",
+      project_name: "",
+      clientName: "",
+      clientType: "Corporate",
+      workCategory: "",
+      lab: "",
+      description: "",
+      value: "",
+      date: "",
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Error saving quotation");
+  }
+};
+
 
   const deleteRow = async (id) => {
     if (window.confirm("Are you sure you want to delete this quotation?")) {
@@ -161,8 +250,47 @@ const response = await fetch(
       date: "",
     });
   };
+if (showDoc) {
+  return (
+    <QuotationDocument
+      quotation={newQuotation}
+      onBack={() => setShowDoc(false)}
+    />
+  );
+}
+if (showGenerateQuotation) {
+  return (
+    <GenerateQuotation
+      quotation={newQuotation}
+      onSaved={async () => {
+        // 1. Local optimistic update
+        setData(prev =>
+          prev.map(q =>
+            q.id === newQuotation.id
+              ? { ...q, isGenerated: true }
+              : q
+            )
+          );
+
+        // 2. Reload fresh data from server (recommended!)
+        try {
+          const freshData = await getQuotations();
+          setData(freshData);
+        } catch (e) {
+          console.warn("Couldn't refresh quotations list", e);
+        }
+
+        setShowGenerateQuotation(false);
+      }}
+    />
+  );
+}
+
+
 
   return (
+
+
     <div className="finance-container">
       {/* Header */}
       <div className="table-header">
@@ -172,12 +300,32 @@ const response = await fetch(
             Create, manage and download quotations
           </p>
         </div>
-        <button
-          className="btn-add-quotation"
-          onClick={() => setShowModal(true)}
-        >
-          + Create New Quotation
-        </button>
+  <button
+  className="btn-add-quotation"
+  onClick={() => {
+    const quotationNo = generateQuotationNo(data);
+
+    setNewQuotation({
+      quotationNo,
+      project_name: "",
+      clientName: "",
+      clientType: "Corporate",
+      workCategory: "",
+      lab: "",
+      description: "",
+      value: "",
+      date: "",
+    });
+
+    setEditId(null);
+    setShowModal(true);
+  }}
+>
+  + Create New Quotation
+</button>
+
+
+
       </div>
 
       {/* Filters */}
@@ -296,29 +444,50 @@ const response = await fetch(
                   </td>
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
-                   <button
-  className="btn-docx"
-  onClick={() => downloadDocx(q)}
-  disabled={downloadingId === q.id}
-  title="Download DOCX"
->
-  {downloadingId === q.id ? "⏳" : "📄"}
-</button>
+       <button
+    className="btn-docx"
+    onClick={() => downloadDocx(q)}
+    disabled={downloadingId === q.id}
+    title="Download DOCX"
+  >
+    {downloadingId === q.id ? "⏳" : <FaFileWord />}
+  </button>
+                     <button
+    className="btn-edit"
+    onClick={() => handleEdit(q)}
+    title="Edit"
+  >
+    <FaEdit />
+  </button>  <button
+    className="btn-delete"
+    onClick={() => deleteRow(q.id)}
+    title="Delete"
+  >
+    <FaTrash />
+  </button>
+{q.isGenerated ? (
+    <button
+      className="btn-medit"
+      onClick={() => handleEditGeneratedQuotation(q)}
+      title="Edit Generated Quotation"
+    >
+      <MdEditDocument /> {/* Medit icon */}
+    </button>
+  ) : (
+    <button
+      className="btn-generate"
+      onClick={() => {
+        setNewQuotation(q);
+        setShowGenerateQuotation(true);
+      }}
+      title="Generate Quotation"
+    >
+      +
+    </button>
+  )}
 
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEdit(q)}
-                      title="Edit"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => deleteRow(q.id)}
-                      title="Delete"
-                    >
-                      🗑️
-                    </button>
+
+
                   </td>
                 </tr>
               ))
@@ -350,170 +519,179 @@ const response = await fetch(
       </div>
 
       {/* ✅ IMPROVED MODAL */}
-      {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
-              <button className="btn-close" onClick={closeModal}>
-                ✕
-              </button>
-            </div>
-            <div className="form-group">
-              <label>Quotation No *</label>
-              <input
-                type="text"
-                placeholder="e.g., QT-2026-001"
-                value={newQuotation.quotationNo}
-                onChange={(e) =>
-                  setNewQuotation({
-                    ...newQuotation,
-                    quotationNo: e.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-<div className="form-group">
-  <label>Project Name *</label>
+    {showModal && (
+  <div className="modal-overlay" onClick={closeModal}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
+        <button className="btn-close" onClick={closeModal}>✕</button>
+      </div>
+
+      {/* FORM */}
+      <div className="modal-form">
+        <div className="form-group">
+         
+          
+  <label>Quotation No *</label>
   <input
     type="text"
-    placeholder="Enter project name"
+    value={newQuotation.quotationNo}
+    readOnly
+  />
+
+
+        </div>
+
+      <div className="form-group">
+  <label>Project Name *</label>
+  <select
     value={newQuotation.project_name}
     onChange={(e) =>
-      setNewQuotation({
-        ...newQuotation,
-        project_name: e.target.value,
-      })
+      setNewQuotation({ ...newQuotation, project_name: e.target.value })
     }
-    required
-  />
+  >
+    <option value="">Select Project</option>
+    {opportunities.map((opp) => (
+      <option key={opp.id} value={opp.opportunity_name}>
+        {opp.opportunity_name}
+      </option>
+    ))}
+  </select>
 </div>
 
-            <div className="modal-form">
-              <div className="form-group">
-                <label>Client Name *</label>
-                <input
-                  type="text"
-                  placeholder="Enter client name"
-                  value={newQuotation.clientName}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      clientName: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Client Type *</label>
-                  <select
-                    value={newQuotation.clientType}
-                    onChange={(e) =>
-                      setNewQuotation({
-                        ...newQuotation,
-                        clientType: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="Corporate">Corporate</option>
-                    <option value="Individual">Individual</option>
-                    <option value="Government">Government</option>
-                    <option value="NGO">NGO</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Quote Value *</label>
-                  <input
-                    type="number"
-                    placeholder="Enter amount"
-                    value={newQuotation.value}
-                    onChange={(e) =>
-                      setNewQuotation({
-                        ...newQuotation,
-                        value: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Work Category *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Environmental, Chemical"
-                    value={newQuotation.workCategory}
-                    onChange={(e) =>
-                      setNewQuotation({
-                        ...newQuotation,
-                        workCategory: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Lab *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Chennai Lab"
-                    value={newQuotation.lab}
-                    onChange={(e) =>
-                      setNewQuotation({ ...newQuotation, lab: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Work Description *</label>
-                <textarea
-                  placeholder="Enter detailed description of the work..."
-                  value={newQuotation.description}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      description: e.target.value,
-                    })
-                  }
-                  rows="4"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Quotation Date *</label>
-                <input
-                  type="date"
-                  value={newQuotation.date}
-                  onChange={(e) =>
-                    setNewQuotation({ ...newQuotation, date: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button className="btn-save" onClick={handleSaveQuotation}>
-                {editId ? "Update Quotation" : "Create Quotation"}
-              </button>
-              <button className="btn-cancel" onClick={closeModal}>
-                Cancel
-              </button>
-            </div>
-          </div>
+        <div className="form-group">
+          <label>Client Name *</label>
+          <input
+            type="text"
+            placeholder="Client Name"
+            value={newQuotation.clientName}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, clientName: e.target.value })
+            }
+          />
         </div>
-      )}
+
+        <div className="form-group">
+          <label>Client Type *</label>
+          <select
+            value={newQuotation.clientType}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, clientType: e.target.value })
+            }
+          >
+            <option value="Corporate">Corporate</option>
+            <option value="Individual">Individual</option>
+            <option value="Government">Government</option>
+            <option value="NGO">NGO</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Quote Value *</label>
+          <input
+            type="number"
+            value={newQuotation.value}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, value: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Work Category *</label>
+        <select
+    value={newQuotation.workCategory}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, workCategory: e.target.value })
+    }
+  >
+    <option value="">Select Work Category</option>
+    {workCategories.map((cat) => (
+      <option key={cat.id} value={cat.name}>
+        {cat.name}
+      </option>
+    ))}
+  </select>
+          
+        </div>
+
+        <div className="form-group">
+          <label>Lab *</label>
+        <select
+  value={newQuotation.lab}
+  onChange={(e) =>
+    setNewQuotation({ ...newQuotation, lab: e.target.value })
+  }
+>
+  <option value="">Select Lab</option>
+  {labs.map((lab) => (
+    <option key={lab.id} value={lab.name}>
+      {lab.name}
+    </option>
+  ))}
+</select>
+
+        </div>
+
+        <div className="form-group">
+          <label>Work Description *</label>
+          <textarea
+            value={newQuotation.description}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, description: e.target.value })
+            }
+            rows="4"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Quotation Date *</label>
+          <input
+            type="date"
+            value={newQuotation.date}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, date: e.target.value })
+            }
+          />
+        </div>
+      </div>
+
+      {/* LIVE QUOTATION PREVIEW */}
+      <div className="quotation-preview" style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        marginTop: "20px",
+        backgroundColor: "#fff",
+        maxHeight: "400px",
+        overflowY: "auto"
+      }}>
+        <h2 style={{ textAlign: "center" }}>Quotation</h2>
+        <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
+        <p><strong>Date:</strong> {newQuotation.date}</p>
+        <p><strong>Project Name:</strong> {newQuotation.project_name}</p>
+        <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
+        <p><strong>Lab:</strong> {newQuotation.lab}</p>
+        <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
+        <p><strong>Description:</strong> {newQuotation.description}</p>
+        <p><strong>Quote Value:</strong> ₹ {parseInt(newQuotation.value || 0).toLocaleString("en-IN")}</p>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="modal-actions">
+        <button className="btn-save" onClick={handleSaveQuotation}>
+          {editId ? "Update Quotation" : "Create & Save Quotation"}
+        </button>
+
+        <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
+          Generate DOCX
+        </button>
+
+        <button className="btn-cancel" onClick={closeModal}>Cancel</button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

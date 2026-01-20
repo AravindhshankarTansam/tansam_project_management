@@ -8,7 +8,7 @@ import {
   updateFollowup,
   deleteFollowup,
 } from "../../services/quotation/quotationFollowup.api";
-
+import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 export default function QuotationFollowup() {
   const [data, setData] = useState([]);
@@ -16,14 +16,11 @@ export default function QuotationFollowup() {
   const [editId, setEditId] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [activePhase, setActivePhase] = useState("followup");
+
 const [newFollowup, setNewFollowup] = useState({
-  project_name: "",
-  clientResponse: "",
-  lastFollowup: "",
+  project_name: "", 
   revisedCost: "",
-  nextFollowup: "",
-  remarks: "",
-  status: "",
   poReceived: "No",
   paymentPhase: "Initial",
   paymentReceived: "No",
@@ -105,9 +102,30 @@ const handleSave = async () => {
       {/* Header */}
       <div className="table-header">
         <h2>Quotation Follow-up</h2>
-        <button className="btn-add-quotation" onClick={() => setShowModal(true)}>
-          + Add Quotation follow-up
-        </button>
+    <button
+  className="btn-add-quotation"
+  onClick={() => {
+    setNewFollowup({
+      project_name: "",
+      clientResponse: "",
+      lastFollowup: "",
+      revisedCost: "",
+      nextFollowup: "",
+      remarks: "",
+      status: "",
+      poReceived: "No",
+      paymentPhase: "Initial",
+      paymentReceived: "No",
+      paymentAmount: "",
+      reason: "",
+    });
+    setEditId(null);   // ensure it’s not in edit mode
+    setShowModal(true);
+  }}
+>
+  + Add Quotation follow-up
+</button>
+
       </div>
   <div style={{ position: "relative" }}>
 <div className="page-size-ui">
@@ -131,61 +149,69 @@ const handleSave = async () => {
 
   </div>
       {/* Table */}
+      <div className="phase-tabs">
+      {/* <button
+        className={activePhase === "followup" ? "active-tab" : ""}
+        onClick={() => setActivePhase("followup")}
+      >
+        Quotation Follow-up Phase
+      </button> */}
+
+      <button
+        className={activePhase === "payment" ? "active-tab" : ""}
+        onClick={() => setActivePhase("payment")}
+      >
+        Payment Phase
+      </button>
+    </div>
+
       <div className="card-table">
         
-        <table>
-          <thead>
-            <tr>
-              {[
-                "Project Name",
-  "Client Response",
-  "Last Follow-up",
-  "Revised Cost",
-  "Next Follow-up",
-  "Remarks",
-  "Order Status",
-  "PO Received",
-  "Payment Phase",
-  "Payment Amount",
-  "Payment Received",
-  "Reason",
-  "Actions",
-].map(h => (
-                <th key={h}>
-                  {h}
-                  <span className="resize-handle" />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.map(d => (
-              <tr key={d.id}>
-                <td>{d.project_name}</td>
+   <table>
+  <thead>
+    <tr>
+      <th>Project Name</th>
+      <th>Revised Cost</th>
+      <th>PO Received</th>
+      <th>Payment Phase</th>
+      <th>Payment Received</th>
+      <th>Payment Amount</th>
+      <th>Reason</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {paginated.map(d => (
+      <tr key={d.id}>
+        <td>{d.project_name}</td>
+        <td>₹ {d.revisedCost}</td>
+        <td>{d.poReceived}</td>
+        <td>{d.paymentPhase}</td>
+        <td>{d.paymentReceived}</td>
+        <td>{d.paymentReceived === "Yes" ? `₹ ${d.paymentAmount}` : "-"}</td>
+        <td>{d.paymentReceived === "No" ? d.reason || "-" : "-"}</td>
+        <td>
+        
+                               <button
+              className="btn-edit"
+              onClick={() => handleEdit(d)}
+              title="Edit"
+            >
+              <FaEdit />
+            </button>  <button
+              className="btn-delete"
+              onClick={() => handleDelete(d.id)}
+              title="Delete"
+            >
+              <FaTrash />
+            </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
-                <td>{d.clientResponse}</td>
-                <td>{d.lastFollowup}</td>
-                <td>₹ {d.revisedCost}</td>
-                <td>{d.nextFollowup}</td>
-                <td>{d.remarks}</td>
-                <td>{d.status}</td>
-<td>{d.poReceived}</td>
-<td>{d.paymentPhase}</td>
-<td>{d.paymentAmount ? `₹ ${d.paymentAmount}` : "-"}</td>
-<td>{d.paymentReceived}</td>
-<td>{d.reason}</td>
-<td>
-  <button className="btn-edit" onClick={() => handleEdit(d)}>✏️</button>
-<button className="btn-delete" onClick={() => handleDelete(d.id)}>
-  🗑️
-</button>
 
-</td>
-
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
       {/* Pagination Controls */}
@@ -199,7 +225,8 @@ const handleSave = async () => {
 
 
       {/* Add/Edit Modal */}
-    {showModal && (
+{/* Add/Edit Modal */}
+{showModal && (
   <div className="modal-overlay">
     <div className="modal modal-lg">
       {/* Header */}
@@ -213,35 +240,20 @@ const handleSave = async () => {
       {/* Body */}
       <div className="modal-body">
         <div className="form-grid">
-          {/* Client Response */}
-          <div className="form-group">
-            <label>Client Response *</label>
-            <select
-              value={newFollowup.clientResponse}
-              onChange={e =>
-                setNewFollowup({ ...newFollowup, clientResponse: e.target.value })
-              }
-            >
-              <option value="">Select</option>
-              <option>Interested</option>
-              <option>Pending</option>
-              <option>Not Interested</option>
-            </select>
-          </div>
-
-          {/* Last Follow-up */}
-          <div className="form-group">
-            <label>Last Follow-up *</label>
-            <input
-              type="date"
-              value={newFollowup.lastFollowup}
-              onChange={e =>
-                setNewFollowup({ ...newFollowup, lastFollowup: e.target.value })
-              }
-            />
-          </div>
-
           {/* Revised Cost */}
+          {/* Project Name */}
+<div className="form-group">
+  <label>Project Name *</label>
+  <input
+    type="text"
+    placeholder="Enter project name"
+    value={newFollowup.project_name}
+    onChange={e =>
+      setNewFollowup({ ...newFollowup, project_name: e.target.value })
+    }
+  />
+</div>
+
           <div className="form-group">
             <label>Revised Cost *</label>
             <input
@@ -252,34 +264,6 @@ const handleSave = async () => {
                 setNewFollowup({ ...newFollowup, revisedCost: e.target.value })
               }
             />
-          </div>
-
-          {/* Next Follow-up */}
-          <div className="form-group">
-            <label>Next Follow-up</label>
-            <input
-              type="date"
-              value={newFollowup.nextFollowup}
-              onChange={e =>
-                setNewFollowup({ ...newFollowup, nextFollowup: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Order Status */}
-          <div className="form-group">
-            <label>Order Status *</label>
-            <select
-              value={newFollowup.status}
-              onChange={e =>
-                setNewFollowup({ ...newFollowup, status: e.target.value })
-              }
-            >
-              <option value="">Select</option>
-              <option>In Discussion</option>
-              <option>Confirmed</option>
-              <option>Cancelled</option>
-            </select>
           </div>
 
           {/* PO Received */}
@@ -314,67 +298,41 @@ const handleSave = async () => {
           </div>
 
           {/* Payment Received */}
-          <div className="form-group">
-            <label>Payment Received *</label>
-            <select
-              value={newFollowup.paymentReceived}
-              onChange={e =>
-                setNewFollowup({
-                  ...newFollowup,
-                  paymentReceived: e.target.value,
-                  paymentAmount: e.target.value === "No" ? "" : newFollowup.paymentAmount,
-                })
-              }
-            >
-              <option>No</option>
-              <option>Yes</option>
-            </select>
-          </div>
+    <div className="form-group">
+      <label>Payment Received *</label>
+      <select
+        value={newFollowup.paymentReceived}
+        onChange={e =>
+          setNewFollowup({
+            ...newFollowup,
+            paymentReceived: e.target.value,
+            paymentAmount: e.target.value === "No" ? "" : newFollowup.paymentAmount,
+            reason: e.target.value === "Yes" ? "" : newFollowup.reason,
+          })
+        }
+      >
+        <option>No</option>
+        <option>Yes</option>
+      </select>
+    </div>
 
-          {/* Payment Amount (Conditional) */}
-          {newFollowup.paymentReceived === "Yes" && (
-            <div className="form-group">
-              <label>Payment Amount *</label>
-              <input
-                type="number"
-                placeholder="Enter received amount"
-                value={newFollowup.paymentAmount}
-                onChange={e =>
-                  setNewFollowup({
-                    ...newFollowup,
-                    paymentAmount: e.target.value,
-                  })
-                }
-              />
-            </div>
-          )}
 
-          {/* Remarks (Full Width) */}
-          <div className="form-group full-width">
-            <label>Remarks</label>
-            <input
-              placeholder="Enter remarks"
-              value={newFollowup.remarks}
-              onChange={e =>
-                setNewFollowup({ ...newFollowup, remarks: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Reason (Full Width) */}
-      {newFollowup.paymentReceived === "No" && (
-  <div className="form-group full-width">
-    <label>Reason</label>
-    <input
-      placeholder="Reason if any"
-      value={newFollowup.reason}
-      onChange={(e) =>
-        setNewFollowup({ ...newFollowup, reason: e.target.value })
-      }
-    />
-  </div>
-)}
-
+          {/* Payment Amount (only if received) */}
+       <div className="form-group">
+      <label>{newFollowup.paymentReceived === "Yes" ? "Payment Amount *" : "Reason"}</label>
+      <input
+        type={newFollowup.paymentReceived === "Yes" ? "number" : "text"}
+        placeholder={newFollowup.paymentReceived === "Yes" ? "Enter received amount" : "Reason if any"}
+        value={newFollowup.paymentReceived === "Yes" ? newFollowup.paymentAmount : newFollowup.reason}
+        onChange={e =>
+          setNewFollowup({
+            ...newFollowup,
+            paymentAmount: newFollowup.paymentReceived === "Yes" ? e.target.value : newFollowup.paymentAmount,
+            reason: newFollowup.paymentReceived === "No" ? e.target.value : newFollowup.reason,
+          })
+        }
+      />
+    </div>
         </div>
       </div>
 
@@ -397,6 +355,7 @@ const handleSave = async () => {
     </div>
   </div>
 )}
+
     </div>
   );
 }
