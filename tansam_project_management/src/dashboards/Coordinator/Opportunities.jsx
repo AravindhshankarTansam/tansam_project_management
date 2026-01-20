@@ -4,7 +4,7 @@ import {
   fetchOpportunities,
   createOpportunity,
   updateOpportunity,
-  deleteOpportunity,
+  // deleteOpportunity,
 } from "../../services/coordinator/coordinator.opportunity.api";
 import {
   fetchOpportunityTrackers,
@@ -271,15 +271,15 @@ const handleSubmit = async (e) => {
   }
 };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this opportunity?")) return;
-    try {
-      await deleteOpportunity(id);
-      loadAll();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+  // const handleDelete = async (id) => {
+  //   if (!window.confirm("Delete this opportunity?")) return;
+  //   try {
+  //     await deleteOpportunity(id);
+  //     loadAll();
+  //   } catch (err) {
+  //     alert(err.message);
+  //   }
+  // };
 
 
 
@@ -404,12 +404,6 @@ const handleSubmit = async (e) => {
                           onClick={() => openEditModal(item)}
                         >
                           <FiEdit />
-                        </button>
-                        <button
-                          className="icon-btn delete"
-                          onClick={() => handleDelete(item.opportunity_id)}
-                        >
-                          <FiTrash2 />
                         </button>
                       </td>
                     </tr>
