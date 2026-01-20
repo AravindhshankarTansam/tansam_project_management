@@ -11,7 +11,7 @@ import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
-import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
 import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -53,21 +53,48 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     setSelectedLab("");
     setPage(1);
   };
-const handleEditGeneratedQuotation = async (quotation) => {
-  const generated = await getGeneratedQuotationByQuotationId(quotation.id);
+const handleEditGeneratedQuotation = async (originalQuotation) => {
+  try {
+    const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
 
-  setNewQuotation({
-    ...quotation,
-    items: JSON.parse(generated.items || "[]"),
-    terms: JSON.parse(generated.terms || "[]"),
-    kindAttn: generated.kindAttn,
-    subject: generated.subject,
-    financeManagerName: generated.financeManagerName,
-    signature: generated.signature,
-    seal: generated.seal,
-  });
+    if (!generated) {
+      alert("No previously generated version found. Starting fresh.");
+      setNewQuotation({
+        ...originalQuotation,
+        items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+        terms: [],
+        kindAttn: "",
+        subject: "",
+        refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(3, '0')}`,
+        financeManagerName: "",
+        signature: null, // will be path string if editing
+        seal: null,
+      });
+    } else {
+      setNewQuotation({
+        ...originalQuotation,           // keep basic fields
+        id: originalQuotation.id,       // important!
+        refNo: generated.refNo,
+        date: generated.date,
+        clientName: generated.clientName,
+        kindAttn: generated.kindAttn,
+        subject: generated.subject,
+        items: generated.items || [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+        terms: generated.terms || [],
+        termsContent: generated.termsContent || "",
+        financeManagerName: generated.financeManagerName,
+        signature: generated.signature,   // this is a path string
+        seal: generated.seal,             // this is a path string
+        // Note: file inputs cannot be pre-filled for security reasons
+      });
+    }
 
-  setShowGenerateQuotation(true);
+    setShowGenerateQuotation(true);
+  } catch (err) {
+    console.error("Error loading generated quotation for edit:", err);
+    alert("Could not load previous generated quotation.");
+    setShowGenerateQuotation(true); // at least open form
+  }
 };
 
 useEffect(() => {

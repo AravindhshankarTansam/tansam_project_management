@@ -6,7 +6,7 @@ import tidco from "../../assets/tansam/tidcologo.png";
 import "../../layouts/CSS/GenerateQuotation.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { getActiveTerms } from "../../services/quotation/terms.api";
-import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { saveGeneratedQuotation, getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
 import QuotationPDF from "./QuotationPdf.jsx";
 
 // ✅ EditableQuotationTable Component (UNCHANGED)
@@ -767,6 +767,7 @@ const FinanceDocument = ({
 
 // ✅ MAIN COMPONENT WITH ALL STATES & FIXED PROPS
 export default function GenerateQuotation({ quotation: initialQuotation, onSaved }) {
+  const isEditMode = !!initialQuotation?.id && initialQuotation?.items?.length > 0;
 const [quotation, setQuotation] = useState(() => ({
     id: initialQuotation?.id || null,  // ← MUST have this line!
     subject: initialQuotation?.subject || "",
@@ -865,6 +866,7 @@ dataToSend.append("quotation_id", quotation.id);
   // ✅ PASS ALL REQUIRED PROPS
   return (
     <FinanceDocument
+    isEditMode={isEditMode}
       quotation={quotation}
       setQuotation={setQuotation}
       refNo={refNo}
