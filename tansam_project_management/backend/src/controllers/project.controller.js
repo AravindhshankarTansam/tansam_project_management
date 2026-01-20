@@ -109,24 +109,29 @@ export const getProjects = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { project: true });
+const [rows] = await db.execute(`
+  SELECT
+    p.id,
+    p.project_reference AS projectReference,
+    p.project_name AS projectName,
+    p.client_name AS clientName,
+    p.project_type AS projectType,
+    p.opportunity_id AS opportunityId,
+    p.start_date AS startDate,
+    p.end_date AS endDate,
+    p.status,
 
-    const [rows] = await db.execute(`
-      SELECT
-        id,
-        project_reference AS projectReference,
-        project_name AS projectName,
-        client_name AS clientName,
-        project_type AS projectType,
-        opportunity_id AS opportunityId,
-        start_date AS startDate,
-        end_date AS endDate,
-        status,
-        quotation_number AS quotationNumber,
-        po_number AS poNumber,
-        po_file AS poFile
-      FROM projects
-      ORDER BY id DESC
-    `);
+    -- 👇 OPPORTUNITY CLIENT DETAILS
+    o.contact_person AS contactPerson,
+    o.contact_email  AS contactEmail,
+    o.contact_phone  AS contactPhone,
+    o.assigned_to    AS assignedTo
+
+  FROM projects p
+  LEFT JOIN opportunities_coordinator o
+    ON p.opportunity_id = o.opportunity_id
+  ORDER BY p.id DESC
+`);
 
     res.json(rows);
   } catch (err) {

@@ -7,6 +7,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiCheckCircle,
+  FiUsers
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -64,6 +65,8 @@ export default function CreateProject() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedClientDetails, setSelectedClientDetails] = useState(null);
+
 
   const [form, setForm] = useState(emptyForm);
 
@@ -310,6 +313,7 @@ useEffect(() => {
             <th>Project</th>
             <th>Client</th>
             <th>Type</th>
+            <th>Client Details</th>
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
@@ -322,6 +326,16 @@ useEffect(() => {
               <td>{p.projectName}</td>
               <td>{p.clientName}</td>
               <td>{p.projectType}</td>
+              <td>
+  <button
+    className="icon-btn"
+    title="View Client Details"
+    onClick={() => setSelectedClientDetails(p)}
+  >
+    <FiUsers />
+  </button>
+</td>
+
               <td>{formatDate(p.startDate)}</td>
               <td>{formatDate(p.endDate)}</td>
               <td>
@@ -389,6 +403,21 @@ useEffect(() => {
           </button>
         </div>
       )}
+      {/* CLIENT DETAILS MODAL */}
+{selectedClientDetails && (
+  <div className="modal-overlay" onClick={() => setSelectedClientDetails(null)}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <h3>Client Details</h3>
+
+      <p><b>Client:</b> {selectedClientDetails.clientName}</p>
+      <p><b>Contact Person:</b> {selectedClientDetails.contactPerson || "—"}</p>
+      <p><b>Email:</b> {selectedClientDetails.contactEmail || "—"}</p>
+      <p><b>Phone:</b> {selectedClientDetails.contactPhone || "—"}</p>
+
+      <button onClick={() => setSelectedClientDetails(null)}>Close</button>
+    </div>
+  </div>
+)}
 
       {/* MODAL */}
       {showModal && (

@@ -8,12 +8,10 @@ import {
   fetchAssignments,
   createAssignment,
   deleteAssignment,
-  updateAssignment
+  updateAssignment,
 } from "../../services/assignTeam.api";
 import { fetchDepartments } from "../../services/department.api";
 import { fetchMembers } from "../../services/member.api";
-
-
 
 import "./AssignTeam.css";
 
@@ -26,13 +24,15 @@ export default function AssignTeam() {
   const [projects, setProjects] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [members, setMembers] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [members, setMembers] = useState([]);
+
   const [isEdit, setIsEdit] = useState(false);
-const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
-
+  const [sendingMail, setSendingMail] = useState(false);
 
   const [form, setForm] = useState({
     projectId: "",
@@ -44,79 +44,85 @@ const [editingId, setEditingId] = useState(null);
     endDate: "",
   });
 
- useEffect(() => {
-  Promise.all([
-    fetchProjects(),
-    fetchDepartments(),
-    fetchAssignments(),
-    fetchMembers(),
-  ]).then(([p, d, a, m]) => {
-    setProjects(p);
-    setDepartments(d);
-    setAssignments(a);
-    setMembers(m);
-    setLoading(false);
-  });
-}, []);
+  /* ================= LOAD DATA ================= */
+  useEffect(() => {
+    Promise.all([
+      fetchProjects(),
+      fetchDepartments(),
+      fetchAssignments(),
+      fetchMembers(),
+    ]).then(([p, d, a, m]) => {
+      setProjects(p || []);
+      setDepartments(d || []);
+      setAssignments(a || []);
+      setMembers(m || []);
+      setLoading(false);
+    });
+  }, []);
 
-const openEditModal = (assignment) => {
-  setIsEdit(true);
-  setEditingId(assignment.id);
-  setForm({
-    projectId: assignment.projectId,
-    memberName: assignment.memberName,
-    role: assignment.role,
-    departmentId: assignment.departmentId,
-    effort: assignment.effort,
-    startDate: formatDate(assignment.startDate),
-    endDate: formatDate(assignment.endDate),
-  });
-  setShowModal(true);
-};
+  /* ================= HANDLERS ================= */
+  const openEditModal = (assignment) => {
+    setIsEdit(true);
+    setEditingId(assignment.id);
+    setForm({
+      projectId: assignment.projectId,
+      memberName: assignment.memberName,
+      role: assignment.role,
+      departmentId: assignment.departmentId,
+      effort: assignment.effort,
+      startDate: formatDate(assignment.startDate),
+      endDate: formatDate(assignment.endDate),
+    });
+    setShowModal(true);
+  };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-const handleSave = async (e) => {
-  e.preventDefault();
+  const handleSave = async (e) => {
+    e.preventDefault();
 
-  try {
-    const payload = {
-      projectId: Number(form.projectId),
-      memberName: form.memberName.trim(),
-      role: form.role.trim(),
-      departmentId: Number(form.departmentId),
-      effort: form.effort,
-      startDate: form.startDate,
-      endDate: form.endDate,
-    };
+    try {
+      setSendingMail(true); // 🔥 START GLOBAL LOADER
 
-    if (isEdit) {
-      await updateAssignment(editingId, payload);
-      toast.success("Assignment updated successfully");
-    } else {
-      await createAssignment(payload);
-      toast.success("Team member assigned successfully!");
+      const payload = {
+        projectId: Number(form.projectId),
+        memberName: form.memberName.trim(),
+        role: form.role.trim(),
+        departmentId: Number(form.departmentId),
+        effort: form.effort,
+        startDate: form.startDate,
+        endDate: form.endDate,
+      };
+
+      if (isEdit) {
+        await updateAssignment(editingId, payload);
+        toast.success("Assignment updated successfully ✅");
+      } else {
+        await createAssignment(payload);
+        toast.success("Team member assigned & mail sent ✅");
+      }
+
+      setAssignments(await fetchAssignments());
+      setShowModal(false);
+      setIsEdit(false);
+      setEditingId(null);
+
+      setForm({
+        projectId: "",
+        memberName: "",
+        role: "",
+        departmentId: "",
+        effort: "",
+        startDate: "",
+        endDate: "",
+      });
+    } catch {
+      toast.error("Failed to assign team member ❌");
+    } finally {
+      setSendingMail(false); // 🔥 STOP GLOBAL LOADER
     }
-
-    setAssignments(await fetchAssignments());
-    setShowModal(false);
-    setIsEdit(false);
-    setEditingId(null);
-    setForm({
-      projectId: "",
-      memberName: "",
-      role: "",
-      departmentId: "",
-      effort: "",
-      startDate: "",
-      endDate: "",
-    });
-  } catch {
-    toast.error("Operation failed");
-  }
-};
-
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Remove this team member?")) return;
@@ -130,9 +136,18 @@ const handleSave = async (e) => {
     }
   };
 
+  /* ================= UI ================= */
   return (
     <div className="assign-page">
-      <ToastContainer position="top-right" autoClose={1500} theme="light" newestOnTop />
+      {/* Toast */}
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="light"
+      />
 
       {/* Header */}
       <div className="assign-header">
@@ -143,7 +158,7 @@ const handleSave = async (e) => {
         </button>
       </div>
 
-      {/* Table Card */}
+      {/* Table */}
       <div className="assign-table-card">
         {loading ? (
           <div className="assign-loading">Loading assignments...</div>
@@ -176,17 +191,15 @@ const handleSave = async (e) => {
                   <td>{formatDate(a.startDate)}</td>
                   <td>{formatDate(a.endDate)}</td>
                   <td>
-                     <button
-    className="assign-edit-btn"
-    onClick={() => openEditModal(a)}
-    title="Edit assignment"
-  >
-    <FiEdit />
-  </button>
+                    <button
+                      className="assign-edit-btn"
+                      onClick={() => openEditModal(a)}
+                    >
+                      <FiEdit />
+                    </button>
                     <button
                       className="assign-delete-btn"
                       onClick={() => handleDelete(a.id)}
-                      title="Remove member"
                     >
                       <FiTrash2 />
                     </button>
@@ -200,98 +213,60 @@ const handleSave = async (e) => {
 
       {/* Modal */}
       {showModal && (
-        <div className="assign-modal-overlay" onClick={() => setShowModal(false)}>
+        <div
+          className="assign-modal-overlay"
+          onClick={() => setShowModal(false)}
+        >
           <div className="assign-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Assign Team Member</h3>
+            <h3>{isEdit ? "Edit Assignment" : "Assign Team Member"}</h3>
 
             <form onSubmit={handleSave}>
-              <select
-                name="projectId"
-                value={form.projectId}
-                onChange={handleChange}
-                required
-              >
+              <select name="projectId" value={form.projectId} onChange={handleChange} required>
                 <option value="">Select Project</option>
                 {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.projectName}
-                  </option>
+                  <option key={p.id} value={p.id}>{p.projectName}</option>
                 ))}
               </select>
 
-             <select
-  name="memberName"
-  value={form.memberName}
-  onChange={handleChange}
-  required
->
-  <option value="">Select Member</option>
-  {members.map((m) => (
-    <option key={m.id} value={m.name}>
-      {m.name}
-    </option>
-  ))}
-</select>
+              <select name="memberName" value={form.memberName} onChange={handleChange} required>
+                <option value="">Select Member</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.name}>{m.name}</option>
+                ))}
+              </select>
 
-              <input
-                name="role"
-                placeholder="Role (e.g. Developer, Designer)"
-                value={form.role}
-                onChange={handleChange}
-                required
-              />
+              <input name="role" placeholder="Role" value={form.role} onChange={handleChange} required />
 
-              <select
-                name="departmentId"
-                value={form.departmentId}
-                onChange={handleChange}
-                required
-              >
+              <select name="departmentId" value={form.departmentId} onChange={handleChange} required>
                 <option value="">Select Department</option>
                 {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
+                  <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
 
-              <input
-                name="effort"
-                placeholder="Effort (e.g. 40h, 5 days)"
-                value={form.effort}
-                onChange={handleChange}
-                required
-              />
-
-              <input
-                type="date"
-                name="startDate"
-                value={form.startDate}
-                onChange={handleChange}
-                required
-              />
-
-              <input
-                type="date"
-                name="endDate"
-                value={form.endDate}
-                onChange={handleChange}
-                required
-              />
+              <input name="effort" placeholder="Effort" value={form.effort} onChange={handleChange} required />
+              <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
+              <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
 
               <div className="assign-modal-actions">
-                <button
-                  type="button"
-                  className="assign-cancel-btn"
-                  onClick={() => setShowModal(false)}
-                >
+                <button type="button" className="assign-cancel-btn" onClick={() => setShowModal(false)} disabled={sendingMail}>
                   Cancel
                 </button>
-                <button type="submit" className="assign-save-btn">
-                  Assign Member
+                <button type="submit" className="assign-save-btn" disabled={sendingMail}>
+                  {sendingMail ? "Sending mail..." : isEdit ? "Update Assignment" : "Assign Member"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 GLOBAL FULL SCREEN LOADER */}
+      {sendingMail && (
+        <div className="global-loader-overlay">
+          <div className="global-loader">
+            <div className="spinner"></div>
+            <p>Processing request & sending mail…</p>
           </div>
         </div>
       )}
