@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { SIDEBAR_MENU } from "./SidebarConfig/SidebarConfig";
+import tansamLogo from "../../src/assets/tansam/tansamoldlogo.png";
 import "./CSS/Sidebar.css";
 
 export default function Sidebar({ role }) {
@@ -37,6 +38,11 @@ export default function Sidebar({ role }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
+        <img
+    src={tansamLogo}
+    alt="TANSAM Logo"
+    className="sidebar-logo"
+  />
         <h3 className="logo">TANSAM</h3>
         <span className="subtitle">Project Management</span>
       </div>

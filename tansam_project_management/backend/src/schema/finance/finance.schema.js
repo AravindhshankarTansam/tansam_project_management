@@ -29,7 +29,7 @@ export const createQuotationFollowupsSchema = async (db) => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP
-      
+    )
   `);
 
   // 💬 TERMS & CONDITIONS TABLE
