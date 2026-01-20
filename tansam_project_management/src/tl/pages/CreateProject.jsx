@@ -7,6 +7,9 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiCheckCircle,
+  FiUsers,
+   FiEye ,
+   FiX
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -64,6 +67,8 @@ export default function CreateProject() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedClientDetails, setSelectedClientDetails] = useState(null);
+
 
   const [form, setForm] = useState(emptyForm);
 
@@ -310,6 +315,7 @@ useEffect(() => {
             <th>Project</th>
             <th>Client</th>
             <th>Type</th>
+            <th>Client Details</th>
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
@@ -322,10 +328,22 @@ useEffect(() => {
               <td>{p.projectName}</td>
               <td>{p.clientName}</td>
               <td>{p.projectType}</td>
+              <td className="client-details-col">
+                <button
+                  className="view-btn"
+                  title="View Client Details"
+                  onClick={() => setSelectedClientDetails(p)}
+                >
+                  <FiEye />
+                </button>
+              </td>
+
               <td>{formatDate(p.startDate)}</td>
               <td>{formatDate(p.endDate)}</td>
               <td>
-                <span className={`status-badge ${p.status.toLowerCase().replace(" ", "-")}`}>
+                <span
+                  className={`status-badge ${p.status.toLowerCase().replace(" ", "-")}`}
+                >
                   {p.status === "Completed" && <FiCheckCircle />}
                   {p.status}
                 </span>
@@ -389,7 +407,56 @@ useEffect(() => {
           </button>
         </div>
       )}
+      {/* CLIENT DETAILS MODAL */}
+      {selectedClientDetails && (
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedClientDetails(null)}
+        >
+          <div
+            className="modal client-details-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with title + close button */}
+            <div className="modal-header">
+              <h3>Client Details</h3>
+              <button
+                className="close-btn" // changed class name
+                onClick={() => setSelectedClientDetails(null)}
+                aria-label="Close"
+                title="Close"
+              >
+                <FiX size={24} strokeWidth={3} /> {/* using react icon */}
+              </button>
+            </div>
 
+            {/* Content */}
+            <dl className="client-info-grid">
+              <dt>Client</dt>
+              <dd>{selectedClientDetails.clientName || "—"}</dd>
+
+              <dt>Contact Person</dt>
+              <dd>{selectedClientDetails.contactPerson || "—"}</dd>
+
+              <dt>Email</dt>
+              <dd>{selectedClientDetails.contactEmail || "—"}</dd>
+
+              <dt>Phone</dt>
+              <dd>{selectedClientDetails.contactPhone || "—"}</dd>
+            </dl>
+
+            {/* Optional footer */}
+            <div className="modal-footer">
+              <button
+                className="close-footer-btn"
+                onClick={() => setSelectedClientDetails(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* MODAL */}
       {showModal && (
         <div className="modal-overlay">
@@ -397,7 +464,12 @@ useEffect(() => {
             <h3>{isEdit ? "Edit Project" : "Create Project"}</h3>
 
             <form onSubmit={handleSubmit}>
-              <select name="projectType" value={form.projectType} onChange={handleChange} required>
+              <select
+                name="projectType"
+                value={form.projectType}
+                onChange={handleChange}
+                required
+              >
                 <option value="">Select Project Type</option>
                 {projectTypes.map((t) => (
                   <option key={t.id} value={t.name}>
@@ -449,8 +521,20 @@ useEffect(() => {
                 />
               )}
 
-              <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
-              <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
+              <input
+                type="date"
+                name="startDate"
+                value={form.startDate}
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="date"
+                name="endDate"
+                value={form.endDate}
+                onChange={handleChange}
+                required
+              />
 
               {isCustomer && (
                 <>
@@ -464,7 +548,9 @@ useEffect(() => {
                   <input
                     type="file"
                     accept="application/pdf"
-                    onChange={(e) => setForm({ ...form, poFile: e.target.files[0] })}
+                    onChange={(e) =>
+                      setForm({ ...form, poFile: e.target.files[0] })
+                    }
                     required
                   />
                 </>
