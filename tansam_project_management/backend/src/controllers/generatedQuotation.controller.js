@@ -88,19 +88,33 @@ export const addGeneratedQuotation = async (req, res) => {
   }
 };
 // Get quotation by ID
+// controllers/generatedQuotation.controller.js
+
 export const getGeneratedQuotationById = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true });
-    const { id } = req.params;
+
+    const { id } = req.params; // this is the original quotation.id from frontend
+
+    console.log(`[GET-GEN] Searching for quotation ID: ${id}`);
+
+    // Use the correct column name — change quotationId to quotation_id if that's your actual column
     const [rows] = await db.execute(
-      "SELECT * FROM generated_quotations WHERE id=?",
+      "SELECT * FROM generated_quotations WHERE quotationId = ? LIMIT 1",
       [id]
     );
-    res.json(rows[0] || null);
+
+    console.log(`[GET-GEN] Found ${rows.length} row(s)`);
+
+    if (rows.length === 0) {
+      return res.status(200).json(null); // no error, just no data yet
+    }
+
+    res.json(rows[0]);
   } catch (error) {
-    console.error("Get Generated Quotation By ID Error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Get Generated Quotation Error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

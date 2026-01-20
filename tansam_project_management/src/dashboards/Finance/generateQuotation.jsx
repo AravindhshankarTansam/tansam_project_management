@@ -769,23 +769,28 @@ const FinanceDocument = ({
 export default function GenerateQuotation({ quotation: initialQuotation, onSaved }) {
   const isEditMode = !!initialQuotation?.id && initialQuotation?.items?.length > 0;
 const [quotation, setQuotation] = useState(() => ({
-    id: initialQuotation?.id || null,  // ← MUST have this line!
+    id: initialQuotation?.id || null,
     subject: initialQuotation?.subject || "",
     clientName: initialQuotation?.clientName || "",
     kindAttn: initialQuotation?.kindAttn || "",
     items: initialQuotation?.items || [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
     terms: initialQuotation?.terms || [],
     termsContent: initialQuotation?.termsContent || "",
-    signature: null,
-    seal: null,
     financeManagerName: initialQuotation?.financeManagerName || "",
+    signature: null,           // new file upload
+    seal: null,                // new file upload
+    existingSignature: initialQuotation?.existingSignature || null,  // preview path
+    existingSeal: initialQuotation?.existingSeal || null,            // preview path
   }));
 useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
+  useEffect(() => {
+    console.log("GenerateQuotation mounted - isEditMode:", isEditMode, "quotation.id:", quotation.id);
+  }, []);
   // ✅ ALL REQUIRED STATES
-  const [refNo, setRefNo] = useState("TN/SA/2026/001");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`);
+  const [date, setDate] = useState(initialQuotation?.date || new Date().toISOString().split("T")[0]);
   const [showPreview, setShowPreview] = useState(false);
   const [savedQuotation, setSavedQuotation] = useState(null);
 
@@ -796,25 +801,16 @@ useEffect(() => {
   const [termsError, setTermsError] = useState(null);
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
-  useEffect(() => {
+useEffect(() => {
     const fetchTerms = async () => {
       try {
         setTermsLoading(true);
-        setTermsError(null);
-        console.log("🔍 Fetching active terms...");
-
         const terms = await getActiveTerms();
-        console.log("✅ Terms fetched:", terms);
-
-        const htmlContent =
-          terms?.content || "<p>No active terms available</p>";
+        const htmlContent = terms?.content || "<p>No active terms available</p>";
         setTermsContent(htmlContent);
-
-        // ✅ ADD THIS ONE LINE - copies to quotation state for saving
-        setQuotation((prev) => ({ ...prev, termsContent: htmlContent }));
-      } catch (error) {
-        // ... error handling unchanged
-        console.error("❌ Terms fetch failed:", error);
+        setQuotation(prev => ({ ...prev, termsContent: htmlContent }));
+      } catch (err) {
+        setTermsError(err.message);
       } finally {
         setTermsLoading(false);
       }

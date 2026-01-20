@@ -54,49 +54,61 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     setPage(1);
   };
 const handleEditGeneratedQuotation = async (originalQuotation) => {
+  console.log("Medit clicked for quotation ID:", originalQuotation.id);
+
   try {
     const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
+    console.log("API returned:", generated);
 
-    if (!generated) {
-      alert("No previously generated version found. Starting fresh.");
+    if (!generated || !generated.id) {
+      console.warn("No generated record found for ID:", originalQuotation.id);
+      // Optional: remove alert if annoying
+      // alert("No previously generated version found. Starting fresh edit.");
+
       setNewQuotation({
         ...originalQuotation,
+        refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(3, '0')}`,
+        date: new Date().toISOString().split("T")[0],
         items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
         terms: [],
         kindAttn: "",
         subject: "",
-        refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(3, '0')}`,
         financeManagerName: "",
-        signature: null, // will be path string if editing
+        termsContent: "",
+        signature: null,
         seal: null,
+        existingSignature: null,
+        existingSeal: null,
       });
     } else {
+      console.log("Loading existing generated data:", generated);
       setNewQuotation({
-        ...originalQuotation,           // keep basic fields
-        id: originalQuotation.id,       // important!
-        refNo: generated.refNo,
-        date: generated.date,
-        clientName: generated.clientName,
-        kindAttn: generated.kindAttn,
-        subject: generated.subject,
-        items: generated.items || [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
-        terms: generated.terms || [],
+        ...originalQuotation,
+        id: originalQuotation.id,
+        refNo: generated.refNo || `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(3, '0')}`,
+        date: generated.date || new Date().toISOString().split("T")[0],
+        clientName: generated.clientName || originalQuotation.clientName || "",
+        kindAttn: generated.kindAttn || "",
+        subject: generated.subject || "",
+        financeManagerName: generated.financeManagerName || "",
+        items: generated.items ? JSON.parse(generated.items) : [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+        terms: generated.terms ? JSON.parse(generated.terms) : [],
         termsContent: generated.termsContent || "",
-        financeManagerName: generated.financeManagerName,
-        signature: generated.signature,   // this is a path string
-        seal: generated.seal,             // this is a path string
-        // Note: file inputs cannot be pre-filled for security reasons
+        existingSignature: generated.signature ? `http://localhost:9899/${generated.signature}` : null,
+        existingSeal: generated.seal ? `http://localhost:9899/${generated.seal}` : null,
+        signature: null,
+        seal: null,
       });
     }
 
     setShowGenerateQuotation(true);
   } catch (err) {
-    console.error("Error loading generated quotation for edit:", err);
-    alert("Could not load previous generated quotation.");
-    setShowGenerateQuotation(true); // at least open form
+    console.error("Failed to fetch generated quotation:", err);
+    alert("Error loading previous version. Opening blank form.");
+    setNewQuotation({ ...originalQuotation });
+    setShowGenerateQuotation(true);
   }
 };
-
 useEffect(() => {
   const loadWorkCategories = async () => {
     try {
