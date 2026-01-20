@@ -30,9 +30,9 @@ export const initSchemas = async (db, options = {}) => {
   if (options.assignTeam) {
     await createAssignTeamSchema(db);
   }
-  if (options.assignTeam) {
-    await createAssignTeamSchema(db);
-  }
+  // if (options.assignTeam) {
+  //   await createAssignTeamSchema(db);
+  // }
 
   if (options.department) {
     await createDepartmentSchema(db);

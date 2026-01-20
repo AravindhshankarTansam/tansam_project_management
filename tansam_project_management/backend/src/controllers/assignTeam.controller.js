@@ -1,5 +1,12 @@
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
+import { sendMail } from "../utils/mail.util.js";
+import {
+  assignedProjectTeamTemplate,
+  clientDetailsTeamTemplate,
+} from "../utils/mail.template.js";
+
+
 
 /* CREATE ASSIGNMENT */
 export const assignTeamMember = async (req, res) => {
@@ -17,6 +24,7 @@ export const assignTeamMember = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { assignTeam: true });
 
+    /* 1️⃣ INSERT ASSIGNMENT */
     await db.execute(
       `INSERT INTO project_team_assignments
        (project_id, member_name, role, department_id,
@@ -33,11 +41,70 @@ export const assignTeamMember = async (req, res) => {
       ]
     );
 
-    res.status(201).json({ message: "Team member assigned" });
+    /* 2️⃣ FETCH PROJECT + CLIENT DETAILS */
+    const [[project]] = await db.execute(`
+      SELECT 
+        p.project_name,
+        p.project_type,
+        p.client_name,
+        o.contact_person,
+        o.contact_email,
+        o.contact_phone
+      FROM projects p
+      LEFT JOIN opportunities_coordinator o
+        ON p.opportunity_id = o.opportunity_id
+      WHERE p.id = ?
+    `, [projectId]);
+
+  /* 3️⃣ FETCH MEMBER EMAIL */
+const [[member]] = await db.execute(
+  `SELECT name, email FROM members WHERE name = ?`,
+  [memberName]
+);
+
+
+    /* 4️⃣ SEND MAIL */
+    if (member?.email && project) {
+      const leadName = req.user?.name || "Team Lead";
+
+      await sendMail({
+        to: member.email,
+        subject: `You are assigned to project: ${project.project_name}`,
+        html: assignedProjectTeamTemplate({
+          memberName: member.name,
+          projectName: project.project_name,
+          projectType: project.project_type,
+          clientName: project.client_name,
+          assignedBy: leadName,
+          startDate,
+          endDate,
+          projectId,
+        }),
+      });
+
+      // await sendMail({
+      //   to: member.email,
+      //   subject: `Client Contact Details – ${project.project_name}`,
+      //   html: clientDetailsTeamTemplate({
+      //     memberName: member.name,
+      //     projectName: project.project_name,
+      //     clientName: project.client_name,
+      //     contactPerson: project.contact_person,
+      //     contactEmail: project.contact_email,
+      //     contactPhone: project.contact_phone,
+      //     assignedBy: leadName,
+      //   }),
+      // });
+    }
+
+    /* 5️⃣ RESPONSE */
+    res.status(201).json({ message: "Team member assigned & mail sent" });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 /* GET ASSIGNMENTS */
 export const getAssignments = async (req, res) => {
