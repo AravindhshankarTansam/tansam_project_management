@@ -262,26 +262,15 @@ if (showGenerateQuotation) {
   return (
     <GenerateQuotation
       quotation={newQuotation}
-      onSaved={async () => {
-        // 1. Local optimistic update
-        setData(prev =>
-          prev.map(q =>
-            q.id === newQuotation.id
-              ? { ...q, isGenerated: true }
-              : q
-            )
-          );
-
-        // 2. Reload fresh data from server (recommended!)
-        try {
-          const freshData = await getQuotations();
-          setData(freshData);
-        } catch (e) {
-          console.warn("Couldn't refresh quotations list", e);
-        }
-
-        setShowGenerateQuotation(false);
-      }}
+  onSaved={async () => {
+    try {
+      const fresh = await getQuotations();
+      setData(fresh);
+    } catch (err) {
+      console.error("Refresh after generate failed", err);
+    }
+    setShowGenerateQuotation(false);
+  }}
     />
   );
 }
@@ -466,25 +455,26 @@ if (showGenerateQuotation) {
     <FaTrash />
   </button>
 {q.isGenerated ? (
-    <button
-      className="btn-medit"
-      onClick={() => handleEditGeneratedQuotation(q)}
-      title="Edit Generated Quotation"
-    >
-      <MdEditDocument /> {/* Medit icon */}
-    </button>
-  ) : (
-    <button
-      className="btn-generate"
-      onClick={() => {
-        setNewQuotation(q);
-        setShowGenerateQuotation(true);
-      }}
-      title="Generate Quotation"
-    >
-      +
-    </button>
-  )}
+  <button
+    className="btn-medit"
+    onClick={() => handleEditGeneratedQuotation(q)}
+    title="Edit Generated Quotation"
+  >
+    <MdEditDocument />
+  </button>
+) : (
+  <button
+    className="btn-generate"
+    onClick={() => {
+      setNewQuotation(q);
+      setShowGenerateQuotation(true);
+    }}
+    title="Generate Quotation"
+  >
+    +
+  </button>
+)}
+
 
 
 
@@ -546,17 +536,9 @@ if (showGenerateQuotation) {
   <label>Project Name *</label>
   <select
     value={newQuotation.project_name}
-    onChange={(e) => {
-      const selectedProject = opportunities.find(
-        (opp) => opp.opportunity_name === e.target.value
-      );
-
-      setNewQuotation({
-        ...newQuotation,
-        project_name: e.target.value,
-        clientName: selectedProject ? selectedProject.customer_name : "", // auto-fetch customer_name
-      });
-    }}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, project_name: e.target.value })
+    }
   >
     <option value="">Select Project</option>
     {opportunities.map((opp) => (
@@ -567,17 +549,17 @@ if (showGenerateQuotation) {
   </select>
 </div>
 
-<div className="form-group">
-  <label>Client Name *</label>
-  <input
-    type="text"
-    placeholder="Client Name"
-    value={newQuotation.clientName}
-    readOnly // prevents manual changes since it’s auto-filled
-  />
-</div>
-
-
+        <div className="form-group">
+          <label>Client Name *</label>
+          <input
+            type="text"
+            placeholder="Client Name"
+            value={newQuotation.clientName}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, clientName: e.target.value })
+            }
+          />
+        </div>
 
         <div className="form-group">
           <label>Client Type *</label>

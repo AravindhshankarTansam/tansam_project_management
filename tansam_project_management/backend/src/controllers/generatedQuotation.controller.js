@@ -23,50 +23,47 @@ export const getGeneratedQuotations = async (req, res) => {
 // controllers/generatedQuotation.controller.js
 
 export const addGeneratedQuotation = async (req, res) => {
+  let connection;
+
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true });
 
-    // Read all fields from req.body
-    const refNo = req.body.refNo || null;
-    const date = req.body.date || null;
-    const clientName = req.body.clientName || null;
-    const kindAttn = req.body.kindAttn || null;
-    const subject = req.body.subject || null;
-    const financeManagerName = req.body.financeManagerName || null;
-  const termsContent = req.body.termsContent || null;
-    // Parse items and terms JSON
-    const items = req.body.items ? JSON.parse(req.body.items) : [];
-    const terms = req.body.terms ? JSON.parse(req.body.terms) : [];
+    connection = await db.getConnection();
+    await connection.beginTransaction();
 
-    // File paths
-    const signaturePath = req.files?.signature?.[0] ? `uploads/po/${req.files.signature[0].filename}` : null;
-    const sealPath = req.files?.seal?.[0] ? `uploads/po/${req.files.seal[0].filename}` : null;
+    const quotationId = req.body.quotation_id;
 
-    // Insert into DB
-    await db.execute(
-      `INSERT INTO generated_quotations
-       (refNo, date, clientName, kindAttn, subject, items, terms, termsContent, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        refNo,
-        date,
-        clientName,
-        kindAttn,
-        subject,
-        JSON.stringify(items),
-        JSON.stringify(terms),
-        termsContent,
-        signaturePath,
-        sealPath,
-        financeManagerName,
-      ]
+    // Critical logs
+    console.log("[SAVE-GEN] quotation_id received from frontend:", quotationId);
+    console.log("[SAVE-GEN] All body keys:", Object.keys(req.body));
+
+    if (!quotationId || isNaN(Number(quotationId))) {
+      throw new Error(`Invalid quotation_id: ${quotationId}`);
+    }
+
+    // ... your existing data extraction + UPSERT code ...
+
+    const [updateRes] = await connection.execute(
+      "UPDATE quotations SET isGenerated = 1 WHERE id = ?",
+      [Number(quotationId)]   // force number
     );
 
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Add Generated Quotation Error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.log("[SAVE-GEN] isGenerated UPDATE result:", {
+      affectedRows: updateRes.affectedRows,
+      changedRows: updateRes.changedRows || 0
+    });
+
+    await connection.commit();
+
+    res.json({ success: true, quotationId, message: "Saved" });
+
+  } catch (err) {
+    if (connection) await connection.rollback().catch(() => {});
+    console.error("[SAVE-GEN] Error:", err.message);
+    res.status(500).json({ message: "Save failed", error: err.message });
+  } finally {
+    if (connection) connection.release();
   }
 };
 // Get quotation by ID

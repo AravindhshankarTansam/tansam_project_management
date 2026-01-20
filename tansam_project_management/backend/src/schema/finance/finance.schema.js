@@ -27,9 +27,8 @@ export const createQuotationFollowupsSchema = async (db) => {
       value DECIMAL(12,2) DEFAULT NULL,
       date DATE DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        ON UPDATE CURRENT_TIMESTAMP,
-        isGenerated TINYINT(1 DEFAULT 0
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
     )
   `);
 
