@@ -12,6 +12,7 @@ import tnlogo from "../../assets/tansam/tnlogo.png";
 import tansamLogo from "../../assets/tansam/tansamoldlogo.png";
 import siemens from "../../assets/tansam/siemens.png";
 import tidco from "../../assets/tansam/tidcologo.png";
+import watermark from "../../assets/tansam/watermark.png";
 
 const BLUE = "#1F4E79";
 const DARK_BLUE = "#163A5F";
@@ -55,6 +56,30 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 1.2,
   },
+watermark: {
+  position: "absolute",
+  top: "35%",
+  left: "15%",
+  width: 350,
+  opacity: 0.8,
+},
+toRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 5,
+  marginBottom: 8,
+},
+
+toLeft: {
+  width: "60%",
+  lineHeight: 1.2,
+},
+
+toRight: {
+  width: "38%",
+  textAlign: "right",
+  lineHeight: 1.2,
+},
 
   subject: {
     marginVertical: 5,
@@ -205,6 +230,7 @@ export default function QuotationPDF({
           <Image src={siemens} style={styles.logo} />
           <Image src={tidco} style={styles.logo} />
         </View>
+<Image src={watermark} style={styles.watermark} />
 
         {/* Title */}
         <View style={styles.titleCenter}>
@@ -224,15 +250,15 @@ export default function QuotationPDF({
         </View>
 
         {/* To + Kind Attn */}
-        <View style={styles.toBlock}>
-          <Text>To,</Text>
-          <Text>
-            {clientName || "INSTITUTE NAME"}
-            {"\n"}kind attn.: {kindAttn || "NAME, DESIGNATION"}
-            {"\n"}
-            ADDRESS LINE HERE (if provided)
-          </Text>
-        </View>
+<View style={styles.toBlock}>
+  <Text>To,</Text>
+  <Text>
+    {clientName || "INSTITUTE NAME"}
+    {"\n"}kind attn.: {kindAttn || "NAME, DESIGNATION"}
+    {"\n"}
+    ADDRESS LINE HERE (if provided)
+  </Text>
+</View>
 
         {/* Subject */}
         <Text style={styles.subject}>

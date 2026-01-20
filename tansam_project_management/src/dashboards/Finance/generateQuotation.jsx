@@ -175,36 +175,66 @@ const FinanceDocument = ({
 
         {/* Client Info - UNCHANGED */}
         <div style={{ display: "flex", gap: "20px", marginBottom: "15px" }}>
-          <label style={{ flex: 1 }}>
-            <strong>TO:</strong>
-            <input
-              type="text"
-              value={quotation.clientName}
-              onChange={(e) => setQuotation({ ...quotation, clientName: e.target.value })}
-              style={{ width: "100%", padding: "8px", fontSize: "16px", border: "1px solid #ccc", marginTop: "4px" }}
-            />
-          </label>
-          <label style={{ flex: 1 }}>
-            <strong>Kind Attn:</strong>
-            <input
-              type="text"
-              value={quotation.kindAttn || ""}
-              onChange={(e) => setQuotation({ ...quotation, kindAttn: e.target.value })}
-              style={{ width: "100%", padding: "8px", fontSize: "16px", border: "1px solid #ccc", marginTop: "4px" }}
-            />
-          </label>
+    <label style={{ display: "block", marginBottom: "12px" }}>
+    <strong>TO </strong>
+    <textarea
+      rows={3}                        // Default shows 3 lines
+      value={quotation.clientName || ""}
+      onChange={(e) => setQuotation({ ...quotation, clientName: e.target.value })}
+      placeholder="Enter Client Name/institution and Address and details here"
+      style={{
+        width: "100%",
+        padding: "10px",
+        fontSize: "15px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        resize: "vertical",           // Allow vertical resize only
+        minHeight: "70px",
+        lineHeight: "1.4",
+      }}
+    />
+  </label>
+<label style={{ display: "block", marginBottom: "12px" }}>
+    <strong>Kind Attn (Name & Designation):</strong>
+    <textarea
+      rows={2}
+      value={quotation.kindAttn || ""}
+      onChange={(e) => setQuotation({ ...quotation, kindAttn: e.target.value })}
+      placeholder=""
+      style={{
+     width: "100%",
+        padding: "10px",
+        fontSize: "15px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        resize: "vertical",           // Allow vertical resize only
+        minHeight: "70px",
+        lineHeight: "1.4",
+      }}
+    />
+  </label>
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label style={{ width: "100%" }}>
-            <strong>Subject:</strong>
-            <input
-              type="text"
-              value={quotation.subject}
-              onChange={(e) => setQuotation({ ...quotation, subject: e.target.value })}
-              style={{ width: "100%", padding: "8px", margin: "5px 0 15px 0", fontSize: "16px", border: "1px solid #ccc" }}
-            />
-          </label>
+<label style={{ display: "block" }}>
+    <strong>Subject:</strong>
+    <textarea
+      rows={2}
+      value={quotation.subject || ""}
+      onChange={(e) => setQuotation({ ...quotation, subject: e.target.value })}
+      placeholder="e.g., Quote offer for Industrial Visit 2.5 hours at TANSAM Centre"
+      style={{
+        width: "100%",
+        padding: "10px",
+        fontSize: "15px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        resize: "vertical",
+        minHeight: "50px",
+        lineHeight: "1.4",
+      }}
+    />
+  </label>
         </div>
 
         {/* Editable Table - UNCHANGED */}
@@ -579,6 +609,7 @@ useEffect(() => {
   const handleSaveQuotation = async () => {
     try {
       const dataToSend = new FormData();
+      onGeneratedSuccess?.();
       dataToSend.append("refNo", refNo);
       dataToSend.append("date", date);
       dataToSend.append("clientName", quotation.clientName);
