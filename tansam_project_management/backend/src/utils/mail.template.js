@@ -10,83 +10,114 @@ export const assignedOpportunityTemplate = ({
   stage,
   assignedBy,
   followUpDate,
-
-  // 👇 CONTACT DETAILS
   contactPerson,
   contactEmail,
   contactPhone,
 }) => `
-  <div style="font-family: Arial, sans-serif; line-height:1.6; color:#111; max-width:600px;">
-    <h2 style="color:#0f4c81;">New Opportunity Assigned</h2>
+  <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:20px;">
+    <div style="max-width:620px; margin:auto; background:#ffffff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
 
-    <p>Hello <b>${userName}</b>,</p>
+      <!-- HEADER -->
+      <div style="background:#0f4c81; padding:16px;">
+        <h2 style="color:#ffffff; margin:0; font-size:20px;">
+          New Opportunity Assigned
+        </h2>
+      </div>
 
-    <p>
-      You have been assigned a new business opportunity in
-      <b>TANSAM Project Management System</b>.
-    </p>
+      <!-- BODY -->
+      <div style="padding:20px; color:#111;">
+        <p style="margin-top:0;">
+          Hello <b>${userName}</b>,
+        </p>
 
-    <table cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%;">
-      <tr>
-        <td><b>Opportunity ID</b></td>
-        <td>${opportunityId}</td>
-      </tr>
-      <tr>
-        <td><b>Opportunity Name</b></td>
-        <td>${opportunityName}</td>
-      </tr>
-      <tr>
-        <td><b>Client Name</b></td>
-        <td>${customerName}</td>
-      </tr>
-      <tr>
-        <td><b>Stage</b></td>
-        <td>${stage}</td>
-      </tr>
+        <p>
+          You have been assigned a new business opportunity in
+          <b>TANSAM Project Management System</b>.
+        </p>
 
-      <tr style="background:#f1f5f9;">
-        <td colspan="2"><b>Client Contact Details</b></td>
-      </tr>
-      <tr>
-        <td><b>Contact Person</b></td>
-        <td>${contactPerson || "—"}</td>
-      </tr>
-      <tr>
-        <td><b>Email</b></td>
-        <td>${contactEmail || "—"}</td>
-      </tr>
-      <tr>
-        <td><b>Phone</b></td>
-        <td>${contactPhone || "—"}</td>
-      </tr>
+        <!-- OPPORTUNITY DETAILS -->
+        <h3 style="font-size:15px; color:#0f4c81; border-bottom:1px solid #e5e7eb; padding-bottom:6px;">
+          Opportunity Details
+        </h3>
 
-      ${
-        followUpDate
-          ? `<tr>
-              <td><b>Next Follow-up</b></td>
-              <td>${followUpDate}</td>
-            </tr>`
-          : ""
-      }
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+          <tr>
+            <td style="color:#475569;"><b>Opportunity ID</b></td>
+            <td>${opportunityId}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="color:#475569;"><b>Opportunity Name</b></td>
+            <td>${opportunityName}</td>
+          </tr>
+          <tr>
+            <td style="color:#475569;"><b>Client Name</b></td>
+            <td>${customerName}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="color:#475569;"><b>Stage</b></td>
+            <td>
+              <span style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:12px; font-size:12px;">
+                ${stage}
+              </span>
+            </td>
+          </tr>
+        </table>
 
-      ${
-        assignedBy
-          ? `<tr>
-              <td><b>Assigned By</b></td>
-              <td>${assignedBy}</td>
-            </tr>`
-          : ""
-      }
-    </table>
+        <!-- CONTACT DETAILS -->
+        <h3 style="font-size:15px; color:#0f4c81; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-top:20px;">
+          Client Contact Details
+        </h3>
 
-    <p style="margin-top:20px;">
-      Please log in to the PMS to take necessary action.
-    </p>
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+          <tr>
+            <td style="color:#475569;"><b>Contact Person</b></td>
+            <td>${contactPerson || "—"}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="color:#475569;"><b>Email</b></td>
+            <td>
+              ${
+                contactEmail
+                  ? `<a href="mailto:${contactEmail}" style="color:#0f4c81; text-decoration:none;">${contactEmail}</a>`
+                  : "—"
+              }
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#475569;"><b>Phone</b></td>
+            <td>${contactPhone || "—"}</td>
+          </tr>
+        </table>
 
-    <p>
-      Regards,<br/>
-      <b>${assignedBy}</b>
-    </p>
+        ${
+          followUpDate
+            ? `
+            <h3 style="font-size:15px; color:#0f4c81; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-top:20px;">
+              Follow-up
+            </h3>
+            <p style="font-size:14px; margin:8px 0;">
+              <b>Next Follow-up Date:</b> ${followUpDate}
+            </p>
+            `
+            : ""
+        }
+
+        <p style="margin-top:24px;">
+          Please log in to the PMS to review details and take necessary action.
+        </p>
+
+        <p style="margin-top:24px;">
+          Regards,<br/>
+          <b>${assignedBy}</b>
+        </p>
+      </div>
+
+      <!-- FOOTER -->
+      <div style="background:#f8fafc; padding:12px; text-align:center; font-size:12px; color:#64748b;">
+        © ${new Date().getFullYear()} TANSAM Project Management System
+      </div>
+
+    </div>
   </div>
 `;
 
@@ -97,39 +128,155 @@ export const unassignedOpportunityTemplate = ({
   customerName,
   reassignedTo,
 }) => `
-  <div style="font-family: Arial, sans-serif; line-height:1.6; max-width:600px;">
-    <h2>Opportunity Reassigned</h2>
+  <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:20px;">
+    <div style="max-width:620px; margin:auto; background:#ffffff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
 
-    <p>Hello <b>${userName}</b>,</p>
+      <div style="background:#dc2626; padding:16px;">
+        <h2 style="color:#ffffff; margin:0; font-size:20px;">
+          Opportunity Reassigned
+        </h2>
+      </div>
 
-    <p>The following opportunity has been reassigned.</p>
+      <div style="padding:20px; color:#111;">
+        <p>Hello <b>${userName}</b>,</p>
 
-    <table cellpadding="10" cellspacing="0" style="border-collapse:collapse;">
-      <tr>
-        <td><b>Opportunity ID</b></td>
-        <td>${opportunityId}</td>
-      </tr>
-      <tr>
-        <td><b>Opportunity</b></td>
-        <td>${opportunityName}</td>
-      </tr>
-      <tr>
-        <td><b>Client</b></td>
-        <td>${customerName}</td>
-      </tr>
-      <tr>
-        <td><b>Reassigned To</b></td>
-        <td>${reassignedTo}</td>
-      </tr>
-    </table>
+        <p>
+          The following opportunity has been reassigned to another team member.
+        </p>
 
-    <p>
-      Regards,<br/>
-      <b>${userName}</b>
-    </p>
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+          <tr>
+            <td style="color:#475569;"><b>Opportunity ID</b></td>
+            <td>${opportunityId}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="color:#475569;"><b>Opportunity</b></td>
+            <td>${opportunityName}</td>
+          </tr>
+          <tr>
+            <td style="color:#475569;"><b>Client</b></td>
+            <td>${customerName}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="color:#475569;"><b>Reassigned To</b></td>
+            <td>${reassignedTo}</td>
+          </tr>
+        </table>
+
+        <p style="margin-top:24px;">
+          Regards,<br/>
+          <b>${userName}</b>
+        </p>
+      </div>
+
+      <div style="background:#f8fafc; padding:12px; text-align:center; font-size:12px; color:#64748b;">
+        © ${new Date().getFullYear()} TANSAM Project Management System
+      </div>
+
+    </div>
   </div>
 `;
 
+export const opportunityContactUpdatedTemplate = ({
+  userName,
+  opportunityId,
+  opportunityName,
+  customerName,
+  assignedBy,
+
+  oldContact = {},
+  newContact = {},
+}) => `
+  <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:20px;">
+    <div style="max-width:640px; margin:auto; background:#ffffff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
+
+      <!-- HEADER -->
+      <div style="background:#0f4c81; padding:16px;">
+        <h2 style="color:#ffffff; margin:0; font-size:20px;">
+          Opportunity Contact Details Updated
+        </h2>
+      </div>
+
+      <div style="padding:20px; color:#111;">
+        <p>Hello <b>${userName}</b>,</p>
+
+        <p>
+          Contact details for the following opportunity have been updated.
+        </p>
+
+        <!-- OPPORTUNITY -->
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+          <tr>
+            <td style="color:#475569;"><b>Opportunity</b></td>
+            <td>${opportunityName}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="color:#475569;"><b>Client</b></td>
+            <td>${customerName}</td>
+          </tr>
+          <tr>
+            <td style="color:#475569;"><b>Opportunity ID</b></td>
+            <td>${opportunityId}</td>
+          </tr>
+        </table>
+
+        <!-- DIFF TABLE -->
+        <h3 style="margin-top:20px; font-size:15px; color:#0f4c81;">
+          Changed Contact Details
+        </h3>
+
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+          <tr style="background:#f1f5f9;">
+            <th align="left">Field</th>
+            <th align="left">Previous</th>
+            <th align="left">Updated</th>
+          </tr>
+
+          ${
+            oldContact.contactPerson !== newContact.contactPerson
+              ? `
+              <tr>
+                <td>Contact Person</td>
+                <td>${oldContact.contactPerson || "—"}</td>
+                <td style="color:#16a34a;"><b>${newContact.contactPerson || "—"}</b></td>
+              </tr>`
+              : ""
+          }
+
+          ${
+            oldContact.contactEmail !== newContact.contactEmail
+              ? `
+              <tr style="background:#f9fafb;">
+                <td>Email</td>
+                <td>${oldContact.contactEmail || "—"}</td>
+                <td style="color:#16a34a;"><b>${newContact.contactEmail || "—"}</b></td>
+              </tr>`
+              : ""
+          }
+
+          ${
+            oldContact.contactPhone !== newContact.contactPhone
+              ? `
+              <tr>
+                <td>Phone</td>
+                <td>${oldContact.contactPhone || "—"}</td>
+                <td style="color:#16a34a;"><b>${newContact.contactPhone || "—"}</b></td>
+              </tr>`
+              : ""
+          }
+        </table>
+
+        <p style="margin-top:24px;">
+          Updated by <b>${assignedBy}</b>
+        </p>
+      </div>
+
+      <div style="background:#f8fafc; padding:12px; text-align:center; font-size:12px; color:#64748b;">
+        © ${new Date().getFullYear()} TANSAM Project Management System
+      </div>
+    </div>
+  </div>
+`;
 
 
 // mail.template.js (add at the end)

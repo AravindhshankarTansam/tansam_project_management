@@ -1,7 +1,7 @@
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
 import { sendMail } from "../utils/mail.util.js";
-import { assignedOpportunityTemplate,  unassignedOpportunityTemplate } from "../utils/mail.template.js";
+import { assignedOpportunityTemplate,  unassignedOpportunityTemplate , opportunityContactUpdatedTemplate, } from "../utils/mail.template.js";
 import { getUserById } from "../utils/user.helper.js";
 
 /* ======================================================
@@ -348,6 +348,11 @@ export const updateOpportunity = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
 
+    /* ================= HELPERS ================= */
+
+    const clean = (v) =>
+      v === undefined || v === null ? "" : String(v).trim();
+
     /* ================= FETCH OLD DATA ================= */
 
     const [[oldOpp]] = await db.execute(
@@ -368,6 +373,20 @@ export const updateOpportunity = async (req, res) => {
     if (!oldOpp) {
       return res.status(404).json({ message: "Opportunity not found" });
     }
+
+    /* ================= RESOLVE FINAL VALUES ================= */
+    // (IMPORTANT – prevents empty diff rows)
+
+    const finalOpportunityName =
+      clean(opportunityName) || clean(oldOpp.opportunity_name);
+    const finalCustomerName =
+      clean(customerName) || clean(oldOpp.customer_name);
+    const finalContactPerson =
+      clean(contactPerson) || clean(oldOpp.contact_person);
+    const finalContactEmail =
+      clean(contactEmail) || clean(oldOpp.contact_email);
+    const finalContactPhone =
+      clean(contactPhone) || clean(oldOpp.contact_phone);
 
     /* ================= UPDATE ================= */
 
@@ -402,17 +421,17 @@ export const updateOpportunity = async (req, res) => {
       ]
     );
 
-    /* ================= CHANGE DETECTION ================= */
+    /* ================= CHANGE DETECTION (FIXED) ================= */
 
     const assignmentChanged =
       assignedTo &&
       String(oldOpp.assigned_to) !== String(assignedTo);
 
     const contactChanged =
-      oldOpp.customer_name !== customerName ||
-      oldOpp.contact_person !== contactPerson ||
-      oldOpp.contact_email !== contactEmail ||
-      oldOpp.contact_phone !== contactPhone;
+      clean(oldOpp.customer_name) !== finalCustomerName ||
+      clean(oldOpp.contact_person) !== finalContactPerson ||
+      clean(oldOpp.contact_email) !== finalContactEmail ||
+      clean(oldOpp.contact_phone) !== finalContactPhone;
 
     /* ================= FETCH USERS ================= */
 
@@ -430,14 +449,13 @@ export const updateOpportunity = async (req, res) => {
 
     /* ================= MAIL LOGIC ================= */
 
-    // 🔁 REASSIGNMENT MAIL
-    if (assignmentChanged) {
+    /* 🔁 REASSIGNMENT MAIL – OLD USER */
+    if (assignmentChanged && oldOpp.assigned_to) {
       const [[oldUser]] = await db.execute(
         `SELECT name, email FROM users_admin WHERE id = ?`,
         [oldOpp.assigned_to]
       );
 
-      // Old user
       if (oldUser?.email) {
         await sendMail({
           to: oldUser.email,
@@ -453,31 +471,47 @@ export const updateOpportunity = async (req, res) => {
       }
     }
 
-    // 🧑‍💼 NEW ASSIGNEE OR CONTACT UPDATE MAIL
-    if (
-      assignedUser?.email &&
-      (assignmentChanged || contactChanged)
-    ) {
+    /* 🟢 NEW ASSIGNEE MAIL */
+    if (assignmentChanged && assignedUser?.email) {
       await sendMail({
         to: assignedUser.email,
-        subject: assignmentChanged
-          ? "New Opportunity Assigned"
-          : "Opportunity Contact Details Updated",
-
+        subject: "New Opportunity Assigned",
         html: assignedOpportunityTemplate({
           userName: assignedUser.name,
           opportunityId: opportunity_id,
-          opportunityName:
-            opportunityName || oldOpp.opportunity_name,
-          customerName:
-            customerName || oldOpp.customer_name,
+          opportunityName: finalOpportunityName,
+          customerName: finalCustomerName,
           stage: leadStatus || "NEW",
           assignedBy: assignor?.name || "Coordinator",
+          contactPerson: finalContactPerson,
+          contactEmail: finalContactEmail,
+          contactPhone: finalContactPhone,
+        }),
+      });
+    }
 
-          // ✅ UPDATED CONTACT DETAILS
-          contactPerson,
-          contactEmail,
-          contactPhone,
+    /* 🧑‍💼 CONTACT DETAILS UPDATED – OLD vs NEW DIFF */
+    if (contactChanged && assignedUser?.email && !assignmentChanged) {
+      await sendMail({
+        to: assignedUser.email,
+        subject: "Opportunity Contact Details Updated",
+        html: opportunityContactUpdatedTemplate({
+          userName: assignedUser.name,
+          opportunityId: opportunity_id,
+          opportunityName: finalOpportunityName,
+          customerName: finalCustomerName,
+          assignedBy: assignor?.name || "Coordinator",
+
+          oldContact: {
+            contactPerson: clean(oldOpp.contact_person),
+            contactEmail: clean(oldOpp.contact_email),
+            contactPhone: clean(oldOpp.contact_phone),
+          },
+          newContact: {
+            contactPerson: finalContactPerson,
+            contactEmail: finalContactEmail,
+            contactPhone: finalContactPhone,
+          },
         }),
       });
     }
@@ -488,6 +522,8 @@ export const updateOpportunity = async (req, res) => {
     res.status(500).json({ message: "Update failed" });
   }
 };
+
+
 
 
 /* ======================================================
