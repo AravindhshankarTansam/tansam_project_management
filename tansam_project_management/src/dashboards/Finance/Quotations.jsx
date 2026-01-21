@@ -592,31 +592,42 @@ if (showGenerateQuotation) {
 
       <div className="form-group">
   <label>Project Name *</label>
-  <select
-    value={newQuotation.project_name}
-    onChange={(e) =>
-      setNewQuotation({ ...newQuotation, project_name: e.target.value })
-    }
-  >
-    <option value="">Select Project</option>
-    {opportunities.map((opp) => (
-      <option key={opp.id} value={opp.opportunity_name}>
-        {opp.opportunity_name}
-      </option>
-    ))}
+<select
+  value={newQuotation.project_name}
+  onChange={(e) => {
+    const selectedProject = e.target.value;
+
+    const selectedOpportunity = opportunities.find(
+      (opp) => opp.opportunity_name === selectedProject
+    );
+
+    setNewQuotation({
+      ...newQuotation,
+      project_name: selectedProject,
+      clientName: selectedOpportunity?.customer_name || "",
+    });
+  }}
+>
+
+ <option value="">Select Project</option>
+{opportunities.map((opp) => (
+  <option key={opp.id} value={opp.opportunity_name}>
+    {opp.opportunity_name}
+  </option>
+))}
+
   </select>
 </div>
 
         <div className="form-group">
           <label>Client Name *</label>
-          <input
-            type="text"
-            placeholder="Client Name"
-            value={newQuotation.clientName}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientName: e.target.value })
-            }
-          />
+      <input
+  type="text"
+  value={newQuotation.clientName}
+  readOnly
+  placeholder="Auto-filled from opportunity"
+/>
+
         </div>
 
         <div className="form-group">
