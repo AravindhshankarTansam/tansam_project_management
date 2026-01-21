@@ -20,21 +20,25 @@ export const createQuotationFollowupsSchema = async (db) => {
 
   // 💬 QUOTATIONS TABLE
   await db.execute(`
-    CREATE TABLE IF NOT EXISTS quotations (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      project_name VARCHAR(50),
-      quotationNo VARCHAR(50) NOT NULL,
-      clientName VARCHAR(100) NOT NULL,
-      clientType VARCHAR(50) NOT NULL,
-      workCategory VARCHAR(100) NOT NULL,
-      lab VARCHAR(100) NOT NULL,
-      description TEXT DEFAULT NULL,
-      value DECIMAL(12,2) DEFAULT NULL,
-      date DATE DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      isGenerated TINYINT(1) DEFAULT 0
-    )
+   CREATE TABLE quotations (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  project_name VARCHAR(50) DEFAULT NULL,
+  quotationNo VARCHAR(50) NOT NULL,
+  clientName VARCHAR(100) NOT NULL,
+  clientType VARCHAR(50) NOT NULL,
+  workCategory VARCHAR(100) NOT NULL,
+  lab VARCHAR(100) NOT NULL,
+  description TEXT DEFAULT NULL,
+  value DECIMAL(12,2) DEFAULT NULL,
+  date DATE DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  isGenerated TINYINT(1) DEFAULT 0,
+  generatedAt DATETIME DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_isGenerated (isGenerated)
+);
+
   `);
 
   // 💬 TERMS & CONDITIONS TABLE
