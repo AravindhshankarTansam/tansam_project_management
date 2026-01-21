@@ -21,6 +21,8 @@ const [rows] = await db.execute(`
     f.next_milestone AS nextMilestone,
     f.milestone_due_date AS milestoneDueDate,
     f.critical_issues AS criticalIssues
+    f.created_at AS followupCreatedAt,     -- ✅ ADD
+    f.updated_at AS followupUpdatedAt 
 
   FROM projects p
 

@@ -1,71 +1,205 @@
-/* Center the login box */
-.login-container {
-  max-width: 400px;
-  margin: 100px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+/* ===== ROOT STAGE ===== */
+.login-stage {
+  min-height: 100vh;
+  /* background: #020617; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
-/* Title */
+/* ===== AURA ANIMATION ===== */
+.aura {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  animation: auraFloat 12s ease-in-out infinite alternate;
+}
+
+.aura-1 {
+  /* background: #38bdf8; */
+  top: 10%;
+  left: 15%;
+}
+
+.aura-2 {
+  /* background: #6366f1; */
+  bottom: 10%;
+  right: 15%;
+  animation-delay: 3s;
+}
+
+@keyframes auraFloat {
+  from {
+    transform: translateY(-30px) scale(1);
+  }
+  to {
+    transform: translateY(30px) scale(1.1);
+  }
+}
+
+/* ===== PARTICLES ===== */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  animation: floatParticle 18s linear infinite;
+}
+
+.p1 {
+  left: 20%;
+  bottom: -10%;
+}
+.p2 {
+  left: 50%;
+  bottom: -20%;
+  animation-delay: 6s;
+}
+.p3 {
+  left: 80%;
+  bottom: -15%;
+  animation-delay: 10s;
+}
+
+@keyframes floatParticle {
+  from {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(-120vh);
+    opacity: 1;
+  }
+}
+
+/* ===== LOGIN CARD ===== */
+.login-card {
+  position: relative;
+  z-index: 5;
+  width: 420px;
+  padding: 38px;
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 22px;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-6px);
+}
+
+/* ===== LOGO ===== */
+/* ===== LOGO VISIBILITY FIX ===== */
+.logo-wrapper {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.85)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+
+    
+    0 0 40px rgba(56, 189, 248, 0.35);
+}
+
+/* Logo itself */
+.login-logo {
+  height: 52px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+
+/* ===== TITLES ===== */
 .login-title {
   text-align: center;
-  margin-bottom: 20px;
-  color: #1e293b;
+  color: #f8fafc;
+  font-size: 23px;
+  font-weight: 600;
 }
 
-/* Error message */
-.login-error {
-  color: #dc2626;
-  font-size: 14px;
-  margin-bottom: 10px;
+.login-subtitle {
   text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  margin-bottom: 28px;
 }
 
-/* Form */
-.login-form {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Input field */
+/* ===== FIELDS ===== */
 .login-field {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
 }
 
 .login-field label {
-  font-size: 14px;
-  margin-bottom: 5px;
-  color: #334155;
+  font-size: 13px;
+  color: #cbd5f5;
+  margin-bottom: 6px;
+  display: block;
 }
 
 .login-field input {
-  padding: 10px;
-  border: 1px solid #cbd5f5;
-  border-radius: 6px;
-  font-size: 14px;
+  width: 100%;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+  transition: all 0.2s ease;
 }
 
 .login-field input:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
 }
 
-/* Button */
-.login-button {
-  margin-top: 10px;
-  padding: 10px;
-  background: #2563eb;
-  color: #ffffff;
+/* ===== BUTTON ===== */
+.login-card button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 16px;
   border: none;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: #020617;
   font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.25s ease;
 }
 
-.login-button:hover {
-  background: #1d4ed8;
+.login-card button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.45);
+}
+
+.login-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== ERROR ===== */
+.login-error {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #fecaca;
 }

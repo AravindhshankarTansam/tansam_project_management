@@ -1,4 +1,5 @@
 import "./TLDashboard.css";
+import { useEffect, useState } from "react";
 import {
   FiArrowUpRight,
   FiClock,
@@ -6,48 +7,105 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 
+import { fetchProjects } from "../../services/project.api";
+import { fetchProjectFollowups } from "../../services/projectfollowup.api"; 
+// 👆 adjust path if needed
+
 export default function TLDashboard() {
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [activeTasks, setActiveTasks] = useState(0);
+  const [completedProjects, setCompletedProjects] = useState(0);
+  const [onHoldAlerts, setOnHoldAlerts] = useState(0);
+  // const [recentProjects, setRecentProjects] = useState([]);
+
+ 
+
+useEffect(() => {
+  (async () => {
+    try {
+      /* ================= PROJECT COUNT ================= */
+      const projects = await fetchProjects();
+      setTotalProjects(projects?.length || 0);
+
+      /* ================= RECENT ACTIVITY ================= */
+      // const sorted = [...projects]
+      //   .sort((a, b) =>
+      //     new Date(b.updated_at || b.created_at) -
+      //     new Date(a.updated_at || a.created_at)
+      //   )
+      //   .slice(0, 5); // show last 5 activities
+
+      // setRecentProjects(sorted);
+
+      /* ================= FOLLOWUP STATUS COUNTS ================= */
+      const followups = await fetchProjectFollowups();
+
+      setActiveTasks(
+        followups.filter((f) => f.status === "In Progress").length
+      );
+
+      setCompletedProjects(
+        followups.filter((f) => f.status === "Completed").length
+      );
+
+      setOnHoldAlerts(
+        followups.filter((f) => f.status === "On Hold").length
+      );
+    } catch (err) {
+      console.error("Dashboard data load failed", err);
+    }
+  })();
+}, []);
+
+
+
   return (
     <div className="tl-dashboard">
       <h2 className="page-title">Dashboard</h2>
 
       {/* ================= TOP METRICS ================= */}
       <div className="stats-grid">
+
+        {/* TOTAL PROJECTS */}
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Total Projects</span>
             <FiArrowUpRight className="card-icon" />
           </div>
-          <h3 className="stat-value">12</h3>
+          <h3 className="stat-value">{totalProjects}</h3>
           <span className="stat-sub">+2 from last month</span>
         </div>
 
+        {/* ACTIVE TASKS */}
         <div className="stat-card clickable">
           <div className="card-header">
-            <span className="stat-label">Active Tasks</span>
+            <span className="stat-label">Active Tasks(In Progress)</span>
             <FiClock className="card-icon" />
           </div>
-          <h3 className="stat-value">48</h3>
+          <h3 className="stat-value">{activeTasks}</h3>
           <span className="stat-sub">12 due today</span>
         </div>
 
+        {/* COMPLETED */}
         <div className="stat-card clickable">
           <div className="card-header">
-            <span className="stat-label">Completed</span>
+            <span className="stat-label">Completed Tasks</span>
             <FiCheckCircle className="card-icon success" />
           </div>
-          <h3 className="stat-value">124</h3>
+          <h3 className="stat-value">{completedProjects}</h3>
           <span className="stat-sub">98% success rate</span>
         </div>
 
+        {/* ALERTS */}
         <div className="stat-card clickable">
           <div className="card-header">
-            <span className="stat-label">Alerts</span>
+            <span className="stat-label">Alerts(On Hold)</span>
             <FiAlertCircle className="card-icon danger" />
           </div>
-          <h3 className="stat-value">3</h3>
+          <h3 className="stat-value">{onHoldAlerts}</h3>
           <span className="stat-sub">Overdue tasks</span>
         </div>
+
       </div>
 
       {/* ================= BOTTOM SECTION ================= */}
