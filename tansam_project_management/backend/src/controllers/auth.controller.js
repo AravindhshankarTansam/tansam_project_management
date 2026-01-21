@@ -66,7 +66,6 @@ export const login = async (req, res) => {
       ADMIN: "/admin",
       COORDINATOR: "/coordinator",
       "TEAM LEAD": "/tl", 
-      TL: "/tl",
       FINANCE: "/finance",
       CEO: "/ceo",
       MD: "/ceo",
