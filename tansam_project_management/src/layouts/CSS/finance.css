@@ -32,7 +32,7 @@ tbody td {
 }
 
 .btn-add-quotation {
-  background-color: #4caf50;
+  background-color: #34ad38;
   color: white;
   padding: 8px 16px;
   border-radius: 8px;
@@ -816,4 +816,13 @@ tbody td {
   background: #a6b7d6;
   cursor: not-allowed;
   box-shadow: none;
+}
+button.btn-save {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+button.btn-save:hover {
+  background-color: #1e40af !important;
 }

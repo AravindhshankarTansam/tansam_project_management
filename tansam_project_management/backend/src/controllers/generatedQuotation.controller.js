@@ -27,64 +27,77 @@ export const addGeneratedQuotation = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { finance: true });
 
-    // Read all fields from req.body
-    const refNo = req.body.refNo || null;
-    const date = req.body.date || null;
-    const clientName = req.body.clientName || null;
-    const kindAttn = req.body.kindAttn || null;
-    const subject = req.body.subject || null;
-    const financeManagerName = req.body.financeManagerName || null;
-  const termsContent = req.body.termsContent || null;
-    // Parse items and terms JSON
-    const items = req.body.items ? JSON.parse(req.body.items) : [];
-    const terms = req.body.terms ? JSON.parse(req.body.terms) : [];
+    const quotationId = req.body.quotation_id;
 
-    // File paths
-    const signaturePath = req.files?.signature?.[0] ? `uploads/po/${req.files.signature[0].filename}` : null;
-    const sealPath = req.files?.seal?.[0] ? `uploads/po/${req.files.seal[0].filename}` : null;
+    if (!quotationId) {
+      return res.status(400).json({ message: "Missing quotation_id" });
+    }
 
-    // Insert into DB
+    const {
+      refNo, date, clientName, kindAttn, subject, financeManagerName,
+      items, terms, termsContent
+    } = req.body;
+
+    const signaturePath = req.files?.signature?.[0] 
+      ? `uploads/po/${req.files.signature[0].filename}` 
+      : null;
+
+    const sealPath = req.files?.seal?.[0] 
+      ? `uploads/po/${req.files.seal[0].filename}` 
+      : null;
+
+    // IMPORTANT: Include quotation_id in the columns and values
+   const [generatedResult] = await db.execute(
+  `INSERT INTO generated_quotations 
+   (quotationId, refNo, date, clientName, kindAttn, subject, 
+    items, terms, termsContent, signature, seal, financeManagerName)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [quotationId, refNo, date, clientName, kindAttn, subject, 
+   items ? JSON.stringify(JSON.parse(items)) : '[]',
+   terms ? JSON.stringify(JSON.parse(terms)) : '[]',
+   termsContent || null,
+   signaturePath,
+   sealPath,
+   financeManagerName]
+);
+
+    // Mark original quotation as generated
     await db.execute(
-      `INSERT INTO generated_quotations
-       (refNo, date, clientName, kindAttn, subject, items, terms, termsContent, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        refNo,
-        date,
-        clientName,
-        kindAttn,
-        subject,
-        JSON.stringify(items),
-        JSON.stringify(terms),
-        termsContent,
-        signaturePath,
-        sealPath,
-        financeManagerName,
-      ]
+      `UPDATE quotations 
+       SET isGenerated = 1
+       WHERE id = ?`,  // better to use id instead of quotationNo
+      [quotationId]
     );
 
-    res.json({ success: true });
+    res.status(201).json({
+      success: true,
+      generatedId: generatedResult.insertId,
+      message: "Quotation generated and original marked successfully"
+    });
+
   } catch (error) {
     console.error("Add Generated Quotation Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 // Get quotation by ID
-export const getGeneratedQuotationById = async (req, res) => {
-  try {
-    const db = await connectDB();
-    await initSchemas(db, { finance: true });
-    const { id } = req.params;
-    const [rows] = await db.execute(
-      "SELECT * FROM generated_quotations WHERE id=?",
-      [id]
-    );
-    res.json(rows[0] || null);
-  } catch (error) {
-    console.error("Get Generated Quotation By ID Error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
+// controllers/generatedQuotation.controller.js
+// GET /api/generatequotation/by-quotation/:quotationId
+// GET /api/generatequotation/by-quotation/:quotationId
+export const getGeneratedQuotationByQuotationId = async (req, res) => {
+  const db = await connectDB();
+  await initSchemas(db, { finance: true });
+
+  const { quotationId } = req.params;
+
+  const [rows] = await db.execute(
+    "SELECT * FROM generated_quotations WHERE quotationId = ? LIMIT 1",
+    [quotationId]
+  );
+
+  res.json(rows.length ? rows[0] : null);
 };
+
 
 // Update quotation
 export const updateGeneratedQuotation = async (req, res) => {

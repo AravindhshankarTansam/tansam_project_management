@@ -33,15 +33,23 @@ export const saveGeneratedQuotation = async (quotationFormData) => {
 };
 
 
-export const updateGeneratedQuotation = async (id, data) => {
+export const updateGeneratedQuotation = async (id, formData) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const res = await fetch(`${GENERATED_QUOTATION_URL}/${id}`, {
     method: "PUT",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
+    headers: {
+      "x-user-id": user.id,
+      "x-user-role": user.role,
+      "x-user-name": user.username,
+    },
+    body: formData, // ✅ FormData
   });
+
   if (!res.ok) throw new Error("Failed to update quotation");
   return res.json();
 };
+
 
 export const deleteGeneratedQuotation = async (id) => {
   const res = await fetch(`${GENERATED_QUOTATION_URL}/${id}`, {
@@ -55,5 +63,16 @@ export const deleteGeneratedQuotation = async (id) => {
 export const getGeneratedQuotationById = async (id) => {
   const res = await fetch(`${GENERATED_QUOTATION_URL}/${id}`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error("Failed to fetch quotation by ID");
+  return res.json();
+};
+
+// Get generated quotation by original quotation id (not by generated row id)
+export const getGeneratedQuotationByQuotationId = async (quotationId) => {
+  const res = await fetch(
+    `${GENERATED_QUOTATION_URL}/by-quotation/${quotationId}`,
+    { headers: getAuthHeaders() }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch generated quotation");
   return res.json();
 };

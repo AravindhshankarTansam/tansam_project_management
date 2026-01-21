@@ -11,7 +11,7 @@ import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
-import { saveGeneratedQuotation } from "../../services/quotation/generatedQuotation.api";
+import { getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
 import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
 export default function Quotations() {
   const [data, setData] = useState([]);
@@ -53,23 +53,94 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     setSelectedLab("");
     setPage(1);
   };
-const handleEditGeneratedQuotation = async (quotation) => {
-  const generated = await getGeneratedQuotationByQuotationId(quotation.id);
+const handleEditGeneratedQuotation = async (originalQuotation) => {
+  console.log("Medit clicked for quotation ID:", originalQuotation.id);
 
-  setNewQuotation({
-    ...quotation,
-    items: JSON.parse(generated.items || "[]"),
-    terms: JSON.parse(generated.terms || "[]"),
-    kindAttn: generated.kindAttn,
-    subject: generated.subject,
-    financeManagerName: generated.financeManagerName,
-    signature: generated.signature,
-    seal: generated.seal,
-  });
+  try {
+    const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
+    console.log("API returned generated data:", generated);
 
-  setShowGenerateQuotation(true);
+    // ────────────────────────────────────────────────
+    // Define the base structure that GenerateQuotation expects
+    const baseQuotation = {
+      id: originalQuotation.id,
+      quotationNo: originalQuotation.quotationNo || "",
+      project_name: originalQuotation.project_name || "",
+      clientName: originalQuotation.clientName || "",
+      kindAttn: "",
+      subject: "",
+      financeManagerName: "",
+      items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+      terms: [],
+      termsContent: "",
+      signature: null,
+      seal: null,
+      existingSignature: null,
+      existingSeal: null,
+    };
+    // ────────────────────────────────────────────────
+
+    let quotationToUse;
+
+    if (!generated || !generated.id) {
+      console.warn("No previously generated quotation found for this ID");
+      // Start with basic info from original quotation
+      quotationToUse = {
+        ...baseQuotation,
+        refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, '0')}`,
+        date: new Date().toISOString().split("T")[0],
+      };
+    } else {
+      console.log("Loading existing generated quotation data");
+quotationToUse = {
+  ...baseQuotation,
+
+  // original quotation reference
+  quotationId: originalQuotation.id,
+  quotationNo: originalQuotation.quotationNo,
+  project_name: originalQuotation.project_name || generated.project_name || "",
+  clientName: originalQuotation.clientName || "",
+
+  // generated quotation identity
+  generatedId: generated.id,
+
+  refNo: generated.refNo,
+  date: generated.date,
+
+  items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
+  terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
+  termsContent: generated.termsContent || "",
+
+  existingSignature: generated.signature
+    ? `http://localhost:9899/${generated.signature}`
+    : null,
+
+  existingSeal: generated.seal
+    ? `http://localhost:9899/${generated.seal}`
+    : null,
+
+  signature: null,
+  seal: null,
 };
 
+    }
+
+    setNewQuotation(quotationToUse);
+    setShowGenerateQuotation(true);
+
+  } catch (err) {
+    console.error("Error loading generated quotation:", err);
+    alert("Could not load previous generated version. Opening with basic data.");
+
+    // Fallback – at least show something
+    setNewQuotation({
+      ...baseQuotation,
+      refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, '0')}`,
+      date: new Date().toISOString().split("T")[0],
+    });
+    setShowGenerateQuotation(true);
+  }
+};
 useEffect(() => {
   const loadWorkCategories = async () => {
     try {
@@ -260,29 +331,18 @@ if (showDoc) {
 }
 if (showGenerateQuotation) {
   return (
-    <GenerateQuotation
-      quotation={newQuotation}
-      onSaved={async () => {
-        // 1. Local optimistic update
-        setData(prev =>
-          prev.map(q =>
-            q.id === newQuotation.id
-              ? { ...q, isGenerated: true }
-              : q
-            )
-          );
-
-        // 2. Reload fresh data from server (recommended!)
-        try {
-          const freshData = await getQuotations();
-          setData(freshData);
-        } catch (e) {
-          console.warn("Couldn't refresh quotations list", e);
-        }
-
-        setShowGenerateQuotation(false);
-      }}
-    />
+  <GenerateQuotation
+  quotation={newQuotation}
+  onSaved={async () => {
+    try {
+      const fresh = await getQuotations();
+      setData(fresh);
+    } catch (err) {
+      console.error("Refresh after generate failed", err);
+    }
+    setShowGenerateQuotation(false);
+  }}
+/>
   );
 }
 
@@ -444,14 +504,14 @@ if (showGenerateQuotation) {
                   </td>
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
-       <button
+       {/* <button
     className="btn-docx"
     onClick={() => downloadDocx(q)}
     disabled={downloadingId === q.id}
     title="Download DOCX"
   >
     {downloadingId === q.id ? "⏳" : <FaFileWord />}
-  </button>
+  </button> */}
                      <button
     className="btn-edit"
     onClick={() => handleEdit(q)}
@@ -466,25 +526,26 @@ if (showGenerateQuotation) {
     <FaTrash />
   </button>
 {q.isGenerated ? (
-    <button
-      className="btn-medit"
-      onClick={() => handleEditGeneratedQuotation(q)}
-      title="Edit Generated Quotation"
-    >
-      <MdEditDocument /> {/* Medit icon */}
-    </button>
-  ) : (
-    <button
-      className="btn-generate"
-      onClick={() => {
-        setNewQuotation(q);
-        setShowGenerateQuotation(true);
-      }}
-      title="Generate Quotation"
-    >
-      +
-    </button>
-  )}
+  <button
+    className="btn-medit"
+    onClick={() => handleEditGeneratedQuotation(q)}
+    title="Edit Generated Quotation"
+  >
+    <MdEditDocument />
+  </button>
+) : (
+  <button
+    className="btn-generate"
+    onClick={() => {
+      setNewQuotation(q);
+      setShowGenerateQuotation(true);
+    }}
+    title="Generate Quotation"
+  >
+    +
+  </button>
+)}
+
 
 
 
@@ -544,31 +605,42 @@ if (showGenerateQuotation) {
 
       <div className="form-group">
   <label>Project Name *</label>
-  <select
-    value={newQuotation.project_name}
-    onChange={(e) =>
-      setNewQuotation({ ...newQuotation, project_name: e.target.value })
-    }
-  >
-    <option value="">Select Project</option>
-    {opportunities.map((opp) => (
-      <option key={opp.id} value={opp.opportunity_name}>
-        {opp.opportunity_name}
-      </option>
-    ))}
+<select
+  value={newQuotation.project_name}
+  onChange={(e) => {
+    const selectedProject = e.target.value;
+
+    const selectedOpportunity = opportunities.find(
+      (opp) => opp.opportunity_name === selectedProject
+    );
+
+    setNewQuotation({
+      ...newQuotation,
+      project_name: selectedProject,
+      clientName: selectedOpportunity?.customer_name || "",
+    });
+  }}
+>
+
+ <option value="">Select Project</option>
+{opportunities.map((opp) => (
+  <option key={opp.id} value={opp.opportunity_name}>
+    {opp.opportunity_name}
+  </option>
+))}
+
   </select>
 </div>
 
         <div className="form-group">
           <label>Client Name *</label>
-          <input
-            type="text"
-            placeholder="Client Name"
-            value={newQuotation.clientName}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientName: e.target.value })
-            }
-          />
+      <input
+  type="text"
+  value={newQuotation.clientName}
+  readOnly
+  placeholder="Auto-filled from opportunity"
+/>
+
         </div>
 
         <div className="form-group">
@@ -682,9 +754,9 @@ if (showGenerateQuotation) {
           {editId ? "Update Quotation" : "Create & Save Quotation"}
         </button>
 
-        <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
+        {/* <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
           Generate DOCX
-        </button>
+        </button> */}
 
         <button className="btn-cancel" onClick={closeModal}>Cancel</button>
       </div>

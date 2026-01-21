@@ -22,6 +22,7 @@ export const addFollowup = async (req, res) => {
         await initSchemas(db, { finance: true });
     const {
       project_name, 
+      quoteValue,
       revisedCost,
       poReceived,
       paymentPhase,
@@ -33,10 +34,11 @@ export const addFollowup = async (req, res) => {
  
     const [result] = await db.execute(
       `INSERT INTO quotation_followups
-      (project_name, revisedCost, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      (project_name,quoteValue , revisedCost, poReceived, paymentPhase, paymentAmount, paymentReceived, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         project_name,
+        quoteValue,
         revisedCost,
         poReceived,
         paymentPhase,
@@ -60,7 +62,8 @@ export const updateFollowup = async (req, res) => {
         await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
-      project_name,    
+      project_name,  
+      quoteValue,  
       revisedCost,
       poReceived,
       paymentPhase,
@@ -72,7 +75,8 @@ export const updateFollowup = async (req, res) => {
    
     await db.execute(
       `UPDATE quotation_followups SET
-        project_name=?,     
+        project_name=?,  
+        quoteValue=?,   
         revisedCost=?,      
         poReceived=?,
         paymentPhase=?,
@@ -82,6 +86,7 @@ export const updateFollowup = async (req, res) => {
        WHERE id=?`,
       [
         project_name,
+        quoteValue,
         revisedCost,
         poReceived,
         paymentPhase,

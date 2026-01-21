@@ -350,7 +350,7 @@ export default function QuotationPDF({
           </View>
 
           <Text style={{ fontWeight: "bold", marginTop: 3 }}>
-            {financeManagerName || "Natesh C"}
+            {financeManagerName || ""}
           </Text>
           <Text>{designation}</Text>
         </View>
