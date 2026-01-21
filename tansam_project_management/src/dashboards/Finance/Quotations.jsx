@@ -491,14 +491,14 @@ if (showGenerateQuotation) {
                   </td>
                   <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
                   <td className="actions-cell">
-       <button
+       {/* <button
     className="btn-docx"
     onClick={() => downloadDocx(q)}
     disabled={downloadingId === q.id}
     title="Download DOCX"
   >
     {downloadingId === q.id ? "⏳" : <FaFileWord />}
-  </button>
+  </button> */}
                      <button
     className="btn-edit"
     onClick={() => handleEdit(q)}
@@ -741,9 +741,9 @@ if (showGenerateQuotation) {
           {editId ? "Update Quotation" : "Create & Save Quotation"}
         </button>
 
-        <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
+        {/* <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
           Generate DOCX
-        </button>
+        </button> */}
 
         <button className="btn-cancel" onClick={closeModal}>Cancel</button>
       </div>
