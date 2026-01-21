@@ -92,24 +92,37 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
       };
     } else {
       console.log("Loading existing generated quotation data");
-      quotationToUse = {
-        ...baseQuotation,           // start with safe defaults
-        ...generated,               // override with saved values
-        id: originalQuotation.id,   // keep reference to original quotation
-        quotationNo: originalQuotation.quotationNo,
-        project_name: originalQuotation.project_name || generated.project_name || "",
-        refNo: generated.refNo || `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, '0')}`,
-        date: generated.date || new Date().toISOString().split("T")[0],
-        items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
-        terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
-        termsContent: generated.termsContent || "",
-        // File paths from backend (assuming stored as relative path)
-        existingSignature: generated.signature ? `http://localhost:9899/${generated.signature}` : null,
-        existingSeal: generated.seal ? `http://localhost:9899/${generated.seal}` : null,
-        // Reset new file uploads
-        signature: null,
-        seal: null,
-      };
+quotationToUse = {
+  ...baseQuotation,
+
+  // original quotation reference
+  quotationId: originalQuotation.id,
+  quotationNo: originalQuotation.quotationNo,
+  project_name: originalQuotation.project_name || generated.project_name || "",
+  clientName: originalQuotation.clientName || "",
+
+  // generated quotation identity
+  generatedId: generated.id,
+
+  refNo: generated.refNo,
+  date: generated.date,
+
+  items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
+  terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
+  termsContent: generated.termsContent || "",
+
+  existingSignature: generated.signature
+    ? `http://localhost:9899/${generated.signature}`
+    : null,
+
+  existingSeal: generated.seal
+    ? `http://localhost:9899/${generated.seal}`
+    : null,
+
+  signature: null,
+  seal: null,
+};
+
     }
 
     setNewQuotation(quotationToUse);

@@ -2,7 +2,7 @@ import express from "express";
 import {
   getGeneratedQuotations,
   addGeneratedQuotation,
-  getGeneratedQuotationById,
+  getGeneratedQuotationByQuotationId,
   updateGeneratedQuotation,
   deleteGeneratedQuotation,
 } from "../controllers/generatedQuotation.controller.js";
@@ -27,8 +27,9 @@ router.post(
   addGeneratedQuotation
 );
 
-router.get("/:id", getGeneratedQuotationById);
+
 router.put("/:id", updateGeneratedQuotation);
 router.delete("/:id", deleteGeneratedQuotation);
+router.get("/by-quotation/:quotationId", getGeneratedQuotationByQuotationId );
 
 export default router;

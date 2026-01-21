@@ -33,15 +33,23 @@ export const saveGeneratedQuotation = async (quotationFormData) => {
 };
 
 
-export const updateGeneratedQuotation = async (id, data) => {
+export const updateGeneratedQuotation = async (id, formData) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const res = await fetch(`${GENERATED_QUOTATION_URL}/${id}`, {
     method: "PUT",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
+    headers: {
+      "x-user-id": user.id,
+      "x-user-role": user.role,
+      "x-user-name": user.username,
+    },
+    body: formData, // ✅ FormData
   });
+
   if (!res.ok) throw new Error("Failed to update quotation");
   return res.json();
 };
+
 
 export const deleteGeneratedQuotation = async (id) => {
   const res = await fetch(`${GENERATED_QUOTATION_URL}/${id}`, {
@@ -59,37 +67,12 @@ export const getGeneratedQuotationById = async (id) => {
 };
 
 // Get generated quotation by original quotation id (not by generated row id)
-export const getGeneratedQuotationByQuotationId = async (req, res) => {
-  try {
-    const db = await connectDB();
-    await initSchemas(db, { finance: true });
+export const getGeneratedQuotationByQuotationId = async (quotationId) => {
+  const res = await fetch(
+    `${GENERATED_QUOTATION_URL}/by-quotation/${quotationId}`,
+    { headers: getAuthHeaders() }
+  );
 
-    const { quotationId } = req.params; // comes from URL /by-quotation/:quotationId
-
-    console.log(`[GET-GEN-BY-QID] Searching for quotationId: ${quotationId}`);
-
-    // IMPORTANT: Use the correct column name from your table
-    // If your column is quotationId (camelCase):
-    const [rows] = await db.execute(
-      "SELECT * FROM generated_quotations WHERE quotationId = ? LIMIT 1",
-      [quotationId]
-    );
-
-    // If your column is quotation_id (snake_case), use this instead:
-    // const [rows] = await db.execute(
-    //   "SELECT * FROM generated_quotations WHERE quotation_id = ? LIMIT 1",
-    //   [quotationId]
-    // );
-
-    console.log(`[GET-GEN-BY-QID] Found ${rows.length} row(s)`);
-
-    if (rows.length === 0) {
-      return res.status(200).json(null); // no error, just no data
-    }
-
-    res.json(rows[0]);
-  } catch (error) {
-    console.error("[GET-GEN-BY-QID] Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
+  if (!res.ok) throw new Error("Failed to fetch generated quotation");
+  return res.json();
 };
