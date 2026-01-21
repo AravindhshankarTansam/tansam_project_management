@@ -668,6 +668,16 @@ if (showGenerateQuotation) {
             }
           />
         </div>
+           <div className="form-group">
+          <label>GST </label>
+          <input
+            type="number"
+            value={newQuotation.gst}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, value: e.target.value })
+            }
+          />
+        </div>
 
         <div className="form-group">
           <label>Work Category *</label>
