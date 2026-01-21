@@ -315,7 +315,7 @@ const FinanceDocument = ({
               onChange={(e) =>
                 setQuotation({ ...quotation, kindAttn: e.target.value })
               }
-              placeholder="e.g., Dr. S. Sathya, HOD - Electronics & Communication Engineering"
+              placeholder="e.g., "
               style={{
                 width: "100%",
                 padding: "10px",

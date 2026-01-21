@@ -88,12 +88,13 @@ export const updateQuotation = async (req, res) => {
     } = req.body;
 
   
-    await db.execute(
-      `UPDATE quotations
-       SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
-       WHERE id=?`,
-      [project_name, clientName, clientType, workCategory, lab, description, value, date, id]
-    );
+await db.execute(
+  `UPDATE quotations
+   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
+   WHERE id=?`,
+  [project_name, clientName, clientType, workCategory, lab, description, value, date, id]
+);
+
 
     res.json({ id, ...req.body });
   } catch (error) {
@@ -107,13 +108,31 @@ export const deleteQuotation = async (req, res) => {
   try {
     const { id } = req.params;
     const db = await connectDB();
-    await db.execute("DELETE FROM quotations WHERE id=?", [id]);
-    res.json({ message: "Quotation deleted", id });
+    await initSchemas(db, { finance: true });
+
+    // 🔴 CRITICAL: delete child rows FIRST
+    await db.execute(
+      "DELETE FROM generated_quotations WHERE quotationId = ?",
+      [id]
+    );
+
+    // ✅ then delete parent
+    await db.execute(
+      "DELETE FROM quotations WHERE id = ?",
+      [id]
+    );
+
+    res.json({
+      message: "Quotation and related generated quotations deleted",
+      id,
+    });
   } catch (error) {
     console.error("Delete Quotation Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 };
+
+
 
 
 export const getQuotationById = async (id) => {
