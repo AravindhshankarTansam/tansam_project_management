@@ -1,3 +1,7 @@
+/* ===============================
+   OPPORTUNITY MAIL TEMPLATES
+================================ */
+
 export const assignedOpportunityTemplate = ({
   userName,
   opportunityId,
@@ -6,8 +10,13 @@ export const assignedOpportunityTemplate = ({
   stage,
   assignedBy,
   followUpDate,
+
+  // 👇 CONTACT DETAILS
+  contactPerson,
+  contactEmail,
+  contactPhone,
 }) => `
-  <div style="font-family: Arial, sans-serif; line-height:1.6; color:#111">
+  <div style="font-family: Arial, sans-serif; line-height:1.6; color:#111; max-width:600px;">
     <h2 style="color:#0f4c81;">New Opportunity Assigned</h2>
 
     <p>Hello <b>${userName}</b>,</p>
@@ -17,7 +26,7 @@ export const assignedOpportunityTemplate = ({
       <b>TANSAM Project Management System</b>.
     </p>
 
-    <table cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+    <table cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%;">
       <tr>
         <td><b>Opportunity ID</b></td>
         <td>${opportunityId}</td>
@@ -31,33 +40,53 @@ export const assignedOpportunityTemplate = ({
         <td>${customerName}</td>
       </tr>
       <tr>
-        <td><b>Current Stage</b></td>
+        <td><b>Stage</b></td>
         <td>${stage}</td>
       </tr>
+
+      <tr style="background:#f1f5f9;">
+        <td colspan="2"><b>Client Contact Details</b></td>
+      </tr>
+      <tr>
+        <td><b>Contact Person</b></td>
+        <td>${contactPerson || "—"}</td>
+      </tr>
+      <tr>
+        <td><b>Email</b></td>
+        <td>${contactEmail || "—"}</td>
+      </tr>
+      <tr>
+        <td><b>Phone</b></td>
+        <td>${contactPhone || "—"}</td>
+      </tr>
+
       ${
         followUpDate
           ? `<tr>
-               <td><b>Next Follow-up</b></td>
-               <td>${followUpDate}</td>
-             </tr>`
+              <td><b>Next Follow-up</b></td>
+              <td>${followUpDate}</td>
+            </tr>`
           : ""
       }
+
       ${
         assignedBy
           ? `<tr>
-               <td><b>Assigned By</b></td>
-               <td>${assignedBy}</td>
-             </tr>`
+              <td><b>Assigned By</b></td>
+              <td>${assignedBy}</td>
+            </tr>`
           : ""
       }
     </table>
 
-    <p>
-      Please log in to the PMS to review details and take necessary action.
+    <p style="margin-top:20px;">
+      Please log in to the PMS to take necessary action.
     </p>
 
-    <br />
-    <p>Regards,<br /><b>${userName}</b></p>
+    <p>
+      Regards,<br/>
+      <b>${assignedBy}</b>
+    </p>
   </div>
 `;
 
@@ -68,17 +97,14 @@ export const unassignedOpportunityTemplate = ({
   customerName,
   reassignedTo,
 }) => `
-  <div style="font-family: Arial, sans-serif; line-height:1.6">
-
+  <div style="font-family: Arial, sans-serif; line-height:1.6; max-width:600px;">
     <h2>Opportunity Reassigned</h2>
 
     <p>Hello <b>${userName}</b>,</p>
 
-    <p>
-      The following opportunity has been reassigned to another team member.
-    </p>
+    <p>The following opportunity has been reassigned.</p>
 
-    <table cellpadding="8">
+    <table cellpadding="10" cellspacing="0" style="border-collapse:collapse;">
       <tr>
         <td><b>Opportunity ID</b></td>
         <td>${opportunityId}</td>
@@ -97,16 +123,13 @@ export const unassignedOpportunityTemplate = ({
       </tr>
     </table>
 
-   <p>
-      Please log in to the PMS to review details and take necessary action.
+    <p>
+      Regards,<br/>
+      <b>${userName}</b>
     </p>
-
-    <br />
-    <p>Regards,<br /><b>${userName}</b></p>
-
-  
   </div>
 `;
+
 
 
 // mail.template.js (add at the end)

@@ -129,21 +129,25 @@ export const createOpportunity = async (req, res) => {
       const assignedUser = await getUserById(db, assignedTo);
       const assignorUser = await getUserById(db, req.user.id);
 
-     if (assignedUser?.email) {
-      const html = assignedOpportunityTemplate({
-        userName: assignedUser.name,
-        opportunityName,
-        customerName,
-        stage: leadStatus || "NEW",
-        assignedBy: assignorUser?.name || "Coordinator",
-      });
+      if (assignedUser?.email) {
+        await sendMail({
+          to: [assignedUser.email, assignorUser?.email].filter(Boolean),
+          subject: `New Opportunity Assigned - ${opportunityName}`,
+          html: assignedOpportunityTemplate({
+            userName: assignedUser.name,
+            opportunityId,
+            opportunityName,
+            customerName,
+            stage: leadStatus || "NEW",
+            assignedBy: assignorUser?.name || "Coordinator",
 
-      await sendMail({
-        to: [assignedUser.email, assignorUser?.email].filter(Boolean),
-        subject: `New Opportunity Assigned - ${opportunityName}`,
-        html,
-      });
-    }
+            // 👇 CONTACT DETAILS
+            contactPerson,
+            contactEmail,
+            contactPhone,
+          }),
+        });
+      }
     }
 
     res.status(201).json({
@@ -193,6 +197,134 @@ export const getOpportunities = async (req, res) => {
    UPDATE OPPORTUNITY (SEND MAIL IF ASSIGNED USER CHANGES)
 ====================================================== */
 
+// export const updateOpportunity = async (req, res) => {
+//   try {
+//     if (!req.user?.id) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const { opportunity_id } = req.params;
+//     const {
+//       opportunityName,
+//       customerName,
+//       industry,
+//       contactPerson,
+//       contactEmail,
+//       contactPhone,
+//       leadSource,
+//       leadDescription,
+//       leadStatus,
+//       assignedTo,
+//     } = req.body;
+
+//     const db = await connectDB();
+//     await initSchemas(db, { coordinator: true });
+
+//     const [[oldOpp]] = await db.execute(
+//       `
+//       SELECT assigned_to, opportunity_name, customer_name
+//       FROM opportunities_coordinator
+//       WHERE opportunity_id = ?
+//       `,
+//       [opportunity_id]
+//     );
+
+//     if (!oldOpp) {
+//       return res.status(404).json({ message: "Opportunity not found" });
+//     }
+
+//     await db.execute(
+//       `
+//       UPDATE opportunities_coordinator
+//       SET
+//         opportunity_name = COALESCE(?, opportunity_name),
+//         customer_name    = COALESCE(?, customer_name),
+//         company_name     = COALESCE(?, company_name),
+//         contact_person   = COALESCE(?, contact_person),
+//         contact_email    = COALESCE(?, contact_email),
+//         contact_phone    = COALESCE(?, contact_phone),
+//         lead_source      = COALESCE(?, lead_source),
+//         lead_description = COALESCE(?, lead_description),
+//         lead_status      = COALESCE(?, lead_status),
+//         assigned_to      = COALESCE(?, assigned_to)
+//       WHERE opportunity_id = ?
+//       `,
+//       [
+//         normalize(opportunityName),
+//         normalize(customerName),
+//         normalize(industry),
+//         normalize(contactPerson),
+//         normalize(contactEmail),
+//         normalize(contactPhone),
+//         leadSource || null,
+//         leadDescription || null,
+//         leadStatus || null,
+//         normalize(assignedTo),
+//         opportunity_id,
+//       ]
+//     );
+
+//     /* ========== SEND MAIL ON REASSIGN ========== */
+
+//     if (
+//       assignedTo &&
+//       oldOpp.assigned_to &&
+//       String(oldOpp.assigned_to) !== String(assignedTo)
+//     ) {
+//       const [[oldUser]] = await db.execute(
+//         `SELECT name, email FROM users_admin WHERE id = ?`,
+//         [oldOpp.assigned_to]
+//       );
+
+//       const [[newUser]] = await db.execute(
+//         `SELECT name, email FROM users_admin WHERE id = ?`,
+//         [assignedTo]
+//       );
+
+//       // 🔴 Old user
+//       if (oldUser?.email) {
+//         await sendMail({
+//           to: oldUser.email,
+//           subject: "Opportunity Reassigned",
+//           html: unassignedOpportunityTemplate({
+//             userName: oldUser.name,
+//             opportunityId: opportunity_id,
+//             opportunityName: oldOpp.opportunity_name,
+//             customerName: oldOpp.customer_name,
+//             reassignedTo: newUser?.name || "Another user",
+//           }),
+//         });
+//       }
+
+//       // 🟢 New user (WITH CONTACT DETAILS)
+//       if (newUser?.email) {
+//         await sendMail({
+//           to: newUser.email,
+//           subject: "New Opportunity Assigned",
+//           html: assignedOpportunityTemplate({
+//             userName: newUser.name,
+//             opportunityId: opportunity_id,
+//             opportunityName: opportunityName || oldOpp.opportunity_name,
+//             customerName: customerName || oldOpp.customer_name,
+//             stage: leadStatus || "NEW",
+//             assignedBy: req.user.name || req.user.username,
+
+//             // 👇 CONTACT DETAILS
+//             contactPerson,
+//             contactEmail,
+//             contactPhone,
+//           }),
+//         });
+//       }
+//     }
+
+//     res.json({ message: "Opportunity updated successfully" });
+//   } catch (err) {
+//     console.error("Update opportunity error:", err);
+//     res.status(500).json({ message: "Update failed" });
+//   }
+// };
+
 export const updateOpportunity = async (req, res) => {
   try {
     if (!req.user?.id) {
@@ -216,11 +348,20 @@ export const updateOpportunity = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
 
-    // 1️⃣ Fetch OLD opportunity (before update)
+    /* ================= FETCH OLD DATA ================= */
+
     const [[oldOpp]] = await db.execute(
-      `SELECT assigned_to, opportunity_name, customer_name
-       FROM opportunities_coordinator
-       WHERE opportunity_id = ?`,
+      `
+      SELECT
+        opportunity_name,
+        customer_name,
+        contact_person,
+        contact_email,
+        contact_phone,
+        assigned_to
+      FROM opportunities_coordinator
+      WHERE opportunity_id = ?
+      `,
       [opportunity_id]
     );
 
@@ -228,7 +369,8 @@ export const updateOpportunity = async (req, res) => {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
-    // 2️⃣ UPDATE ALL FIELDS
+    /* ================= UPDATE ================= */
+
     await db.execute(
       `
       UPDATE opportunities_coordinator
@@ -260,25 +402,42 @@ export const updateOpportunity = async (req, res) => {
       ]
     );
 
-    // 3️⃣ SEND MAIL ONLY IF ASSIGNMENT CHANGED
-    if (
+    /* ================= CHANGE DETECTION ================= */
+
+    const assignmentChanged =
       assignedTo &&
-      oldOpp.assigned_to &&
-      String(oldOpp.assigned_to) !== String(assignedTo)
-    ) {
-      // OLD user
+      String(oldOpp.assigned_to) !== String(assignedTo);
+
+    const contactChanged =
+      oldOpp.customer_name !== customerName ||
+      oldOpp.contact_person !== contactPerson ||
+      oldOpp.contact_email !== contactEmail ||
+      oldOpp.contact_phone !== contactPhone;
+
+    /* ================= FETCH USERS ================= */
+
+    const [[assignor]] = await db.execute(
+      `SELECT name, email FROM users_admin WHERE id = ?`,
+      [req.user.id]
+    );
+
+    const [[assignedUser]] = assignedTo
+      ? await db.execute(
+          `SELECT name, email FROM users_admin WHERE id = ?`,
+          [assignedTo]
+        )
+      : [[]];
+
+    /* ================= MAIL LOGIC ================= */
+
+    // 🔁 REASSIGNMENT MAIL
+    if (assignmentChanged) {
       const [[oldUser]] = await db.execute(
         `SELECT name, email FROM users_admin WHERE id = ?`,
         [oldOpp.assigned_to]
       );
 
-      // NEW user
-      const [[newUser]] = await db.execute(
-        `SELECT name, email FROM users_admin WHERE id = ?`,
-        [assignedTo]
-      );
-
-      // 🔴 Notify OLD user
+      // Old user
       if (oldUser?.email) {
         await sendMail({
           to: oldUser.email,
@@ -288,27 +447,39 @@ export const updateOpportunity = async (req, res) => {
             opportunityId: opportunity_id,
             opportunityName: oldOpp.opportunity_name,
             customerName: oldOpp.customer_name,
-            reassignedTo: newUser?.name || "Another user",
+            reassignedTo: assignedUser?.name || "Another user",
           }),
         });
       }
+    }
 
-      // 🟢 Notify NEW user
-      if (newUser?.email) {
-        await sendMail({
-          to: newUser.email,
-          subject: "New Opportunity Assigned",
-          html: assignedOpportunityTemplate({
-            userName: newUser.name,
-            opportunityId: opportunity_id,
-            opportunityName: opportunityName || oldOpp.opportunity_name,
-            customerName: customerName || oldOpp.customer_name,
-            stage: leadStatus || "NEW",
-            followUpDate: null,
-            assignedBy: req.user.name || req.user.username,
-          }),
-        });
-      }
+    // 🧑‍💼 NEW ASSIGNEE OR CONTACT UPDATE MAIL
+    if (
+      assignedUser?.email &&
+      (assignmentChanged || contactChanged)
+    ) {
+      await sendMail({
+        to: assignedUser.email,
+        subject: assignmentChanged
+          ? "New Opportunity Assigned"
+          : "Opportunity Contact Details Updated",
+
+        html: assignedOpportunityTemplate({
+          userName: assignedUser.name,
+          opportunityId: opportunity_id,
+          opportunityName:
+            opportunityName || oldOpp.opportunity_name,
+          customerName:
+            customerName || oldOpp.customer_name,
+          stage: leadStatus || "NEW",
+          assignedBy: assignor?.name || "Coordinator",
+
+          // ✅ UPDATED CONTACT DETAILS
+          contactPerson,
+          contactEmail,
+          contactPhone,
+        }),
+      });
     }
 
     res.json({ message: "Opportunity updated successfully" });
