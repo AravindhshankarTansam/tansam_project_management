@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getProjectFollowups,
-  createProjectFollowup,
+ 
   updateProjectFollowup,
 } from "../controllers/projectFollowup.controller.js";
 
@@ -24,12 +24,12 @@ router.get(
 /**
  * CREATE FOLLOWUP — TEAM LEAD ONLY
  */
-router.post(
-  "/project-followups",
-  authMiddleware,
-  teamLeadMiddleware,
-  createProjectFollowup
-);
+// router.post(
+//   "/project-followups",
+//   authMiddleware,
+//   teamLeadMiddleware,
+//   createProjectFollowup
+// );
 
 /**
  * UPDATE FOLLOWUP — TEAM LEAD ONLY

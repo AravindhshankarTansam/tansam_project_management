@@ -5,87 +5,88 @@ import { initSchemas } from "../schema/main.schema.js";
 export const getProjectFollowups = async (req, res) => {
   try {
     const db = await connectDB();
-    await initSchemas(db, { project: true, assignTeam: true, projectFollowup: true });
-const [rows] = await db.execute(`
-  SELECT
-    p.id AS projectId,
-    p.project_name AS projectName,
-    p.client_name AS clientName,
-    p.quotation_number AS quotationCode,
-    p.status,
-    p.po_file AS poFile,            -- ✅ ADD THIS
+    await initSchemas(db, {
+      project: true,
+      assignTeam: true,
+      projectFollowup: true,
+    });
 
-    COUNT(DISTINCT a.id) AS teamMembers,
+    const [rows] = await db.execute(`
+      SELECT
+        p.id AS projectId,
+        p.project_name AS projectName,
+        p.client_name AS clientName,
+        p.quotation_number AS quotationCode,
+        p.status,
+        p.po_file AS poFile,
 
-    f.progress,
-    f.next_milestone AS nextMilestone,
-    f.milestone_due_date AS milestoneDueDate,
-    f.critical_issues AS criticalIssues
+        COUNT(DISTINCT a.id) AS teamMembers,
 
-  FROM projects p
+        f.progress,
+        f.next_milestone AS nextMilestone,
+        f.milestone_due_date AS milestoneDueDate,
+        f.issue_description AS issueDescription
 
-  LEFT JOIN project_team_assignments a
-    ON a.project_id = p.id
+      FROM projects p
+      LEFT JOIN project_team_assignments a
+        ON a.project_id = p.id
+      LEFT JOIN project_followups f
+        ON f.project_id = p.id
 
-  LEFT JOIN project_followups f
-    ON f.project_id = p.id
+      GROUP BY
+        p.id,
+        p.project_name,
+        p.client_name,
+        p.quotation_number,
+        p.status,
+        p.po_file,
+        f.progress,
+        f.next_milestone,
+        f.milestone_due_date,
+        f.issue_description
 
-  GROUP BY
-    p.id,
-    p.project_name,
-    p.client_name,
-    p.quotation_number,
-    p.status,
-    p.po_file,
-    f.progress,
-    f.next_milestone,
-    f.milestone_due_date,
-    f.critical_issues
-
-  ORDER BY p.id DESC
-`);
-
-
+      ORDER BY p.id DESC
+    `);
 
     res.json(rows);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
 /* ================= CREATE / INIT FOLLOWUP ================= */
-export const createProjectFollowup = async (req, res) => {
-  try {
-    const db = await connectDB();
-    await initSchemas(db, { projectFollowup: true });
+// export const createProjectFollowup = async (req, res) => {
+//   try {
+//     const db = await connectDB();
+//     await initSchemas(db, { projectFollowup: true });
 
-    const {
-      projectId,
-      progress,
-      nextMilestone,
-      milestoneDueDate,
-      criticalIssues,
-    } = req.body;
+//     const {
+//       projectId,
+//       progress,
+//       nextMilestone,
+//       milestoneDueDate,
+//       criticalIssues,
+//     } = req.body;
 
-    await db.execute(
-      `INSERT INTO project_followups
-       (project_id, progress, next_milestone, milestone_due_date, critical_issues)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        projectId,
-        progress || 0,
-        nextMilestone || null,
-        milestoneDueDate || null,
-        criticalIssues || 0,
-      ]
-    );
+//     await db.execute(
+//       `INSERT INTO project_followups
+//        (project_id, progress, next_milestone, milestone_due_date, critical_issues)
+//        VALUES (?, ?, ?, ?, ?)`,
+//       [
+//         projectId,
+//         progress || 0,
+//         nextMilestone || null,
+//         milestoneDueDate || null,
+//         criticalIssues || 0,
+//       ]
+//     );
 
-    res.status(201).json({ message: "Follow-up created" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+//     res.status(201).json({ message: "Follow-up created" });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
 
+/* ================= UPDATE FOLLOWUP ================= */
 /* ================= UPDATE FOLLOWUP ================= */
 export const updateProjectFollowup = async (req, res) => {
   try {
@@ -95,22 +96,22 @@ export const updateProjectFollowup = async (req, res) => {
       progress,
       nextMilestone,
       milestoneDueDate,
-      criticalIssues,
+      issueDescription,
     } = req.body;
 
     const db = await connectDB();
 
-    // ✅ UPSERT follow-up
+    // 🔁 UPSERT FOLLOWUP
     await db.execute(
       `
       INSERT INTO project_followups
-        (project_id, progress, next_milestone, milestone_due_date, critical_issues)
+        (project_id, progress, next_milestone, milestone_due_date, issue_description)
       VALUES (?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         progress = VALUES(progress),
         next_milestone = VALUES(next_milestone),
         milestone_due_date = VALUES(milestone_due_date),
-        critical_issues = VALUES(critical_issues),
+        issue_description = VALUES(issue_description),
         updated_at = CURRENT_TIMESTAMP
       `,
       [
@@ -118,11 +119,11 @@ export const updateProjectFollowup = async (req, res) => {
         progress || 0,
         nextMilestone || null,
         milestoneDueDate || null,
-        criticalIssues || 0,
+        issueDescription || null,
       ]
     );
 
-    // ✅ Update project status (separate concern)
+    // 🔄 Update project status separately
     if (status) {
       await db.execute(
         `UPDATE projects SET status = ? WHERE id = ?`,
@@ -130,7 +131,7 @@ export const updateProjectFollowup = async (req, res) => {
       );
     }
 
-    res.json({ message: "Follow-up updated" });
+    res.json({ message: "Follow-up updated successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

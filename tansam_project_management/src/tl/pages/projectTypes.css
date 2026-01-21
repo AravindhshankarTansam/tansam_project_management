@@ -154,3 +154,173 @@
   font-size: 15px;
   font-weight: 500;
 }
+
+
+/* ================================
+   INNOVATIVE ISSUE DESCRIPTION COLUMN
+================================ */
+
+/* Issue cell wrapper */
+.issue-cell {
+  max-width: 260px;
+  position: relative;
+}
+
+.issue-preview-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.issue-preview-wrapper:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.issue-preview-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+  max-height: 60px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(241, 245, 249, 0.6);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.issue-preview-content p,
+.issue-preview-content ul,
+.issue-preview-content ol {
+  margin: 0 0 6px;
+}
+
+.issue-expand-btn {
+  display: block;
+  margin-top: 6px;
+  color: #3b82f6;
+  font-size: 12px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.issue-expand-btn:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* Urgency badge */
+.issue-urgency-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  animation: pulseBadge 2s infinite;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Preview Modal / Overlay */
+.issue-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease;
+}
+
+.issue-preview-modal {
+  background: white;
+  width: min(90%, 680px);
+  max-height: 85vh;
+  border-radius: 16px;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.preview-header h4 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.close-preview {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-preview:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.full-issue-content {
+  padding: 28px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.full-issue-content p {
+  margin-bottom: 16px;
+}
+
+.full-issue-content ul,
+.full-issue-content ol {
+  margin: 12px 0 16px 20px;
+}
+
+.full-issue-content strong {
+  color: #1e293b;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

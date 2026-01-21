@@ -1,3 +1,5 @@
+// projectfollowup.schema.js
+
 export const createProjectFollowupSchema = async (db) => {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS project_followups (
@@ -9,7 +11,7 @@ export const createProjectFollowupSchema = async (db) => {
       next_milestone VARCHAR(255),
       milestone_due_date DATE,
 
-      critical_issues INT DEFAULT 0,
+      issue_description TEXT,   -- ✅ TEXT description instead of number
 
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
