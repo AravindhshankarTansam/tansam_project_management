@@ -767,6 +767,9 @@ const FinanceDocument = ({
 
 // ✅ MAIN COMPONENT WITH ALL STATES & FIXED PROPS
 export default function GenerateQuotation({ quotation: initialQuotation, onSaved }) {
+
+
+  
   const isEditMode = !!initialQuotation?.id && initialQuotation?.items?.length > 0;
 const [quotation, setQuotation] = useState(() => ({
     id: initialQuotation?.id || null,
@@ -785,9 +788,7 @@ const [quotation, setQuotation] = useState(() => ({
 useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
-  useEffect(() => {
-    console.log("GenerateQuotation mounted - isEditMode:", isEditMode, "quotation.id:", quotation.id);
-  }, []);
+ 
   // ✅ ALL REQUIRED STATES
 const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`);
   const [date, setDate] = useState(initialQuotation?.date || new Date().toISOString().split("T")[0]);
@@ -799,6 +800,43 @@ const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date(
   const [termsContent, setTermsContent] = useState("<p>Loading terms...</p>");
   const [termsLoading, setTermsLoading] = useState(true);
   const [termsError, setTermsError] = useState(null);
+useEffect(() => {
+  if (!quotation.id) return;
+
+  const loadGeneratedQuotation = async () => {
+    try {
+      const generated = await getGeneratedQuotationByQuotationId(quotation.id);
+
+      if (!generated) return;
+
+      setRefNo(generated.refNo || refNo);
+      setDate(generated.date || date);
+
+      setQuotation(prev => ({
+        ...prev,
+        clientName: generated.clientName || "",
+        kindAttn: generated.kindAttn || "",
+        subject: generated.subject || "",
+        financeManagerName: generated.financeManagerName || "",
+        items: JSON.parse(generated.items || "[]"),
+        terms: JSON.parse(generated.terms || "[]"),
+        termsContent: generated.termsContent || "",
+
+        // previews from backend
+        existingSignature: generated.signature || null,
+        existingSeal: generated.seal || null,
+
+        // reset new uploads
+        signature: null,
+        seal: null,
+      }));
+    } catch (err) {
+      console.error("Failed to load generated quotation", err);
+    }
+  };
+
+  loadGeneratedQuotation();
+}, [quotation.id]);
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
 useEffect(() => {
