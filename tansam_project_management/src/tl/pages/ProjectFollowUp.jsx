@@ -15,7 +15,9 @@ import {
   fetchProjectFollowups,
   updateProjectFollowup,
   getPOFileUrl,
-} from "../../services/projectFollowup.api";
+} from "../../services/projectfollowup.api";
+import RichTextEditor from "../../components/RichTextEditor";
+
 
 /* ---------- HELPERS ---------- */
 const calculateDaysLeft = (dueDate) => {
@@ -33,6 +35,8 @@ export default function ProjectFollowUp() {
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewingProject, setViewingProject] = useState(null);
+
+
 
   /* ================= LOAD DATA ================= */
   useEffect(() => {
@@ -70,27 +74,28 @@ export default function ProjectFollowUp() {
   };
 
   /* ================= UPDATE ================= */
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+const handleUpdate = async (e) => {
+  e.preventDefault();
 
-    try {
-      await updateProjectFollowup(editingProject.projectId, {
-        status: editingProject.status,
-        progress: editingProject.progress,
-        nextMilestone: editingProject.nextMilestone,
-        milestoneDueDate: editingProject.milestoneDueDate,
-        criticalIssues: editingProject.criticalIssues,
-      });
+  try {
+    await updateProjectFollowup(editingProject.projectId, {
+      status: editingProject.status,
+      progress: editingProject.progress,
+      nextMilestone: editingProject.nextMilestone,
+      milestoneDueDate: editingProject.milestoneDueDate,
+      issueDescription: editingProject.issueDescription,
+    });
 
-      const refreshed = await fetchProjectFollowups();
-      setProjects(refreshed);
+    const refreshed = await fetchProjectFollowups();
+    setProjects(refreshed);
 
-      toast.success("Project follow-up updated");
-      setEditModalOpen(false);
-    } catch (err) {
-      toast.error(err.message || "Update failed");
-    }
-  };
+    toast.success("Project follow-up updated");
+    setEditModalOpen(false);
+  } catch (err) {
+    toast.error(err.message || "Update failed");
+  }
+};
+
 
   return (
     <div className="followup-page">
@@ -112,12 +117,12 @@ export default function ProjectFollowUp() {
               <tr>
                 <th>Project</th>
                 <th>Client</th>
-                <th>Quotation</th>
+                {/* <th>Quotation</th> */}
                 <th>Status</th>
                 <th>Progress</th>
                 <th>Next Milestone</th>
                 <th>Team</th>
-                <th>Issues</th>
+                <th>Issues Description</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -136,11 +141,11 @@ export default function ProjectFollowUp() {
                     daysLeft !== null &&
                     daysLeft <= 3 &&
                     p.status !== "Completed";
-                     const hasPOFile =
-    p.poFile &&
-    typeof p.poFile === "string" &&
-    p.poFile.trim() !== "" &&
-    p.poFile !== "null";
+                  const hasPOFile =
+                    p.poFile &&
+                    typeof p.poFile === "string" &&
+                    p.poFile.trim() !== "" &&
+                    p.poFile !== "null";
 
                   return (
                     <tr
@@ -150,12 +155,14 @@ export default function ProjectFollowUp() {
                     >
                       <td>
                         <strong>{p.projectName}</strong>
-                        <div className="code">{p.projectReference || `PRJ-${p.projectId}`}</div>
+                        <div className="code">
+                          {p.projectReference || `PRJ-${p.projectId}`}
+                        </div>
                       </td>
 
                       <td>{p.clientName}</td>
 
-                      <td>{p.quotationCode || "—"}</td>
+                      {/* <td>{p.quotationCode || "—"}</td> */}
 
                       <td>
                         <span
@@ -182,33 +189,42 @@ export default function ProjectFollowUp() {
                         <FiUsers /> {p.teamMembers || 0}
                       </td>
 
-                      <td className={`center ${p.criticalIssues > 0 ? "critical" : ""}`}>
-                        {p.criticalIssues || 0}
-                      </td>
-
-                      <td
-  className="actions"
-  onClick={(e) => e.stopPropagation()}
->
-  {/* View PO - always visible */}
-  <button
-    className={`icon-btn view-btn ${!hasPOFile ? "disabled-view" : ""}`}
-    onClick={() => hasPOFile && openPdfInNewTab(p.poFile)}
-    title={hasPOFile ? "View PO" : "PO not uploaded"}
-    disabled={!hasPOFile}
-  >
-    <FiEye />
-  </button>
-
-  {/* Edit */}
-  <button
-    className="icon-btn edit-btn"
-    onClick={() => openEditModal(p)}
-  >
-    <FiEdit2 />
-  </button>
+                   <td className="issue-cell">
+  {p.issueDescription ? (
+    <div
+      className="issue-preview"
+      dangerouslySetInnerHTML={{
+        __html: p.issueDescription,
+      }}
+    />
+  ) : (
+    <span className="no-issue">—</span>
+  )}
 </td>
 
+
+                      <td
+                        className="actions"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* View PO - always visible */}
+                        <button
+                          className={`icon-btn view-btn ${!hasPOFile ? "disabled-view" : ""}`}
+                          onClick={() => hasPOFile && openPdfInNewTab(p.poFile)}
+                          title={hasPOFile ? "View PO" : "PO not uploaded"}
+                          disabled={!hasPOFile}
+                        >
+                          <FiEye />
+                        </button>
+
+                        {/* Edit */}
+                        <button
+                          className="icon-btn edit-btn"
+                          onClick={() => openEditModal(p)}
+                        >
+                          <FiEdit2 />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
@@ -219,86 +235,97 @@ export default function ProjectFollowUp() {
       </div>
 
       {/* ================= VIEW MODAL ================= */}
-{/* ================= VIEW MODAL ================= */}
-{viewModalOpen && viewingProject && (
-  <div className="modal-overlay" onClick={() => setViewModalOpen(false)}>
-    <div className="view-modal-card" onClick={(e) => e.stopPropagation()}>
-      {/* Header with gradient accent */}
-      <div className="view-modal-header">
-        <h3>Project Details</h3>
-        <button className="close-btn" onClick={() => setViewModalOpen(false)}>
-          <FiX size={20} />
-        </button>
-      </div>
-
-      {/* Status Section with "Project Status :" label */}
-      <div className="view-status-section">
-        <div className="status-label">Project Status :</div>
-        <div className="view-status-banner">
-          <span className={`status-badge large ${viewingProject.status?.toLowerCase().replace(" ", "-") || "unknown"}`}>
-            {viewingProject.status === "Completed" && <FiCheckCircle />}
-            {viewingProject.status === "At Risk" && <FiAlertTriangle />}
-            {viewingProject.status || "Unknown"}
-          </span>
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="view-details-grid">
-        <div className="detail-item">
-          <label>Project</label>
-          <p>{viewingProject.projectName}</p>
-        </div>
-
-        <div className="detail-item">
-          <label>Client</label>
-          <p>{viewingProject.clientName}</p>
-        </div>
-
-        <div className="detail-item">
-          <label>Progress</label>
-          <div className="progress-container">
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${viewingProject.progress || 0}%` }}
-              ></div>
+      {/* ================= VIEW MODAL ================= */}
+      {viewModalOpen && viewingProject && (
+        <div className="modal-overlay" onClick={() => setViewModalOpen(false)}>
+          <div className="view-modal-card" onClick={(e) => e.stopPropagation()}>
+            {/* Header with gradient accent */}
+            <div className="view-modal-header">
+              <h3>Project Details</h3>
+              <button
+                className="close-btn"
+                onClick={() => setViewModalOpen(false)}
+              >
+                <FiX size={20} />
+              </button>
             </div>
-            <span>{viewingProject.progress || 0}%</span>
+
+            {/* Status Section with "Project Status :" label */}
+            <div className="view-status-section">
+              <div className="status-label">Project Status :</div>
+              <div className="view-status-banner">
+                <span
+                  className={`status-badge large ${viewingProject.status?.toLowerCase().replace(" ", "-") || "unknown"}`}
+                >
+                  {viewingProject.status === "Completed" && <FiCheckCircle />}
+                  {viewingProject.status === "At Risk" && <FiAlertTriangle />}
+                  {viewingProject.status || "Unknown"}
+                </span>
+              </div>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="view-details-grid">
+              <div className="detail-item">
+                <label>Project</label>
+                <p>{viewingProject.projectName}</p>
+              </div>
+
+              <div className="detail-item">
+                <label>Client</label>
+                <p>{viewingProject.clientName}</p>
+              </div>
+
+              <div className="detail-item">
+                <label>Progress</label>
+                <div className="progress-container">
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${viewingProject.progress || 0}%` }}
+                    ></div>
+                  </div>
+                  <span>{viewingProject.progress || 0}%</span>
+                </div>
+              </div>
+
+              <div className="detail-item">
+                <label>Next Milestone</label>
+                <p>{viewingProject.nextMilestone || "—"}</p>
+              </div>
+
+              <div className="detail-item">
+                <label>Due Date</label>
+                <p>{viewingProject.milestoneDueDate || "—"}</p>
+              </div>
+
+              <div className="detail-item full-width">
+  <label>Issue Description</label>
+  <div
+    className="description-content"
+    dangerouslySetInnerHTML={{
+      __html:
+        viewingProject.issueDescription ||
+        "<p>No issue description available</p>",
+    }}
+  />
+</div>
+
+            </div>
+
+            {/* View PO Button - Prominent green CTA */}
+            {viewingProject.poFile && (
+              <button
+                className="view-po-btn"
+                onClick={() => openPdfInNewTab(viewingProject.poFile)}
+              >
+                <FiEye size={18} />
+                View Purchase Order
+              </button>
+            )}
           </div>
         </div>
-
-        <div className="detail-item">
-          <label>Next Milestone</label>
-          <p>{viewingProject.nextMilestone || "—"}</p>
-        </div>
-
-        <div className="detail-item">
-          <label>Due Date</label>
-          <p>{viewingProject.milestoneDueDate || "—"}</p>
-        </div>
-
-        <div className="detail-item">
-          <label>Critical Issues</label>
-          <p className={viewingProject.criticalIssues > 0 ? "critical" : ""}>
-            {viewingProject.criticalIssues || 0}
-          </p>
-        </div>
-      </div>
-
-      {/* View PO Button - Prominent green CTA */}
-      {viewingProject.poFile && (
-        <button
-          className="view-po-btn"
-          onClick={() => openPdfInNewTab(viewingProject.poFile)}
-        >
-          <FiEye size={18} />
-          View Purchase Order
-        </button>
       )}
-    </div>
-  </div>
-)}
       {/* ================= EDIT MODAL (UNCHANGED) ================= */}
       {editModalOpen && editingProject && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
@@ -310,7 +337,10 @@ export default function ProjectFollowUp() {
               <select
                 value={editingProject.status}
                 onChange={(e) =>
-                  setEditingProject({ ...editingProject, status: e.target.value })
+                  setEditingProject({
+                    ...editingProject,
+                    status: e.target.value,
+                  })
                 }
               >
                 <option>Planned</option>
@@ -320,26 +350,25 @@ export default function ProjectFollowUp() {
                 <option>On Hold</option>
               </select>
 
-            <label>Progress (%)</label>
+              <label>Progress (%)</label>
 
-<div className="edit-progress-wrap">
-  <input
-    type="range"
-    min="0"
-    max="100"
-    value={editingProject.progress || 0}
-    onChange={(e) =>
-      setEditingProject({
-        ...editingProject,
-        progress: Number(e.target.value),
-      })
-    }
-  />
-  <span className="edit-progress-value">
-    {editingProject.progress || 0}%
-  </span>
-</div>
-
+              <div className="edit-progress-wrap">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={editingProject.progress || 0}
+                  onChange={(e) =>
+                    setEditingProject({
+                      ...editingProject,
+                      progress: Number(e.target.value),
+                    })
+                  }
+                />
+                <span className="edit-progress-value">
+                  {editingProject.progress || 0}%
+                </span>
+              </div>
 
               <label>Next Milestone</label>
               <input
@@ -364,18 +393,20 @@ export default function ProjectFollowUp() {
                 }
               />
 
-              <label>Critical Issues</label>
-              <input
-                type="number"
-                min="0"
-                value={editingProject.criticalIssues || 0}
-                onChange={(e) =>
-                  setEditingProject({
-                    ...editingProject,
-                    criticalIssues: Number(e.target.value),
-                  })
-                }
-              />
+       <label>Issue Description</label>
+
+<div className="modal-description-box">
+  <RichTextEditor
+    value={editingProject.issueDescription || ""}
+    onChange={(v) =>
+      setEditingProject({
+        ...editingProject,
+        issueDescription: v,
+      })
+    }
+  />
+</div>
+
 
               <div className="modal-actions">
                 <button type="button" onClick={() => setEditModalOpen(false)}>

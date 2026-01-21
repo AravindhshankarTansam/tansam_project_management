@@ -485,3 +485,64 @@
   color: #1e293b;
   text-align: right;
 }
+
+.issue-cell {
+  max-width: 220px;
+  text-align: left;
+}
+
+.issue-text {
+  display: inline-block;
+  color: #b45309;
+  background: #fff7ed;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: help;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-issue {
+  color: #94a3b8;
+}
+
+
+/* Same as Opportunity Description */
+.modal-description-box {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.preview-content {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Issue Preview in table */
+.issue-preview {
+  max-height: 60px;
+  overflow: hidden;
+  font-size: 13px;
+  color: #334155;
+}
+
+.issue-preview p {
+  margin: 0;
+}
+
+/* View Modal description */
+.description-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.description-content p {
+  margin-bottom: 10px;
+}

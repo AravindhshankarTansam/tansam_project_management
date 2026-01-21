@@ -5,11 +5,10 @@ const SERVER_URL = BASE_URL.replace("/api", "");
 
 /* 🔐 AUTH HEADERS */
 const getAuthHeaders = (isJson = false) => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const raw = localStorage.getItem("user");
+  if (!raw) throw new Error("User not logged in");
 
-  if (!user) {
-    throw new Error("User not logged in");
-  }
+  const user = JSON.parse(raw);
 
   const headers = {
     "x-user-id": user.id,
@@ -23,6 +22,7 @@ const getAuthHeaders = (isJson = false) => {
 
   return headers;
 };
+
 
 /* ============================
    GET PROJECT FOLLOWUPS
