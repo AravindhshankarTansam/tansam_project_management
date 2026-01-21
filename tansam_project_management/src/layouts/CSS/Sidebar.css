@@ -1,29 +1,61 @@
-/* Sidebar container */
+/* Sidebar container (keep your existing) */
 .sidebar {
   width: 240px;
   height: 100vh;
   background: #ffffff;
   border-right: 1px solid #e5e7eb;
-  padding: 16px;
+  padding: 16px 0;          /* reduced horizontal padding for cleaner look */
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Header */
+/* Header - centered logo + text */
 .sidebar-header {
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;       /* everything centered horizontally */
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px 32px;   /* more breathing room at bottom */
+  margin-bottom: 16px;       /* space before menu */
+  border-bottom: 1px solid #e5e7eb;  /* subtle divider */
 }
 
+/* Logo image - centered and sized nicely */
+.sidebar-logo {
+  width: 100px;              /* adjust this value to make logo bigger/smaller */
+  height: auto;
+  margin-bottom: 12px;       /* space between logo and "TANSAM" text */
+  display: block;
+  object-fit: contain;       /* keeps proportions */
+  border-radius: 12px;       /* soft corners – optional, remove if not wanted */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* very light shadow for depth */
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo:hover {
+  transform: scale(1.05);    /* subtle hover zoom effect */
+}
+
+/* TANSAM text - bigger, bolder, centered */
 .logo {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 22px;           /* slightly larger for prominence */
+  font-weight: 800;          /* extra bold */
   color: #111827;
+  margin: 0 0 4px 0;         /* tight spacing to subtitle */
+  letter-spacing: 1.2px;     /* elegant spacing */
+  line-height: 1.1;
 }
 
+/* Subtitle below TANSAM */
 .subtitle {
   font-size: 12px;
+  font-weight: 500;
   color: #6b7280;
+  margin: 0;
+  letter-spacing: 0.5px;
 }
-
 /* Navigation */
 .sidebar-nav {
   display: flex;
