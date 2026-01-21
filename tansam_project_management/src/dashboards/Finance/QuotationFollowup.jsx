@@ -9,7 +9,8 @@ import {
   deleteFollowup,
 } from "../../services/quotation/quotationFollowup.api";
 import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-
+import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
+import { getQuotations } from "../../services/quotation/quotation.api";
 export default function QuotationFollowup() {
   const [data, setData] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -17,9 +18,63 @@ export default function QuotationFollowup() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [activePhase, setActivePhase] = useState("followup");
+const [quoteMap, setQuoteMap] = useState({});
+const [opportunities, setOpportunities] = useState([]);
+useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        // Load follow-ups (existing)
+        const followups = await getFollowups();
+        setData(followups);
+
+        // Load quotations (using your existing getQuotations)
+        const quotes = await getQuotations();
+        
+        // Build lookup map: project_name → value
+        const map = {};
+        quotes.forEach(q => {
+          const key = q.project_name?.trim().toLowerCase();
+          if (key && q.value) {
+            map[key] = q.value;
+          }
+        });
+        setQuoteMap(map);
+      } catch (err) {
+        console.error("Data loading error:", err);
+      }
+    };
+
+    loadAllData();
+  }, []);
+useEffect(() => {
+  const loadOpportunities = async () => {
+    try {
+      const res = await fetchOpportunities();
+      console.log("OPPORTUNITIES RAW:", res);
+
+      // 🔥 Normalize response
+      const list = Array.isArray(res)
+        ? res
+        : Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.data)
+        ? res.data.data
+        : [];
+
+      setOpportunities(list);
+    } catch (err) {
+      console.error("Failed to fetch opportunities:", err);
+    }
+  };
+
+  loadOpportunities();
+}, []);
+
+
 
 const [newFollowup, setNewFollowup] = useState({
   project_name: "", 
+    quoteValue: "", 
   revisedCost: "",
   poReceived: "No",
   paymentPhase: "Initial",
@@ -171,6 +226,7 @@ const handleSave = async () => {
   <thead>
     <tr>
       <th>Project Name</th>
+      <th>Original Quote</th>
       <th>Revised Cost</th>
       <th>PO Received</th>
       <th>Payment Phase</th>
@@ -184,6 +240,7 @@ const handleSave = async () => {
     {paginated.map(d => (
       <tr key={d.id}>
         <td>{d.project_name}</td>
+        <td>₹ {d.quoteValue || "-"}</td>
         <td>₹ {d.revisedCost}</td>
         <td>{d.poReceived}</td>
         <td>{d.paymentPhase}</td>
@@ -244,15 +301,49 @@ const handleSave = async () => {
           {/* Project Name */}
 <div className="form-group">
   <label>Project Name *</label>
+<select
+  value={newFollowup.project_name}
+  onChange={(e) => {
+    const selected = e.target.value;
+    const key = selected.trim().toLowerCase();
+
+    setNewFollowup({
+      ...newFollowup,
+      project_name: selected,
+      quoteValue: quoteMap[key] || "",
+    });
+  }}
+>
+  <option value="">Select project</option>
+
+  {opportunities.map((opp) => {
+    const name =
+      opp.project_name ||
+      opp.projectName ||
+      opp.opportunity_name ||
+      opp.name;
+
+    return (
+      <option key={opp.id} value={name}>
+        {name}
+      </option>
+    );
+  })}
+</select>
+
+
+</div>
+
+<div className="form-group">
+  <label>Original Quote Value</label>
   <input
-    type="text"
-    placeholder="Enter project name"
-    value={newFollowup.project_name}
-    onChange={e =>
-      setNewFollowup({ ...newFollowup, project_name: e.target.value })
-    }
+    type="number"
+    value={newFollowup.quoteValue}
+    readOnly
+    placeholder="Auto fetched from quotation"
   />
 </div>
+
 
           <div className="form-group">
             <label>Revised Cost *</label>

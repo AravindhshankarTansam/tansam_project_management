@@ -58,54 +58,73 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
 
   try {
     const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
-    console.log("API returned:", generated);
+    console.log("API returned generated data:", generated);
+
+    // ────────────────────────────────────────────────
+    // Define the base structure that GenerateQuotation expects
+    const baseQuotation = {
+      id: originalQuotation.id,
+      quotationNo: originalQuotation.quotationNo || "",
+      project_name: originalQuotation.project_name || "",
+      clientName: originalQuotation.clientName || "",
+      kindAttn: "",
+      subject: "",
+      financeManagerName: "",
+      items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+      terms: [],
+      termsContent: "",
+      signature: null,
+      seal: null,
+      existingSignature: null,
+      existingSeal: null,
+    };
+    // ────────────────────────────────────────────────
+
+    let quotationToUse;
 
     if (!generated || !generated.id) {
-      console.warn("No generated record found for ID:", originalQuotation.id);
-      // Optional: remove alert if annoying
-      // alert("No previously generated version found. Starting fresh edit.");
-
-      setNewQuotation({
-        ...originalQuotation,
-        refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(3, '0')}`,
+      console.warn("No previously generated quotation found for this ID");
+      // Start with basic info from original quotation
+      quotationToUse = {
+        ...baseQuotation,
+        refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, '0')}`,
         date: new Date().toISOString().split("T")[0],
-        items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
-        terms: [],
-        kindAttn: "",
-        subject: "",
-        financeManagerName: "",
-        termsContent: "",
-        signature: null,
-        seal: null,
-        existingSignature: null,
-        existingSeal: null,
-      });
+      };
     } else {
-      console.log("Loading existing generated data:", generated);
-      setNewQuotation({
-        ...originalQuotation,
-        id: originalQuotation.id,
-        refNo: generated.refNo || `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(3, '0')}`,
+      console.log("Loading existing generated quotation data");
+      quotationToUse = {
+        ...baseQuotation,           // start with safe defaults
+        ...generated,               // override with saved values
+        id: originalQuotation.id,   // keep reference to original quotation
+        quotationNo: originalQuotation.quotationNo,
+        project_name: originalQuotation.project_name || generated.project_name || "",
+        refNo: generated.refNo || `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, '0')}`,
         date: generated.date || new Date().toISOString().split("T")[0],
-        clientName: generated.clientName || originalQuotation.clientName || "",
-        kindAttn: generated.kindAttn || "",
-        subject: generated.subject || "",
-        financeManagerName: generated.financeManagerName || "",
-        items: generated.items ? JSON.parse(generated.items) : [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
-        terms: generated.terms ? JSON.parse(generated.terms) : [],
+        items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
+        terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
         termsContent: generated.termsContent || "",
+        // File paths from backend (assuming stored as relative path)
         existingSignature: generated.signature ? `http://localhost:9899/${generated.signature}` : null,
         existingSeal: generated.seal ? `http://localhost:9899/${generated.seal}` : null,
+        // Reset new file uploads
         signature: null,
         seal: null,
-      });
+      };
     }
 
+    setNewQuotation(quotationToUse);
     setShowGenerateQuotation(true);
+
   } catch (err) {
-    console.error("Failed to fetch generated quotation:", err);
-    alert("Error loading previous version. Opening blank form.");
-    setNewQuotation({ ...originalQuotation });
+    console.error("Error loading generated quotation:", err);
+    alert("Could not load previous generated version. Opening with basic data.");
+
+    // Fallback – at least show something
+    setNewQuotation({
+      ...baseQuotation,
+      refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, '0')}`,
+      date: new Date().toISOString().split("T")[0],
+    });
     setShowGenerateQuotation(true);
   }
 };
@@ -299,8 +318,8 @@ if (showDoc) {
 }
 if (showGenerateQuotation) {
   return (
-    <GenerateQuotation
-      quotation={newQuotation}
+  <GenerateQuotation
+  quotation={newQuotation}
   onSaved={async () => {
     try {
       const fresh = await getQuotations();
@@ -310,7 +329,7 @@ if (showGenerateQuotation) {
     }
     setShowGenerateQuotation(false);
   }}
-    />
+/>
   );
 }
 

@@ -47,26 +47,19 @@ export const addGeneratedQuotation = async (req, res) => {
       : null;
 
     // IMPORTANT: Include quotation_id in the columns and values
-    const [generatedResult] = await db.execute(
-      `INSERT INTO generated_quotations 
-       (quotationId, refNo, date, clientName, kindAttn, subject, 
-        items, terms, termsContent, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        quotationId,                          // ← added this
-        refNo,
-        date,
-        clientName,
-        kindAttn,
-        subject,
-        items ? JSON.stringify(JSON.parse(items)) : '[]',
-        terms ? JSON.stringify(JSON.parse(terms)) : '[]',
-        termsContent || null,
-        signaturePath,
-        sealPath,
-        financeManagerName
-      ]
-    );
+   const [generatedResult] = await db.execute(
+  `INSERT INTO generated_quotations 
+   (quotationId, refNo, date, clientName, kindAttn, subject, 
+    items, terms, termsContent, signature, seal, financeManagerName)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [quotationId, refNo, date, clientName, kindAttn, subject, 
+   items ? JSON.stringify(JSON.parse(items)) : '[]',
+   terms ? JSON.stringify(JSON.parse(terms)) : '[]',
+   termsContent || null,
+   signaturePath,
+   sealPath,
+   financeManagerName]
+);
 
     // Mark original quotation as generated
     await db.execute(
@@ -100,10 +93,10 @@ export const getGeneratedQuotationById = async (req, res) => {
     console.log(`[GET-GEN] Searching for quotation ID: ${id}`);
 
     // Use the correct column name — change quotationId to quotation_id if that's your actual column
-    const [rows] = await db.execute(
-      "SELECT * FROM generated_quotations WHERE quotationId = ? LIMIT 1",
-      [id]
-    );
+ const [rows] = await db.execute(
+  "SELECT * FROM generated_quotations WHERE quotationId = ? LIMIT 1",
+  [id]
+);
 
     console.log(`[GET-GEN] Found ${rows.length} row(s)`);
 
