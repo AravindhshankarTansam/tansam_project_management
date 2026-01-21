@@ -189,19 +189,18 @@ const handleUpdate = async (e) => {
                         <FiUsers /> {p.teamMembers || 0}
                       </td>
 
-                   <td className="issue-cell">
-  {p.issueDescription ? (
-    <div
-      className="issue-preview"
-      dangerouslySetInnerHTML={{
-        __html: p.issueDescription,
-      }}
-    />
-  ) : (
-    <span className="no-issue">—</span>
-  )}
-</td>
-
+                      <td className="issue-cell">
+                        {p.issueDescription ? (
+                          <div
+                            className="issue-preview"
+                            dangerouslySetInnerHTML={{
+                              __html: p.issueDescription,
+                            }}
+                          />
+                        ) : (
+                          <span className="no-issue">—</span>
+                        )}
+                      </td>
 
                       <td
                         className="actions"
@@ -300,17 +299,16 @@ const handleUpdate = async (e) => {
               </div>
 
               <div className="detail-item full-width">
-  <label>Issue Description</label>
-  <div
-    className="description-content"
-    dangerouslySetInnerHTML={{
-      __html:
-        viewingProject.issueDescription ||
-        "<p>No issue description available</p>",
-    }}
-  />
-</div>
-
+                <label>Issue Description</label>
+                <div
+                  className="description-content"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      viewingProject.issueDescription ||
+                      "<p>No issue description available</p>",
+                  }}
+                />
+              </div>
             </div>
 
             {/* View PO Button - Prominent green CTA */}
@@ -370,16 +368,24 @@ const handleUpdate = async (e) => {
                 </span>
               </div>
 
-              <label>Next Milestone</label>
-              <input
-                value={editingProject.nextMilestone || ""}
-                onChange={(e) =>
-                  setEditingProject({
-                    ...editingProject,
-                    nextMilestone: e.target.value,
-                  })
-                }
-              />
+             <label>Next Milestone</label>
+<select
+  value={editingProject.nextMilestone || ""}
+  onChange={(e) =>
+    setEditingProject({
+      ...editingProject,
+      nextMilestone: e.target.value,
+    })
+  }
+>
+  <option value="">Select milestone</option>
+  <option value="Design">Design</option>
+  <option value="Development">Development</option>
+  <option value="Testing">Testing</option>
+  <option value="Release">Release</option>
+  <option value="Bug Fix">Bug Fix</option>
+</select>
+
 
               <label>Milestone Due Date</label>
               <input
@@ -393,20 +399,19 @@ const handleUpdate = async (e) => {
                 }
               />
 
-       <label>Issue Description</label>
+              <label>Issue Description</label>
 
-<div className="modal-description-box">
-  <RichTextEditor
-    value={editingProject.issueDescription || ""}
-    onChange={(v) =>
-      setEditingProject({
-        ...editingProject,
-        issueDescription: v,
-      })
-    }
-  />
-</div>
-
+              <div className="modal-description-box">
+                <RichTextEditor
+                  value={editingProject.issueDescription || ""}
+                  onChange={(v) =>
+                    setEditingProject({
+                      ...editingProject,
+                      issueDescription: v,
+                    })
+                  }
+                />
+              </div>
 
               <div className="modal-actions">
                 <button type="button" onClick={() => setEditModalOpen(false)}>
