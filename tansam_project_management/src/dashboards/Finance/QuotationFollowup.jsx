@@ -227,6 +227,7 @@ const handleSave = async () => {
     <tr>
       <th>Project Name</th>
       <th>Original Quote</th>
+      
       <th>Revised Cost</th>
       <th>PO Received</th>
       <th>Payment Phase</th>
