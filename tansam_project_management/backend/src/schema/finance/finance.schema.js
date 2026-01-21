@@ -20,7 +20,7 @@ export const createQuotationFollowupsSchema = async (db) => {
 
   // 💬 QUOTATIONS TABLE
   await db.execute(`
-   CREATE TABLE quotations (
+   CREATE TABLE IF NOT EXISTS quotations (
   id INT(11) NOT NULL AUTO_INCREMENT,
   project_name VARCHAR(50) DEFAULT NULL,
   quotationNo VARCHAR(50) NOT NULL,
