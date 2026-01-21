@@ -18,7 +18,6 @@ import {
 } from "../../services/projectfollowup.api";
 import RichTextEditor from "../../components/RichTextEditor";
 
-
 /* ---------- HELPERS ---------- */
 const calculateDaysLeft = (dueDate) => {
   if (!dueDate) return null;
@@ -36,7 +35,21 @@ export default function ProjectFollowUp() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewingProject, setViewingProject] = useState(null);
 
+  // State for issue description popup
+  const [issuePopupOpen, setIssuePopupOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const truncateRichText = (html, maxChars = 90) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const text = div.innerText || div.textContent || "";
+    if (text.length <= maxChars) return html;
+    return text.substring(0, maxChars).trim() + "...";
+  };
 
+  const hasUrgentKeyword = (html) => {
+    const text = (html || "").toLowerCase();
+    return /urgent|critical|blocker|high priority|stop/i.test(text);
+  };
 
   /* ================= LOAD DATA ================= */
   useEffect(() => {
@@ -52,7 +65,6 @@ export default function ProjectFollowUp() {
     })();
   }, []);
 
-  
   /* ================= VIEW ================= */
   const openViewModal = (project) => {
     setViewingProject(project);
@@ -73,29 +85,34 @@ export default function ProjectFollowUp() {
     window.open(pdfUrl, "_blank", "noopener,noreferrer");
   };
 
+  // Open issue popup
+  const openIssuePopup = (project) => {
+    setSelectedIssue(project);
+    setIssuePopupOpen(true);
+  };
+
   /* ================= UPDATE ================= */
-const handleUpdate = async (e) => {
-  e.preventDefault();
+  const handleUpdate = async (e) => {
+    e.preventDefault();
 
-  try {
-    await updateProjectFollowup(editingProject.projectId, {
-      status: editingProject.status,
-      progress: editingProject.progress,
-      nextMilestone: editingProject.nextMilestone,
-      milestoneDueDate: editingProject.milestoneDueDate,
-      issueDescription: editingProject.issueDescription,
-    });
+    try {
+      await updateProjectFollowup(editingProject.projectId, {
+        status: editingProject.status,
+        progress: editingProject.progress,
+        nextMilestone: editingProject.nextMilestone,
+        milestoneDueDate: editingProject.milestoneDueDate,
+        issueDescription: editingProject.issueDescription,
+      });
 
-    const refreshed = await fetchProjectFollowups();
-    setProjects(refreshed);
+      const refreshed = await fetchProjectFollowups();
+      setProjects(refreshed);
 
-    toast.success("Project follow-up updated");
-    setEditModalOpen(false);
-  } catch (err) {
-    toast.error(err.message || "Update failed");
-  }
-};
-
+      toast.success("Project follow-up updated");
+      setEditModalOpen(false);
+    } catch (err) {
+      toast.error(err.message || "Update failed");
+    }
+  };
 
   return (
     <div className="followup-page">
@@ -117,7 +134,6 @@ const handleUpdate = async (e) => {
               <tr>
                 <th>Project</th>
                 <th>Client</th>
-                {/* <th>Quotation</th> */}
                 <th>Status</th>
                 <th>Progress</th>
                 <th>Next Milestone</th>
@@ -130,7 +146,7 @@ const handleUpdate = async (e) => {
             <tbody>
               {projects.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="assign-empty">
+                  <td colSpan="8" className="assign-empty">
                     No projects found
                   </td>
                 </tr>
@@ -162,8 +178,6 @@ const handleUpdate = async (e) => {
 
                       <td>{p.clientName}</td>
 
-                      {/* <td>{p.quotationCode || "—"}</td> */}
-
                       <td>
                         <span
                           className={`status-badge ${p.status
@@ -190,15 +204,31 @@ const handleUpdate = async (e) => {
                       </td>
 
                       <td className="issue-cell">
-                        {p.issueDescription ? (
-                          <div
-                            className="issue-preview"
-                            dangerouslySetInnerHTML={{
-                              __html: p.issueDescription,
-                            }}
-                          />
+                        {p.issueDescription && p.issueDescription.trim() !== "" ? (
+                          <div className="issue-preview-wrapper">
+                            <div
+                              className="issue-preview ellipsis"
+                              dangerouslySetInnerHTML={{
+                                __html: truncateRichText(p.issueDescription, 90),
+                              }}
+                            />
+                            <button
+                              className="issue-view-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openIssuePopup(p);
+                              }}
+                              title="View full issue description"
+                            >
+                              <FiEye size={16} />
+                            </button>
+
+                            {hasUrgentKeyword(p.issueDescription) && (
+                              <span className="issue-urgency-badge">Urgent</span>
+                            )}
+                          </div>
                         ) : (
-                          <span className="no-issue">—</span>
+                          <span className="no-issue">— No issues reported</span>
                         )}
                       </td>
 
@@ -206,7 +236,6 @@ const handleUpdate = async (e) => {
                         className="actions"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* View PO - always visible */}
                         <button
                           className={`icon-btn view-btn ${!hasPOFile ? "disabled-view" : ""}`}
                           onClick={() => hasPOFile && openPdfInNewTab(p.poFile)}
@@ -216,7 +245,6 @@ const handleUpdate = async (e) => {
                           <FiEye />
                         </button>
 
-                        {/* Edit */}
                         <button
                           className="icon-btn edit-btn"
                           onClick={() => openEditModal(p)}
@@ -234,11 +262,9 @@ const handleUpdate = async (e) => {
       </div>
 
       {/* ================= VIEW MODAL ================= */}
-      {/* ================= VIEW MODAL ================= */}
       {viewModalOpen && viewingProject && (
         <div className="modal-overlay" onClick={() => setViewModalOpen(false)}>
           <div className="view-modal-card" onClick={(e) => e.stopPropagation()}>
-            {/* Header with gradient accent */}
             <div className="view-modal-header">
               <h3>Project Details</h3>
               <button
@@ -249,7 +275,6 @@ const handleUpdate = async (e) => {
               </button>
             </div>
 
-            {/* Status Section with "Project Status :" label */}
             <div className="view-status-section">
               <div className="status-label">Project Status :</div>
               <div className="view-status-banner">
@@ -263,7 +288,6 @@ const handleUpdate = async (e) => {
               </div>
             </div>
 
-            {/* Main Content Grid */}
             <div className="view-details-grid">
               <div className="detail-item">
                 <label>Project</label>
@@ -311,7 +335,6 @@ const handleUpdate = async (e) => {
               </div>
             </div>
 
-            {/* View PO Button - Prominent green CTA */}
             {viewingProject.poFile && (
               <button
                 className="view-po-btn"
@@ -324,7 +347,8 @@ const handleUpdate = async (e) => {
           </div>
         </div>
       )}
-      {/* ================= EDIT MODAL (UNCHANGED) ================= */}
+
+      {/* ================= EDIT MODAL ================= */}
       {editModalOpen && editingProject && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -349,7 +373,6 @@ const handleUpdate = async (e) => {
               </select>
 
               <label>Progress (%)</label>
-
               <div className="edit-progress-wrap">
                 <input
                   type="range"
@@ -368,24 +391,23 @@ const handleUpdate = async (e) => {
                 </span>
               </div>
 
-             <label>Next Milestone</label>
-<select
-  value={editingProject.nextMilestone || ""}
-  onChange={(e) =>
-    setEditingProject({
-      ...editingProject,
-      nextMilestone: e.target.value,
-    })
-  }
->
-  <option value="">Select milestone</option>
-  <option value="Design">Design</option>
-  <option value="Development">Development</option>
-  <option value="Testing">Testing</option>
-  <option value="Release">Release</option>
-  <option value="Bug Fix">Bug Fix</option>
-</select>
-
+              <label>Next Milestone</label>
+              <select
+                value={editingProject.nextMilestone || ""}
+                onChange={(e) =>
+                  setEditingProject({
+                    ...editingProject,
+                    nextMilestone: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select milestone</option>
+                <option value="Design">Design</option>
+                <option value="Development">Development</option>
+                <option value="Testing">Testing</option>
+                <option value="Release">Release</option>
+                <option value="Bug Fix">Bug Fix</option>
+              </select>
 
               <label>Milestone Due Date</label>
               <input
@@ -400,7 +422,6 @@ const handleUpdate = async (e) => {
               />
 
               <label>Issue Description</label>
-
               <div className="modal-description-box">
                 <RichTextEditor
                   value={editingProject.issueDescription || ""}
@@ -420,6 +441,40 @@ const handleUpdate = async (e) => {
                 <button type="submit">Save Changes</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= ISSUE DESCRIPTION POPUP MODAL ================= */}
+      {issuePopupOpen && selectedIssue && (
+        <div
+          className="issue-popup-overlay"
+          onClick={() => setIssuePopupOpen(false)}
+        >
+          <div
+            className="issue-popup-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="popup-header">
+              <h4>Issue Description – {selectedIssue.projectName}</h4>
+              <button
+                className="close-popup"
+                onClick={() => setIssuePopupOpen(false)}
+              >
+                <FiX size={22} />
+              </button>
+            </div>
+
+            <div className="popup-body">
+              <div
+                className="full-issue-content"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    selectedIssue.issueDescription ||
+                    "<p>No detailed description available</p>",
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
