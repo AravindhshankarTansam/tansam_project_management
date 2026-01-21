@@ -120,20 +120,25 @@ export const assignedProjectTeamTemplate = ({
   projectType,
   clientName,
   assignedBy,
+  assignedByEmail,
   startDate,
   endDate,
   projectId,
 }) => `
   <div style="font-family: Arial, sans-serif; line-height:1.6; color:#111; max-width:600px; margin:0 auto;">
+
+    <!-- LOGO -->
+   
+
     <h2 style="color:#0f4c81; border-bottom:2px solid #0ea5e9; padding-bottom:8px;">
-      New Project Assigned to You
+      New Project Assigned
     </h2>
-    
+
     <p>Hello <b>${memberName}</b>,</p>
-    
+
     <p>
-      You have been assigned to a new project in <b>TANSAM Project Management System</b> by 
-      <b>${assignedBy || "Team Lead"}</b>.
+      You have been assigned to a new project in 
+      <b>TANSAM Project Management System</b>.
     </p>
 
     <table cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%; margin:20px 0;">
@@ -163,17 +168,19 @@ export const assignedProjectTeamTemplate = ({
       </tr>
     </table>
 
-    <p style="margin-top:24px;">
-      Please log in to the system to view full details and start contributing.
+    <p>
+      Please log in to the PMS dashboard to view full details and start working on this project.
     </p>
 
     <p style="margin-top:30px; color:#475569;">
       Regards,<br/>
       <b>${assignedBy || "Team Lead"}</b><br/>
-      TANSAM Project Management
+      ${assignedByEmail || ""}<br/>
+      <b>TANSAM Project Management</b>
     </p>
   </div>
 `;
+
 
 /**
  * Template to share Client Contact Details with assigned team member
