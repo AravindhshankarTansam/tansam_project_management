@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/api";
+import tansamLogo from "../../src/assets/tansam/tansamoldlogo (1).png";
 import "./CSS/Login.css";
 
 function Login({ setUser }) {
@@ -17,26 +18,14 @@ function Login({ setUser }) {
     setLoading(true);
 
     try {
-      console.log("📤 Sending login data:", { email, password });
-
+       console.log("📤 Sending login data:", { email, password });
       const data = await loginUser(email, password);
-
-      // 🔍 LOG RESPONSE DATA
       console.log("📥 Login API response:", data);
-
-      // Save user in state
       setUser(data);
-      
-
-      // Persist login
       localStorage.setItem("user", JSON.stringify(data));
-
-      // Redirect based on role
-      console.log("➡️ Redirecting to:", data.route);
       navigate(data.route);
-
     } catch (err) {
-      console.error("❌ Login error:", err);
+          console.error("❌ Login error:", err);
       setError(err.message || "Backend not reachable");
     } finally {
       setLoading(false);
@@ -44,42 +33,53 @@ function Login({ setUser }) {
   };
 
   return (
-    <div className="login-container">
-      <h2 className="login-title">Login</h2>
+    <div className="login-stage">
+      {/* animated aura */}
+      <div className="aura aura-1"></div>
+      <div className="aura aura-2"></div>
 
-      
+      {/* floating particles */}
+      <span className="particle p1"></span>
+      <span className="particle p2"></span>
+      <span className="particle p3"></span>
 
-      <form className="login-form" onSubmit={handleSubmit}>
-        <div className="login-field">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+      <div className="login-card">
+     <div className="logo-wrapper">
+  <img src={tansamLogo} alt="TANSAM Logo" className="login-logo" />
+</div>
 
-        <div className="login-field">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
 
-        <button
-          className="login-button"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+        <h2 className="login-title">Project Management System</h2>
+        {/* <p className="login-subtitle">Plan • Track • Deliver</p> */}
 
-      {error && <p className="login-error">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="login-field">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="login-field">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Authenticating..." : "Login"}
+          </button>
+        </form>
+
+        {error && <p className="login-error">{error}</p>}
+      </div>
     </div>
   );
 }
