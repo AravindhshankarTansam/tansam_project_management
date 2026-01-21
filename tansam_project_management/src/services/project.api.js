@@ -1,9 +1,23 @@
-
 const BASE_URL = "http://localhost:9899/api";
 
-/**
- * Create Project API
- */
+/* 🔐 AUTH HEADERS (same as coordinator/admin) */
+const getAuthHeaders = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+
+  return {
+    "x-user-id": user.id,
+    "x-user-role": user.role,
+    "x-user-name": user.username,
+  };
+};
+
+/* ============================
+   CREATE PROJECT
+============================ */
 export const createProject = async (project) => {
   const formData = new FormData();
 
@@ -15,24 +29,31 @@ export const createProject = async (project) => {
 
   const res = await fetch(`${BASE_URL}/projects`, {
     method: "POST",
-    body: formData,
+    headers: getAuthHeaders(), // ✅ REQUIRED
+    body: formData,           // ❌ don't set Content-Type manually
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message);
-  }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
 
-  return res.json();
+  return data;
 };
 
-
+/* ============================
+   GET PROJECTS
+============================ */
 export const fetchProjects = async () => {
-  const res = await fetch(`${BASE_URL}/projects`);
+  const res = await fetch(`${BASE_URL}/projects`, {
+    headers: getAuthHeaders(), // ✅ REQUIRED
+  });
+
   if (!res.ok) throw new Error("Failed to fetch projects");
   return res.json();
 };
-/* ✅ UPDATE */
+
+/* ============================
+   UPDATE PROJECT
+============================ */
 export const updateProject = async (id, project) => {
   const formData = new FormData();
 
@@ -44,23 +65,25 @@ export const updateProject = async (id, project) => {
 
   const res = await fetch(`${BASE_URL}/projects/${id}`, {
     method: "PUT",
-    body: formData, // ❌ no headers
+    headers: getAuthHeaders(), // ✅ REQUIRED
+    body: formData,
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message);
-  }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
 
-  return res.json();
+  return data;
 };
 
-
-/* ✅ DELETE */
+/* ============================
+   DELETE PROJECT
+============================ */
 export const deleteProject = async (id) => {
   const res = await fetch(`${BASE_URL}/projects/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(), // ✅ REQUIRED
   });
+
   if (!res.ok) throw new Error("Delete failed");
   return res.json();
 };

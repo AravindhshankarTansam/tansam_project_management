@@ -5,10 +5,40 @@ import {
   updateProjectFollowup,
 } from "../controllers/projectFollowup.controller.js";
 
+import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { teamLeadMiddleware } from "../middlewares/teamlead.middleware.js";
+import { roleMiddleware } from "../middlewares/admin.middleware.js";
+
 const router = express.Router();
 
-router.get("/project-followups", getProjectFollowups);
-router.post("/project-followups", createProjectFollowup);
-router.put("/project-followups/:projectId", updateProjectFollowup);
+/**
+ * VIEW FOLLOWUPS — TEAM LEAD + ADMIN
+ */
+router.get(
+  "/project-followups",
+  authMiddleware,
+  roleMiddleware(["TEAM LEAD", "ADMIN"]),
+  getProjectFollowups
+);
+
+/**
+ * CREATE FOLLOWUP — TEAM LEAD ONLY
+ */
+router.post(
+  "/project-followups",
+  authMiddleware,
+  teamLeadMiddleware,
+  createProjectFollowup
+);
+
+/**
+ * UPDATE FOLLOWUP — TEAM LEAD ONLY
+ */
+router.put(
+  "/project-followups/:projectId",
+  authMiddleware,
+  teamLeadMiddleware,
+  updateProjectFollowup
+);
 
 export default router;
