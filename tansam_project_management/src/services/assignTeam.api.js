@@ -1,44 +1,61 @@
 const BASE_URL = "http://localhost:9899/api";
 
+/* 🔐 AUTH HEADERS */
+const getAuthHeaders = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) throw new Error("User not logged in");
+
+  return {
+    "Content-Type": "application/json",
+    "x-user-id": user.id,
+    "x-user-role": user.role,
+    "x-user-name": user.username,
+  };
+};
+
+/* GET */
 export const fetchAssignments = async () => {
-  const res = await fetch(`${BASE_URL}/assignments`);
+  const res = await fetch(`${BASE_URL}/assignments`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw new Error("Failed to fetch assignments");
   return res.json();
 };
 
+/* CREATE */
 export const createAssignment = async (data) => {
   const res = await fetch(`${BASE_URL}/assignments`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || "Assignment failed");
-  }
-
-  return res.json();
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message);
+  return result;
 };
+
+/* UPDATE */
 export const updateAssignment = async (id, data) => {
   const res = await fetch(`${BASE_URL}/assignments/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || "Update failed");
-  }
-
-  return res.json();
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message);
+  return result;
 };
 
+/* DELETE */
 export const deleteAssignment = async (id) => {
   const res = await fetch(`${BASE_URL}/assignments/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(), // 🔥 REQUIRED
   });
-  if (!res.ok) throw new Error("Delete failed");
-  return res.json();
+
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message);
+  return result;
 };

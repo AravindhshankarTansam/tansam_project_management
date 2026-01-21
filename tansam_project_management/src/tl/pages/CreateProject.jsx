@@ -209,6 +209,21 @@ useEffect(() => {
       toast.error(err.message || "Action failed");
     }
   };
+  const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this project?")) return;
+
+  try {
+    await deleteProject(id);
+
+    // ✅ Update UI instantly (no refresh)
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+
+    toast.success("Project deleted successfully");
+  } catch (err) {
+    toast.error(err.message || "Delete failed");
+  }
+};
+
 
   /* ================= FILTERS & PAGINATION ================= */
 
@@ -365,11 +380,12 @@ useEffect(() => {
                     <FiEdit />
                   </button>
                   <button
-                    className="icon-btn delete-btn"
-                    onClick={() => deleteProject(p.id)}
-                  >
-                    <FiTrash2 />
-                  </button>
+  className="icon-btn delete-btn"
+  onClick={() => handleDelete(p.id)}
+>
+  <FiTrash2 />
+</button>
+
                 </td>
               )}
             </tr>
