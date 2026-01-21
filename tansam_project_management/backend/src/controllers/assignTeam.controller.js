@@ -66,21 +66,24 @@ const [[member]] = await db.execute(
     /* 4️⃣ SEND MAIL */
     if (member?.email && project) {
       const leadName = req.user?.name || "Team Lead";
+      const leadEmail = req.user?.email || "";
 
-      await sendMail({
-        to: member.email,
-        subject: `You are assigned to project: ${project.project_name}`,
-        html: assignedProjectTeamTemplate({
-          memberName: member.name,
-          projectName: project.project_name,
-          projectType: project.project_type,
-          clientName: project.client_name,
-          assignedBy: leadName,
-          startDate,
-          endDate,
-          projectId,
-        }),
-      });
+ await sendMail({
+  to: member.email,
+  subject: `You are assigned to project: ${project.project_name}`,
+  html: assignedProjectTeamTemplate({
+    memberName: member.name,
+    projectName: project.project_name,
+    projectType: project.project_type,
+    clientName: project.client_name,
+    assignedBy: leadName,
+    assignedByEmail: leadEmail,
+    startDate,
+    endDate,
+    projectId,
+  }),
+});
+
 
       // await sendMail({
       //   to: member.email,

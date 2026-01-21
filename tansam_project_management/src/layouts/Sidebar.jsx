@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { SIDEBAR_MENU } from "./SidebarConfig/SidebarConfig";
 import tansamLogo from "../../src/assets/tansam/tansamoldlogo (1).png";
+import { FiChevronDown, FiChevronRight } from "react-icons/fi";
+
 import "./CSS/Sidebar.css";
 
 export default function Sidebar({ role }) {
@@ -62,7 +64,10 @@ export default function Sidebar({ role }) {
                   onClick={() => toggleDropdown(item.label)}
                 >
                   <span>{item.label}</span>
-                  <span className="arrow">{isOpen ? "▾" : "▸"}</span>
+       <span className="arrow-icon">
+  {isOpen ? <FiChevronDown /> : <FiChevronRight />}
+</span>
+
                 </button>
 
                 {isOpen && (
