@@ -401,7 +401,7 @@ useEffect(() => {
             <th>Project</th>
             <th>Client</th>
             <th>Type</th>
-            <th>Client Details</th>
+            {/* <th>Client Details</th> */}
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
@@ -412,9 +412,20 @@ useEffect(() => {
           {paginatedProjects.map((p) => (
             <tr key={p.id}>
               <td>{p.projectName}</td>
-              <td>{p.clientName}</td>
+              <td className="client-name-cell">
+                <span>{p.clientName}</span>
+
+                <button
+                  className="inline-view-btn"
+                  title="View Client Details"
+                  onClick={() => setSelectedClientDetails(p)}
+                >
+                  <FiEye />
+                </button>
+              </td>
+
               <td>{p.projectType}</td>
-              <td className="client-details-col">
+              {/* <td className="client-details-col">
                 <button
                   className="view-btn"
                   title="View Client Details"
@@ -422,7 +433,7 @@ useEffect(() => {
                 >
                   <FiEye />
                 </button>
-              </td>
+              </td> */}
 
               <td>{formatDate(p.startDate)}</td>
               <td>{formatDate(p.endDate)}</td>
@@ -451,12 +462,11 @@ useEffect(() => {
                     <FiEdit />
                   </button>
                   <button
-  className="icon-btn delete-btn"
-  onClick={() => handleDelete(p.id)}
->
-  <FiTrash2 />
-</button>
-
+                    className="icon-btn delete-btn"
+                    onClick={() => handleDelete(p.id)}
+                  >
+                    <FiTrash2 />
+                  </button>
                 </td>
               )}
             </tr>
@@ -565,43 +575,39 @@ useEffect(() => {
                 ))}
               </select>
               {/* SELECT CLIENT FIRST */}
-{(isCustomer || isCustomerPOC) && (
-  <select
-    value={selectedOppClient}
-    onChange={(e) => {
-      setSelectedOppClient(e.target.value);
-      setForm((prev) => ({ ...prev, opportunityId: "" }));
-    }}
-    required
-  >
-    <option value="">Select Client</option>
-    {opportunityClients.map((c) => (
-      <option key={c} value={c}>
-        {c}
-      </option>
-    ))}
-  </select>
-)}
+              {(isCustomer || isCustomerPOC) && (
+                <select
+                  value={selectedOppClient}
+                  onChange={(e) => {
+                    setSelectedOppClient(e.target.value);
+                    setForm((prev) => ({ ...prev, opportunityId: "" }));
+                  }}
+                  required
+                >
+                  <option value="">Select Client</option>
+                  {opportunityClients.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              )}
 
-
-   {(isCustomer || isCustomerPOC) && selectedOppClient && (
-
-<select
-  name="opportunityId"
-  value={form.opportunityId}
-  onChange={handleChange}
-  required
->
-  <option value="">Select Opportunity</option>
-  {filteredOpportunitiesForProject.map((o) => (
-    <option key={o.opportunity_id} value={o.opportunity_id}>
-      {o.opportunity_name} ({o.client_name})
-    </option>
-  ))}
-</select>
-
-)}
-
+              {(isCustomer || isCustomerPOC) && selectedOppClient && (
+                <select
+                  name="opportunityId"
+                  value={form.opportunityId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Opportunity</option>
+                  {filteredOpportunitiesForProject.map((o) => (
+                    <option key={o.opportunity_id} value={o.opportunity_id}>
+                      {o.opportunity_name} ({o.client_name})
+                    </option>
+                  ))}
+                </select>
+              )}
 
               <input
                 name="projectName"
