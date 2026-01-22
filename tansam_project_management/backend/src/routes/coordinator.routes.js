@@ -4,6 +4,7 @@ import {
   getOpportunities,
   updateOpportunity,
   deleteOpportunity,
+  checkSimilarClient,
   createOpportunityTracker,
   getOpportunityTrackers,
   updateOpportunityTracker,
@@ -54,6 +55,14 @@ router.delete(
   deleteOpportunity
 );
 
+// routes/coordinator.routes.js
+router.get(
+  "/clients/check",
+  authMiddleware,
+  roleMiddleware(["COORDINATOR", "TEAM LEAD", "FINANCE"]),
+  checkSimilarClient
+);
+
 // ===================================
 // COORDINATOR – OPPORTUNITY TRACKER ROUTES
 // ===================================
@@ -61,7 +70,7 @@ router.delete(
 router.get(
   "/opportunity-tracker",
   authMiddleware,
-  coordinatorMiddleware,
+  roleMiddleware(["COORDINATOR", "TEAM LEAD", "FINANCE"]),
   getOpportunityTrackers
 );
 

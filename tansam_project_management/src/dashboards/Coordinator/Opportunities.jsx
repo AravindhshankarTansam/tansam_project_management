@@ -36,6 +36,15 @@ export default function Opportunities() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [originalAssignedTo, setOriginalAssignedTo] = useState(null);
+  const [clientConflict, setClientConflict] = useState(null);
+  const [pendingPayload, setPendingPayload] = useState(null);
+  const [originalClientName, setOriginalClientName] = useState("");
+  const [originalContact, setOriginalContact] = useState({
+    contactPerson: "",
+    contactEmail: "",
+    contactPhone: "",
+  });
+
 
   //  Toast state
     const [toast, setToast] = useState({
@@ -70,7 +79,7 @@ export default function Opportunities() {
   const [form, setForm] = useState({
     opportunity_id: null,
     opportunityName: "",
-    customerName: "",
+    clientName: "",
     contactPerson: "",
     contactEmail: "",
     contactPhone: "",
@@ -122,7 +131,7 @@ export default function Opportunities() {
     setForm({
       opportunity_id: null,
       opportunityName: "",
-      customerName: "",
+      clientName: "",
       contactPerson: "",
       contactEmail: "",
       contactPhone: "",
@@ -142,28 +151,39 @@ export default function Opportunities() {
     setShowModal(true);
   };
 
-  const openEditModal = (row) => {
-    const tracker = getTrackerForOpportunity(row.opportunity_id);
+ const openEditModal = (row) => {
+  const tracker = getTrackerForOpportunity(row.opportunity_id);
 
-    setIsEdit(true);
-    setOriginalAssignedTo(row.assigned_to);
-    setForm({
-      opportunity_id: row.opportunity_id,
-      opportunityName: row.opportunity_name,
-      customerName: row.customer_name,
-      contactPerson: row.contact_person || "",
-      contactEmail: row.contact_email || "",
-      contactPhone: row.contact_phone || "",
-      leadSource: row.lead_source || "",
-      leadDescription: row.lead_description || "",
-      status: row.lead_status || "NEW",                    // ← Opportunity status
-      stage: tracker.stage || row.lead_status || "NEW",    // ← Tracker stage (prefer tracker if exists)
-      assignedTo: row.assigned_to || "",
-      next_followup_date: tracker.next_followup_date?.slice(0, 10) || "",
-      next_action: tracker.next_action || "",
-    });
-    setShowModal(true);
-  };
+  setIsEdit(true);
+  setOriginalAssignedTo(row.assigned_to);
+
+  // ✅ STORE ORIGINAL SNAPSHOT
+  setOriginalClientName(row.client_name);
+  setOriginalContact({
+    contactPerson: row.contact_person || "",
+    contactEmail: row.contact_email || "",
+    contactPhone: row.contact_phone || "",
+  });
+
+  setForm({
+    opportunity_id: row.opportunity_id,
+    opportunityName: row.opportunity_name,
+    clientName: row.client_name,
+    contactPerson: row.contact_person || "",
+    contactEmail: row.contact_email || "",
+    contactPhone: row.contact_phone || "",
+    leadSource: row.lead_source || "",
+    leadDescription: row.lead_description || "",
+    status: row.lead_status || "NEW",
+    stage: tracker.stage || row.lead_status || "NEW",
+    assignedTo: row.assigned_to || "",
+    next_followup_date: tracker.next_followup_date?.slice(0, 10) || "",
+    next_action: tracker.next_action || "",
+  });
+
+  setShowModal(true);
+};
+
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -177,6 +197,18 @@ const handleSubmit = async (e) => {
       isEdit &&
       originalAssignedTo &&
       String(originalAssignedTo) !== String(form.assignedTo);
+
+      const clientChanged =
+        isEdit && form.clientName !== originalClientName;
+
+      const contactChanged =
+        isEdit &&
+        (
+          form.contactPerson !== originalContact.contactPerson ||
+          form.contactEmail !== originalContact.contactEmail ||
+          form.contactPhone !== originalContact.contactPhone
+        );
+
 
     // 🔔 PRE-TOAST
     if (!isEdit) {
@@ -196,10 +228,18 @@ const handleSubmit = async (e) => {
     let opportunityId;
 
     // 🔹 OPPORTUNITY PAYLOAD
-    const opportunityPayload = {
-      ...form,
+   const opportunityPayload = {
+      opportunityName: form.opportunityName,
+      clientName: form.clientName,
+      contactPerson: form.contactPerson,
+      contactEmail: form.contactEmail,
+      contactPhone: form.contactPhone,
+      leadSource: form.leadSource,
+      leadDescription: form.leadDescription,
       leadStatus: form.status,
+      assignedTo: form.assignedTo,
     };
+
 
     delete opportunityPayload.status;
     delete opportunityPayload.next_followup_date;
@@ -233,25 +273,32 @@ const handleSubmit = async (e) => {
     }
 
     // 🔔 SUCCESS TOAST
-    if (!isEdit) {
-      showToast({
-        message: "Opportunity created & mail sent successfully",
-        type: "success",
-        position: "top",
-      });
-    } else if (isReassign) {
-      showToast({
-        message: "Opportunity reassigned & mail sent successfully",
-        type: "success",
-        position: "top",
-      });
-    } else {
-      showToast({
-        message: "Opportunity updated successfully",
-        type: "success",
-        position: "top",
-      });
-    }
+  if (!isEdit) {
+  showToast({
+    message: "Opportunity created & mail sent successfully",
+    type: "success",
+  });
+} else if (isReassign) {
+  showToast({
+    message: "Opportunity reassigned & mail sent successfully",
+    type: "success",
+  });
+} else if (contactChanged) {
+  showToast({
+    message: "Contact details updated & mail sent successfully",
+    type: "success",
+  });
+} else if (clientChanged) {
+  showToast({
+    message: "Client name updated successfully",
+    type: "success",
+  });
+} else {
+  showToast({
+    message: "Opportunity updated successfully",
+    type: "success",
+  });
+}
 
     setTimeout(() => {
       setShowModal(false);
@@ -260,15 +307,24 @@ const handleSubmit = async (e) => {
       loadAll();
     }, 800);
   } catch (err) {
-    console.error(err);
-    showToast({
-      message: "Operation failed. Please try again.",
-      type: "error",
-      position: "top",
-    });
-  } finally {
-    setLoading(false);
+  console.error(err);
+
+  if (
+    err?.response?.status === 409 &&
+    err?.response?.data?.code === "SIMILAR_CLIENT_FOUND"
+  ) {
+    setClientConflict(err.response.data);
+    setPendingPayload(opportunityPayload);
+    return;
   }
+
+  showToast({
+    message: "Operation failed. Please try again.",
+    type: "error",
+    position: "top",
+  });
+}
+
 };
 
   // const handleDelete = async (id) => {
@@ -288,7 +344,7 @@ const handleSubmit = async (e) => {
     const searchMatch =
       !filters.search ||
       item.opportunity_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.customer_name?.toLowerCase().includes(filters.search.toLowerCase());
+      item.client_name?.toLowerCase().includes(filters.search.toLowerCase());
 
     const statusMatch = !filters.status || item.lead_status === filters.status;
     const sourceMatch = !filters.source || item.lead_source === filters.source;
@@ -374,7 +430,7 @@ const handleSubmit = async (e) => {
                     <tr key={item.opportunity_id}>
                       <td>{index + 1}</td>
                       <td>{item.opportunity_name}</td>
-                      <td>{item.customer_name}</td>
+                      <td>{item.client_name}</td>
                       <td>{item.lead_source || "-"}</td>
                       <td>
                         {getUserById(item.assigned_to)
@@ -435,8 +491,8 @@ const handleSubmit = async (e) => {
               <div className="form-group">
                 <label>Client Name</label>
                 <input
-                  name="customerName"
-                  value={form.customerName}
+                  name="clientName"
+                  value={form.clientName}
                   onChange={handleChange}
                   required
                 />
@@ -617,7 +673,7 @@ const handleSubmit = async (e) => {
               <div>
                 <h3 className="view-title">{viewData.opportunity_name}</h3>
                 <p className="view-subtitle">
-                  <strong>Client Name:</strong> {viewData.customer_name || "—"}
+                  <strong>Client Name:</strong> {viewData.client_name || "—"}
                 </p>
               </div>
               <div className="view-header-right">
@@ -709,6 +765,69 @@ const handleSubmit = async (e) => {
           </div>
         </div>
       )}
+      {clientConflict && (
+  <div className="modal-overlay">
+    <div className="modal-card">
+      <h3>Client Already Exists</h3>
+
+      <p>
+        A client with a similar name already exists:
+        <br />
+        <b>{clientConflict.existingClient.client_name}</b>
+      </p>
+
+      <p>What would you like to do?</p>
+
+      <div className="modal-actions">
+        <button
+          onClick={async () => {
+            // 👉 Use existing client
+            await createOpportunity({
+              ...pendingPayload,
+              client_id: clientConflict.existingClient.client_id,
+            });
+
+            setClientConflict(null);
+            setPendingPayload(null);
+            setShowModal(false);
+            loadAll();
+          }}
+        >
+          Use Existing Client
+        </button>
+
+        <button
+          className="danger"
+          onClick={async () => {
+            // 👉 Force new client creation
+            await createOpportunity({
+              ...pendingPayload,
+              isNewClient: true,
+            });
+
+            setClientConflict(null);
+            setPendingPayload(null);
+            setShowModal(false);
+            loadAll();
+          }}
+        >
+          Create New Client
+        </button>
+
+        <button
+          className="cancel-btn"
+          onClick={() => {
+            setClientConflict(null);
+            setPendingPayload(null);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {toast.open && (
           <div className={`toast toast-${toast.type} toast-${toast.position}`}>
             {toast.message}
