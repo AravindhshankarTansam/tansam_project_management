@@ -120,26 +120,51 @@ export const createOpportunity = async (req, res) => {
 
     /* ========= SIMILAR CLIENT CHECK ========= */
 
-    const key = fuzzyKey(normalizedClientName);
+    // ✅ STEP 1: Exact match (PRIMARY)
+const [[exactClient]] = await db.execute(
+  `
+  SELECT client_id, client_name
+  FROM opportunities_coordinator
+  WHERE UPPER(client_name) = ?
+  LIMIT 1
+  `,
+  [normalizedClientName]
+);
 
-    const [[similarClient]] = await db.execute(
-      `
-      SELECT client_id, client_name
-      FROM opportunities_coordinator
-      WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
-      LIMIT 1
-      `,
-      [key]
-    );
+// ✅ STEP 2: Fuzzy match (WARNING only)
+let similarClient = null;
 
-    if (similarClient && !isNewClient) {
-      return res.status(409).json({
-        code: "SIMILAR_CLIENT_FOUND",
-        existingClient: similarClient,
-      });
-    }
+if (!exactClient) {
+  const key = fuzzyKey(normalizedClientName);
 
-    clientId = similarClient ? similarClient.client_id : await generateClientId(db);
+  const [[row]] = await db.execute(
+    `
+    SELECT client_id, client_name
+    FROM opportunities_coordinator
+    WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
+    LIMIT 1
+    `,
+    [key]
+  );
+
+  similarClient = row;
+}
+
+
+
+if (exactClient) {
+  // 🔁 SAME CLIENT → SAME ID
+  clientId = exactClient.client_id;
+} else if (similarClient && !isNewClient) {
+  // ⚠ Warn user
+  return res.status(409).json({
+    code: "SIMILAR_CLIENT_FOUND",
+    existingClient: similarClient,
+  });
+} else {
+  // 🆕 Truly new client
+  clientId = await generateClientId(db);
+}
 
     /* ========= INSERT ========= */
 
