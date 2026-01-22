@@ -71,6 +71,8 @@ export default function CreateProject() {
   const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedClientDetails, setSelectedClientDetails] = useState(null);
+  const [selectedOppClient, setSelectedOppClient] = useState("");
+
 const [trackers, setTrackers] = useState([]);
 
 
@@ -114,6 +116,14 @@ const stageMap = useMemo(() => {
   });
   return map;
 }, [trackers]);
+const opportunityClients = useMemo(() => {
+  const set = new Set();
+  opportunities.forEach((o) => {
+    if (o.client_name) set.add(o.client_name);
+  });
+  return Array.from(set);
+}, [opportunities]);
+
 useEffect(() => {
   console.log("TRACKERS:", trackers);
   console.log("STAGE MAP:", stageMap);
@@ -121,26 +131,34 @@ useEffect(() => {
 
 
 const filteredOpportunitiesForProject = useMemo(() => {
-  if (!form.projectType) return [];
+  if (!form.projectType || !selectedOppClient) return [];
 
-  // CUSTOMER → ONLY WON
-  if (isCustomer) {
-    return opportunities.filter((o) => {
-      const stage = stageMap[String(o.opportunity_id)];
+  return opportunities.filter((o) => {
+    // 1️⃣ Client filter
+    if (o.client_name !== selectedOppClient) return false;
+
+    // 2️⃣ Stage filter
+    const stage = stageMap[String(o.opportunity_id)];
+
+    if (isCustomer) {
       return stage === "WON";
-    });
-  }
+    }
 
-  // CUSTOMER_POC → ALL EXCEPT LOST
-  if (isCustomerPOC) {
-    return opportunities.filter((o) => {
-      const stage = stageMap[String(o.opportunity_id)];
+    if (isCustomerPOC) {
       return stage && stage !== "LOST";
-    });
-  }
+    }
 
-  return [];
-}, [form.projectType, opportunities, stageMap]);
+    return false;
+  });
+}, [
+  form.projectType,
+  selectedOppClient,
+  opportunities,
+  stageMap,
+  isCustomer,
+  isCustomerPOC,
+]);
+
 
 
 useEffect(() => {
@@ -148,7 +166,9 @@ useEffect(() => {
     ...prev,
     opportunityId: "",
   }));
+  setSelectedOppClient("");
 }, [form.projectType]);
+
 
 
   /* ================= SELECTED OPPORTUNITY ================= */
@@ -177,7 +197,7 @@ const autoFilled = useMemo(() => {
 
   if (isCustomer && quotations.length > 0) {
     // Super robust matching: trim + normalize spaces + case-insensitive
-    const oppClient = (selectedOpportunity.customer_name || "")
+    const oppClient = (selectedOpportunity.client_name || "")
       .trim()
       .replace(/\s+/g, " ") // normalize multiple spaces
       .toLowerCase();
@@ -235,7 +255,7 @@ useEffect(() => {
         ? selectedOpportunity?.opportunity_name || form.projectName
         : form.projectName,
       clientName: isCustomer || isCustomerPOC
-        ? selectedOpportunity?.customer_name || form.clientName
+        ? selectedOpportunity?.client_name || form.clientName
         : form.clientName,
       opportunityId: (isCustomer || isCustomerPOC) ? form.opportunityId : null,
       startDate: form.startDate,
@@ -544,22 +564,42 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
-
-         {(isCustomer || isCustomerPOC) && (
+              {/* SELECT CLIENT FIRST */}
+{(isCustomer || isCustomerPOC) && (
   <select
-    name="opportunityId"
-    value={form.opportunityId}
-    onChange={handleChange}
+    value={selectedOppClient}
+    onChange={(e) => {
+      setSelectedOppClient(e.target.value);
+      setForm((prev) => ({ ...prev, opportunityId: "" }));
+    }}
     required
   >
-    <option value="">Select Opportunity</option>
-
-    {filteredOpportunitiesForProject.map((o) => (
-      <option key={o.opportunity_id} value={o.opportunity_id}>
-        {o.opportunity_name} ({o.client_name})
+    <option value="">Select Client</option>
+    {opportunityClients.map((c) => (
+      <option key={c} value={c}>
+        {c}
       </option>
     ))}
   </select>
+)}
+
+
+   {(isCustomer || isCustomerPOC) && selectedOppClient && (
+
+<select
+  name="opportunityId"
+  value={form.opportunityId}
+  onChange={handleChange}
+  required
+>
+  <option value="">Select Opportunity</option>
+  {filteredOpportunitiesForProject.map((o) => (
+    <option key={o.opportunity_id} value={o.opportunity_id}>
+      {o.opportunity_name} ({o.client_name})
+    </option>
+  ))}
+</select>
+
 )}
 
 
