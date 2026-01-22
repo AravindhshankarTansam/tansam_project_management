@@ -37,7 +37,7 @@ export const createOpportunity = async (payload) => {
   return data;
 };
 
-// ✅ UPDATE
+// UPDATE
 export const updateOpportunity = async (opportunityId, payload) => {
   const res = await fetch(
     `${BASE_COORDINATOR_URL}/opportunities/${opportunityId}`,
@@ -53,7 +53,7 @@ export const updateOpportunity = async (opportunityId, payload) => {
   return data;
 };
 
-// ✅ DELETE
+//  DELETE
 export const deleteOpportunity = async (opportunityId) => {
   const res = await fetch(
     `${BASE_COORDINATOR_URL}/opportunities/${opportunityId}`,
@@ -66,4 +66,20 @@ export const deleteOpportunity = async (opportunityId) => {
   const data = await res.json();
   if (!res.ok) throw new Error(data.message);
   return data;
+};
+
+/* ============================
+   CLIENT CHECK (LIVE)
+============================ */
+
+export const checkSimilarClient = async (clientName) => {
+  const res = await fetch(
+    `${BASE_COORDINATOR_URL}/clients/check?name=${encodeURIComponent(clientName)}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to check client");
+  return res.json(); // returns null or { client_id, client_name }
 };
