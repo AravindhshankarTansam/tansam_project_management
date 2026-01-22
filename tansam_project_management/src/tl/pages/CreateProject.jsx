@@ -171,7 +171,7 @@ const autoFilled = useMemo(() => {
   }
 
   const projectName = selectedOpportunity.opportunity_name || form.projectName;
-  const clientName = selectedOpportunity.customer_name || form.clientName;
+  const clientName = selectedOpportunity.client_name || form.clientName;
 
   let quotationNumber = "";
 
@@ -556,7 +556,7 @@ useEffect(() => {
 
     {filteredOpportunitiesForProject.map((o) => (
       <option key={o.opportunity_id} value={o.opportunity_id}>
-        {o.opportunity_name} ({o.customer_name})
+        {o.opportunity_name} ({o.client_name})
       </option>
     ))}
   </select>
