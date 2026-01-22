@@ -135,7 +135,7 @@
               <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Designation</th>
+                {/* <th>Designation</th> */}
                 <th>Department</th>
                 <th>Actions</th>
               </tr>
@@ -155,7 +155,7 @@
                       <FiUsers /> {m.name}
                     </td>
                     <td>{m.email}</td>
-                    <td>{m.designation}</td>
+                    {/* <td>{m.designation}</td> */}
                     <td>{m.department}</td>
                     <td className="action-col">
                       <button
