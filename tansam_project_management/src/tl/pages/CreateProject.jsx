@@ -105,6 +105,8 @@ const [trackers, setTrackers] = useState([]);
   const projectType = form.projectType?.toUpperCase() || "";
   const isCustomer = projectType === "CUSTOMER";
   const isCustomerPOC = projectType === "CUSTOMER_POC";
+
+  
 const stageMap = useMemo(() => {
   const map = {};
   trackers.forEach((t) => {
