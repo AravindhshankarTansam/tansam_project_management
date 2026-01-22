@@ -2,6 +2,7 @@ import { connectDB } from "../config/db.js";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { createQuotationDocx } from "../utils/QuotationDocx.js";
 import { initSchemas } from "../schema/main.schema.js";
+import { G } from "@react-pdf/renderer";
 // Get all quotations
 export const getQuotations = async (req, res) => {
   try {
@@ -30,6 +31,7 @@ export const addQuotation = async (req, res) => {
   workCategory,
   lab,
   description,
+  gst,
   value,
   date,
   paymentPhase,
@@ -40,15 +42,16 @@ export const addQuotation = async (req, res) => {
   paymentPendingReason,
 } = req.body;
 const safeValues = [
-  project_name ?? null,
-  quotationNo ?? null,
-  clientName ?? null,
-  clientType ?? null,
-  workCategory ?? null,
-  lab ?? null,
-  description ?? null,
-  value ?? null,
-  date ?? null,
+  project_name,
+  quotationNo,
+  clientName,
+  clientType,
+  workCategory,
+  lab,
+  description,
+  value,
+  gst,
+  date,
   paymentPhase ?? null,
   revisedCost ?? null,
   poReceived ?? null,
@@ -58,8 +61,8 @@ const safeValues = [
 ];
 const [result] = await db.execute(
   `INSERT INTO quotations
-   (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date, paymentPhase, revisedCost, poReceived, paymentReceived, paymentAmount, paymentPendingReason)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+   (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, gst, date, paymentPhase, revisedCost, poReceived, paymentReceived, paymentAmount, paymentPendingReason)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 safeValues
 );
 
@@ -74,6 +77,7 @@ safeValues
       lab,
       description,
       value,
+      gst,
       date,
         paymentPhase,
     revisedCost,
@@ -99,6 +103,7 @@ export const updateQuotation = async (req, res) => {
       clientName,
       clientType,
       workCategory,
+      gst,
       lab,
       description,
       value,
@@ -114,7 +119,7 @@ export const updateQuotation = async (req, res) => {
   
 await db.execute(
   `UPDATE quotations
-   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
+   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, gst=?, date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
    WHERE id=?`,
   [
     project_name,
@@ -124,6 +129,7 @@ await db.execute(
     lab,
     description,
     value,
+    gst,
     date,
     paymentPhase,
     revisedCost,

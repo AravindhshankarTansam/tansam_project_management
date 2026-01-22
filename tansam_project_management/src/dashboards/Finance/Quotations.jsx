@@ -7,7 +7,7 @@ import {
   updateQuotation,
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
-import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaFileWord, FaEdit, FaTrash, FaFilePdf } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
@@ -19,11 +19,11 @@ export default function Quotations() {
   const [pageSize, setPageSize] = useState(5);
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [downloadingId, setDownloadingId] = useState(null);
+ 
 const [workCategories, setWorkCategories] = useState([]);
 const [opportunities, setOpportunities] = useState([]);
 const [labs, setLabs] = useState([]);
-
+const [activeTab, setActiveTab] = useState("quotation");
 const [showDoc, setShowDoc] = useState(false);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
@@ -44,6 +44,8 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     lab: "",
     description: "",
     value: "",
+     gst: "",
+  totalValue: "",
     date: "",
     revisedCost: "",
   paymentPhase: "Not Started",
@@ -160,6 +162,7 @@ useEffect(() => {
 
   loadWorkCategories();
 }, []);
+
 useEffect(() => {
   const loadLabs = async () => {
     try {
@@ -210,46 +213,7 @@ const generateQuotationNo = (data) => {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  // ✅ DOCX DOWNLOAD FUNCTION
-const downloadDocx = async (quotation) => {
-  setDownloadingId(quotation.id);
-  try {
-    const userId = localStorage.getItem("userId") || "1";
-    const userRole = (localStorage.getItem("userRole") || "FINANCE").toUpperCase();
 
-const response = await fetch(
-  `http://localhost:9899/api/quotations/${quotation.id}/docx`,
-  {
-    method: "GET",
-    headers: {
-      Accept:
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "x-user-id": userId,
-      "x-user-role": userRole,
-    },
-  }
-);
-
-    if (!response.ok) {
-      throw new Error("Download failed");
-    }
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Quotation_${quotation.quotationNo}.docx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Download error:", error);
-    alert("Failed to download DOCX");
-  } finally {
-    setDownloadingId(null);
-  }
-};
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
@@ -387,6 +351,7 @@ if (showGenerateQuotation) {
       workCategory: "",
       lab: "",
       description: "",
+       gst:"",
       value: "",
       date: "",
     });
@@ -470,112 +435,130 @@ if (showGenerateQuotation) {
           <span>per page</span>
         </div>
       </div>
-
+<div className="tabs">
+  <button
+    className={`tab ${activeTab === "quotation" ? "active" : ""}`}
+    onClick={() => setActiveTab("quotation")}
+  >
+    Quotation
+  </button>
+  <button
+    className={`tab ${activeTab === "payment" ? "active" : ""}`}
+    onClick={() => setActiveTab("payment")}
+  >
+    Payment Phase
+  </button>
+  </div>
       {/* Table */}
-      <div className="card-table">
-        <table>
-          <thead>
-            <tr>
-              <th>S.No</th>
-             
-              <th>Quotation No</th>
-               <th>Opportunity Name</th>
-              <th>Client Name</th>
-              <th>Client Type</th>
-              <th>Work Category</th>
-              <th>Lab</th>
-              <th>Description</th>
-              <th>Quote Value</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.length > 0 ? (
-              paginated.map((q, i) => (
-                <tr key={q.id} className="table-row">
-                  <td>{(page - 1) * pageSize + i + 1}</td>
-                  <td>
-                    <strong>{q.quotationNo}</strong>
-                  </td>
-                  <td>{q.project_name}</td>
+    <div className="card-table">
+  <table>
+    <thead>
+      <tr>
+        <th>S.No</th>
+        {activeTab === "quotation" ? (
+          <>
+            <th>Quotation No</th>
+            <th>Opportunity Name</th>
+            <th>Client Name</th>
+            <th>Client Type</th>
+            <th>Work Category</th>
+            <th>Lab</th>
+            <th>Description</th>
+            <th>Quote Value</th>
+            <th>Date</th>
+            <th>Actions</th> {/* Only in Quotation tab */}
+          </>
+        ) : (
+          <>
+            <th>Quotation No</th>
+            <th>Payment Phase</th>
+            <th>Revised Cost</th>
+            <th>PO Received</th>
+            <th>Payment Received</th>
+            <th>Payment Amount</th>
+            <th>Pending Reason</th>
+          </>
+        )}
+      </tr>
+    </thead>
+    <tbody>
+      {paginated.length > 0 ? (
+        paginated.map((q, i) => (
+          <tr key={q.id} className="table-row">
+            <td>{(page - 1) * pageSize + i + 1}</td>
 
-                  <td>{q.clientName}</td>
-                  <td>
-                    <span
-                      className={`badge badge-${q.clientType.toLowerCase()}`}
-                    >
-                      {q.clientType}
-                    </span>
-                  </td>
-                  <td>{q.workCategory}</td>
-                  <td>
-                    <span className="badge-lab">{q.lab}</span>
-                  </td>
-                  <td className="desc-cell">{q.description}</td>
-                  <td className="value-cell">
-                    ₹ {parseInt(q.value).toLocaleString("en-IN")}
-                  </td>
-                  <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
-                  <td className="actions-cell">
-       {/* <button
-    className="btn-docx"
-    onClick={() => downloadDocx(q)}
-    disabled={downloadingId === q.id}
-    title="Download DOCX"
-  >
-    {downloadingId === q.id ? "⏳" : <FaFileWord />}
-  </button> */}
-                     <button
-    className="btn-edit"
-    onClick={() => handleEdit(q)}
-    title="Edit"
-  >
-    <FaEdit />
-  </button>  <button
-    className="btn-delete"
-    onClick={() => deleteRow(q.id)}
-    title="Delete"
-  >
-    <FaTrash />
-  </button>
-{q.isGenerated ? (
-  <button
-    className="btn-medit"
-    onClick={() => handleEditGeneratedQuotation(q)}
-    title="Edit Generated Quotation"
-  >
-    <MdEditDocument />
-  </button>
-) : (
-  <button
-    className="btn-generate"
-    onClick={() => {
-      setNewQuotation(q);
-      setShowGenerateQuotation(true);
-    }}
-    title="Generate Quotation"
-  >
-    +
-  </button>
-)}
-
-
-
-
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="10" className="no-data">
-                  No quotations found
+            {activeTab === "quotation" ? (
+              <>
+                <td><strong>{q.quotationNo}</strong></td>
+                <td>{q.project_name}</td>
+                <td>{q.clientName}</td>
+                <td>
+                  <span className={`badge badge-${q.clientType.toLowerCase()}`}>
+                    {q.clientType}
+                  </span>
                 </td>
-              </tr>
+                <td>{q.workCategory}</td>
+                <td><span className="badge-lab">{q.lab}</span></td>
+                <td className="desc-cell">{q.description}</td>
+                <td className="value-cell">
+                  ₹ {parseInt(q.value || 0).toLocaleString("en-IN")}
+                </td>
+                <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
+
+                {/* Actions column ONLY in Quotation tab */}
+                <td className="actions-cell">
+                  <button className="btn-edit" onClick={() => handleEdit(q)} title="Edit">
+                    <FaEdit />
+                  </button>
+                  <button className="btn-delete" onClick={() => deleteRow(q.id)} title="Delete">
+                    <FaTrash />
+                  </button>
+                  {q.isGenerated ? (
+                    <button
+                      className="btn-medit"
+                      onClick={() => handleEditGeneratedQuotation(q)}
+                      title="Edit Generated Quotation"
+                    >
+                      <MdEditDocument />
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-generate"
+                      onClick={() => {
+                        setNewQuotation(q);
+                        setShowGenerateQuotation(true);
+                      }}
+                      title="Generate Quotation"
+                    >
+                      <FaFilePdf />
+                    </button>
+                  )}
+                </td>
+              </>
+            ) : (
+              <>
+                <td><strong>{q.quotationNo}</strong></td>
+                <td>{q.paymentPhase || "Not Started"}</td>
+                <td>{q.revisedCost || "-"}</td>
+                <td>{q.poReceived || "No"}</td>
+                <td>{q.paymentReceived || "No"}</td>
+                <td>{q.paymentAmount || "-"}</td>
+                <td>{q.paymentPendingReason || "-"}</td>
+              </>
             )}
-          </tbody>
-        </table>
-      </div>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={activeTab === "quotation" ? "11" : "7"} className="no-data">
+            No quotations found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
 
       {/* Pagination */}
       <div className="pagination">
@@ -683,16 +666,18 @@ if (showGenerateQuotation) {
             }
           />
         </div>
-           <div className="form-group">
-          <label>GST </label>
-          <input
-            type="number"
-            value={newQuotation.gst}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, value: e.target.value })
-            }
-          />
-        </div>
+<div className="form-group">
+  <label>GST</label>
+  <input
+    type="number"
+    value={newQuotation.gst}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, gst: e.target.value })
+    }
+  />
+</div>
+
+
 
         <div className="form-group">
           <label>Work Category *</label>
@@ -849,7 +834,7 @@ if (showGenerateQuotation) {
         border: "1px solid #ccc",
         padding: "20px",
         marginTop: "20px",
-        backgroundColor: "#fff",
+        backgroundColor: "#fffefe",
         maxHeight: "400px",
         overflowY: "auto"
       }}>

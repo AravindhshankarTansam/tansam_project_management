@@ -846,3 +846,22 @@ button.btn-save:hover {
   color: #9ca3af;
   font-style: italic;
 }
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0;
+}
+
+.tab.active {
+  background: #fff;
+  border-bottom: 2px solid #007bff;
+  font-weight: bold;
+}
