@@ -22,35 +22,47 @@ export const addQuotation = async (req, res) => {
   try {
      const db = await connectDB();
     await initSchemas(db, { finance: true });
-    const {
-      project_name,
-      quotationNo,
-      clientName,
-      clientType,
-      workCategory,
-      lab,
-      description,
-      value,
-      date,
-    } = req.body;
+   const {
+  project_name,
+  quotationNo,
+  clientName,
+  clientType,
+  workCategory,
+  lab,
+  description,
+  value,
+  date,
+  paymentPhase,
+  revisedCost,
+  poReceived,
+  paymentReceived,
+  paymentAmount,
+  paymentPendingReason,
+} = req.body;
+const safeValues = [
+  project_name ?? null,
+  quotationNo ?? null,
+  clientName ?? null,
+  clientType ?? null,
+  workCategory ?? null,
+  lab ?? null,
+  description ?? null,
+  value ?? null,
+  date ?? null,
+  paymentPhase ?? null,
+  revisedCost ?? null,
+  poReceived ?? null,
+  paymentReceived ?? null,
+  paymentAmount ?? null,
+  paymentPendingReason ?? null,
+];
+const [result] = await db.execute(
+  `INSERT INTO quotations
+   (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date, paymentPhase, revisedCost, poReceived, paymentReceived, paymentAmount, paymentPendingReason)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+safeValues
+);
 
-   
-    const [result] = await db.execute(
-      `INSERT INTO quotations
-       (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        project_name,
-        quotationNo,
-        clientName,
-        clientType,
-        workCategory,
-        lab,
-        description,
-        value,
-        date,
-      ]
-    );
 
     res.status(201).json({
       id: result.insertId,
@@ -63,6 +75,12 @@ export const addQuotation = async (req, res) => {
       description,
       value,
       date,
+        paymentPhase,
+    revisedCost,
+    poReceived,
+    paymentReceived,
+    paymentAmount,
+    paymentPendingReason,
     });
   } catch (error) {
     console.error("Add Quotation Error:", error);
@@ -85,14 +103,36 @@ export const updateQuotation = async (req, res) => {
       description,
       value,
       date,
+       paymentPhase,
+    revisedCost,
+    poReceived,
+    paymentReceived,
+    paymentAmount,
+    paymentPendingReason,
     } = req.body;
 
   
 await db.execute(
   `UPDATE quotations
-   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?
+   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
    WHERE id=?`,
-  [project_name, clientName, clientType, workCategory, lab, description, value, date, id]
+  [
+    project_name,
+    clientName,
+    clientType,
+    workCategory,
+    lab,
+    description,
+    value,
+    date,
+    paymentPhase,
+    revisedCost,
+    poReceived,
+    paymentReceived,
+    paymentAmount,
+    paymentPendingReason,
+    id,
+  ]
 );
 
 

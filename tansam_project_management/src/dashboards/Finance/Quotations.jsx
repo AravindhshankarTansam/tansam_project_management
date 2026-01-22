@@ -253,7 +253,15 @@ const response = await fetch(
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
-    setNewQuotation({ ...quotation });
+  setNewQuotation({
+    ...quotation,
+    paymentPhase: quotation.paymentPhase || "Not Started",
+    revisedCost: quotation.revisedCost || "",
+    poReceived: quotation.poReceived || "No",
+    paymentReceived: quotation.paymentReceived || "No",
+    paymentAmount: quotation.paymentAmount || "",
+    paymentPendingReason: quotation.paymentPendingReason || "",
+  });
     setShowModal(true);
   };
 
@@ -471,7 +479,7 @@ if (showGenerateQuotation) {
               <th>S.No</th>
              
               <th>Quotation No</th>
-               <th>Project Name</th>
+               <th>Opportunity Name</th>
               <th>Client Name</th>
               <th>Client Type</th>
               <th>Work Category</th>
@@ -611,7 +619,7 @@ if (showGenerateQuotation) {
         </div>
 
       <div className="form-group">
-  <label>Project Name *</label>
+  <label>Opportunity Name *</label>
 <select
   value={newQuotation.project_name}
   onChange={(e) => {
@@ -629,7 +637,7 @@ if (showGenerateQuotation) {
   }}
 >
 
- <option value="">Select Project</option>
+ <option value="">Select opprtunity</option>
 {opportunities.map((opp) => (
   <option key={opp.id} value={opp.opportunity_name}>
     {opp.opportunity_name}
@@ -848,7 +856,7 @@ if (showGenerateQuotation) {
         <h2 style={{ textAlign: "center" }}>Quotation</h2>
         <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
         <p><strong>Date:</strong> {newQuotation.date}</p>
-        <p><strong>Project Name:</strong> {newQuotation.project_name}</p>
+        <p><strong>Opportunity Name:</strong> {newQuotation.project_name}</p>
         <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
         <p><strong>Lab:</strong> {newQuotation.lab}</p>
         <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
