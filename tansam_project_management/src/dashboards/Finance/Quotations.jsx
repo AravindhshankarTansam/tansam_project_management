@@ -45,6 +45,12 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     description: "",
     value: "",
     date: "",
+    revisedCost: "",
+  paymentPhase: "Not Started",
+  poReceived: "No",
+  paymentReceived: "No",
+  paymentAmount: "",
+  paymentPendingReason: "",
   });
 
   const clearAllFilters = () => {
@@ -581,6 +587,7 @@ if (showGenerateQuotation) {
 
       {/* ✅ IMPROVED MODAL */}
     {showModal && (
+      
   <div className="modal-overlay" onClick={closeModal}>
     <div className="modal" onClick={(e) => e.stopPropagation()}>
       <div className="modal-header">
@@ -736,6 +743,97 @@ if (showGenerateQuotation) {
             }
           />
         </div>
+        {/* PAYMENT PHASE */}
+<div className="form-group">
+  <label>Payment Phase *</label>
+  <select
+    value={newQuotation.paymentPhase}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, paymentPhase: e.target.value })
+    }
+  >
+    <option value="Not Started">Not Started</option>
+    <option value="Started">Started</option>
+  </select>
+</div>
+
+
+{newQuotation.paymentPhase === "Started" && (
+  <>
+    <div className="form-group">
+      <label>Revised Cost</label>
+      <input
+        type="number"
+        value={newQuotation.revisedCost}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, revisedCost: e.target.value })
+        }
+      />
+    </div>
+
+    <div className="form-group">
+      <label>PO Received *</label>
+      <select
+        value={newQuotation.poReceived}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, poReceived: e.target.value })
+        }
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+    </div>
+
+    <div className="form-group">
+      <label>Payment Received *</label>
+      <select
+        value={newQuotation.paymentReceived}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, paymentReceived: e.target.value })
+        }
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+    </div>
+
+    {newQuotation.paymentReceived === "Yes" && (
+      <div className="form-group">
+        <label>Payment Amount</label>
+        <input
+          type="number"
+          value={newQuotation.paymentAmount}
+          onChange={(e) =>
+            setNewQuotation({
+              ...newQuotation,
+              paymentAmount: e.target.value,
+            })
+          }
+        />
+      </div>
+    )}
+
+    {newQuotation.paymentReceived === "No" && (
+      <div className="form-group">
+        <label>Payment Pending Reason</label>
+        <textarea
+          rows="2"
+          value={newQuotation.paymentPendingReason}
+          onChange={(e) =>
+            setNewQuotation({
+              ...newQuotation,
+              paymentPendingReason: e.target.value,
+            })
+          }
+        />
+      </div>
+    )}
+  </>
+)}
+
+
+
+
       </div>
 
       {/* LIVE QUOTATION PREVIEW */}
