@@ -61,7 +61,7 @@ router.delete(
 router.get(
   "/opportunity-tracker",
   authMiddleware,
-  coordinatorMiddleware,
+  roleMiddleware(["COORDINATOR", "TEAM LEAD", "ADMIN"]),
   getOpportunityTrackers
 );
 

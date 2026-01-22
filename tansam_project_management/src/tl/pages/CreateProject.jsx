@@ -25,6 +25,9 @@ import {
 import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
+import { fetchOpportunityTrackers } 
+  from "../../services/coordinator/coordinator.tracker.api";
+
 
 /* ================= CONSTANTS ================= */
 
@@ -68,6 +71,7 @@ export default function CreateProject() {
   const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedClientDetails, setSelectedClientDetails] = useState(null);
+const [trackers, setTrackers] = useState([]);
 
 
   const [form, setForm] = useState(emptyForm);
@@ -77,17 +81,19 @@ export default function CreateProject() {
   useEffect(() => {
     (async () => {
       try {
-        const [p, t, o, q] = await Promise.all([
+        const [p, t, o, q,tr] = await Promise.all([
           fetchProjects(),
           fetchProjectTypes(),
           fetchOpportunities(),
           getQuotations(),
+            fetchOpportunityTrackers(), 
         ]);
 
         setProjects(p || []);
         setProjectTypes((t || []).filter((x) => x.status === "ACTIVE"));
         setOpportunities(o || []);
         setQuotations(q || []);
+         setTrackers(tr || []);
       } catch {
         toast.error("Failed to load data");
       }
@@ -99,6 +105,49 @@ export default function CreateProject() {
   const projectType = form.projectType?.toUpperCase() || "";
   const isCustomer = projectType === "CUSTOMER";
   const isCustomerPOC = projectType === "CUSTOMER_POC";
+const stageMap = useMemo(() => {
+  const map = {};
+  trackers.forEach((t) => {
+    map[String(t.opportunity_id)] = t.stage;
+  });
+  return map;
+}, [trackers]);
+useEffect(() => {
+  console.log("TRACKERS:", trackers);
+  console.log("STAGE MAP:", stageMap);
+}, [trackers, stageMap]);
+
+
+const filteredOpportunitiesForProject = useMemo(() => {
+  if (!form.projectType) return [];
+
+  // CUSTOMER → ONLY WON
+  if (isCustomer) {
+    return opportunities.filter((o) => {
+      const stage = stageMap[String(o.opportunity_id)];
+      return stage === "WON";
+    });
+  }
+
+  // CUSTOMER_POC → ALL EXCEPT LOST
+  if (isCustomerPOC) {
+    return opportunities.filter((o) => {
+      const stage = stageMap[String(o.opportunity_id)];
+      return stage && stage !== "LOST";
+    });
+  }
+
+  return [];
+}, [form.projectType, opportunities, stageMap]);
+
+
+useEffect(() => {
+  setForm((prev) => ({
+    ...prev,
+    opportunityId: "",
+  }));
+}, [form.projectType]);
+
 
   /* ================= SELECTED OPPORTUNITY ================= */
 
@@ -494,21 +543,23 @@ useEffect(() => {
                 ))}
               </select>
 
-              {(isCustomer || isCustomerPOC) && (
-                <select
-                  name="opportunityId"
-                  value={form.opportunityId}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select Opportunity</option>
-                  {opportunities.map((o) => (
-                    <option key={o.opportunity_id} value={o.opportunity_id}>
-                      {o.opportunity_name} ({o.customer_name})
-                    </option>
-                  ))}
-                </select>
-              )}
+         {(isCustomer || isCustomerPOC) && (
+  <select
+    name="opportunityId"
+    value={form.opportunityId}
+    onChange={handleChange}
+    required
+  >
+    <option value="">Select Opportunity</option>
+
+    {filteredOpportunitiesForProject.map((o) => (
+      <option key={o.opportunity_id} value={o.opportunity_id}>
+        {o.opportunity_name} ({o.customer_name})
+      </option>
+    ))}
+  </select>
+)}
+
 
               <input
                 name="projectName"
