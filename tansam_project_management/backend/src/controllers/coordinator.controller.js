@@ -621,22 +621,35 @@ export const getOpportunityTrackers = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
 
-    const [rows] = await db.execute(
-      `
-      SELECT *
-      FROM opportunity_tracker
-      WHERE created_by = ?
-      ORDER BY id DESC
-      `,
-      [req.user.id]
-    );
+    let query = `
+      SELECT t.*
+      FROM opportunity_tracker t
+      INNER JOIN (
+        SELECT opportunity_id, MAX(id) AS latest_id
+        FROM opportunity_tracker
+        GROUP BY opportunity_id
+      ) latest
+        ON latest.latest_id = t.id
+    `;
 
+    const params = [];
+
+    // 🔐 Coordinator → only their opportunities
+    if (req.user.role === "COORDINATOR") {
+      query += ` WHERE t.created_by = ?`;
+      params.push(req.user.id);
+    }
+
+    query += ` ORDER BY t.id DESC`;
+
+    const [rows] = await db.execute(query, params);
     res.json(rows);
   } catch (err) {
     console.error("Get tracker error:", err);
     res.status(500).json({ message: "Failed to fetch opportunity trackers" });
   }
 };
+
 
 /* ======================================================
    UPDATE OPPORTUNITY TRACKER

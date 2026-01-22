@@ -25,6 +25,9 @@ import {
 import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
+import { fetchOpportunityTrackers } 
+  from "../../services/coordinator/coordinator.tracker.api";
+
 
 /* ================= CONSTANTS ================= */
 
@@ -68,6 +71,9 @@ export default function CreateProject() {
   const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedClientDetails, setSelectedClientDetails] = useState(null);
+  const [selectedOppClient, setSelectedOppClient] = useState("");
+
+const [trackers, setTrackers] = useState([]);
 
 
   const [form, setForm] = useState(emptyForm);
@@ -77,17 +83,19 @@ export default function CreateProject() {
   useEffect(() => {
     (async () => {
       try {
-        const [p, t, o, q] = await Promise.all([
+        const [p, t, o, q,tr] = await Promise.all([
           fetchProjects(),
           fetchProjectTypes(),
           fetchOpportunities(),
           getQuotations(),
+            fetchOpportunityTrackers(), 
         ]);
 
         setProjects(p || []);
         setProjectTypes((t || []).filter((x) => x.status === "ACTIVE"));
         setOpportunities(o || []);
         setQuotations(q || []);
+         setTrackers(tr || []);
       } catch {
         toast.error("Failed to load data");
       }
@@ -99,6 +107,69 @@ export default function CreateProject() {
   const projectType = form.projectType?.toUpperCase() || "";
   const isCustomer = projectType === "CUSTOMER";
   const isCustomerPOC = projectType === "CUSTOMER_POC";
+
+  
+const stageMap = useMemo(() => {
+  const map = {};
+  trackers.forEach((t) => {
+    map[String(t.opportunity_id)] = t.stage;
+  });
+  return map;
+}, [trackers]);
+const opportunityClients = useMemo(() => {
+  const set = new Set();
+  opportunities.forEach((o) => {
+    if (o.client_name) set.add(o.client_name);
+  });
+  return Array.from(set);
+}, [opportunities]);
+
+useEffect(() => {
+  console.log("TRACKERS:", trackers);
+  console.log("STAGE MAP:", stageMap);
+}, [trackers, stageMap]);
+
+
+const filteredOpportunitiesForProject = useMemo(() => {
+  if (!form.projectType || !selectedOppClient) return [];
+
+  return opportunities.filter((o) => {
+    // 1️⃣ Client filter
+    if (o.client_name !== selectedOppClient) return false;
+
+    // 2️⃣ Stage filter
+    const stage = stageMap[String(o.opportunity_id)];
+
+    if (isCustomer) {
+      return stage === "WON";
+    }
+
+    if (isCustomerPOC) {
+      return stage && stage !== "LOST";
+    }
+
+    return false;
+  });
+}, [
+  form.projectType,
+  selectedOppClient,
+  opportunities,
+  stageMap,
+  isCustomer,
+  isCustomerPOC,
+]);
+
+
+
+useEffect(() => {
+  setForm((prev) => ({
+    ...prev,
+    opportunityId: "",
+  }));
+  setSelectedOppClient("");
+}, [form.projectType]);
+
+
 
   /* ================= SELECTED OPPORTUNITY ================= */
 
@@ -120,13 +191,13 @@ const autoFilled = useMemo(() => {
   }
 
   const projectName = selectedOpportunity.opportunity_name || form.projectName;
-  const clientName = selectedOpportunity.customer_name || form.clientName;
+  const clientName = selectedOpportunity.client_name || form.clientName;
 
   let quotationNumber = "";
 
   if (isCustomer && quotations.length > 0) {
     // Super robust matching: trim + normalize spaces + case-insensitive
-    const oppClient = (selectedOpportunity.customer_name || "")
+    const oppClient = (selectedOpportunity.client_name || "")
       .trim()
       .replace(/\s+/g, " ") // normalize multiple spaces
       .toLowerCase();
@@ -184,7 +255,7 @@ useEffect(() => {
         ? selectedOpportunity?.opportunity_name || form.projectName
         : form.projectName,
       clientName: isCustomer || isCustomerPOC
-        ? selectedOpportunity?.customer_name || form.clientName
+        ? selectedOpportunity?.client_name || form.clientName
         : form.clientName,
       opportunityId: (isCustomer || isCustomerPOC) ? form.opportunityId : null,
       startDate: form.startDate,
@@ -330,7 +401,7 @@ useEffect(() => {
             <th>Project</th>
             <th>Client</th>
             <th>Type</th>
-            <th>Client Details</th>
+            {/* <th>Client Details</th> */}
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
@@ -341,9 +412,21 @@ useEffect(() => {
           {paginatedProjects.map((p) => (
             <tr key={p.id}>
               <td>{p.projectName}</td>
-              <td>{p.clientName}</td>
+              <td className="client-name-cell">
+                <span>{p.clientName}</span>
+
+                <button
+                  className="inline-view-btn"
+                  title="View Client Details"
+                  onClick={() => setSelectedClientDetails(p)}
+                >
+                  <FiEye color="#16a34a" />{" "}
+                  {/* ← Green color (same as your app's green) */}
+                </button>
+              </td>
+
               <td>{p.projectType}</td>
-              <td className="client-details-col">
+              {/* <td className="client-details-col">
                 <button
                   className="view-btn"
                   title="View Client Details"
@@ -351,7 +434,7 @@ useEffect(() => {
                 >
                   <FiEye />
                 </button>
-              </td>
+              </td> */}
 
               <td>{formatDate(p.startDate)}</td>
               <td>{formatDate(p.endDate)}</td>
@@ -380,12 +463,11 @@ useEffect(() => {
                     <FiEdit />
                   </button>
                   <button
-  className="icon-btn delete-btn"
-  onClick={() => handleDelete(p.id)}
->
-  <FiTrash2 />
-</button>
-
+                    className="icon-btn delete-btn"
+                    onClick={() => handleDelete(p.id)}
+                  >
+                    <FiTrash2 />
+                  </button>
                 </td>
               )}
             </tr>
@@ -493,8 +575,26 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
-
+              {/* SELECT CLIENT FIRST */}
               {(isCustomer || isCustomerPOC) && (
+                <select
+                  value={selectedOppClient}
+                  onChange={(e) => {
+                    setSelectedOppClient(e.target.value);
+                    setForm((prev) => ({ ...prev, opportunityId: "" }));
+                  }}
+                  required
+                >
+                  <option value="">Select Client</option>
+                  {opportunityClients.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {(isCustomer || isCustomerPOC) && selectedOppClient && (
                 <select
                   name="opportunityId"
                   value={form.opportunityId}
@@ -502,9 +602,9 @@ useEffect(() => {
                   required
                 >
                   <option value="">Select Opportunity</option>
-                  {opportunities.map((o) => (
+                  {filteredOpportunitiesForProject.map((o) => (
                     <option key={o.opportunity_id} value={o.opportunity_id}>
-                      {o.opportunity_name} ({o.customer_name})
+                      {o.opportunity_name} ({o.client_name})
                     </option>
                   ))}
                 </select>

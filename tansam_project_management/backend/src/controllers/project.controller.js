@@ -38,7 +38,7 @@ export const createProject = async (req, res) => {
       }
 
       const [[opp]] = await db.execute(
-        `SELECT opportunity_id, opportunity_name, customer_name
+        `SELECT opportunity_id, opportunity_name, client_name
          FROM opportunities_coordinator
          WHERE opportunity_id = ?`,
         [opportunityId]
@@ -50,7 +50,7 @@ export const createProject = async (req, res) => {
 
       // Auto-fill if frontend didn't provide (optional safety)
       finalProjectName = finalProjectName || opp.opportunity_name;
-      finalClientName = finalClientName || opp.customer_name;
+      finalClientName = finalClientName || opp.client_name;
       oppId = opp.opportunity_id; // ← This is what saves it!
     }
 

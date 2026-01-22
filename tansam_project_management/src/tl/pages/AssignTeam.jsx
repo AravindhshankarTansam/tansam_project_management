@@ -174,7 +174,7 @@ export default function AssignTeam() {
                 <th>Member</th>
                 <th>Role</th>
                 <th>Department</th>
-                <th>Effort</th>
+                {/* <th>Effort</th> */}
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Actions</th>
@@ -187,7 +187,7 @@ export default function AssignTeam() {
                   <td><strong>{a.memberName}</strong></td>
                   <td>{a.role}</td>
                   <td>{a.department}</td>
-                  <td>{a.effort}</td>
+                  {/* <td>{a.effort}</td> */}
                   <td>{formatDate(a.startDate)}</td>
                   <td>{formatDate(a.endDate)}</td>
                   <td>
