@@ -6,7 +6,7 @@ export const assignedOpportunityTemplate = ({
   userName,
   opportunityId,
   opportunityName,
-  customerName,
+  clientName,
   stage,
   assignedBy,
   followUpDate,
@@ -51,7 +51,7 @@ export const assignedOpportunityTemplate = ({
           </tr>
           <tr>
             <td style="color:#475569;"><b>Client Name</b></td>
-            <td>${customerName}</td>
+            <td>${clientName}</td>
           </tr>
           <tr style="background:#f9fafb;">
             <td style="color:#475569;"><b>Stage</b></td>
@@ -125,7 +125,7 @@ export const unassignedOpportunityTemplate = ({
   userName,
   opportunityId,
   opportunityName,
-  customerName,
+  clientName,
   reassignedTo,
 }) => `
   <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:20px;">
@@ -155,7 +155,7 @@ export const unassignedOpportunityTemplate = ({
           </tr>
           <tr>
             <td style="color:#475569;"><b>Client</b></td>
-            <td>${customerName}</td>
+            <td>${clientName}</td>
           </tr>
           <tr style="background:#f9fafb;">
             <td style="color:#475569;"><b>Reassigned To</b></td>
@@ -181,7 +181,7 @@ export const opportunityContactUpdatedTemplate = ({
   userName,
   opportunityId,
   opportunityName,
-  customerName,
+  clientName,
   assignedBy,
 
   oldContact = {},
@@ -212,7 +212,7 @@ export const opportunityContactUpdatedTemplate = ({
           </tr>
           <tr style="background:#f9fafb;">
             <td style="color:#475569;"><b>Client</b></td>
-            <td>${customerName}</td>
+            <td>${clientName}</td>
           </tr>
           <tr>
             <td style="color:#475569;"><b>Opportunity ID</b></td>
