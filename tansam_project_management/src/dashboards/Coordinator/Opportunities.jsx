@@ -36,6 +36,9 @@ export default function Opportunities() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [originalAssignedTo, setOriginalAssignedTo] = useState(null);
+  const [clientConflict, setClientConflict] = useState(null);
+  const [pendingPayload, setPendingPayload] = useState(null);
+
 
   //  Toast state
     const [toast, setToast] = useState({
@@ -70,7 +73,7 @@ export default function Opportunities() {
   const [form, setForm] = useState({
     opportunity_id: null,
     opportunityName: "",
-    customerName: "",
+    clientName: "",
     contactPerson: "",
     contactEmail: "",
     contactPhone: "",
@@ -122,7 +125,7 @@ export default function Opportunities() {
     setForm({
       opportunity_id: null,
       opportunityName: "",
-      customerName: "",
+      clientName: "",
       contactPerson: "",
       contactEmail: "",
       contactPhone: "",
@@ -150,7 +153,7 @@ export default function Opportunities() {
     setForm({
       opportunity_id: row.opportunity_id,
       opportunityName: row.opportunity_name,
-      customerName: row.customer_name,
+      clientName: row.client_name,
       contactPerson: row.contact_person || "",
       contactEmail: row.contact_email || "",
       contactPhone: row.contact_phone || "",
@@ -196,10 +199,18 @@ const handleSubmit = async (e) => {
     let opportunityId;
 
     // 🔹 OPPORTUNITY PAYLOAD
-    const opportunityPayload = {
-      ...form,
+   const opportunityPayload = {
+      opportunityName: form.opportunityName,
+      clientName: form.clientName,
+      contactPerson: form.contactPerson,
+      contactEmail: form.contactEmail,
+      contactPhone: form.contactPhone,
+      leadSource: form.leadSource,
+      leadDescription: form.leadDescription,
       leadStatus: form.status,
+      assignedTo: form.assignedTo,
     };
+
 
     delete opportunityPayload.status;
     delete opportunityPayload.next_followup_date;
@@ -260,15 +271,24 @@ const handleSubmit = async (e) => {
       loadAll();
     }, 800);
   } catch (err) {
-    console.error(err);
-    showToast({
-      message: "Operation failed. Please try again.",
-      type: "error",
-      position: "top",
-    });
-  } finally {
-    setLoading(false);
+  console.error(err);
+
+  if (
+    err?.response?.status === 409 &&
+    err?.response?.data?.code === "SIMILAR_CLIENT_FOUND"
+  ) {
+    setClientConflict(err.response.data);
+    setPendingPayload(opportunityPayload);
+    return;
   }
+
+  showToast({
+    message: "Operation failed. Please try again.",
+    type: "error",
+    position: "top",
+  });
+}
+
 };
 
   // const handleDelete = async (id) => {
@@ -288,7 +308,7 @@ const handleSubmit = async (e) => {
     const searchMatch =
       !filters.search ||
       item.opportunity_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.customer_name?.toLowerCase().includes(filters.search.toLowerCase());
+      item.client_name?.toLowerCase().includes(filters.search.toLowerCase());
 
     const statusMatch = !filters.status || item.lead_status === filters.status;
     const sourceMatch = !filters.source || item.lead_source === filters.source;
@@ -374,7 +394,7 @@ const handleSubmit = async (e) => {
                     <tr key={item.opportunity_id}>
                       <td>{index + 1}</td>
                       <td>{item.opportunity_name}</td>
-                      <td>{item.customer_name}</td>
+                      <td>{item.client_name}</td>
                       <td>{item.lead_source || "-"}</td>
                       <td>
                         {getUserById(item.assigned_to)
@@ -435,8 +455,8 @@ const handleSubmit = async (e) => {
               <div className="form-group">
                 <label>Client Name</label>
                 <input
-                  name="customerName"
-                  value={form.customerName}
+                  name="clientName"
+                  value={form.clientName}
                   onChange={handleChange}
                   required
                 />
@@ -617,7 +637,7 @@ const handleSubmit = async (e) => {
               <div>
                 <h3 className="view-title">{viewData.opportunity_name}</h3>
                 <p className="view-subtitle">
-                  <strong>Client Name:</strong> {viewData.customer_name || "—"}
+                  <strong>Client Name:</strong> {viewData.client_name || "—"}
                 </p>
               </div>
               <div className="view-header-right">
@@ -709,6 +729,69 @@ const handleSubmit = async (e) => {
           </div>
         </div>
       )}
+      {clientConflict && (
+  <div className="modal-overlay">
+    <div className="modal-card">
+      <h3>Client Already Exists</h3>
+
+      <p>
+        A client with a similar name already exists:
+        <br />
+        <b>{clientConflict.existingClient.client_name}</b>
+      </p>
+
+      <p>What would you like to do?</p>
+
+      <div className="modal-actions">
+        <button
+          onClick={async () => {
+            // 👉 Use existing client
+            await createOpportunity({
+              ...pendingPayload,
+              client_id: clientConflict.existingClient.client_id,
+            });
+
+            setClientConflict(null);
+            setPendingPayload(null);
+            setShowModal(false);
+            loadAll();
+          }}
+        >
+          Use Existing Client
+        </button>
+
+        <button
+          className="danger"
+          onClick={async () => {
+            // 👉 Force new client creation
+            await createOpportunity({
+              ...pendingPayload,
+              isNewClient: true,
+            });
+
+            setClientConflict(null);
+            setPendingPayload(null);
+            setShowModal(false);
+            loadAll();
+          }}
+        >
+          Create New Client
+        </button>
+
+        <button
+          className="cancel-btn"
+          onClick={() => {
+            setClientConflict(null);
+            setPendingPayload(null);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {toast.open && (
           <div className={`toast toast-${toast.type} toast-${toast.position}`}>
             {toast.message}
