@@ -38,6 +38,12 @@ export default function Opportunities() {
   const [originalAssignedTo, setOriginalAssignedTo] = useState(null);
   const [clientConflict, setClientConflict] = useState(null);
   const [pendingPayload, setPendingPayload] = useState(null);
+  const [originalClientName, setOriginalClientName] = useState("");
+  const [originalContact, setOriginalContact] = useState({
+    contactPerson: "",
+    contactEmail: "",
+    contactPhone: "",
+  });
 
 
   //  Toast state
@@ -145,28 +151,39 @@ export default function Opportunities() {
     setShowModal(true);
   };
 
-  const openEditModal = (row) => {
-    const tracker = getTrackerForOpportunity(row.opportunity_id);
+ const openEditModal = (row) => {
+  const tracker = getTrackerForOpportunity(row.opportunity_id);
 
-    setIsEdit(true);
-    setOriginalAssignedTo(row.assigned_to);
-    setForm({
-      opportunity_id: row.opportunity_id,
-      opportunityName: row.opportunity_name,
-      clientName: row.client_name,
-      contactPerson: row.contact_person || "",
-      contactEmail: row.contact_email || "",
-      contactPhone: row.contact_phone || "",
-      leadSource: row.lead_source || "",
-      leadDescription: row.lead_description || "",
-      status: row.lead_status || "NEW",                    // ← Opportunity status
-      stage: tracker.stage || row.lead_status || "NEW",    // ← Tracker stage (prefer tracker if exists)
-      assignedTo: row.assigned_to || "",
-      next_followup_date: tracker.next_followup_date?.slice(0, 10) || "",
-      next_action: tracker.next_action || "",
-    });
-    setShowModal(true);
-  };
+  setIsEdit(true);
+  setOriginalAssignedTo(row.assigned_to);
+
+  // ✅ STORE ORIGINAL SNAPSHOT
+  setOriginalClientName(row.client_name);
+  setOriginalContact({
+    contactPerson: row.contact_person || "",
+    contactEmail: row.contact_email || "",
+    contactPhone: row.contact_phone || "",
+  });
+
+  setForm({
+    opportunity_id: row.opportunity_id,
+    opportunityName: row.opportunity_name,
+    clientName: row.client_name,
+    contactPerson: row.contact_person || "",
+    contactEmail: row.contact_email || "",
+    contactPhone: row.contact_phone || "",
+    leadSource: row.lead_source || "",
+    leadDescription: row.lead_description || "",
+    status: row.lead_status || "NEW",
+    stage: tracker.stage || row.lead_status || "NEW",
+    assignedTo: row.assigned_to || "",
+    next_followup_date: tracker.next_followup_date?.slice(0, 10) || "",
+    next_action: tracker.next_action || "",
+  });
+
+  setShowModal(true);
+};
+
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -180,6 +197,18 @@ const handleSubmit = async (e) => {
       isEdit &&
       originalAssignedTo &&
       String(originalAssignedTo) !== String(form.assignedTo);
+
+      const clientChanged =
+        isEdit && form.clientName !== originalClientName;
+
+      const contactChanged =
+        isEdit &&
+        (
+          form.contactPerson !== originalContact.contactPerson ||
+          form.contactEmail !== originalContact.contactEmail ||
+          form.contactPhone !== originalContact.contactPhone
+        );
+
 
     // 🔔 PRE-TOAST
     if (!isEdit) {
@@ -244,25 +273,32 @@ const handleSubmit = async (e) => {
     }
 
     // 🔔 SUCCESS TOAST
-    if (!isEdit) {
-      showToast({
-        message: "Opportunity created & mail sent successfully",
-        type: "success",
-        position: "top",
-      });
-    } else if (isReassign) {
-      showToast({
-        message: "Opportunity reassigned & mail sent successfully",
-        type: "success",
-        position: "top",
-      });
-    } else {
-      showToast({
-        message: "Opportunity updated successfully",
-        type: "success",
-        position: "top",
-      });
-    }
+  if (!isEdit) {
+  showToast({
+    message: "Opportunity created & mail sent successfully",
+    type: "success",
+  });
+} else if (isReassign) {
+  showToast({
+    message: "Opportunity reassigned & mail sent successfully",
+    type: "success",
+  });
+} else if (contactChanged) {
+  showToast({
+    message: "Contact details updated & mail sent successfully",
+    type: "success",
+  });
+} else if (clientChanged) {
+  showToast({
+    message: "Client name updated successfully",
+    type: "success",
+  });
+} else {
+  showToast({
+    message: "Opportunity updated successfully",
+    type: "success",
+  });
+}
 
     setTimeout(() => {
       setShowModal(false);

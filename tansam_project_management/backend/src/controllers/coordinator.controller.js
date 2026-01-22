@@ -217,6 +217,36 @@ export const createOpportunity = async (req, res) => {
   }
 };
 
+export const checkSimilarClient = async (req, res) => {
+  const { name } = req.query;
+  if (!name || name.length < 3) return res.json(null);
+
+  const db = await connectDB();
+  await initSchemas(db, { coordinator: true });
+
+  const normalize = (v) =>
+    v.trim().replace(/\s+/g, " ").toUpperCase();
+
+  const fuzzyKey = (n) => {
+    const clean = normalize(n);
+    if (clean.length < 10) return clean;
+    return clean.slice(0, 5) + clean.slice(-5);
+  };
+
+  const key = fuzzyKey(name);
+
+  const [[row]] = await db.execute(
+    `
+    SELECT client_id, client_name
+    FROM opportunities_coordinator
+    WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
+    LIMIT 1
+    `,
+    [key]
+  );
+
+  res.json(row || null);
+};
 
 
 /* ======================================================
@@ -266,6 +296,15 @@ export const updateOpportunity = async (req, res) => {
       `SELECT * FROM opportunities_coordinator WHERE opportunity_id = ?`,
       [opportunity_id]
     );
+    const clean = (v) =>
+  v === undefined || v === null ? "" : String(v).trim();
+
+const contactChanged =
+  clean(oldOpp.client_name) !== clean(clientName) ||
+  clean(oldOpp.contact_person) !== clean(contactPerson) ||
+  clean(oldOpp.contact_email) !== clean(contactEmail) ||
+  clean(oldOpp.contact_phone) !== clean(contactPhone);
+
 
     if (!oldOpp) {
       return res.status(404).json({ message: "Opportunity not found" });
@@ -420,6 +459,35 @@ export const updateOpportunity = async (req, res) => {
         });
       }
     }
+   /* ================= CONTACT UPDATE MAIL ================= */
+
+if (contactChanged && !assignmentChanged && oldOpp.assigned_to) {
+  const assignedUser = await getUserById(db, oldOpp.assigned_to);
+
+  if (assignedUser?.email) {
+    await sendMail({
+      to: assignedUser.email,
+      subject: "Opportunity Contact Details Updated",
+      html: opportunityContactUpdatedTemplate({
+        userName: assignedUser.name,
+        opportunityId: opportunity_id,
+        opportunityName: opportunityName || oldOpp.opportunity_name,
+        clientName: finalClientName,
+        assignedBy: req.user.name || "Coordinator",
+        oldContact: {
+          contactPerson: oldOpp.contact_person,
+          contactEmail: oldOpp.contact_email,
+          contactPhone: oldOpp.contact_phone,
+        },
+        newContact: {
+          contactPerson,
+          contactEmail,
+          contactPhone,
+        },
+      }),
+    });
+  }
+}
 
     res.json({ message: "Opportunity updated successfully" });
   } catch (err) {
@@ -450,6 +518,7 @@ export const deleteOpportunity = async (req, res) => {
 
   res.json({ message: "Opportunity deleted successfully" });
 };
+
 
 /* ======================================================
    OPPORTUNITY TRACKER
