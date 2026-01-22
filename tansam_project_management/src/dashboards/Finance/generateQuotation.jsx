@@ -195,7 +195,6 @@ const FinanceDocument = ({
   setShowPreview,
   savedQuotation,
   handleSaveQuotation,
-  // ✅ ADDED MISSING PROPS
   showTermsModal,
   setShowTermsModal,
   termsLoading,
@@ -362,7 +361,7 @@ boxSizing: "border-box",
               style={{
                 width: "100%",
                 padding: "10px",
-                fontSize: "10px",
+                fontSize: "12px",
                 fontFamily: "Arial, sans-serif",
                 border: "1px solid #ccc",
                 borderRadius: "4px",
@@ -379,6 +378,29 @@ boxSizing: "border-box",
           quotation={quotation}
           setQuotation={setQuotation}
         />
+<div style={{ marginTop: "30px" }}>
+  <h3 style={{ textDecoration: "underline", marginBottom: "10px" }}>
+    Terms & Conditions
+  </h3>
+
+  <textarea
+    rows={8}
+    value={quotation.termsContent || ""}
+    onChange={(e) =>
+      setQuotation({ ...quotation, termsContent: e.target.value })
+    }
+    placeholder="Enter terms & conditions here..."
+    style={{
+      width: "100%",
+      padding: "12px",
+      fontSize: "14px",
+      lineHeight: "1.0",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      resize: "vertical",
+    }}
+  />
+</div>
 
         {/* ✅ FIXED TERMS & CONDITIONS WITH LOADING/ERROR */}
         <div style={{ marginTop: "30px" }}>
