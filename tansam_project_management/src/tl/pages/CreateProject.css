@@ -589,16 +589,27 @@
   gap: 8px;
 }
 
+/* Make view icon green by default + hover effect */
 .inline-view-btn {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #555;
-  padding: 2px;
+  padding: 4px;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
 }
 
-.inline-view-btn:hover {
-  color: #007bff;
+.inline-view-btn svg {
+  color: #16a34a;          /* Green-600 – matches your success/CTA green */
+  font-size: 18px;
+}
+
+.inline-view-btn:hover svg {
+  color: #22c55e;          /* Brighter green on hover */
+  transform: scale(1.15);
+}
+
+.inline-view-btn:active svg {
+  transform: scale(0.95);
 }

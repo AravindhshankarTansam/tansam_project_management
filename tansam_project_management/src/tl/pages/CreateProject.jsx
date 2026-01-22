@@ -420,7 +420,8 @@ useEffect(() => {
                   title="View Client Details"
                   onClick={() => setSelectedClientDetails(p)}
                 >
-                  <FiEye />
+                  <FiEye color="#16a34a" />{" "}
+                  {/* ← Green color (same as your app's green) */}
                 </button>
               </td>
 
