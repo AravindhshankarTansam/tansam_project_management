@@ -35,23 +35,32 @@ const normalize = (v) => (v?.trim() ? v.trim() : null);
 ====================================================== */
 
 const generateOpportunityId = async (db) => {
+  const year = new Date().getFullYear();
+
   const [rows] = await db.execute(
     `
     SELECT opportunity_id
     FROM opportunities_coordinator
-    WHERE opportunity_id LIKE 'OPP%'
+    WHERE opportunity_id LIKE ?
     ORDER BY id DESC
     LIMIT 1
-    `
+    `,
+    [`OPP-${year}-%`]
   );
 
   let seq = 1;
+
   if (rows.length) {
-    seq = parseInt(rows[0].opportunity_id.replace("OPP", ""), 10) + 1;
+    const lastId = rows[0].opportunity_id; // OPP-2026-004
+    const lastSeq = parseInt(lastId.split("-")[2], 10);
+    seq = lastSeq + 1;
   }
 
-  return `OPP${String(seq).padStart(3, "0")}`;
+  return `OPP-${year}-${String(seq).padStart(3, "0")}`;
 };
+
+
+
 
 const generateClientId = async (db) => {
   const [rows] = await db.execute(

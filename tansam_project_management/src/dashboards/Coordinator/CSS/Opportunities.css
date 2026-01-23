@@ -502,6 +502,30 @@
   background: linear-gradient(135deg, #2563eb, #3b82f6);
 }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 15px;
+}
+
+.pagination button {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Responsive - Stack on smaller screens */
 @media (max-width: 1024px) {
