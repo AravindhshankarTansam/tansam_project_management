@@ -212,13 +212,13 @@ const generateQuotationNo = (data) => {
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
 useEffect(() => {
-  setNewQuotation((prev) => ({
+  setNewQuotation(prev => ({
     ...prev,
     totalValue: (parseFloat(prev.value || 0) + parseFloat(prev.gst || 0)).toFixed(2),
   }));
 }, [newQuotation.value, newQuotation.gst]);
-
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
@@ -240,13 +240,19 @@ useEffect(() => {
 
 const handleSaveQuotation = async () => {
   try {
-    const payload = {
-      ...newQuotation,
-      quotationNo: editId
-        ? newQuotation.quotationNo   // ✅ KEEP EXISTING NUMBER ON EDIT
-        : newQuotation.quotationNo || generateQuotationNo(data),
-        totalValue: parseFloat(newQuotation.totalValue) || 0,
-    };
+      const finalValue =
+      (parseFloat(newQuotation.value || 0) || 0) +
+      (parseFloat(newQuotation.gst || 0) || 0);
+
+   const payload = {
+  ...newQuotation,
+    value: finalValue,
+
+  quotationNo: editId
+    ? newQuotation.quotationNo
+    : newQuotation.quotationNo || generateQuotationNo(data),
+  totalValue: parseFloat(newQuotation.totalValue) || 0, // send to backend
+};
 
     if (editId) {
       await updateQuotation(editId, payload);
