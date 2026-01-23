@@ -35,9 +35,10 @@
         label: "Project Team",
         children: [
 
-          { label: "Assign Team", path: "/tl/assign-team" },
-          { label: "Departments", path: "/tl/department" },
           { label: "Team Member", path: "/tl/team-member" },
+          { label: "Departments", path: "/tl/department" },
+          { label: "Assign Team", path: "/tl/assign-team" },
+     
           // { label: "Time Tracking", path: "/tl/time-tracking" },
         ],
       },
