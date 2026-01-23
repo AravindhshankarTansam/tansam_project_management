@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/Ceoprojects.css";
 
 import { fetchProjects } from "../../services/project.api";
-import { fetchProjectFollowups } from "../../services/projectFollowup.api";
+import { fetchProjectFollowups } from "../../services/projectfollowup.api";
 
 export default function CeoProjects() {
   const [projects, setProjects] = useState([]);
