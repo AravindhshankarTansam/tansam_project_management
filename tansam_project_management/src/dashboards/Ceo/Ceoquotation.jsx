@@ -147,7 +147,7 @@ export default function CeoQuotation() {
               <tr>
                 <th>Project Name</th>
                 <th>Client Name</th>
-                <th>Client Type</th>
+                <th>Project Type</th>
                 <th>Quotation Value</th>
               </tr>
             </thead>
