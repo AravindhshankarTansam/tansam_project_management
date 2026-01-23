@@ -12,41 +12,47 @@ export const getProjectFollowups = async (req, res) => {
     });
 
     const [rows] = await db.execute(`
-      SELECT
-        p.id AS projectId,
-        p.project_name AS projectName,
-        p.client_name AS clientName,
-        p.quotation_number AS quotationCode,
-        p.status,
-        p.po_file AS poFile,
+  SELECT
+    p.id AS projectId,
+    p.project_name AS projectName,
+    p.client_name AS clientName,
+    p.quotation_number AS quotationCode,
+    p.status,
+    p.po_file AS poFile,
 
-        COUNT(DISTINCT a.id) AS teamMembers,
+    COUNT(DISTINCT a.id) AS teamMembers,
 
-        f.progress,
-        f.next_milestone AS nextMilestone,
-        f.milestone_due_date AS milestoneDueDate,
-        f.issue_description AS issueDescription
+    f.id AS followupId,
+    f.progress,
+    f.next_milestone AS nextMilestone,
+    f.milestone_due_date AS milestoneDueDate,
+    f.issue_description AS issueDescription,
+    f.created_at AS createdAt,
+    f.updated_at AS updatedAt
 
-      FROM projects p
-      LEFT JOIN project_team_assignments a
-        ON a.project_id = p.id
-      LEFT JOIN project_followups f
-        ON f.project_id = p.id
+  FROM projects p
+  LEFT JOIN project_team_assignments a
+    ON a.project_id = p.id
+  LEFT JOIN project_followups f
+    ON f.project_id = p.id
 
-      GROUP BY
-        p.id,
-        p.project_name,
-        p.client_name,
-        p.quotation_number,
-        p.status,
-        p.po_file,
-        f.progress,
-        f.next_milestone,
-        f.milestone_due_date,
-        f.issue_description
+  GROUP BY
+    p.id,
+    p.project_name,
+    p.client_name,
+    p.quotation_number,
+    p.status,
+    p.po_file,
+    f.id,
+    f.progress,
+    f.next_milestone,
+    f.milestone_due_date,
+    f.issue_description,
+    f.created_at,
+    f.updated_at
 
-      ORDER BY p.id DESC
-    `);
+  ORDER BY COALESCE(f.updated_at, f.created_at) DESC
+`);
 
     res.json(rows);
   } catch (err) {

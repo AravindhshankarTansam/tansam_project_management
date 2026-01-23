@@ -21,12 +21,30 @@ import {
 
 const PIE_COLORS = ["#22c55e", "#3b82f6", "#f59e0b"];
 
+/* ===== helper ===== */
+const timeAgo = (date) => {
+  if (!date) return "—"; // 👈 FIX #1
+
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return "—"; // 👈 FIX #2
+
+  const diff = (Date.now() - parsed.getTime()) / 1000;
+
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
+
+
 export default function TLDashboard() {
   const [totalProjects, setTotalProjects] = useState(0);
   const [activeTasks, setActiveTasks] = useState(0);
   const [completedProjects, setCompletedProjects] = useState(0);
   const [onHoldAlerts, setOnHoldAlerts] = useState(0);
+
   const [topProgressProjects, setTopProgressProjects] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -50,52 +68,33 @@ export default function TLDashboard() {
           followups.filter((f) => f.status === "On Hold").length
         );
 
-        /* ================= TOP 3 PROJECTS BY PROGRESS ================= */
+        /* ================= TOP 3 BY PROGRESS ================= */
         const top3 = [...followups]
           .filter((f) => typeof f.progress === "number")
           .sort((a, b) => b.progress - a.progress)
           .slice(0, 3)
           .map((f) => ({
-            projectName: f.projectName || `Project ${f.projectId || f.id}`,
+            projectName: f.projectName || `Project ${f.projectId}`,
             progress: f.progress,
           }));
 
         setTopProgressProjects(top3);
+
+        /* ================= RECENT ACTIVITY ================= */
+        const recent = [...followups]
+          .sort(
+            (a, b) =>
+              new Date(b.updated_at || b.created_at) -
+              new Date(a.updated_at || a.created_at)
+          )
+          .slice(0, 5);
+
+        setRecentActivities(recent);
       } catch (err) {
         console.error("Dashboard data load failed", err);
       }
     })();
   }, []);
-
-  // Custom label renderer – shows name + % inside pie slices
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    const name = topProgressProjects[index]?.projectName || "";
-    const value = `${(percent * 100).toFixed(0)}%`;
-
-    // Shorten long names
-    const displayName = name.length > 15 ? name.substring(0, 12) + "..." : name;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize="11"
-        fontWeight="600"
-        pointerEvents="none"
-      >
-        <tspan x={x} dy="-6">{displayName}</tspan>
-        <tspan x={x} dy="14">{value}</tspan>
-      </text>
-    );
-  };
 
   return (
     <div className="tl-dashboard">
@@ -136,79 +135,61 @@ export default function TLDashboard() {
         </div>
       </div>
 
-      {/* ================= BOTTOM SECTION ================= */}
+      {/* ================= BOTTOM ================= */}
       <div className="bottom-grid">
-        {/* PIE CHART – Improved */}
+        {/* ===== PIE ===== */}
         <div className="panel">
           <h3 className="panel-title">Top Project Progress</h3>
-          <p className="panel-sub">
-            Highest progress based on latest follow-ups
-          </p>
+          <p className="panel-sub">Highest progress based on follow-ups</p>
 
-          {topProgressProjects.length === 0 ? (
-            <p className="no-data">No progress data available</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={topProgressProjects}
-                  dataKey="progress"
-                  nameKey="projectName"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={110}
-                  paddingAngle={3}
-                  label={renderCustomizedLabel}
-                  labelLine={false}
-                >
-                  {topProgressProjects.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value, name) => [`${value}%`, name]}
-                  contentStyle={{
-                    backgroundColor: "rgba(30, 41, 59, 0.95)",
-                    border: "none",
-                    borderRadius: "10px",
-                    color: "#ffffff",
-                    padding: "12px 16px",
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
-                  }}
-                  itemStyle={{ color: "#e2e8f0" }}
-                  labelStyle={{ color: "#94a3b8", fontWeight: 600 }}
-                />
-                <Legend 
-                  layout="horizontal" 
-                  verticalAlign="bottom" 
-                  wrapperStyle={{ marginTop: "12px" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={topProgressProjects}
+                dataKey="progress"
+                nameKey="projectName"
+                innerRadius={50}
+                outerRadius={110}
+                paddingAngle={3}
+              >
+                {topProgressProjects.map((_, i) => (
+                  <Cell
+                    key={i}
+                    fill={PIE_COLORS[i % PIE_COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip formatter={(v) => `${v}%`} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* RECENT ACTIVITY (still static – can be wired later) */}
+        {/* ===== RECENT ACTIVITY (REAL DATA) ===== */}
         <div className="panel">
           <h3 className="panel-title">Recent Activity</h3>
-          <p className="panel-sub">Latest updates from your team</p>
+          <p className="panel-sub">Latest project updates</p>
 
           <ul className="activity-list">
-            <li>
-              <div className="avatar">S</div>
-              <div>
-                <strong>Sarah Miller</strong> completed Hero Section
-                <span>2h ago</span>
-              </div>
-            </li>
-            <li>
-              <div className="avatar">J</div>
-              <div>
-                <strong>Jack Wilson</strong> commented on API Docs
-                <span>4h ago</span>
-              </div>
-            </li>
+            {recentActivities.length === 0 ? (
+              <li>No recent activity</li>
+            ) : (
+              recentActivities.map((a) => (
+                    <li key={`${a.id || "pf"}-${a.projectId}-${a.created_at || "na"}`}>
+                  <div className="avatar">
+                    {a.projectName?.charAt(0) || "P"}
+                  </div>
+                  <div>
+                    <strong>{a.projectName}</strong>
+                    <div className="activity-text">
+                      Status: {a.status} · Progress: {a.progress || 0}%
+                    </div>
+                    <span>{timeAgo(a.updatedAt || a.createdAt)}</span>
+
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </div>
       </div>
