@@ -212,7 +212,12 @@ const generateQuotationNo = (data) => {
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
-
+useEffect(() => {
+  setNewQuotation((prev) => ({
+    ...prev,
+    totalValue: (parseFloat(prev.value || 0) + parseFloat(prev.gst || 0)).toFixed(2),
+  }));
+}, [newQuotation.value, newQuotation.gst]);
 
 
   const handleEdit = (quotation) => {
@@ -240,6 +245,7 @@ const handleSaveQuotation = async () => {
       quotationNo: editId
         ? newQuotation.quotationNo   // ✅ KEEP EXISTING NUMBER ON EDIT
         : newQuotation.quotationNo || generateQuotationNo(data),
+        totalValue: parseFloat(newQuotation.totalValue) || 0,
     };
 
     if (editId) {
@@ -262,6 +268,8 @@ const handleSaveQuotation = async () => {
       lab: "",
       description: "",
       value: "",
+          gst: "",
+      totalValue: "",
       date: "",
     });
   } catch (err) {
@@ -601,45 +609,61 @@ if (showGenerateQuotation) {
 
         </div>
 
-      <div className="form-group">
-  <label>Opportunity Name *</label>
-<select
-  value={newQuotation.project_name}
-  onChange={(e) => {
-    const selectedProject = e.target.value;
-
-    const selectedOpportunity = opportunities.find(
-      (opp) => opp.opportunity_name === selectedProject
-    );
-
-    setNewQuotation({
-      ...newQuotation,
-      project_name: selectedProject,
-      clientName: selectedOpportunity?.customer_name || "",
-    });
-  }}
->
-
- <option value="">Select opprtunity</option>
-{opportunities.map((opp) => (
-  <option key={opp.id} value={opp.opportunity_name}>
-    {opp.opportunity_name}
-  </option>
-))}
-
+     <div className="form-group">
+  <label>Client *</label>
+  <select
+    value={newQuotation.client_id || ""}
+    onChange={(e) => {
+      const clientId = e.target.value;
+      setNewQuotation({
+        ...newQuotation,
+        client_id: clientId,
+        clientName: "",      // reset until opportunity selected
+        project_name: "",    // reset opportunity
+      });
+    }}
+  >
+    <option value="">Select Client</option>
+    {opportunities
+      .map((opp) => ({ client_id: opp.client_id, client_name: opp.client_name }))
+      .filter((v, i, a) => a.findIndex(t => t.client_id === v.client_id) === i) // unique clients
+      .map((client) => (
+        <option key={client.client_id} value={client.client_id}>
+          {client.client_name}
+        </option>
+      ))}
   </select>
 </div>
 
-        <div className="form-group">
-          <label>Client Name *</label>
-      <input
-  type="text"
-  value={newQuotation.clientName}
-  readOnly
-  placeholder="Auto-filled from opportunity"
-/>
-
-        </div>
+{/* OPPORTUNITY SELECTION (filtered by selected client) */}
+<div className="form-group">
+  <label>Opportunity Name *</label>
+  <select
+    value={newQuotation.project_name || ""}
+    onChange={(e) => {
+      const selectedOpp = opportunities.find(
+        (opp) =>
+          opp.opportunity_name === e.target.value &&
+          opp.client_id === newQuotation.client_id
+      );
+      setNewQuotation({
+        ...newQuotation,
+        project_name: selectedOpp?.opportunity_name || "",
+        clientName: selectedOpp?.client_name || "",
+      });
+    }}
+    disabled={!newQuotation.client_id} // disabled until client selected
+  >
+    <option value="">Select Opportunity</option>
+    {opportunities
+      .filter((opp) => opp.client_id === newQuotation.client_id)
+      .map((opp) => (
+        <option key={opp.opportunity_id} value={opp.opportunity_name}>
+          {opp.opportunity_name}
+        </option>
+      ))}
+  </select>
+</div>
 
         <div className="form-group">
           <label>Client Type *</label>
@@ -656,27 +680,27 @@ if (showGenerateQuotation) {
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Quote Value *</label>
-          <input
-            type="number"
-            value={newQuotation.value}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, value: e.target.value })
-            }
-          />
-        </div>
+       <div className="form-group">
+  <label>Quote Value *</label>
+  <input
+    type="number"
+    value={newQuotation.value}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, value: parseFloat(e.target.value) || 0 })
+    }
+  />
+</div>
+
 <div className="form-group">
   <label>GST</label>
   <input
     type="number"
     value={newQuotation.gst}
     onChange={(e) =>
-      setNewQuotation({ ...newQuotation, gst: e.target.value })
+      setNewQuotation({ ...newQuotation, gst: parseFloat(e.target.value) || 0 })
     }
   />
 </div>
-
 
 
         <div className="form-group">
@@ -846,7 +870,14 @@ if (showGenerateQuotation) {
         <p><strong>Lab:</strong> {newQuotation.lab}</p>
         <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
         <p><strong>Description:</strong> {newQuotation.description}</p>
-        <p><strong>Quote Value:</strong> ₹ {parseInt(newQuotation.value || 0).toLocaleString("en-IN")}</p>
+    <p>
+  <strong>Quote Value (Incl. GST):</strong> ₹{" "}
+  {(
+    (parseFloat(newQuotation.value || 0) || 0) +
+    (parseFloat(newQuotation.gst || 0) || 0)
+  ).toLocaleString("en-IN")}
+</p>
+
       </div>
 
       {/* ACTIONS */}

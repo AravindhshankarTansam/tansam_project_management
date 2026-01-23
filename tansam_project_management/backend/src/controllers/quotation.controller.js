@@ -31,7 +31,6 @@ export const addQuotation = async (req, res) => {
   workCategory,
   lab,
   description,
-  gst,
   value,
   date,
   paymentPhase,
@@ -50,7 +49,7 @@ const safeValues = [
   lab,
   description,
   value,
-  gst,
+
   date,
   paymentPhase ?? null,
   revisedCost ?? null,
@@ -61,8 +60,8 @@ const safeValues = [
 ];
 const [result] = await db.execute(
   `INSERT INTO quotations
-   (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, gst, date, paymentPhase, revisedCost, poReceived, paymentReceived, paymentAmount, paymentPendingReason)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+   (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date, paymentPhase, revisedCost, poReceived, paymentReceived, paymentAmount, paymentPendingReason)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 safeValues
 );
 
@@ -77,7 +76,7 @@ safeValues
       lab,
       description,
       value,
-      gst,
+    
       date,
         paymentPhase,
     revisedCost,
@@ -103,7 +102,7 @@ export const updateQuotation = async (req, res) => {
       clientName,
       clientType,
       workCategory,
-      gst,
+      
       lab,
       description,
       value,
@@ -119,7 +118,7 @@ export const updateQuotation = async (req, res) => {
   
 await db.execute(
   `UPDATE quotations
-   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?, gst=?, date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
+   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
    WHERE id=?`,
   [
     project_name,
@@ -129,7 +128,7 @@ await db.execute(
     lab,
     description,
     value,
-    gst,
+    
     date,
     paymentPhase,
     revisedCost,
