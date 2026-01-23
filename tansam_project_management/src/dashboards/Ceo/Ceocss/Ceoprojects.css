@@ -197,3 +197,39 @@
     padding: 10px;
   }
 }
+
+/* ================================
+   PAGINATION
+================================ */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.pagination button.active {
+  background: #0ea5e9;
+  color: white;
+  border-color: #0ea5e9;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
