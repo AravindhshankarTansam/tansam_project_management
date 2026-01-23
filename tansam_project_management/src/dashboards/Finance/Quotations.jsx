@@ -7,7 +7,7 @@ import {
   updateQuotation,
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
-import { FaFileWord, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaFileWord, FaEdit, FaTrash, FaFilePdf } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
@@ -19,11 +19,11 @@ export default function Quotations() {
   const [pageSize, setPageSize] = useState(5);
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [downloadingId, setDownloadingId] = useState(null);
+ 
 const [workCategories, setWorkCategories] = useState([]);
 const [opportunities, setOpportunities] = useState([]);
 const [labs, setLabs] = useState([]);
-
+const [activeTab, setActiveTab] = useState("quotation");
 const [showDoc, setShowDoc] = useState(false);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
@@ -44,7 +44,15 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
     lab: "",
     description: "",
     value: "",
+     gst: "",
+  totalValue: "",
     date: "",
+    revisedCost: "",
+  paymentPhase: "Not Started",
+  poReceived: "No",
+  paymentReceived: "No",
+  paymentAmount: "",
+  paymentPendingReason: "",
   });
 
   const clearAllFilters = () => {
@@ -154,6 +162,7 @@ useEffect(() => {
 
   loadWorkCategories();
 }, []);
+
 useEffect(() => {
   const loadLabs = async () => {
     try {
@@ -204,50 +213,24 @@ const generateQuotationNo = (data) => {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  // ✅ DOCX DOWNLOAD FUNCTION
-const downloadDocx = async (quotation) => {
-  setDownloadingId(quotation.id);
-  try {
-    const userId = localStorage.getItem("userId") || "1";
-    const userRole = (localStorage.getItem("userRole") || "FINANCE").toUpperCase();
-
-const response = await fetch(
-  `http://localhost:9899/api/quotations/${quotation.id}/docx`,
-  {
-    method: "GET",
-    headers: {
-      Accept:
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "x-user-id": userId,
-      "x-user-role": userRole,
-    },
-  }
-);
-
-    if (!response.ok) {
-      throw new Error("Download failed");
-    }
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Quotation_${quotation.quotationNo}.docx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Download error:", error);
-    alert("Failed to download DOCX");
-  } finally {
-    setDownloadingId(null);
-  }
-};
+useEffect(() => {
+  setNewQuotation(prev => ({
+    ...prev,
+    totalValue: (parseFloat(prev.value || 0) + parseFloat(prev.gst || 0)).toFixed(2),
+  }));
+}, [newQuotation.value, newQuotation.gst]);
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
-    setNewQuotation({ ...quotation });
+  setNewQuotation({
+    ...quotation,
+    paymentPhase: quotation.paymentPhase || "Not Started",
+    revisedCost: quotation.revisedCost || "",
+    poReceived: quotation.poReceived || "No",
+    paymentReceived: quotation.paymentReceived || "No",
+    paymentAmount: quotation.paymentAmount || "",
+    paymentPendingReason: quotation.paymentPendingReason || "",
+  });
     setShowModal(true);
   };
 
@@ -257,12 +240,19 @@ useEffect(() => {
 
 const handleSaveQuotation = async () => {
   try {
-    const payload = {
-      ...newQuotation,
-      quotationNo: editId
-        ? newQuotation.quotationNo   // ✅ KEEP EXISTING NUMBER ON EDIT
-        : newQuotation.quotationNo || generateQuotationNo(data),
-    };
+      const finalValue =
+      (parseFloat(newQuotation.value || 0) || 0) +
+      (parseFloat(newQuotation.gst || 0) || 0);
+
+   const payload = {
+  ...newQuotation,
+    value: finalValue,
+
+  quotationNo: editId
+    ? newQuotation.quotationNo
+    : newQuotation.quotationNo || generateQuotationNo(data),
+  totalValue: parseFloat(newQuotation.totalValue) || 0, // send to backend
+};
 
     if (editId) {
       await updateQuotation(editId, payload);
@@ -284,6 +274,8 @@ const handleSaveQuotation = async () => {
       lab: "",
       description: "",
       value: "",
+          gst: "",
+      totalValue: "",
       date: "",
     });
   } catch (err) {
@@ -373,6 +365,7 @@ if (showGenerateQuotation) {
       workCategory: "",
       lab: "",
       description: "",
+       gst:"",
       value: "",
       date: "",
     });
@@ -456,112 +449,130 @@ if (showGenerateQuotation) {
           <span>per page</span>
         </div>
       </div>
-
+<div className="tabs">
+  <button
+    className={`tab ${activeTab === "quotation" ? "active" : ""}`}
+    onClick={() => setActiveTab("quotation")}
+  >
+    Quotation
+  </button>
+  <button
+    className={`tab ${activeTab === "payment" ? "active" : ""}`}
+    onClick={() => setActiveTab("payment")}
+  >
+    Payment Phase
+  </button>
+  </div>
       {/* Table */}
-      <div className="card-table">
-        <table>
-          <thead>
-            <tr>
-              <th>S.No</th>
-             
-              <th>Quotation No</th>
-               <th>Project Name</th>
-              <th>Client Name</th>
-              <th>Client Type</th>
-              <th>Work Category</th>
-              <th>Lab</th>
-              <th>Description</th>
-              <th>Quote Value</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.length > 0 ? (
-              paginated.map((q, i) => (
-                <tr key={q.id} className="table-row">
-                  <td>{(page - 1) * pageSize + i + 1}</td>
-                  <td>
-                    <strong>{q.quotationNo}</strong>
-                  </td>
-                  <td>{q.project_name}</td>
+    <div className="card-table">
+  <table>
+    <thead>
+      <tr>
+        <th>S.No</th>
+        {activeTab === "quotation" ? (
+          <>
+            <th>Quotation No</th>
+            <th>Opportunity Name</th>
+            <th>Client Name</th>
+            <th>Client Type</th>
+            <th>Work Category</th>
+            <th>Lab</th>
+            <th>Description</th>
+            <th>Quote Value</th>
+            <th>Date</th>
+            <th>Actions</th> {/* Only in Quotation tab */}
+          </>
+        ) : (
+          <>
+            <th>Quotation No</th>
+            <th>Payment Phase</th>
+            <th>Revised Cost</th>
+            <th>PO Received</th>
+            <th>Payment Received</th>
+            <th>Payment Amount</th>
+            <th>Pending Reason</th>
+          </>
+        )}
+      </tr>
+    </thead>
+    <tbody>
+      {paginated.length > 0 ? (
+        paginated.map((q, i) => (
+          <tr key={q.id} className="table-row">
+            <td>{(page - 1) * pageSize + i + 1}</td>
 
-                  <td>{q.clientName}</td>
-                  <td>
-                    <span
-                      className={`badge badge-${q.clientType.toLowerCase()}`}
-                    >
-                      {q.clientType}
-                    </span>
-                  </td>
-                  <td>{q.workCategory}</td>
-                  <td>
-                    <span className="badge-lab">{q.lab}</span>
-                  </td>
-                  <td className="desc-cell">{q.description}</td>
-                  <td className="value-cell">
-                    ₹ {parseInt(q.value).toLocaleString("en-IN")}
-                  </td>
-                  <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
-                  <td className="actions-cell">
-       {/* <button
-    className="btn-docx"
-    onClick={() => downloadDocx(q)}
-    disabled={downloadingId === q.id}
-    title="Download DOCX"
-  >
-    {downloadingId === q.id ? "⏳" : <FaFileWord />}
-  </button> */}
-                     <button
-    className="btn-edit"
-    onClick={() => handleEdit(q)}
-    title="Edit"
-  >
-    <FaEdit />
-  </button>  <button
-    className="btn-delete"
-    onClick={() => deleteRow(q.id)}
-    title="Delete"
-  >
-    <FaTrash />
-  </button>
-{q.isGenerated ? (
-  <button
-    className="btn-medit"
-    onClick={() => handleEditGeneratedQuotation(q)}
-    title="Edit Generated Quotation"
-  >
-    <MdEditDocument />
-  </button>
-) : (
-  <button
-    className="btn-generate"
-    onClick={() => {
-      setNewQuotation(q);
-      setShowGenerateQuotation(true);
-    }}
-    title="Generate Quotation"
-  >
-    +
-  </button>
-)}
-
-
-
-
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="10" className="no-data">
-                  No quotations found
+            {activeTab === "quotation" ? (
+              <>
+                <td><strong>{q.quotationNo}</strong></td>
+                <td>{q.project_name}</td>
+                <td>{q.clientName}</td>
+                <td>
+                  <span className={`badge badge-${q.clientType.toLowerCase()}`}>
+                    {q.clientType}
+                  </span>
                 </td>
-              </tr>
+                <td>{q.workCategory}</td>
+                <td><span className="badge-lab">{q.lab}</span></td>
+                <td className="desc-cell">{q.description}</td>
+                <td className="value-cell">
+                  ₹ {parseInt(q.value || 0).toLocaleString("en-IN")}
+                </td>
+                <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
+
+                {/* Actions column ONLY in Quotation tab */}
+                <td className="actions-cell">
+                  <button className="btn-edit" onClick={() => handleEdit(q)} title="Edit">
+                    <FaEdit />
+                  </button>
+                  <button className="btn-delete" onClick={() => deleteRow(q.id)} title="Delete">
+                    <FaTrash />
+                  </button>
+                  {q.isGenerated ? (
+                    <button
+                      className="btn-medit"
+                      onClick={() => handleEditGeneratedQuotation(q)}
+                      title="Edit Generated Quotation"
+                    >
+                      <MdEditDocument />
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-generate"
+                      onClick={() => {
+                        setNewQuotation(q);
+                        setShowGenerateQuotation(true);
+                      }}
+                      title="Generate Quotation"
+                    >
+                      <FaFilePdf />
+                    </button>
+                  )}
+                </td>
+              </>
+            ) : (
+              <>
+                <td><strong>{q.quotationNo}</strong></td>
+                <td>{q.paymentPhase || "Not Started"}</td>
+                <td>{q.revisedCost || "-"}</td>
+                <td>{q.poReceived || "No"}</td>
+                <td>{q.paymentReceived || "No"}</td>
+                <td>{q.paymentAmount || "-"}</td>
+                <td>{q.paymentPendingReason || "-"}</td>
+              </>
             )}
-          </tbody>
-        </table>
-      </div>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={activeTab === "quotation" ? "11" : "7"} className="no-data">
+            No quotations found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
 
       {/* Pagination */}
       <div className="pagination">
@@ -581,6 +592,7 @@ if (showGenerateQuotation) {
 
       {/* ✅ IMPROVED MODAL */}
     {showModal && (
+      
   <div className="modal-overlay" onClick={closeModal}>
     <div className="modal" onClick={(e) => e.stopPropagation()}>
       <div className="modal-header">
@@ -603,45 +615,61 @@ if (showGenerateQuotation) {
 
         </div>
 
-      <div className="form-group">
-  <label>Project Name *</label>
-<select
-  value={newQuotation.project_name}
-  onChange={(e) => {
-    const selectedProject = e.target.value;
-
-    const selectedOpportunity = opportunities.find(
-      (opp) => opp.opportunity_name === selectedProject
-    );
-
-    setNewQuotation({
-      ...newQuotation,
-      project_name: selectedProject,
-      clientName: selectedOpportunity?.customer_name || "",
-    });
-  }}
->
-
- <option value="">Select Project</option>
-{opportunities.map((opp) => (
-  <option key={opp.id} value={opp.opportunity_name}>
-    {opp.opportunity_name}
-  </option>
-))}
-
+     <div className="form-group">
+  <label>Client *</label>
+  <select
+    value={newQuotation.client_id || ""}
+    onChange={(e) => {
+      const clientId = e.target.value;
+      setNewQuotation({
+        ...newQuotation,
+        client_id: clientId,
+        clientName: "",      // reset until opportunity selected
+        project_name: "",    // reset opportunity
+      });
+    }}
+  >
+    <option value="">Select Client</option>
+    {opportunities
+      .map((opp) => ({ client_id: opp.client_id, client_name: opp.client_name }))
+      .filter((v, i, a) => a.findIndex(t => t.client_id === v.client_id) === i) // unique clients
+      .map((client) => (
+        <option key={client.client_id} value={client.client_id}>
+          {client.client_name}
+        </option>
+      ))}
   </select>
 </div>
 
-        <div className="form-group">
-          <label>Client Name *</label>
-      <input
-  type="text"
-  value={newQuotation.clientName}
-  readOnly
-  placeholder="Auto-filled from opportunity"
-/>
-
-        </div>
+{/* OPPORTUNITY SELECTION (filtered by selected client) */}
+<div className="form-group">
+  <label>Opportunity Name *</label>
+  <select
+    value={newQuotation.project_name || ""}
+    onChange={(e) => {
+      const selectedOpp = opportunities.find(
+        (opp) =>
+          opp.opportunity_name === e.target.value &&
+          opp.client_id === newQuotation.client_id
+      );
+      setNewQuotation({
+        ...newQuotation,
+        project_name: selectedOpp?.opportunity_name || "",
+        clientName: selectedOpp?.client_name || "",
+      });
+    }}
+    disabled={!newQuotation.client_id} // disabled until client selected
+  >
+    <option value="">Select Opportunity</option>
+    {opportunities
+      .filter((opp) => opp.client_id === newQuotation.client_id)
+      .map((opp) => (
+        <option key={opp.opportunity_id} value={opp.opportunity_name}>
+          {opp.opportunity_name}
+        </option>
+      ))}
+  </select>
+</div>
 
         <div className="form-group">
           <label>Client Type *</label>
@@ -658,16 +686,28 @@ if (showGenerateQuotation) {
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Quote Value *</label>
-          <input
-            type="number"
-            value={newQuotation.value}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, value: e.target.value })
-            }
-          />
-        </div>
+       <div className="form-group">
+  <label>Quote Value *</label>
+  <input
+    type="number"
+    value={newQuotation.value}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, value: parseFloat(e.target.value) || 0 })
+    }
+  />
+</div>
+
+<div className="form-group">
+  <label>GST</label>
+  <input
+    type="number"
+    value={newQuotation.gst}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, gst: parseFloat(e.target.value) || 0 })
+    }
+  />
+</div>
+
 
         <div className="form-group">
           <label>Work Category *</label>
@@ -726,6 +766,97 @@ if (showGenerateQuotation) {
             }
           />
         </div>
+        {/* PAYMENT PHASE */}
+<div className="form-group">
+  <label>Payment Phase *</label>
+  <select
+    value={newQuotation.paymentPhase}
+    onChange={(e) =>
+      setNewQuotation({ ...newQuotation, paymentPhase: e.target.value })
+    }
+  >
+    <option value="Not Started">Not Started</option>
+    <option value="Started">Started</option>
+  </select>
+</div>
+
+
+{newQuotation.paymentPhase === "Started" && (
+  <>
+    <div className="form-group">
+      <label>Revised Cost</label>
+      <input
+        type="number"
+        value={newQuotation.revisedCost}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, revisedCost: e.target.value })
+        }
+      />
+    </div>
+
+    <div className="form-group">
+      <label>PO Received *</label>
+      <select
+        value={newQuotation.poReceived}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, poReceived: e.target.value })
+        }
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+    </div>
+
+    <div className="form-group">
+      <label>Payment Received *</label>
+      <select
+        value={newQuotation.paymentReceived}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, paymentReceived: e.target.value })
+        }
+      >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+    </div>
+
+    {newQuotation.paymentReceived === "Yes" && (
+      <div className="form-group">
+        <label>Payment Amount</label>
+        <input
+          type="number"
+          value={newQuotation.paymentAmount}
+          onChange={(e) =>
+            setNewQuotation({
+              ...newQuotation,
+              paymentAmount: e.target.value,
+            })
+          }
+        />
+      </div>
+    )}
+
+    {newQuotation.paymentReceived === "No" && (
+      <div className="form-group">
+        <label>Payment Pending Reason</label>
+        <textarea
+          rows="2"
+          value={newQuotation.paymentPendingReason}
+          onChange={(e) =>
+            setNewQuotation({
+              ...newQuotation,
+              paymentPendingReason: e.target.value,
+            })
+          }
+        />
+      </div>
+    )}
+  </>
+)}
+
+
+
+
       </div>
 
       {/* LIVE QUOTATION PREVIEW */}
@@ -733,19 +864,26 @@ if (showGenerateQuotation) {
         border: "1px solid #ccc",
         padding: "20px",
         marginTop: "20px",
-        backgroundColor: "#fff",
+        backgroundColor: "#fffefe",
         maxHeight: "400px",
         overflowY: "auto"
       }}>
         <h2 style={{ textAlign: "center" }}>Quotation</h2>
         <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
         <p><strong>Date:</strong> {newQuotation.date}</p>
-        <p><strong>Project Name:</strong> {newQuotation.project_name}</p>
+        <p><strong>Opportunity Name:</strong> {newQuotation.project_name}</p>
         <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
         <p><strong>Lab:</strong> {newQuotation.lab}</p>
         <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
         <p><strong>Description:</strong> {newQuotation.description}</p>
-        <p><strong>Quote Value:</strong> ₹ {parseInt(newQuotation.value || 0).toLocaleString("en-IN")}</p>
+    <p>
+  <strong>Quote Value (Incl. GST):</strong> ₹{" "}
+  {(
+    (parseFloat(newQuotation.value || 0) || 0) +
+    (parseFloat(newQuotation.gst || 0) || 0)
+  ).toLocaleString("en-IN")}
+</p>
+
       </div>
 
       {/* ACTIONS */}

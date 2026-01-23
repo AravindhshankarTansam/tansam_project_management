@@ -19,27 +19,33 @@ export const createQuotationFollowupsSchema = async (db) => {
   `);
 
   // 💬 QUOTATIONS TABLE
-  await db.execute(`
-   CREATE TABLE IF NOT EXISTS quotations (
-  id INT(11) NOT NULL AUTO_INCREMENT,
-  project_name VARCHAR(50) DEFAULT NULL,
-  quotationNo VARCHAR(50) NOT NULL,
-  clientName VARCHAR(100) NOT NULL,
-  clientType VARCHAR(50) NOT NULL,
-  workCategory VARCHAR(100) NOT NULL,
-  lab VARCHAR(100) NOT NULL,
-  description TEXT DEFAULT NULL,
-  value DECIMAL(12,2) DEFAULT NULL,
-  date DATE DEFAULT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  isGenerated TINYINT(1) DEFAULT 0,
-  generatedAt DATETIME DEFAULT NULL,
-  PRIMARY KEY (id),
-  KEY idx_isGenerated (isGenerated)
-);
-
-  `);
+await db.execute(`
+  CREATE TABLE IF NOT EXISTS quotations (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    project_name VARCHAR(50) DEFAULT NULL,
+    quotationNo VARCHAR(50) NOT NULL,
+    clientName VARCHAR(100) NOT NULL,
+    clientType VARCHAR(50) NOT NULL,
+    workCategory VARCHAR(100) NOT NULL,
+    lab VARCHAR(100) NOT NULL,
+    description TEXT DEFAULT NULL,
+    value DECIMAL(12,2) DEFAULT NULL,
+    date DATE DEFAULT NULL,
+    isGenerated TINYINT(1) DEFAULT 0,
+    generatedAt DATETIME DEFAULT NULL,
+    paymentPhase VARCHAR(20) DEFAULT NULL,
+    revisedCost DECIMAL(12,2) DEFAULT NULL,
+    poReceived VARCHAR(10) DEFAULT NULL,
+    paymentReceived VARCHAR(10) DEFAULT NULL,
+    paymentAmount DECIMAL(12,2) DEFAULT NULL,
+    paymentPendingReason TEXT DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_isGenerated (isGenerated)
+  )
+`);
 
   // 💬 TERMS & CONDITIONS TABLE
   await db.execute(`

@@ -40,30 +40,33 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
   return (
     <div style={{ marginBottom: "30px" }}>
       <div style={{ width: "100%", overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginBottom: "10px",
-            tableLayout: "fixed",
-          }}
-        >
+<table
+  style={{
+    width: "100%",
+    borderCollapse: "collapse",
+    marginBottom: "10px",
+    tableLayout: "fixed",
+  }}
+>
           <thead>
             <tr>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Sl. No
               </th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>
+              <th style={{ border: "1px solid #000", padding: "12px" }}>
                 Product Description
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Qty Per Students
+                Qty
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Unit Price + TAX
+                Unit Price
+              </th>
+                <th style={{ border: "1px solid #000", padding: "4px" }}>
+                TAX
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Total Price in INR
+            Total price
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Action
@@ -92,7 +95,7 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
                     style={{
                       width: "100%",
                       padding: "4px",
-                      boxSizing: "border-box",
+                     
                     }}
                   />
                 </td>
@@ -120,6 +123,20 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
                     style={{
                       width: "100%",
                       padding: "4px",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </td>
+                      <td style={{ border: "1px solid #000", padding: "8px" }}>
+                  <input
+                    type="number"
+                    value={item.Tax}
+                    onChange={(e) =>
+                      handleRowChange(index, "Tax", e.target.value)
+                    }
+                    style={{
+                      width: "50%",
+                      padding: "2px",
                       boxSizing: "border-box",
                     }}
                   />
@@ -178,7 +195,6 @@ const FinanceDocument = ({
   setShowPreview,
   savedQuotation,
   handleSaveQuotation,
-  // ✅ ADDED MISSING PROPS
   showTermsModal,
   setShowTermsModal,
   termsLoading,
@@ -204,7 +220,7 @@ const FinanceDocument = ({
           padding: "40px",
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          width: "800px",
+          width: "1200px",
           maxWidth: "95%",
           margin: "0 auto",
         }}
@@ -287,7 +303,7 @@ const FinanceDocument = ({
         {/* Client Info - UNCHANGED */}
         <div style={{ display: "flex", gap: "20px", marginBottom: "15px" }}>
           <label style={{ display: "block", marginBottom: "12px" }}>
-            <strong>TO </strong>
+            <strong>TO </strong> </label>
             <textarea
               rows={3} // Default shows 3 lines
               value={quotation.clientName || ""}
@@ -296,19 +312,21 @@ const FinanceDocument = ({
               }
               placeholder="Enter Client Name/institution details  and Address "
               style={{
-                width: "100%",
-                padding: "10px",
-                fontSize: "15px",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                resize: "vertical", // Allow vertical resize only
-                minHeight: "70px",
-                lineHeight: "1.4",
+      width: "100%",
+minHeight: "48px", // ~ half to one line minimum
+padding: "8px",
+fontSize: "14px",
+lineHeight: "1.4",
+resize: "none", // ❌ no manual resize
+overflow: "hidden", // ❌ no scrollbar
+border: "1px solid #ccc",
+borderRadius: "4px",
+boxSizing: "border-box",
               }}
             />
-          </label>
+         
           <label style={{ display: "block", marginBottom: "12px" }}>
-            <strong>Kind Attn (Name & Designation):</strong>
+            <strong>Kind Attn </strong>  </label>
             <textarea
               rows={2}
               value={quotation.kindAttn || ""}
@@ -317,7 +335,7 @@ const FinanceDocument = ({
               }
               placeholder="e.g., "
               style={{
-                width: "100%",
+                width: "40%",
                 padding: "10px",
                 fontSize: "15px",
                 border: "1px solid #ccc",
@@ -327,7 +345,7 @@ const FinanceDocument = ({
                 lineHeight: "1.4",
               }}
             />
-          </label>
+        
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -343,12 +361,13 @@ const FinanceDocument = ({
               style={{
                 width: "100%",
                 padding: "10px",
-                fontSize: "15px",
+                fontSize: "12px",
+                fontFamily: "Arial, sans-serif",
                 border: "1px solid #ccc",
                 borderRadius: "4px",
                 resize: "vertical",
                 minHeight: "50px",
-                lineHeight: "1.4",
+                lineHeight: "6.0",
               }}
             />
           </label>
@@ -359,6 +378,29 @@ const FinanceDocument = ({
           quotation={quotation}
           setQuotation={setQuotation}
         />
+<div style={{ marginTop: "30px" }}>
+  <h3 style={{ textDecoration: "underline", marginBottom: "10px" }}>
+    Terms & Conditions
+  </h3>
+
+  <textarea
+    rows={8}
+    value={quotation.termsContent || ""}
+    onChange={(e) =>
+      setQuotation({ ...quotation, termsContent: e.target.value })
+    }
+    placeholder="Enter terms & conditions here..."
+    style={{
+      width: "100%",
+      padding: "12px",
+      fontSize: "14px",
+      lineHeight: "1.0",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      resize: "vertical",
+    }}
+  />
+</div>
 
         {/* ✅ FIXED TERMS & CONDITIONS WITH LOADING/ERROR */}
         <div style={{ marginTop: "30px" }}>
@@ -767,6 +809,9 @@ const FinanceDocument = ({
 
 // ✅ MAIN COMPONENT WITH ALL STATES & FIXED PROPS
 export default function GenerateQuotation({ quotation: initialQuotation, onSaved }) {
+
+
+  
   const isEditMode = !!initialQuotation?.id && initialQuotation?.items?.length > 0;
 const [quotation, setQuotation] = useState(() => ({
     id: initialQuotation?.id || null,
@@ -785,9 +830,7 @@ const [quotation, setQuotation] = useState(() => ({
 useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
-  useEffect(() => {
-    console.log("GenerateQuotation mounted - isEditMode:", isEditMode, "quotation.id:", quotation.id);
-  }, []);
+ 
   // ✅ ALL REQUIRED STATES
 const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`);
   const [date, setDate] = useState(initialQuotation?.date || new Date().toISOString().split("T")[0]);
@@ -799,6 +842,43 @@ const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date(
   const [termsContent, setTermsContent] = useState("<p>Loading terms...</p>");
   const [termsLoading, setTermsLoading] = useState(true);
   const [termsError, setTermsError] = useState(null);
+useEffect(() => {
+  if (!quotation.id) return;
+
+  const loadGeneratedQuotation = async () => {
+    try {
+      const generated = await getGeneratedQuotationByQuotationId(quotation.id);
+
+      if (!generated) return;
+
+      setRefNo(generated.refNo || refNo);
+      setDate(generated.date || date);
+
+      setQuotation(prev => ({
+        ...prev,
+        clientName: generated.clientName || "",
+        kindAttn: generated.kindAttn || "",
+        subject: generated.subject || "",
+        financeManagerName: generated.financeManagerName || "",
+        items: JSON.parse(generated.items || "[]"),
+        terms: JSON.parse(generated.terms || "[]"),
+        termsContent: generated.termsContent || "",
+
+        // previews from backend
+        existingSignature: generated.signature || null,
+        existingSeal: generated.seal || null,
+
+        // reset new uploads
+        signature: null,
+        seal: null,
+      }));
+    } catch (err) {
+      console.error("Failed to load generated quotation", err);
+    }
+  };
+
+  loadGeneratedQuotation();
+}, [quotation.id]);
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
 useEffect(() => {
