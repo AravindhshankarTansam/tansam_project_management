@@ -8,56 +8,93 @@ import {
 } from "react-icons/fi";
 
 import { fetchProjects } from "../../services/project.api";
-import { fetchProjectFollowups } from "../../services/projectfollowup.api"; 
-// 👆 adjust path if needed
+import { fetchProjectFollowups } from "../../services/projectfollowup.api";
+
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+const PIE_COLORS = ["#22c55e", "#3b82f6", "#f59e0b"];
+
+/* ===== helper ===== */
+const timeAgo = (date) => {
+  if (!date) return "—"; // 👈 FIX #1
+
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return "—"; // 👈 FIX #2
+
+  const diff = (Date.now() - parsed.getTime()) / 1000;
+
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
+
 
 export default function TLDashboard() {
   const [totalProjects, setTotalProjects] = useState(0);
   const [activeTasks, setActiveTasks] = useState(0);
   const [completedProjects, setCompletedProjects] = useState(0);
   const [onHoldAlerts, setOnHoldAlerts] = useState(0);
-  // const [recentProjects, setRecentProjects] = useState([]);
 
- 
+  const [topProgressProjects, setTopProgressProjects] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
 
-useEffect(() => {
-  (async () => {
-    try {
-      /* ================= PROJECT COUNT ================= */
-      const projects = await fetchProjects();
-      setTotalProjects(projects?.length || 0);
+  useEffect(() => {
+    (async () => {
+      try {
+        /* ================= PROJECT COUNT ================= */
+        const projects = await fetchProjects();
+        setTotalProjects(projects?.length || 0);
 
-      /* ================= RECENT ACTIVITY ================= */
-      // const sorted = [...projects]
-      //   .sort((a, b) =>
-      //     new Date(b.updated_at || b.created_at) -
-      //     new Date(a.updated_at || a.created_at)
-      //   )
-      //   .slice(0, 5); // show last 5 activities
+        /* ================= FOLLOWUPS ================= */
+        const followups = await fetchProjectFollowups();
 
-      // setRecentProjects(sorted);
+        setActiveTasks(
+          followups.filter((f) => f.status === "In Progress").length
+        );
 
-      /* ================= FOLLOWUP STATUS COUNTS ================= */
-      const followups = await fetchProjectFollowups();
+        setCompletedProjects(
+          followups.filter((f) => f.status === "Completed").length
+        );
 
-      setActiveTasks(
-        followups.filter((f) => f.status === "In Progress").length
-      );
+        setOnHoldAlerts(
+          followups.filter((f) => f.status === "On Hold").length
+        );
 
-      setCompletedProjects(
-        followups.filter((f) => f.status === "Completed").length
-      );
+        /* ================= TOP 3 BY PROGRESS ================= */
+        const top3 = [...followups]
+          .filter((f) => typeof f.progress === "number")
+          .sort((a, b) => b.progress - a.progress)
+          .slice(0, 3)
+          .map((f) => ({
+            projectName: f.projectName || `Project ${f.projectId}`,
+            progress: f.progress,
+          }));
 
-      setOnHoldAlerts(
-        followups.filter((f) => f.status === "On Hold").length
-      );
-    } catch (err) {
-      console.error("Dashboard data load failed", err);
-    }
-  })();
-}, []);
+        setTopProgressProjects(top3);
 
+        /* ================= RECENT ACTIVITY ================= */
+        const recent = [...followups]
+          .sort(
+            (a, b) =>
+              new Date(b.updated_at || b.created_at) -
+              new Date(a.updated_at || a.created_at)
+          )
+          .slice(0, 5);
 
+        setRecentActivities(recent);
+      } catch (err) {
+        console.error("Dashboard data load failed", err);
+      }
+    })();
+  }, []);
 
   return (
     <div className="tl-dashboard">
@@ -65,110 +102,94 @@ useEffect(() => {
 
       {/* ================= TOP METRICS ================= */}
       <div className="stats-grid">
-
-        {/* TOTAL PROJECTS */}
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Total Projects</span>
             <FiArrowUpRight className="card-icon" />
           </div>
           <h3 className="stat-value">{totalProjects}</h3>
-          <span className="stat-sub">+2 from last month</span>
         </div>
 
-        {/* ACTIVE TASKS */}
         <div className="stat-card clickable">
           <div className="card-header">
-            <span className="stat-label">Active Tasks(In Progress)</span>
+            <span className="stat-label">Active Tasks</span>
             <FiClock className="card-icon" />
           </div>
           <h3 className="stat-value">{activeTasks}</h3>
-          <span className="stat-sub">12 due today</span>
         </div>
 
-        {/* COMPLETED */}
         <div className="stat-card clickable">
           <div className="card-header">
             <span className="stat-label">Completed Tasks</span>
             <FiCheckCircle className="card-icon success" />
           </div>
           <h3 className="stat-value">{completedProjects}</h3>
-          <span className="stat-sub">98% success rate</span>
         </div>
 
-        {/* ALERTS */}
         <div className="stat-card clickable">
           <div className="card-header">
-            <span className="stat-label">Alerts(On Hold)</span>
+            <span className="stat-label">On Hold</span>
             <FiAlertCircle className="card-icon danger" />
           </div>
           <h3 className="stat-value">{onHoldAlerts}</h3>
-          <span className="stat-sub">Overdue tasks</span>
         </div>
-
       </div>
 
-      {/* ================= BOTTOM SECTION ================= */}
+      {/* ================= BOTTOM ================= */}
       <div className="bottom-grid">
-        {/* PROJECT PROGRESS */}
+        {/* ===== PIE ===== */}
         <div className="panel">
-          <h3 className="panel-title">Project Progress & Revenue</h3>
-          <p className="panel-sub">
-            Overall completion status and financial performance.
-          </p>
+          <h3 className="panel-title">Top Project Progress</h3>
+          <p className="panel-sub">Highest progress based on follow-ups</p>
 
-          <div className="project-row">
-            <div className="project-header">
-              <span className="project-name">Marketing Website</span>
-              <span className="project-percent">75%</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: "75%" }} />
-            </div>
-            <span className="revenue">$45,000 revenue</span>
-          </div>
-
-          <div className="project-row">
-            <div className="project-header">
-              <span className="project-name">Mobile App Redesign</span>
-              <span className="project-percent">42%</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: "42%" }} />
-            </div>
-            <span className="revenue">$32,000 revenue</span>
-          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={topProgressProjects}
+                dataKey="progress"
+                nameKey="projectName"
+                innerRadius={50}
+                outerRadius={110}
+                paddingAngle={3}
+              >
+                {topProgressProjects.map((_, i) => (
+                  <Cell
+                    key={i}
+                    fill={PIE_COLORS[i % PIE_COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip formatter={(v) => `${v}%`} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* RECENT ACTIVITY */}
+        {/* ===== RECENT ACTIVITY (REAL DATA) ===== */}
         <div className="panel">
           <h3 className="panel-title">Recent Activity</h3>
-          <p className="panel-sub">Latest updates from your team.</p>
+          <p className="panel-sub">Latest project updates</p>
 
           <ul className="activity-list">
-            <li>
-              <div className="avatar">S</div>
-              <div>
-                <strong>Sarah Miller</strong> completed <b>Hero Section</b>
-                <span>2h ago</span>
-              </div>
-            </li>
+            {recentActivities.length === 0 ? (
+              <li>No recent activity</li>
+            ) : (
+              recentActivities.map((a) => (
+                    <li key={`${a.id || "pf"}-${a.projectId}-${a.created_at || "na"}`}>
+                  <div className="avatar">
+                    {a.projectName?.charAt(0) || "P"}
+                  </div>
+                  <div>
+                    <strong>{a.projectName}</strong>
+                    <div className="activity-text">
+                      Status: {a.status} · Progress: {a.progress || 0}%
+                    </div>
+                    <span>{timeAgo(a.updatedAt || a.createdAt)}</span>
 
-            <li>
-              <div className="avatar">J</div>
-              <div>
-                <strong>Jack Wilson</strong> commented on <b>API Docs</b>
-                <span>4h ago</span>
-              </div>
-            </li>
-
-            <li>
-              <div className="avatar">S</div>
-              <div>
-                <strong>Sarah Miller</strong> updated status of <b>Nav Design</b>
-                <span>5h ago</span>
-              </div>
-            </li>
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </div>
       </div>
