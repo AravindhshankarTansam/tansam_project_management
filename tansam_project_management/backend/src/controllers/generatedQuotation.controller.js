@@ -28,58 +28,105 @@ export const addGeneratedQuotation = async (req, res) => {
     await initSchemas(db, { finance: true });
 
     const quotationId = req.body.quotation_id;
-
     if (!quotationId) {
       return res.status(400).json({ message: "Missing quotation_id" });
     }
 
     const {
-      refNo, date, clientName, kindAttn, subject, financeManagerName,
-      items, terms, termsContent
+      refNo, date, clientName, kindAttn, subject,
+      items, terms, termsContent, financeManagerName
     } = req.body;
 
-    const signaturePath = req.files?.signature?.[0] 
-      ? `uploads/po/${req.files.signature[0].filename}` 
+    const signaturePath = req.files?.signature?.[0]
+      ? `uploads/po/${req.files.signature[0].filename}`
       : null;
 
-    const sealPath = req.files?.seal?.[0] 
-      ? `uploads/po/${req.files.seal[0].filename}` 
+    const sealPath = req.files?.seal?.[0]
+      ? `uploads/po/${req.files.seal[0].filename}`
       : null;
 
-    // IMPORTANT: Include quotation_id in the columns and values
-   const [generatedResult] = await db.execute(
-  `INSERT INTO generated_quotations 
-   (quotationId, refNo, date, clientName, kindAttn, subject, 
-    items, terms, termsContent, signature, seal, financeManagerName)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  [quotationId, refNo, date, clientName, kindAttn, subject, 
-   items ? JSON.stringify(JSON.parse(items)) : '[]',
-   terms ? JSON.stringify(JSON.parse(terms)) : '[]',
-   termsContent || null,
-   signaturePath,
-   sealPath,
-   financeManagerName]
-);
+    // 🔍 CHECK if generated quotation already exists
+    const [existing] = await db.execute(
+      "SELECT id, signature, seal FROM generated_quotations WHERE quotationId = ? LIMIT 1",
+      [quotationId]
+    );
 
-    // Mark original quotation as generated
+    // ===============================
+    // 🔁 UPDATE
+    // ===============================
+    if (existing.length) {
+      const existingRow = existing[0];
+
+      await db.execute(
+        `UPDATE generated_quotations
+         SET refNo=?, date=?, clientName=?, kindAttn=?, subject=?,
+             items=?, terms=?, termsContent=?, 
+             signature=?, seal=?, financeManagerName=?
+         WHERE quotationId=?`,
+        [
+          refNo,
+          date,
+          clientName,
+          kindAttn,
+          subject,
+          items ? JSON.stringify(JSON.parse(items)) : "[]",
+          terms ? JSON.stringify(JSON.parse(terms)) : "[]",
+          termsContent || null,
+          signaturePath || existingRow.signature,
+          sealPath || existingRow.seal,
+          financeManagerName,
+          quotationId,
+        ]
+      );
+
+      return res.json({
+        success: true,
+        updated: true,
+        message: "Generated quotation updated successfully",
+      });
+    }
+
+    // ===============================
+    // ➕ INSERT (first time only)
+    // ===============================
     await db.execute(
-      `UPDATE quotations 
-       SET isGenerated = 1
-       WHERE id = ?`,  // better to use id instead of quotationNo
+      `INSERT INTO generated_quotations
+       (quotationId, refNo, date, clientName, kindAttn, subject,
+        items, terms, termsContent, signature, seal, financeManagerName)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        quotationId,
+        refNo,
+        date,
+        clientName,
+        kindAttn,
+        subject,
+        items ? JSON.stringify(JSON.parse(items)) : "[]",
+        terms ? JSON.stringify(JSON.parse(terms)) : "[]",
+        termsContent || null,
+        signaturePath,
+        sealPath,
+        financeManagerName,
+      ]
+    );
+
+    await db.execute(
+      `UPDATE quotations SET isGenerated = 1 WHERE id = ?`,
       [quotationId]
     );
 
     res.status(201).json({
       success: true,
-      generatedId: generatedResult.insertId,
-      message: "Quotation generated and original marked successfully"
+      inserted: true,
+      message: "Generated quotation created successfully",
     });
 
   } catch (error) {
-    console.error("Add Generated Quotation Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Add/Update Generated Quotation Error:", error);
+    res.status(500).json({ message: error.message });
   }
 };
+
 // Get quotation by ID
 // controllers/generatedQuotation.controller.js
 // GET /api/generatequotation/by-quotation/:quotationId
