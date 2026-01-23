@@ -125,8 +125,8 @@ const opportunityClients = useMemo(() => {
 }, [opportunities]);
 
 useEffect(() => {
-  console.log("TRACKERS:", trackers);
-  console.log("STAGE MAP:", stageMap);
+  // console.log("TRACKERS:", trackers);
+  // console.log("STAGE MAP:", stageMap);
 }, [trackers, stageMap]);
 
 
