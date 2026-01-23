@@ -193,6 +193,7 @@ export default function Opportunities() {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+  let opportunityPayload;
   try {
     setLoading(true);
 
@@ -231,7 +232,7 @@ const handleSubmit = async (e) => {
     let opportunityId;
 
     // 🔹 OPPORTUNITY PAYLOAD
-   const opportunityPayload = {
+   opportunityPayload = {
       opportunityName: form.opportunityName,
       clientName: form.clientName,
       contactPerson: form.contactPerson,
