@@ -56,7 +56,7 @@ export default function TLDashboard() {
           .sort((a, b) => b.progress - a.progress)
           .slice(0, 3)
           .map((f) => ({
-            projectName: f.projectName,
+            projectName: f.projectName || `Project ${f.projectId || f.id}`,
             progress: f.progress,
           }));
 
@@ -66,6 +66,36 @@ export default function TLDashboard() {
       }
     })();
   }, []);
+
+  // Custom label renderer – shows name + % inside pie slices
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    const name = topProgressProjects[index]?.projectName || "";
+    const value = `${(percent * 100).toFixed(0)}%`;
+
+    // Shorten long names
+    const displayName = name.length > 15 ? name.substring(0, 12) + "..." : name;
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize="11"
+        fontWeight="600"
+        pointerEvents="none"
+      >
+        <tspan x={x} dy="-6">{displayName}</tspan>
+        <tspan x={x} dy="14">{value}</tspan>
+      </text>
+    );
+  };
 
   return (
     <div className="tl-dashboard">
@@ -108,7 +138,7 @@ export default function TLDashboard() {
 
       {/* ================= BOTTOM SECTION ================= */}
       <div className="bottom-grid">
-        {/* PIE CHART */}
+        {/* PIE CHART – Improved */}
         <div className="panel">
           <h3 className="panel-title">Top Project Progress</h3>
           <p className="panel-sub">
@@ -118,7 +148,7 @@ export default function TLDashboard() {
           {topProgressProjects.length === 0 ? (
             <p className="no-data">No progress data available</p>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={topProgressProjects}
@@ -126,18 +156,34 @@ export default function TLDashboard() {
                   nameKey="projectName"
                   cx="50%"
                   cy="50%"
-                  outerRadius={90}
-                  label={({ name, value }) => `${name}: ${value}%`}
+                  innerRadius={50}
+                  outerRadius={110}
+                  paddingAngle={3}
+                  label={renderCustomizedLabel}
+                  labelLine={false}
                 >
-                  {topProgressProjects.map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={PIE_COLORS[i % PIE_COLORS.length]}
-                    />
+                  {topProgressProjects.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v) => `${v}%`} />
-                <Legend />
+                <Tooltip
+                  formatter={(value, name) => [`${value}%`, name]}
+                  contentStyle={{
+                    backgroundColor: "rgba(30, 41, 59, 0.95)",
+                    border: "none",
+                    borderRadius: "10px",
+                    color: "#ffffff",
+                    padding: "12px 16px",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+                  }}
+                  itemStyle={{ color: "#e2e8f0" }}
+                  labelStyle={{ color: "#94a3b8", fontWeight: 600 }}
+                />
+                <Legend 
+                  layout="horizontal" 
+                  verticalAlign="bottom" 
+                  wrapperStyle={{ marginTop: "12px" }}
+                />
               </PieChart>
             </ResponsiveContainer>
           )}
