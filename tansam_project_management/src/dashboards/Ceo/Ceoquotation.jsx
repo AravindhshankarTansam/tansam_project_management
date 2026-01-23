@@ -72,6 +72,12 @@ export default function CeoQuotation() {
 
     return matchProject && matchClient;
   });
+  const totalQuotationValue = useMemo(() => {
+  return filteredData.reduce((sum, row) => {
+    return sum + (Number(row.quotationValue) || 0);
+  }, 0);
+}, [filteredData]);
+
 
   const clearFilters = () => {
     setSearchProject("");
@@ -91,32 +97,43 @@ export default function CeoQuotation() {
       </div>
 
       {/* ================= FILTER BAR ================= */}
-      <div className="filter-bar">
-        <input
-          type="text"
-          placeholder="Search by project name..."
-          value={searchProject}
-          onChange={(e) => setSearchProject(e.target.value)}
-        />
+    <div className="filter-row">
+  {/* Left part: search + dropdown + clear */}
+  <div className="filter-left">
+    <input
+      type="text"
+      placeholder="Search by project name..."
+      value={searchProject}
+      onChange={(e) => setSearchProject(e.target.value)}
+    />
 
-        <select
-          value={selectedClient}
-          onChange={(e) => setSelectedClient(e.target.value)}
-        >
-          <option value="">All Clients</option>
-          {clientOptions.map((client) => (
-            <option key={client} value={client}>
-              {client}
-            </option>
-          ))}
-        </select>
+    <select
+      value={selectedClient}
+      onChange={(e) => setSelectedClient(e.target.value)}
+    >
+      <option value="">All Clients</option>
+      {clientOptions.map((client) => (
+        <option key={client} value={client}>
+          {client}
+        </option>
+      ))}
+    </select>
 
-        {(searchProject || selectedClient) && (
-          <button className="clear-btn" onClick={clearFilters}>
-            Clear
-          </button>
-        )}
-      </div>
+    {(searchProject || selectedClient) && (
+      <button className="clear-btn" onClick={clearFilters}>
+        Clear
+      </button>
+    )}
+  </div>
+
+  {/* Right part: total value card */}
+  <div className="summary-card compact">
+    <span className="summary-label">Total Quotation Value</span>
+    <span className="summary-value">
+      ₹ {totalQuotationValue.toLocaleString("en-IN")}
+    </span>
+  </div>
+</div>
 
       {/* ================= TABLE ================= */}
       <div className="table-card">
@@ -135,8 +152,8 @@ export default function CeoQuotation() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((row, index) => (
-                <tr key={index}>
+              {filteredData.map((row) => (
+                <tr key={`${row.projectName}-${row.clientName}`}>
                   <td>{row.projectName}</td>
                   <td>{row.clientName}</td>
                   <td>

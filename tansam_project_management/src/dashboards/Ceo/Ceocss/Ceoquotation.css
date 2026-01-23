@@ -104,3 +104,82 @@
 .clear-btn:hover {
   background: #d1d5db;
 }
+
+/* ================= SUMMARY CARD ================= */
+/* ================================
+   COMPACT TOTAL QUOTATION VALUE – Small & Elegant
+/* ================================
+   FILTER ROW – search left, total right
+================================ */
+.filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 300px;
+}
+
+.filter-left input {
+  width: 280px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.filter-left select {
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+/* Compact summary card – right aligned */
+.summary-card.compact {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  border-radius: 12px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  color: white;
+  min-width: 240px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.summary-card.compact .summary-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.summary-card.compact .summary-value {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* On smaller screens: stack vertically */
+@media (max-width: 992px) {
+  .filter-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .summary-card.compact {
+    width: 100%;
+    max-width: none;
+    text-align: center;
+  }
+}
