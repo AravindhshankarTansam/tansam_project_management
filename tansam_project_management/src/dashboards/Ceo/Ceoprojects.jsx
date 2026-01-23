@@ -93,14 +93,11 @@ export default function CeoProjects() {
     setSelectedType("");
   };
 
-  const formatDate = (date) =>
-    date
-      ? new Date(date).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-      : "—";
+  const formatDate = (date) => {
+  if (!date) return "—";
+  return new Date(date).toISOString().split("T")[0];
+};
+
 
   return (
     <div className="ceo-projects">
