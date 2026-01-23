@@ -45,6 +45,9 @@ export default function Opportunities() {
     contactPhone: "",
   });
 
+   const ITEMS_PER_PAGE = 15; // change to 5 / 20 if needed
+
+   const [currentPage, setCurrentPage] = useState(1);
 
   //  Toast state
     const [toast, setToast] = useState({
@@ -338,6 +341,9 @@ const handleSubmit = async (e) => {
   // };
 
 
+    useEffect(() => {
+      setCurrentPage(1);
+    }, [filters.search, filters.status, filters.source]);
 
   /* ================= FILTER LOGIC ================= */
   const filteredOpportunities = opportunities.filter((item) => {
@@ -351,6 +357,16 @@ const handleSubmit = async (e) => {
 
     return searchMatch && statusMatch && sourceMatch;
   });
+  
+    const totalPages = Math.ceil(
+    filteredOpportunities.length / ITEMS_PER_PAGE
+  );
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedOpportunities = filteredOpportunities.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
 
   /* ================= UI ================= */
   return (
@@ -424,11 +440,11 @@ const handleSubmit = async (e) => {
                   </td>
                 </tr>
               ) : (
-                filteredOpportunities.map((item, index) => {
+                paginatedOpportunities.map((item, index) => {
                   const tracker = getTrackerForOpportunity(item.opportunity_id);
                   return (
                     <tr key={item.opportunity_id}>
-                      <td>{index + 1}</td>
+                      <td>{startIndex + index + 1}</td>
                       <td>{item.opportunity_name}</td>
                       <td>{item.client_name}</td>
                       <td>{item.lead_source || "-"}</td>
@@ -469,6 +485,34 @@ const handleSubmit = async (e) => {
             </tbody>
           </table>
         )}
+        {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Prev
+          </button>
+
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              className={currentPage === i + 1 ? "active" : ""}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       </div>
 
       {/* ADD / EDIT MODAL - Now with both Stage and Status */}
