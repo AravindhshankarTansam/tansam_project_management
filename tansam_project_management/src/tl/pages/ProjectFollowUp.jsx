@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   FiEye,
   FiEdit2,
@@ -18,6 +18,8 @@ import {
 } from "../../services/projectfollowup.api";
 import RichTextEditor from "../../components/RichTextEditor";
 
+const PROJECTS_PER_PAGE = 10;
+
 /* ---------- HELPERS ---------- */
 const calculateDaysLeft = (dueDate) => {
   if (!dueDate) return null;
@@ -34,6 +36,8 @@ export default function ProjectFollowUp() {
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewingProject, setViewingProject] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   // State for issue description popup
   const [issuePopupOpen, setIssuePopupOpen] = useState(false);
@@ -76,6 +80,8 @@ export default function ProjectFollowUp() {
     setEditModalOpen(true);
   };
 
+  
+
   const openPdfInNewTab = (filePath) => {
     const pdfUrl = getPOFileUrl(filePath);
     if (!pdfUrl) {
@@ -90,6 +96,14 @@ export default function ProjectFollowUp() {
     setSelectedIssue(project);
     setIssuePopupOpen(true);
   };
+
+  const totalPages = Math.ceil(projects.length / PROJECTS_PER_PAGE);
+
+const paginatedProjects = useMemo(() => {
+  const start = (currentPage - 1) * PROJECTS_PER_PAGE;
+  const end = start + PROJECTS_PER_PAGE;
+  return projects.slice(start, end);
+}, [projects, currentPage]);
 
   /* ================= UPDATE ================= */
   const handleUpdate = async (e) => {
@@ -113,6 +127,7 @@ export default function ProjectFollowUp() {
       toast.error(err.message || "Update failed");
     }
   };
+  
 
   return (
     <div className="followup-page">
@@ -151,7 +166,7 @@ export default function ProjectFollowUp() {
                   </td>
                 </tr>
               ) : (
-                projects.map((p) => {
+                paginatedProjects.map((p) => {
                   const daysLeft = calculateDaysLeft(p.milestoneDueDate);
                   const isUrgent =
                     daysLeft !== null &&
@@ -260,6 +275,37 @@ export default function ProjectFollowUp() {
           </table>
         )}
       </div>
+
+{/* ================= PAGINATION ================= */}
+{totalPages > 1 && (
+  <div className="pagination">
+    <button
+      className="page-btn"
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((p) => p - 1)}
+    >
+      Prev
+    </button>
+
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <button
+        key={page}
+        className={`page-number ${page === currentPage ? "active" : ""}`}
+        onClick={() => setCurrentPage(page)}
+      >
+        {page}
+      </button>
+    ))}
+
+    <button
+      className="page-btn"
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((p) => p + 1)}
+    >
+      Next
+    </button>
+  </div>
+)}
 
       {/* ================= VIEW MODAL ================= */}
       {viewModalOpen && viewingProject && (
