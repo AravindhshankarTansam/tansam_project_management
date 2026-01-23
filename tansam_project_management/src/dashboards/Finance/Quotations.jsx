@@ -213,12 +213,9 @@ const generateQuotationNo = (data) => {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-useEffect(() => {
-  setNewQuotation(prev => ({
-    ...prev,
-    totalValue: (parseFloat(prev.value || 0) + parseFloat(prev.gst || 0)).toFixed(2),
-  }));
-}, [newQuotation.value, newQuotation.gst]);
+const calculateTotalValue = () => {
+  return ((parseFloat(newQuotation.value || 0) || 0) * (1 + (parseFloat(newQuotation.gst || 0) || 0) / 100)).toFixed(2);
+};
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
@@ -642,25 +639,17 @@ if (showGenerateQuotation) {
 </div>
 
 {/* OPPORTUNITY SELECTION (filtered by selected client) */}
+{/* OPPORTUNITY SELECTION AS CHECKBOXES */}
 <div className="form-group">
-  <label>Opportunity Name *</label>
+  <label>Opportunity Name(s) *</label>
   <select
-    value={newQuotation.project_name || ""}
+    multiple
+    value={newQuotation.project_name.split(",")}
     onChange={(e) => {
-      const selectedOpp = opportunities.find(
-        (opp) =>
-          opp.opportunity_name === e.target.value &&
-          opp.client_id === newQuotation.client_id
-      );
-      setNewQuotation({
-        ...newQuotation,
-        project_name: selectedOpp?.opportunity_name || "",
-        clientName: selectedOpp?.client_name || "",
-      });
+      const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+      setNewQuotation({ ...newQuotation, project_name: selected.join(",") });
     }}
-    disabled={!newQuotation.client_id} // disabled until client selected
   >
-    <option value="">Select Opportunity</option>
     {opportunities
       .filter((opp) => opp.client_id === newQuotation.client_id)
       .map((opp) => (
@@ -670,6 +659,7 @@ if (showGenerateQuotation) {
       ))}
   </select>
 </div>
+
 
         <div className="form-group">
           <label>Client Type *</label>
@@ -876,12 +866,9 @@ if (showGenerateQuotation) {
         <p><strong>Lab:</strong> {newQuotation.lab}</p>
         <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
         <p><strong>Description:</strong> {newQuotation.description}</p>
-    <p>
+        <p>
   <strong>Quote Value (Incl. GST):</strong> ₹{" "}
-  {(
-    (parseFloat(newQuotation.value || 0) || 0) +
-    (parseFloat(newQuotation.gst || 0) || 0)
-  ).toLocaleString("en-IN")}
+  {calculateTotalValue()}
 </p>
 
       </div>
