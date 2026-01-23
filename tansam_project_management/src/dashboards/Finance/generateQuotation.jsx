@@ -53,7 +53,7 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Sl. No
               </th>
-              <th style={{ border: "1px solid #000", padding: "12px" }}>
+              <th style={{ border: "1px solid #000", padding: "12px", width: "30%" }}>
                 Product Description
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>

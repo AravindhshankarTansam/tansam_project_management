@@ -616,15 +616,21 @@ if (showGenerateQuotation) {
   <label>Client *</label>
   <select
     value={newQuotation.client_id || ""}
-    onChange={(e) => {
-      const clientId = e.target.value;
-      setNewQuotation({
-        ...newQuotation,
-        client_id: clientId,
-        clientName: "",      // reset until opportunity selected
-        project_name: "",    // reset opportunity
-      });
-    }}
+ onChange={(e) => {
+  const clientId = e.target.value;
+
+  const selectedClient = opportunities.find(
+    (opp) => opp.client_id === clientId
+  );
+
+  setNewQuotation({
+    ...newQuotation,
+    client_id: clientId,
+    clientName: selectedClient?.client_name || "", // ✅ REQUIRED
+    project_name: "",
+  });
+}}
+
   >
     <option value="">Select Client</option>
     {opportunities
@@ -640,24 +646,28 @@ if (showGenerateQuotation) {
 
 {/* OPPORTUNITY SELECTION (filtered by selected client) */}
 {/* OPPORTUNITY SELECTION AS CHECKBOXES */}
+{/* OPPORTUNITY SELECTION (filtered by selected client) */}
 <div className="form-group">
   <label>Opportunity Name(s) *</label>
   <select
     multiple
-    value={newQuotation.project_name.split(",")}
+    value={newQuotation.project_name ? newQuotation.project_name.split(",") : []}
     onChange={(e) => {
-      const selected = Array.from(e.target.selectedOptions, opt => opt.value);
-      setNewQuotation({ ...newQuotation, project_name: selected.join(",") });
+      const selectedOptions = Array.from(e.target.selectedOptions).map(opt => opt.value);
+      setNewQuotation({ ...newQuotation, project_name: selectedOptions.join(",") });
     }}
   >
+    {/* Only show opportunities for selected client */}
     {opportunities
-      .filter((opp) => opp.client_id === newQuotation.client_id)
-      .map((opp) => (
+      .filter(opp => opp.client_id === newQuotation.client_id)
+      .map(opp => (
         <option key={opp.opportunity_id} value={opp.opportunity_name}>
           {opp.opportunity_name}
         </option>
       ))}
   </select>
+
+
 </div>
 
 

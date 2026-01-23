@@ -93,40 +93,32 @@ toRight: {
     fontSize: 9,
   },
 
-  // ── Very tight table ─────────────────────────────────────────────────────
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#E8F0FA",
-    borderWidth: 1,
-    borderColor: "#000",
-  },
-  tableRow: {
-    flexDirection: "row",
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#000",
-    minHeight: 15,
-  },
+  
+  // Compact Table Styles
+tableHeader: {
+  flexDirection: "row",
+  borderWidth: 1,
+  borderColor: "#000",
+  backgroundColor: "#E8F0FA",
+},
 
-  th: {
-    paddingVertical: 3.2,
-    paddingHorizontal: 4,
-    fontWeight: "bold",
-    fontSize: 8.6,
-    textAlign: "center",
-  },
-  td: {
-    paddingVertical: 3.5,
-    paddingHorizontal: 4.5,
-    fontSize: 8.6,
-  },
+th: {
+  paddingVertical: 2.5,
+  paddingHorizontal: 3,
+  fontWeight: "bold",
+  fontSize: 8,
+  textAlign: "center",
+  borderWidth: 1,
+  borderColor: "#000",
+},
 
-  colSNo:    { width: "6%",   textAlign: "center" },
-  colDesc:   { width: "53%",  textAlign: "left" },
-  colQty:    { width: "11.5%", textAlign: "center" },
-  colUnit:   { width: "13.5%", textAlign: "right" },
-  colTotal:  { width: "16%",   textAlign: "right" },
+
+
+colSNo: { width: "6%", textAlign: "center" },
+colDesc: { width: "53%", textAlign: "left" },
+colQty: { width: "11.5%", textAlign: "center" },
+colUnit: { width: "13.5%", textAlign: "right" },
+colTotal: { width: "16%", textAlign: "right" },
 
   descCell: {
     paddingVertical: 3.2,
@@ -251,69 +243,56 @@ export default function QuotationPDF({
 
         {/* To + Kind Attn */}
 <View style={styles.toBlock}>
-  <Text>To,</Text>
-  <Text>
-    {clientName || "INSTITUTE NAME"}
-    {"\n"}kind attn.: {kindAttn || "NAME, DESIGNATION"}
-    {"\n"}
-    ADDRESS LINE HERE (if provided)
+  <Text>To, {clientName || "INSTITUTE NAME"}</Text>
+  <Text style={{alignItems: "center"}}>
+  
+    kind attn.: {kindAttn || "NAME, DESIGNATION"}
   </Text>
 </View>
 
         {/* Subject */}
         <Text style={styles.subject}>
-          Sub: {subject || "Quote for Industrial Visit"}
+          Sub: {subject}
         </Text>
 
-        {/* Shortened intro */}
-        <Text style={styles.introText}>
-          Sir/Madam, We thank you for your inquiry. We are pleased to submit our competitive price as below.
-        </Text>
+      
+<View style={styles.tableHeader}>
+  <Text style={[styles.th, styles.colSNo]}>S. No</Text>
+  <Text style={[styles.th, styles.colDesc]}>Product description</Text>
+  <Text style={[styles.th, styles.colQty]}>Qty</Text>
+  <Text style={[styles.th, styles.colUnit]}>Unit price</Text>
+  <Text style={[styles.th, styles.colTotal]}>Total</Text>
+</View>
 
-        {/* Compact Table */}
-        <View style={styles.tableHeader}>
-          <Text style={[styles.th, styles.colSNo]}>S.No</Text>
-          <Text style={[styles.th, styles.colDesc]}>Description</Text>
-          <Text style={[styles.th, styles.colQty]}>Qty</Text>
-          <Text style={[styles.th, styles.colUnit]}>Unit +Tax</Text>
-          <Text style={[styles.th, styles.colTotal]}>Total</Text>
-        </View>
+{/* Table Rows */}
+{items.length > 0 ? items.map((item, i) => (
+  <View key={i} style={{ flexDirection: "row" }}>
+    <Text style={[styles.td, styles.colSNo]}>{i + 1}</Text>
+    <Text style={[styles.td, styles.colDesc]}>{item.description}</Text>
+    <Text style={[styles.td, styles.colQty]}>{item.qty }</Text>
+    <Text style={[styles.td, styles.colUnit]}>{item.unitPrice }</Text>
+    <Text style={[styles.td, styles.colTotal]}>{item.total }</Text>
+  </View>
+)) : (
+  <View style={{ flexDirection: "row" }}>
+    <Text style={[styles.td, styles.colSNo]}>1</Text>
+    <Text style={[styles.td, styles.colDesc]}>—</Text>
+    <Text style={[styles.td, styles.colQty]}>—</Text>
+    <Text style={[styles.td, styles.colUnit]}>—</Text>
+    <Text style={[styles.td, styles.colTotal]}>—</Text>
+  </View>
+)}
 
-        {items.length > 0 ? (
-          items.map((item, i) => (
-            <View key={i} style={styles.tableRow}>
-              <Text style={[styles.td, styles.colSNo]}>{i + 1}</Text>
-              <Text style={[styles.descCell, styles.colDesc]}>
-                {item.description || ""}
-              </Text>
-              <Text style={[styles.td, styles.colQty]}>
-                {item.qty || ""}
-              </Text>
-              <Text style={[styles.td, styles.colUnit]}>
-                {item.unitPrice || ""}
-              </Text>
-              <Text style={[styles.td, styles.colTotal]}>
-                {item.total || ""}
-              </Text>
-            </View>
-          ))
-        ) : (
-          <View style={styles.tableRow}>
-            <Text style={[styles.td, styles.colSNo]}>1</Text>
-            <Text style={[styles.descCell, styles.colDesc]}>—</Text>
-            <Text style={[styles.td, styles.colQty]}>—</Text>
-            <Text style={[styles.td, styles.colUnit]}>—</Text>
-            <Text style={[styles.td, styles.colTotal]}>—</Text>
-          </View>
-        )}
+{/* Total Row */}
+<View style={[styles.totalRow, { marginTop: 0 }]}>
+  <Text style={[styles.totalLabel, { width: "84%", padding: 3 }]}>
+    Total Service Value with Tax
+  </Text>
+  <Text style={[styles.totalValue, { width: "16%", padding: 3 }]}>
+    {totalAmount ? `₹ ${totalAmount}` : "—"}
+  </Text>
+</View>
 
-        {/* Total */}
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total with Tax</Text>
-          <Text style={styles.totalValue}>
-            {totalAmount ? `₹ ${totalAmount}` : "—"}
-          </Text>
-        </View>
 
         {/* Very tight Terms */}
         <View style={{ marginTop: 10 }}>
