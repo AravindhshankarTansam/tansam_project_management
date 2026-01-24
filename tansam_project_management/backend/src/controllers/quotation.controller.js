@@ -28,9 +28,12 @@ export const addQuotation = async (req, res) => {
       opprtunity_name,
       quotationNo,
       clientName,
-      clientType,
-      workCategory,
-      lab,
+      client_type_id,
+      client_type_name,
+      work_category_id,
+      work_category_name,
+      lab_id,
+      lab_name,
       description,
       value,
       date,
@@ -63,34 +66,40 @@ export const addQuotation = async (req, res) => {
 
     const [result] = await db.execute(
       `
-      INSERT INTO quotations (
-        opprtunity_name,
-        quotationNo,
-        client_id,
-        clientName,
-        clientType,
-        workCategory,
-        lab,
-        description,
-        value,
-        date,
-        paymentPhase,
-        revisedCost,
-        poReceived,
-        paymentReceived,
-        paymentAmount,
-        paymentPendingReason
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO quotations (
+  opprtunity_name,
+  quotationNo,
+  client_id,
+  clientName,
+  client_type_id,     -- ✅
+  client_type_name,
+  work_category_id,
+  work_category_name,
+  lab_id,
+  lab_name,
+  description,
+  value,
+  date,
+  paymentPhase,
+  revisedCost,
+  poReceived,
+  paymentReceived,
+  paymentAmount,
+  paymentPendingReason
+)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         opprtunity_name,
         quotationNo,
         client_id,
         clientName,
-        clientType,
-        workCategory,
-        lab,
+        client_type_id,
+        client_type_name,
+        work_category_id,
+        work_category_name,
+        lab_id,
+        lab_name,
         description,
         value,
         date,
@@ -124,10 +133,9 @@ export const updateQuotation = async (req, res) => {
     const {
       opprtunity_name,
       clientName,
-      clientType,
-      workCategory,
-      
-      lab,
+      client_type_name,
+      work_category_name,   
+      lab_name,
       description,
       value,
       date,
@@ -142,14 +150,14 @@ export const updateQuotation = async (req, res) => {
   
 await db.execute(
   `UPDATE quotations
-   SET opprtunity_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
+   SET opprtunity_name=?, clientName=?, client_type_name=?,  work_category_name=?, lab_name=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
    WHERE id=?`,
   [
     opprtunity_name,
     clientName,
-    clientType,
-    workCategory,
-    lab,
+    client_type_name,
+    work_category_name,
+    lab_name,
     description,
     value,
     

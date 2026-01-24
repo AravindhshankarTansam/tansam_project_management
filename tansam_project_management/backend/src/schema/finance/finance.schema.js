@@ -28,10 +28,12 @@ await db.execute(`
 
     client_id VARCHAR(20) NOT NULL,
     clientName VARCHAR(100) NOT NULL,
-
-    clientType VARCHAR(50),
-    workCategory VARCHAR(100),
-    lab VARCHAR(100),
+client_type_id VARCHAR(50),
+    client_type_name VARCHAR(50),
+     work_category_id VARCHAR(100),
+    work_category_name VARCHAR(100),
+    lab_id VARCHAR(100),
+    lab_name VARCHAR(100),
 
     description TEXT,
     value DECIMAL(12,2),

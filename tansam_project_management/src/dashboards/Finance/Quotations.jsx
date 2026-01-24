@@ -29,8 +29,8 @@ const [activeTab, setActiveTab] = useState("quotation");
 const [showDoc, setShowDoc] = useState(false);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
-  const workCategoryOptions = [...new Set(data.map((d) => d.workCategory))];
-  const labOptions = [...new Set(data.map((d) => d.lab))];
+  const workCategoryOptions = [...new Set(data.map((d) => d.work_category_name))];
+  const labOptions = [...new Set(data.map((d) => d.lab_name))];
 const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState("");
@@ -42,9 +42,12 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
      opprtunity_name: "", 
       client_id: "", 
     clientName: "",
-    clientType: "Corporate",
-    workCategory: "",
-    lab: "",
+    client_type_id: "",
+    client_type_name: "",
+    work_category_id: "", 
+    work_category_name: "",
+    lab_id: "",
+    lab_name: "",
     description: "",
     value: "",
      gst: "",
@@ -198,8 +201,8 @@ useEffect(() => {
     (q) =>
       (selectedClient === "" || q.clientName === selectedClient) &&
       (selectedWorkCategory === "" ||
-        q.workCategory === selectedWorkCategory) &&
-      (selectedLab === "" || q.lab === selectedLab)
+        q.work_category_name === selectedWorkCategory) &&
+      (selectedLab === "" || q.lab_name === selectedLab)
   );
 const generateQuotationNo = (data) => {
   const numbers = data
@@ -244,15 +247,44 @@ const handleSaveQuotation = async () => {
       (parseFloat(newQuotation.value || 0) || 0) +
       (parseFloat(newQuotation.gst || 0) || 0);
 
-   const payload = {
-  ...newQuotation,
-    value: finalValue,
-
+const payload = {
   quotationNo: editId
     ? newQuotation.quotationNo
     : newQuotation.quotationNo || generateQuotationNo(data),
-  totalValue: parseFloat(newQuotation.totalValue) || 0, // send to backend
+
+  opprtunity_name: newQuotation.opprtunity_name,
+
+  client_id: newQuotation.client_id,
+  clientName: newQuotation.clientName,
+
+  // ✅ MUST SEND ID
+  client_type_id: newQuotation.client_type_id,
+  client_type_name: newQuotation.client_type_name,
+
+  work_category_id: newQuotation.work_category_id,
+  work_category_name: newQuotation.work_category_name,
+
+  lab_id: newQuotation.lab_id,
+  lab_name: newQuotation.lab_name,
+
+  description: newQuotation.description,
+
+  value:
+    (parseFloat(newQuotation.value || 0) || 0) +
+    (parseFloat(newQuotation.gst || 0) || 0),
+
+  gst: newQuotation.gst,
+  totalValue: parseFloat(newQuotation.totalValue) || 0,
+  date: newQuotation.date,
+
+  paymentPhase: newQuotation.paymentPhase,
+  revisedCost: newQuotation.revisedCost,
+  poReceived: newQuotation.poReceived,
+  paymentReceived: newQuotation.paymentReceived,
+  paymentAmount: newQuotation.paymentAmount,
+  paymentPendingReason: newQuotation.paymentPendingReason,
 };
+
 
     if (editId) {
       await updateQuotation(editId, payload);
@@ -269,9 +301,9 @@ const handleSaveQuotation = async () => {
       quotationNo: "",
       opprtunity_name: "",
       clientName: "",
-      clientType: "Corporate",
-      workCategory: "",
-      lab: "",
+      client_type_name: "",
+      work_category_name: "",
+      lab_name: "",
       description: "",
       value: "",
           gst: "",
@@ -305,9 +337,9 @@ const handleSaveQuotation = async () => {
       quotationNo: "",
       opprtunity_name: "",
       clientName: "",
-      clientType: "Corporate",
-      workCategory: "",
-      lab: "",
+      client_type_name: "",
+      work_category_name: "",
+      lab_name: "",
       description: "",
       value: "",
       date: "",
@@ -361,9 +393,9 @@ if (showGenerateQuotation) {
       quotationNo,
       opprtunity_name: "",
       clientName: "",
-      clientType: "Corporate",
-      workCategory: "",
-      lab: "",
+      client_type_name: "",
+      work_category_name: "",
+      lab_name: "",
       description: "",
        gst:"",
       value: "",
@@ -421,9 +453,9 @@ if (showGenerateQuotation) {
           }}
         >
           <option value="">All Labs</option>
-          {labOptions.map((lab) => (
-            <option key={lab} value={lab}>
-              {lab}
+          {labOptions.map((lab_name) => (
+            <option key={lab_name} value={lab_name}>
+              {lab_name}
             </option>
           ))}
         </select>
@@ -507,12 +539,12 @@ if (showGenerateQuotation) {
                 <td>{q.opprtunity_name}</td>
                 <td>{q.clientName}</td>
                 <td>
-                  <span className={`badge badge-${q.clientType.toLowerCase()}`}>
-                    {q.clientType}
+                  <span className={`badge badge-${q.client_type_name.toLowerCase()}`}>
+                    {q.client_type_name}
                   </span>
                 </td>
-                <td>{q.workCategory}</td>
-                <td><span className="badge-lab">{q.lab}</span></td>
+                <td>{q.work_category_name}</td>
+                <td><span className="badge-lab_name">{q.lab_name}</span></td>
                 <td className="desc-cell">{q.description}</td>
                 <td className="value-cell">
                   ₹ {parseInt(q.value || 0).toLocaleString("en-IN")}
@@ -629,10 +661,14 @@ if (showGenerateQuotation) {
     ...newQuotation,
     client_id: clientId,
     clientName: selectedClient?.client_name || "",
+    
     opprtunity_name: "", // reset opportunity selection
-    workCategory: selectedClient?.workCategory || "",
-    lab: selectedClient?.lab || "",
-    clientType: selectedClient?.clientType || "Corporate", // default if missing
+      work_category_id: selectedClient?.work_category_id || "",
+    work_category_name: selectedClient?.work_category_name || "",
+    lab_id: selectedClient?.lab_id || "",
+    lab_name: selectedClient?.lab_name || "",
+     client_type_id: selectedClient?.client_type_id || "",
+    client_type_name: selectedClient?.client_type_name || "", // default if missing
   });
 }}
 
@@ -681,23 +717,33 @@ if (showGenerateQuotation) {
         }))
       : []
   }
-  onChange={(selected) => {
-    const oppNames = selected ? selected.map((s) => s.value) : [];
-    const firstOpp = opportunities.find(
-      (opp) =>
-        String(opp.client_id) === String(newQuotation.client_id) &&
-        oppNames.includes(opp.opportunity_name)
-    );
+onChange={(selected) => {
+  const oppNames = selected ? selected.map((s) => s.value) : [];
 
-    setNewQuotation({
-      ...newQuotation,
-      opprtunity_name: oppNames.join(","),
-      // Auto-fill based on selected opportunity
-      workCategory: firstOpp?.work_category_name || "",
-      lab: firstOpp?.lab_name ? JSON.parse(firstOpp.lab_name).join(", ") : "",
-      clientType: firstOpp?.client_type_name || "Corporate",
-    });
-  }}
+  const firstOpp = opportunities.find(
+    (opp) =>
+      String(opp.client_id) === String(newQuotation.client_id) &&
+      oppNames.includes(opp.opportunity_name)
+  );
+
+  setNewQuotation({
+    ...newQuotation,
+    opprtunity_name: oppNames.join(","),
+
+    // ✅ IDs (VERY IMPORTANT)
+    client_type_id: firstOpp?.client_type_id || "",
+    work_category_id: firstOpp?.work_category_id || "",
+    lab_id: firstOpp?.lab_id || "",
+
+    // ✅ Names
+    client_type_name: firstOpp?.client_type_name || "",
+    work_category_name: firstOpp?.work_category_name || "",
+    lab_name: firstOpp?.lab_name
+      ? JSON.parse(firstOpp.lab_name).join(", ")
+      : "",
+  });
+}}
+
 />
 
 </div>
@@ -706,16 +752,16 @@ if (showGenerateQuotation) {
 
 <div className="form-group">
   <label>Client Type</label>
-  <input type="text" value={newQuotation.clientType} readOnly />
+  <input type="text" value={newQuotation.client_type_name} readOnly />
 </div>
 
 <div className="form-group">
   <label>Work Category</label>
-  <input type="text" value={newQuotation.workCategory} readOnly />
+  <input type="text" value={newQuotation.work_category_name} readOnly />
 </div>
 <div className="form-group">
   <label>Lab</label>
-  <input type="text" value={newQuotation.lab} readOnly />
+  <input type="text" value={newQuotation.lab_name} readOnly />
 </div>
        <div className="form-group">
   <label>Quote Value *</label>
@@ -869,9 +915,9 @@ if (showGenerateQuotation) {
         <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
         <p><strong>Date:</strong> {newQuotation.date}</p>
         <p><strong>Opportunity Name:</strong> {newQuotation.opprtunity_name}</p>
-        <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
-        <p><strong>Lab:</strong> {newQuotation.lab}</p>
-        <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>
+        <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.client_type_name})</p>
+        <p><strong>Lab:</strong> {newQuotation.lab_name}</p>
+        <p><strong>Work Category:</strong> {newQuotation.work_category_name}</p>
         <p><strong>Description:</strong> {newQuotation.description}</p>
         <p>
   <strong>Quote Value (Incl. GST):</strong> ₹{" "}
