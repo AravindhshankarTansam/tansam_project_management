@@ -95,21 +95,25 @@ tbody td {
 /* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.4);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;       /* ← changed from center → better on mobile */
+  padding: 20px 12px;
+  overflow-y: auto;
+  z-index: 1200;
 }
-
 .modal {
   background: white;
-  padding: 20px;
   border-radius: 12px;
-  width: 400px;
+  width: 100%;
+  max-width: 860px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 94vh;               /* ← important */
 }
 
 .modal-form input, .modal-form select {
@@ -393,27 +397,39 @@ tbody td {
 }
 
 .modal-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #1f2937;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #111827;
 }
-
 .btn-close {
   background: none;
   border: none;
-  font-size: 24px;
-  cursor: pointer;
+  font-size: 1.6rem;
   color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
-
+.btn-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
 .modal-form {
+  flex: 1;
+  overflow-y: auto;
   padding: 24px;
 }
 
@@ -462,13 +478,11 @@ tbody td {
 }
 
 .modal-actions {
-  display: flex;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid #e5e7eb;
+  position: sticky;
+  bottom: 0;
   background: #f9fafb;
+  z-index: 2;
 }
-
 .btn-save {
   flex: 1;
   padding: 12px 20px;
@@ -594,33 +608,32 @@ tbody td {
   color: #e74c3c;
 }
 /* Container for the modal */
-.modal-overlay {
+CSS.modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 999;
+  align-items: center;          /* ← center is fine, but see note below */
+  z-index: 1000;
+  /* Important: allow scrolling on overlay if needed */
+           /* breathing room on small screens */
 }
 
 .modal {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 8px;
-  width: 800px;
-  max-width: 95%;
-  max-height: 90%;
-  overflow-y: auto;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  font-family: Arial, sans-serif;
+    background: white;
+   
+    width: webkit-fill-available;
+   
 }
 
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .modal-header h3 {
@@ -670,9 +683,15 @@ tbody td {
 
 /* Buttons */
 .modal-actions {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 5;
+  padding: 16px 28px;
+  border-top: 1px solid #e5e7eb;
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  justify-content: flex-end;
 }
 
 .btn-save,
@@ -907,4 +926,19 @@ button.btn-save:hover {
   overflow-y: auto;
   border-radius: 8px;
   padding: 8px;
+}
+/* Selected values container */
+.react-select__value-container {
+  display: flex !important;
+  flex-direction: column !important;   /* 🔥 vertical */
+  align-items: stretch;
+}
+.react-select__multi-value {
+  width: 100%;
+  margin: 4px 0;
+}
+
+
+.react-select__multi-value__remove {
+  margin-left: auto;
 }
