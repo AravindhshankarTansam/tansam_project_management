@@ -11,6 +11,7 @@
           { label: "Create Roles", path: "/admin/roles" },
           { label: "Create Labs", path: "/admin/labs" },
           { label: "Project Types", path: "/admin/project-types" },
+          { label: "Client Types", path: "/admin/client-types" },
           { label: "Work Categories", path: "/admin/work-categories" },
           { label: "Reports", path: "/admin/reports" },
         ],
