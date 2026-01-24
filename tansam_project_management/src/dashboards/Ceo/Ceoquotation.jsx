@@ -1,20 +1,20 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/Ceoquotation.css";
 
-import { fetchProjects } from "../../services/project.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function CeoQuotation() {
-  const [projects, setProjects] = useState([]);
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* 🔎 Filters & Pagination */
-  const [searchProject, setSearchProject] = useState("");
+  const [activeTab, setActiveTab] = useState("quotation");
+
+  /* Filters */
+  const [searchOpportunity, setSearchOpportunity] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -22,61 +22,43 @@ export default function CeoQuotation() {
   useEffect(() => {
     (async () => {
       try {
-        const [allProjects, allQuotations] = await Promise.all([
-          fetchProjects(),
-          getQuotations(),
-        ]);
-
-        const customerProjects = (allProjects || []).filter(
-          (p) => p.projectType === "CUSTOMER"
-        );
-
-        setProjects(customerProjects);
-        setQuotations(allQuotations || []);
-      } catch {
-        toast.error("Failed to load CEO quotation data");
+        const data = await getQuotations();
+        setQuotations(data || []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load quotation data");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  /* ================= MERGE DATA ================= */
-  const tableData = useMemo(() => {
-    return projects.map((project) => {
-      const quotation = quotations.find(
-        (q) => q.project_name === project.projectName
-      );
+  /* ================= FILTER OPTIONS ================= */
+  const clientOptions = useMemo(() => {
+    return [...new Set(quotations.map((q) => q.clientName).filter(Boolean))];
+  }, [quotations]);
 
-      return {
-        projectName: project.projectName,
-        clientName: project.clientName,
-        clientType: "Customer",
-        quotationValue: quotation?.value || null,
-      };
-    });
-  }, [projects, quotations]);
-
-  /* ================= FILTERED & PAGINATED DATA ================= */
-  const clientOptions = [...new Set(tableData.map((d) => d.clientName))];
-
+  /* ================= FILTERED DATA ================= */
   const filteredData = useMemo(() => {
-    return tableData.filter((row) => {
-      const matchProject =
-        !searchProject ||
-        row.projectName?.toLowerCase().includes(searchProject.toLowerCase());
+    return quotations.filter((q) => {
+      const matchOpportunity =
+        !searchOpportunity ||
+        q.opprtunity_name
+          ?.toLowerCase()
+          .includes(searchOpportunity.toLowerCase());
 
-      const matchClient = !selectedClient || row.clientName === selectedClient;
+      const matchClient =
+        !selectedClient || q.clientName === selectedClient;
 
-      return matchProject && matchClient;
+      return matchOpportunity && matchClient;
     });
-  }, [tableData, searchProject, selectedClient]);
+  }, [quotations, searchOpportunity, selectedClient]);
 
-  const totalQuotationValue = useMemo(() => {
-    return filteredData.reduce((sum, row) => sum + (Number(row.quotationValue) || 0), 0);
-  }, [filteredData]);
+  /* ================= TOTAL VALUE ================= */
 
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
+  /* ================= PAGINATION ================= */
+  // const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -84,32 +66,44 @@ export default function CeoQuotation() {
   }, [filteredData, currentPage]);
 
   const clearFilters = () => {
-    setSearchProject("");
+    setSearchOpportunity("");
     setSelectedClient("");
     setCurrentPage(1);
   };
+const totalQuotationValue = useMemo(() => {
+  return filteredData.reduce(
+    (sum, q) => sum + (Number(q.value) || 0),
+    0
+  );
+}, [filteredData]);
 
-  const formatCurrency = (value) =>
-    value ? `₹ ${Number(value).toLocaleString("en-IN")}` : "—";
+const totalPaymentReceived = useMemo(() => {
+  return filteredData.reduce(
+    (sum, q) => sum + (Number(q.paymentAmount) || 0),
+    0
+  );
+}, [filteredData]);
 
+  /* ================= RENDER ================= */
   return (
     <div className="ceo-quotation">
       <ToastContainer autoClose={1200} />
 
+      {/* HEADER */}
       <div className="page-header">
         <h2>Quotation Overview</h2>
-        <p>Customer project quotation values</p>
+        <p>Customer quotation summary</p>
       </div>
 
-      {/* ================= FILTER + TOTAL ROW ================= */}
+      {/* FILTERS + TOTAL */}
       <div className="filter-row">
         <div className="filter-left">
           <input
             type="text"
-            placeholder="Search by project name..."
-            value={searchProject}
+            placeholder="Search by opportunity..."
+            value={searchOpportunity}
             onChange={(e) => {
-              setSearchProject(e.target.value);
+              setSearchOpportunity(e.target.value);
               setCurrentPage(1);
             }}
           />
@@ -129,86 +123,120 @@ export default function CeoQuotation() {
             ))}
           </select>
 
-          {(searchProject || selectedClient) && (
+          {(searchOpportunity || selectedClient) && (
             <button className="clear-btn" onClick={clearFilters}>
               Clear
             </button>
           )}
         </div>
 
-        {/* Total Value – Right Side */}
-        <div className="summary-card compact">
-          <span className="summary-label">Total Quotation Value</span>
-          <span className="summary-value">
-            ₹ {totalQuotationValue.toLocaleString("en-IN")}
-          </span>
-        </div>
+   <div className="summary-row">
+  {activeTab === "quotation" ? (
+    <div className="summary-card">
+      <span className="summary-label">Total Quotation Value</span>
+      <span className="summary-value">
+        ₹ {totalQuotationValue.toLocaleString("en-IN")}
+      </span>
+    </div>
+  ) : (
+    <div className="summary-card success">
+      <span className="summary-label">Total Payment Received</span>
+      <span className="summary-value">
+        ₹ {totalPaymentReceived.toLocaleString("en-IN")}
+      </span>
+    </div>
+  )}
+</div>
+
+      </div>
+
+      {/* ================= TABS ================= */}
+      <div className="tabs">
+        <button
+          className={activeTab === "quotation" ? "active" : ""}
+          onClick={() => setActiveTab("quotation")}
+        >
+          Quotation
+        </button>
+
+        <button
+          className={activeTab === "payment" ? "active" : ""}
+          onClick={() => setActiveTab("payment")}
+        >
+          Payment Phase
+        </button>
       </div>
 
       {/* ================= TABLE ================= */}
-      <div className="table-card">
+      <div className="card-table">
         {loading ? (
-          <div className="loading">Loading quotation summary...</div>
-        ) : paginatedData.length === 0 ? (
-          <div className="empty-state">No quotation data available</div>
+          <div className="loading">Loading...</div>
         ) : (
-          <>
-            <table className="quotation-table">
-              <thead>
-                <tr>
-                  <th>Project Name</th>
-                  <th>Client Name</th>
-                  <th>Client Type</th>
-                  <th>Quotation Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.projectName}</td>
-                    <td>{row.clientName}</td>
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th>
+
+                {activeTab === "quotation" ? (
+                  <>
+                    <th>Client Name</th>
+                    <th>Client Type</th>
+                    <th>Opportunity Name</th>
+                     <th>Quotation Value</th>
+                  </>
+                ) : (
+                  <>
+                    <th>Client Name</th>
+                    <th>Client Type</th>
+                    <th>Payment Phase</th>
+                    <th>Payment Amount</th>
+                    <th>Pending Reason</th>
+                  </>
+                )}
+              </tr>
+            </thead>
+
+            <tbody>
+              {paginatedData.length > 0 ? (
+                paginatedData.map((q, i) => (
+                  <tr key={q.id}>
                     <td>
-                      <span className="type-badge customer">CUSTOMER</span>
+                      {(currentPage - 1) * ITEMS_PER_PAGE + i + 1}
                     </td>
-                    <td className="value">
-                      {formatCurrency(row.quotationValue)}
-                    </td>
+
+                    {activeTab === "quotation" ? (
+                      <>
+                        <td>{q.clientName}</td>
+                        <td>{q.clientType}</td>
+                        <td>{q.opprtunity_name}</td>
+                        <td>{q.value}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td>{q.clientName}</td>
+                        <td>{q.clientType}</td>
+                        <td>{q.paymentPhase || "Not Started"}</td>
+                        <td>
+                          {q.paymentAmount
+                            ? `₹ ${Number(q.paymentAmount).toLocaleString(
+                                "en-IN"
+                              )}`
+                            : "—"}
+                        </td>
+                        <td>{q.paymentPendingReason || "—"}</td>
+                      </>
+                    )}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* ================= PAGINATION ================= */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button
-                  className="page-btn"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                >
-                  Prev
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    className={`page-number ${page === currentPage ? "active" : ""}`}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-                <button
-                  className="page-btn"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={activeTab === "quotation" ? 4 : 6}>
+                    No data found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

@@ -5,7 +5,7 @@ export const createQuotationFollowupsSchema = async (db) => {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS quotation_followups (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      project_name VARCHAR(50),
+      opprtunity_name VARCHAR(50),
       quoteValue DECIMAL(10,2),
       revisedCost DECIMAL(10,2),
       status VARCHAR(50),
@@ -21,29 +21,42 @@ export const createQuotationFollowupsSchema = async (db) => {
   // 💬 QUOTATIONS TABLE
 await db.execute(`
   CREATE TABLE IF NOT EXISTS quotations (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    project_name VARCHAR(50) DEFAULT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    opprtunity_name VARCHAR(50),
     quotationNo VARCHAR(50) NOT NULL,
+
+    client_id VARCHAR(20) NOT NULL,
     clientName VARCHAR(100) NOT NULL,
-    clientType VARCHAR(50) NOT NULL,
-    workCategory VARCHAR(100) NOT NULL,
-    lab VARCHAR(100) NOT NULL,
-    description TEXT DEFAULT NULL,
-    value DECIMAL(12,2) DEFAULT NULL,
-    date DATE DEFAULT NULL,
+
+    clientType VARCHAR(50),
+    workCategory VARCHAR(100),
+    lab VARCHAR(100),
+
+    description TEXT,
+    value DECIMAL(12,2),
+    date DATE,
+
     isGenerated TINYINT(1) DEFAULT 0,
-    generatedAt DATETIME DEFAULT NULL,
-    paymentPhase VARCHAR(20) DEFAULT NULL,
-    revisedCost DECIMAL(12,2) DEFAULT NULL,
-    poReceived VARCHAR(10) DEFAULT NULL,
-    paymentReceived VARCHAR(10) DEFAULT NULL,
-    paymentAmount DECIMAL(12,2) DEFAULT NULL,
-    paymentPendingReason TEXT DEFAULT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    KEY idx_isGenerated (isGenerated)
+    generatedAt DATETIME,
+
+    paymentPhase VARCHAR(20),
+    revisedCost DECIMAL(12,2),
+    poReceived VARCHAR(10),
+    paymentReceived VARCHAR(10),
+    paymentAmount DECIMAL(12,2),
+    paymentPendingReason TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_client_id (client_id),
+
+    CONSTRAINT fk_quotation_client
+      FOREIGN KEY (client_id)
+      REFERENCES opportunities_coordinator(client_id)
+      ON UPDATE CASCADE
+      ON DELETE RESTRICT
   )
 `);
 
