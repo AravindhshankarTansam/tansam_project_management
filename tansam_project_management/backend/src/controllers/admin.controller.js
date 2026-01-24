@@ -233,6 +233,84 @@ export const updateProjectType = async (req, res) => {
     res.status(500).json({ message: "Failed to update project_types_admin type" });
   }
 };
+
+/**
+ * GET client types (ADMIN only)
+ */
+export const getClientTypes = async (req, res) => {
+  try {
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    const [types] = await db.execute(
+      "SELECT id, name, status FROM client_types_admin ORDER BY id"
+    );
+
+    res.json(types);
+  } catch (err) {
+    console.error("Get client types error:", err);
+    res.status(500).json({ message: "Failed to fetch client types" });
+  }
+};
+/**
+ * CREATE client type (ADMIN only)
+ */
+export const createClientType = async (req, res) => {
+  try {
+    const { name, status } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Client type name is required" });
+    }
+
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    await db.execute(
+      "INSERT INTO client_types_admin (name, status) VALUES (?, ?)",
+      [name.trim().toUpperCase(), status || "ACTIVE"]
+    );
+
+    res.status(201).json({ message: "Client type created successfully" });
+  } catch (err) {
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ message: "Client type already exists" });
+    }
+
+    console.error("Create client type error:", err);
+    res.status(500).json({ message: "Failed to create client type" });
+  }
+};
+
+
+/**
+ * UPDATE client type (ADMIN only)
+ */
+export const updateClientType = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, status } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Client type name is required" });
+    }
+
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    await db.execute(
+      "UPDATE client_types_admin SET name=?, status=? WHERE id=?",
+      [name.trim().toUpperCase(), status || "ACTIVE", id]
+    );
+
+    res.json({ message: "Client type updated successfully" });
+  } catch (err) {
+    console.error("Update client type error:", err);
+    res.status(500).json({ message: "Failed to update client type" });
+  }
+};
+
+
 /**
  * GET work categories (ADMIN only)
  */

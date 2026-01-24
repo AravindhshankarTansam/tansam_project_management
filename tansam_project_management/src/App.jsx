@@ -11,6 +11,7 @@ import Roles from "./dashboards/Admin/Roles.jsx";
 import Labs from "./dashboards/Admin/Labs.jsx";
 import Reports from "./dashboards/Admin/Reports.jsx";
 import CreateProjectType from "./dashboards/Admin/CreateProjectType.jsx";
+import ClientType from "./dashboards/Admin/ClientType.jsx";
 import CreateWorkCategories from "./dashboards/Admin/CreateWorkCategories.jsx";
 
 /* COORDINATOR */
@@ -75,6 +76,7 @@ function App() {
           <Route path="labs" element={<Labs />} />
           <Route path="reports" element={<Reports />} />
           <Route path="project-types" element={<CreateProjectType />} />
+          <Route path="client-types" element={<ClientType />} />
           <Route path="work-categories" element={<CreateWorkCategories />} />
         </Route>
 <Route

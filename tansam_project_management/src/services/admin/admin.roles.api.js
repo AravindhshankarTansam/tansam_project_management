@@ -196,3 +196,42 @@ export const updateUser = async (id, payload) => {
   if (!res.ok) throw new Error(data.message);
   return data;
 };
+/* =====================================================
+   Client Types
+===================================================== */
+
+// 🔹 GET client types
+export const fetchClientTypes = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/client-types`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch client types");
+  return res.json();
+};
+
+// 🔹 CREATE client type
+export const createClientType = async (payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/client-types`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// 🔹 UPDATE client type
+export const updateClientType = async (id, payload) => {
+  const res = await fetch(`${BASE_ADMIN_URL}/client-types/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
