@@ -58,7 +58,7 @@ export default function CeoQuotation() {
 
 
   /* ================= PAGINATION ================= */
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  // const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
