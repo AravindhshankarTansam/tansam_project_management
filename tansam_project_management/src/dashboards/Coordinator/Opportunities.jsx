@@ -446,7 +446,13 @@ const handleSubmit = async (e) => {
 
   return "—";
 };
-function MultiSelectChips({ options, value, onChange, placeholder }) {
+function MultiSelectChips({
+  options,
+  value,
+  onChange,
+  placeholder,
+  labelKey = "name",
+}) {
   const [open, setOpen] = useState(false);
 
   const toggle = (id) => {
@@ -472,10 +478,10 @@ function MultiSelectChips({ options, value, onChange, placeholder }) {
         ) : (
           <div className="chips">
             {value.map((id) => {
-              const opt = options.find((o) => o.id === id);
+              const opt = options.find((o) => String(o.id) === String(id));
               return (
                 <span className="chip" key={id}>
-                  {opt?.name}
+                  {opt?.[labelKey] || opt?.username}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -503,7 +509,7 @@ function MultiSelectChips({ options, value, onChange, placeholder }) {
               }`}
               onClick={() => toggle(opt.id)}
             >
-              {opt.name}
+              {opt[labelKey] || opt.username}
             </div>
           ))}
         </div>
@@ -751,29 +757,16 @@ function MultiSelectChips({ options, value, onChange, placeholder }) {
 
               <div className="form-group">
                 <label>Assigned To</label>
-                <select
-                  multiple
+
+                <MultiSelectChips
+                  options={assignableUsers}
                   value={form.assignedTo}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      assignedTo: Array.from(
-                        e.target.selectedOptions,
-                        (option) => option.value,
-                      ),
-                    })
-                  }
-                >
-                  {assignableUsers.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name || u.username}
-                    </option>
-                  ))}
-                </select>
-                <small>
-                  Hold Ctrl (Windows) / Cmd (Mac) to select multiple users
-                </small>
+                  onChange={(ids) => setForm({ ...form, assignedTo: ids })}
+                  placeholder="Select users"
+                  labelKey="name"
+                />
               </div>
+
               <div className="form-group">
                 <label>Contact Email</label>
                 <input
