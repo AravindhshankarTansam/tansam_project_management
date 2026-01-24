@@ -147,12 +147,12 @@ const paginatedProjects = useMemo(() => {
           <table className="followup-table">
             <thead>
               <tr>
-                <th>Project</th>
-                <th>Client</th>
-                <th>Status</th>
-                <th>Progress</th>
+                <th>Project Name</th>
+                <th>Client Name</th>
+                <th>Project Status</th>
+                <th>Project Progress</th>
                 <th>Next Milestone</th>
-                <th>Team</th>
+                <th>Team Members</th>
                 <th>Issues Description</th>
                 <th>Actions</th>
               </tr>

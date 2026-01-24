@@ -398,9 +398,9 @@ useEffect(() => {
       <table className="project-table">
         <thead>
           <tr>
-            <th>Project</th>
-            <th>Client</th>
-            <th>Type</th>
+            <th>Project Name</th>
+            <th>Client Name</th>
+            <th>Project Type</th>
             {/* <th>Client Details</th> */}
             <th>Start</th>
             <th>End</th>
