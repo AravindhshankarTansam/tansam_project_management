@@ -55,12 +55,7 @@ export default function CeoQuotation() {
   }, [quotations, searchOpportunity, selectedClient]);
 
   /* ================= TOTAL VALUE ================= */
-  const totalQuotationValue = useMemo(() => {
-    return filteredData.reduce(
-      (sum, q) => sum + (Number(q.value) || 0),
-      0
-    );
-  }, [filteredData]);
+
 
   /* ================= PAGINATION ================= */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -75,6 +70,19 @@ export default function CeoQuotation() {
     setSelectedClient("");
     setCurrentPage(1);
   };
+const totalQuotationValue = useMemo(() => {
+  return filteredData.reduce(
+    (sum, q) => sum + (Number(q.value) || 0),
+    0
+  );
+}, [filteredData]);
+
+const totalPaymentReceived = useMemo(() => {
+  return filteredData.reduce(
+    (sum, q) => sum + (Number(q.paymentAmount) || 0),
+    0
+  );
+}, [filteredData]);
 
   /* ================= RENDER ================= */
   return (
@@ -122,12 +130,24 @@ export default function CeoQuotation() {
           )}
         </div>
 
-        <div className="summary-card compact">
-          <span className="summary-label">Total Quotation Value</span>
-          <span className="summary-value">
-            ₹ {totalQuotationValue.toLocaleString("en-IN")}
-          </span>
-        </div>
+   <div className="summary-row">
+  {activeTab === "quotation" ? (
+    <div className="summary-card">
+      <span className="summary-label">Total Quotation Value</span>
+      <span className="summary-value">
+        ₹ {totalQuotationValue.toLocaleString("en-IN")}
+      </span>
+    </div>
+  ) : (
+    <div className="summary-card success">
+      <span className="summary-label">Total Payment Received</span>
+      <span className="summary-value">
+        ₹ {totalPaymentReceived.toLocaleString("en-IN")}
+      </span>
+    </div>
+  )}
+</div>
+
       </div>
 
       {/* ================= TABS ================= */}
