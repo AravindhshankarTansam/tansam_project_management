@@ -619,20 +619,23 @@ if (showGenerateQuotation) {
   <label>Client *</label>
 <select
   value={newQuotation.client_id}
-  onChange={(e) => {
-    const clientId = e.target.value;
+ onChange={(e) => {
+  const clientId = e.target.value;
+  const selectedClient = opportunities.find(
+    (opp) => String(opp.client_id) === String(clientId)
+  );
 
-    const selectedClient = opportunities.find(
-      (opp) => opp.client_id === clientId
-    );
+  setNewQuotation({
+    ...newQuotation,
+    client_id: clientId,
+    clientName: selectedClient?.client_name || "",
+    opprtunity_name: "", // reset opportunity selection
+    workCategory: selectedClient?.workCategory || "",
+    lab: selectedClient?.lab || "",
+    clientType: selectedClient?.clientType || "Corporate", // default if missing
+  });
+}}
 
-    setNewQuotation({
-      ...newQuotation,
-      client_id: clientId,
-      clientName: selectedClient?.client_name || "",
-      opprtunity_name: "", // ✅ reset opportunities
-    });
-  }}
 >
 
     <option value="">Select Client</option>
@@ -655,68 +658,65 @@ if (showGenerateQuotation) {
   <label>Opportunity Name(s) *</label>
 
   <Select
-    isMulti
-    isDisabled={!newQuotation.client_id}
-    placeholder={
-      newQuotation.client_id
-        ? "Select Opportunity"
-        : "Select Client First"
-    }
+  isMulti
+  isDisabled={!newQuotation.client_id}
+  placeholder={newQuotation.client_id ? "Select Opportunity" : "Select Client First"}
+  options={
+    newQuotation.client_id
+      ? opportunities
+          .filter(
+            (opp) => String(opp.client_id) === String(newQuotation.client_id)
+          )
+          .map((opp) => ({
+            value: opp.opportunity_name,
+            label: opp.opportunity_name,
+          }))
+      : []
+  }
+  value={
+    newQuotation.opprtunity_name
+      ? newQuotation.opprtunity_name.split(",").map((name) => ({
+          value: name,
+          label: name,
+        }))
+      : []
+  }
+  onChange={(selected) => {
+    const oppNames = selected ? selected.map((s) => s.value) : [];
+    const firstOpp = opportunities.find(
+      (opp) =>
+        String(opp.client_id) === String(newQuotation.client_id) &&
+        oppNames.includes(opp.opportunity_name)
+    );
 
-    options={
-      newQuotation.client_id
-        ? opportunities
-            .filter(
-              (opp) =>
-                String(opp.client_id) ===
-                String(newQuotation.client_id)
-            )
-            .map((opp) => ({
-              value: opp.opportunity_name,
-              label: opp.opportunity_name,
-            }))
-        : []
-    }
+    setNewQuotation({
+      ...newQuotation,
+      opprtunity_name: oppNames.join(","),
+      // Auto-fill based on selected opportunity
+      workCategory: firstOpp?.work_category_name || "",
+      lab: firstOpp?.lab_name ? JSON.parse(firstOpp.lab_name).join(", ") : "",
+      clientType: firstOpp?.client_type_name || "Corporate",
+    });
+  }}
+/>
 
-    value={
-      newQuotation.opprtunity_name
-        ? newQuotation.opprtunity_name
-            .split(",")
-            .map((name) => ({
-              value: name,
-              label: name,
-            }))
-        : []
-    }
-
-    onChange={(selected) => {
-      setNewQuotation({
-        ...newQuotation,
-        opprtunity_name: selected
-          ? selected.map((s) => s.value).join(",")
-          : "",
-      });
-    }}
-  />
 </div>
 
 
 
-        <div className="form-group">
-          <label>Client Type *</label>
-          <select
-            value={newQuotation.clientType}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, clientType: e.target.value })
-            }
-          >
-            <option value="Corporate">Corporate</option>
-            <option value="Individual">Individual</option>
-            <option value="Government">Government</option>
-            <option value="NGO">NGO</option>
-          </select>
-        </div>
+<div className="form-group">
+  <label>Client Type</label>
+  <input type="text" value={newQuotation.clientType} readOnly />
+</div>
 
+<div className="form-group">
+  <label>Work Category</label>
+  <input type="text" value={newQuotation.workCategory} readOnly />
+</div>
+<div className="form-group">
+  <label>Lab</label>
+  <input type="text" value={newQuotation.lab} readOnly />
+</div>
        <div className="form-group">
   <label>Quote Value *</label>
   <input
@@ -740,41 +740,7 @@ if (showGenerateQuotation) {
 </div>
 
 
-        <div className="form-group">
-          <label>Work Category *</label>
-        <select
-    value={newQuotation.workCategory}
-    onChange={(e) =>
-      setNewQuotation({ ...newQuotation, workCategory: e.target.value })
-    }
-  >
-    <option value="">Select Work Category</option>
-    {workCategories.map((cat) => (
-      <option key={cat.id} value={cat.name}>
-        {cat.name}
-      </option>
-    ))}
-  </select>
-          
-        </div>
-
-        <div className="form-group">
-          <label>Lab *</label>
-        <select
-  value={newQuotation.lab}
-  onChange={(e) =>
-    setNewQuotation({ ...newQuotation, lab: e.target.value })
-  }
->
-  <option value="">Select Lab</option>
-  {labs.map((lab) => (
-    <option key={lab.id} value={lab.name}>
-      {lab.name}
-    </option>
-  ))}
-</select>
-
-        </div>
+   
 
         <div className="form-group">
           <label>Work Description *</label>
