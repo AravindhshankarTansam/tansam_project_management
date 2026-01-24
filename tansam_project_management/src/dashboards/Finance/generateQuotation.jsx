@@ -15,10 +15,10 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
     const updatedItems = [...quotation.items];
     updatedItems[index][field] = value;
 
-    const qty = parseFloat(updatedItems[index].qty) || 0;
-    const unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
-    updatedItems[index].total = (qty * unitPrice).toFixed(2);
-
+  const qty = parseFloat(updatedItems[index].qty) || 0;
+const unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
+const tax = parseFloat(updatedItems[index].tax) || 0;
+updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
     setQuotation({ ...quotation, items: updatedItems });
   };
 
@@ -53,7 +53,7 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Sl. No
               </th>
-              <th style={{ border: "1px solid #000", padding: "12px" }}>
+              <th style={{ border: "1px solid #000", padding: "12px", width: "30%" }}>
                 Product Description
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
@@ -128,18 +128,19 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
                   />
                 </td>
                       <td style={{ border: "1px solid #000", padding: "8px" }}>
-                  <input
-                    type="number"
-                    value={item.Tax}
-                    onChange={(e) =>
-                      handleRowChange(index, "Tax", e.target.value)
-                    }
-                    style={{
-                      width: "50%",
-                      padding: "2px",
-                      boxSizing: "border-box",
-                    }}
-                  />
+             <input
+  type="number"
+  value={item.tax || ""}
+  onChange={(e) =>
+    handleRowChange(index, "tax", e.target.value)
+  }
+  style={{
+    width: "50%",
+    padding: "2px",
+    boxSizing: "border-box",
+  }}
+/>
+
                 </td>
                 <td
                   style={{

@@ -21,54 +21,11 @@ export const getQuotations = async (req, res) => {
 // Add quotation
 export const addQuotation = async (req, res) => {
   try {
-     const db = await connectDB();
-    await initSchemas(db, { finance: true });
-   const {
-  project_name,
-  quotationNo,
-  clientName,
-  clientType,
-  workCategory,
-  lab,
-  description,
-  value,
-  date,
-  paymentPhase,
-  revisedCost,
-  poReceived,
-  paymentReceived,
-  paymentAmount,
-  paymentPendingReason,
-} = req.body;
-const safeValues = [
-  project_name,
-  quotationNo,
-  clientName,
-  clientType,
-  workCategory,
-  lab,
-  description,
-  value,
+    const db = await connectDB();
+    await initSchemas(db, { finance: true, coordinator: true });
 
-  date,
-  paymentPhase ?? null,
-  revisedCost ?? null,
-  poReceived ?? null,
-  paymentReceived ?? null,
-  paymentAmount ?? null,
-  paymentPendingReason ?? null,
-];
-const [result] = await db.execute(
-  `INSERT INTO quotations
-   (project_name, quotationNo, clientName, clientType, workCategory, lab, description, value, date, paymentPhase, revisedCost, poReceived, paymentReceived, paymentAmount, paymentPendingReason)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-safeValues
-);
-
-
-    res.status(201).json({
-      id: result.insertId,
-      project_name,
+    const {
+      opprtunity_name,
       quotationNo,
       clientName,
       clientType,
@@ -76,20 +33,87 @@ safeValues
       lab,
       description,
       value,
-    
       date,
+      paymentPhase,
+      revisedCost,
+      poReceived,
+      paymentReceived,
+      paymentAmount,
+      paymentPendingReason,
+    } = req.body;
+
+    // 🔑 Fetch client_id from coordinator table
+    const [[client]] = await db.execute(
+      `
+      SELECT client_id
+      FROM opportunities_coordinator
+      WHERE UPPER(client_name) = UPPER(?)
+      LIMIT 1
+      `,
+      [clientName]
+    );
+
+    if (!client) {
+      return res.status(400).json({
+        message: "Client not found in opportunities",
+      });
+    }
+
+    const client_id = client.client_id;
+
+    const [result] = await db.execute(
+      `
+      INSERT INTO quotations (
+        opprtunity_name,
+        quotationNo,
+        client_id,
+        clientName,
+        clientType,
+        workCategory,
+        lab,
+        description,
+        value,
+        date,
         paymentPhase,
-    revisedCost,
-    poReceived,
-    paymentReceived,
-    paymentAmount,
-    paymentPendingReason,
+        revisedCost,
+        poReceived,
+        paymentReceived,
+        paymentAmount,
+        paymentPendingReason
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        opprtunity_name,
+        quotationNo,
+        client_id,
+        clientName,
+        clientType,
+        workCategory,
+        lab,
+        description,
+        value,
+        date,
+        paymentPhase ?? null,
+        revisedCost ?? null,
+        poReceived ?? null,
+        paymentReceived ?? null,
+        paymentAmount ?? null,
+        paymentPendingReason ?? null,
+      ]
+    );
+
+    res.status(201).json({
+      id: result.insertId,
+      client_id,
+      message: "Quotation created successfully",
     });
   } catch (error) {
     console.error("Add Quotation Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Update quotation
 export const updateQuotation = async (req, res) => {
@@ -98,7 +122,7 @@ export const updateQuotation = async (req, res) => {
     await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
-      project_name,
+      opprtunity_name,
       clientName,
       clientType,
       workCategory,
@@ -118,10 +142,10 @@ export const updateQuotation = async (req, res) => {
   
 await db.execute(
   `UPDATE quotations
-   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
+   SET opprtunity_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
    WHERE id=?`,
   [
-    project_name,
+    opprtunity_name,
     clientName,
     clientType,
     workCategory,
