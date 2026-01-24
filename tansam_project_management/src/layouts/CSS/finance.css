@@ -901,3 +901,10 @@ button.btn-save:hover {
 .form-group textarea {
   resize: vertical;
 }
+.opportunity-select {
+  height: 42px;          /* 👈 looks like dropdown */
+  max-height: 120px;     /* 👈 prevents huge list */
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 8px;
+}

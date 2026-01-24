@@ -13,6 +13,8 @@ import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
 import { getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
 import { fetchOpportunities  } from "../../services/coordinator/coordinator.opportunity.api.js";
+import Select from "react-select";
+
 export default function Quotations() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -37,7 +39,8 @@ const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
-     project_name: "", 
+     opprtunity_name: "", 
+      client_id: "", 
     clientName: "",
     clientType: "Corporate",
     workCategory: "",
@@ -73,7 +76,7 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
     const baseQuotation = {
       id: originalQuotation.id,
       quotationNo: originalQuotation.quotationNo || "",
-      project_name: originalQuotation.project_name || "",
+      opprtunity_name: originalQuotation.opprtunity_name || "",
       clientName: originalQuotation.clientName || "",
       kindAttn: "",
       subject: "",
@@ -106,7 +109,7 @@ quotationToUse = {
   // original quotation reference
   quotationId: originalQuotation.id,
   quotationNo: originalQuotation.quotationNo,
-  project_name: originalQuotation.project_name || generated.project_name || "",
+  opprtunity_name: originalQuotation.opprtunity_name || generated.opprtunity_name || "",
   clientName: originalQuotation.clientName || "",
 
   // generated quotation identity
@@ -264,7 +267,7 @@ const handleSaveQuotation = async () => {
     setEditId(null);
     setNewQuotation({
       quotationNo: "",
-      project_name: "",
+      opprtunity_name: "",
       clientName: "",
       clientType: "Corporate",
       workCategory: "",
@@ -300,7 +303,7 @@ const handleSaveQuotation = async () => {
     setEditId(null);
     setNewQuotation({
       quotationNo: "",
-      project_name: "",
+      opprtunity_name: "",
       clientName: "",
       clientType: "Corporate",
       workCategory: "",
@@ -356,7 +359,7 @@ if (showGenerateQuotation) {
 
     setNewQuotation({
       quotationNo,
-      project_name: "",
+      opprtunity_name: "",
       clientName: "",
       clientType: "Corporate",
       workCategory: "",
@@ -501,7 +504,7 @@ if (showGenerateQuotation) {
             {activeTab === "quotation" ? (
               <>
                 <td><strong>{q.quotationNo}</strong></td>
-                <td>{q.project_name}</td>
+                <td>{q.opprtunity_name}</td>
                 <td>{q.clientName}</td>
                 <td>
                   <span className={`badge badge-${q.clientType.toLowerCase()}`}>
@@ -614,24 +617,24 @@ if (showGenerateQuotation) {
 
      <div className="form-group">
   <label>Client *</label>
-  <select
-    value={newQuotation.client_id || ""}
- onChange={(e) => {
-  const clientId = e.target.value;
+<select
+  value={newQuotation.client_id}
+  onChange={(e) => {
+    const clientId = e.target.value;
 
-  const selectedClient = opportunities.find(
-    (opp) => opp.client_id === clientId
-  );
+    const selectedClient = opportunities.find(
+      (opp) => opp.client_id === clientId
+    );
 
-  setNewQuotation({
-    ...newQuotation,
-    client_id: clientId,
-    clientName: selectedClient?.client_name || "", // ✅ REQUIRED
-    project_name: "",
-  });
-}}
+    setNewQuotation({
+      ...newQuotation,
+      client_id: clientId,
+      clientName: selectedClient?.client_name || "",
+      opprtunity_name: "", // ✅ reset opportunities
+    });
+  }}
+>
 
-  >
     <option value="">Select Client</option>
     {opportunities
       .map((opp) => ({ client_id: opp.client_id, client_name: opp.client_name }))
@@ -647,28 +650,56 @@ if (showGenerateQuotation) {
 {/* OPPORTUNITY SELECTION (filtered by selected client) */}
 {/* OPPORTUNITY SELECTION AS CHECKBOXES */}
 {/* OPPORTUNITY SELECTION (filtered by selected client) */}
+
 <div className="form-group">
   <label>Opportunity Name(s) *</label>
-  <select
-    multiple
-    value={newQuotation.project_name ? newQuotation.project_name.split(",") : []}
-    onChange={(e) => {
-      const selectedOptions = Array.from(e.target.selectedOptions).map(opt => opt.value);
-      setNewQuotation({ ...newQuotation, project_name: selectedOptions.join(",") });
+
+  <Select
+    isMulti
+    isDisabled={!newQuotation.client_id}
+    placeholder={
+      newQuotation.client_id
+        ? "Select Opportunity"
+        : "Select Client First"
+    }
+
+    options={
+      newQuotation.client_id
+        ? opportunities
+            .filter(
+              (opp) =>
+                String(opp.client_id) ===
+                String(newQuotation.client_id)
+            )
+            .map((opp) => ({
+              value: opp.opportunity_name,
+              label: opp.opportunity_name,
+            }))
+        : []
+    }
+
+    value={
+      newQuotation.opprtunity_name
+        ? newQuotation.opprtunity_name
+            .split(",")
+            .map((name) => ({
+              value: name,
+              label: name,
+            }))
+        : []
+    }
+
+    onChange={(selected) => {
+      setNewQuotation({
+        ...newQuotation,
+        opprtunity_name: selected
+          ? selected.map((s) => s.value).join(",")
+          : "",
+      });
     }}
-  >
-    {/* Only show opportunities for selected client */}
-    {opportunities
-      .filter(opp => opp.client_id === newQuotation.client_id)
-      .map(opp => (
-        <option key={opp.opportunity_id} value={opp.opportunity_name}>
-          {opp.opportunity_name}
-        </option>
-      ))}
-  </select>
-
-
+  />
 </div>
+
 
 
         <div className="form-group">
@@ -871,7 +902,7 @@ if (showGenerateQuotation) {
         <h2 style={{ textAlign: "center" }}>Quotation</h2>
         <p><strong>Quotation No:</strong> {newQuotation.quotationNo}</p>
         <p><strong>Date:</strong> {newQuotation.date}</p>
-        <p><strong>Opportunity Name:</strong> {newQuotation.project_name}</p>
+        <p><strong>Opportunity Name:</strong> {newQuotation.opprtunity_name}</p>
         <p><strong>Client:</strong> {newQuotation.clientName} ({newQuotation.clientType})</p>
         <p><strong>Lab:</strong> {newQuotation.lab}</p>
         <p><strong>Work Category:</strong> {newQuotation.workCategory}</p>

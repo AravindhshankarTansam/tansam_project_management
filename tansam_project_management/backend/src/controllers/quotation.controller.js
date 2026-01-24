@@ -25,7 +25,7 @@ export const addQuotation = async (req, res) => {
     await initSchemas(db, { finance: true, coordinator: true });
 
     const {
-      project_name,
+      opprtunity_name,
       quotationNo,
       clientName,
       clientType,
@@ -64,7 +64,7 @@ export const addQuotation = async (req, res) => {
     const [result] = await db.execute(
       `
       INSERT INTO quotations (
-        project_name,
+        opprtunity_name,
         quotationNo,
         client_id,
         clientName,
@@ -84,7 +84,7 @@ export const addQuotation = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
-        project_name,
+        opprtunity_name,
         quotationNo,
         client_id,
         clientName,
@@ -122,7 +122,7 @@ export const updateQuotation = async (req, res) => {
     await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
-      project_name,
+      opprtunity_name,
       clientName,
       clientType,
       workCategory,
@@ -142,10 +142,10 @@ export const updateQuotation = async (req, res) => {
   
 await db.execute(
   `UPDATE quotations
-   SET project_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
+   SET opprtunity_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
    WHERE id=?`,
   [
-    project_name,
+    opprtunity_name,
     clientName,
     clientType,
     workCategory,
