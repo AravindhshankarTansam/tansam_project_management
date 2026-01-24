@@ -182,6 +182,7 @@ const totalPaymentReceived = useMemo(() => {
                     <th>Client Name</th>
                     <th>Client Type</th>
                     <th>Opportunity Name</th>
+                     <th>Quotation Value</th>
                   </>
                 ) : (
                   <>
@@ -208,6 +209,7 @@ const totalPaymentReceived = useMemo(() => {
                         <td>{q.clientName}</td>
                         <td>{q.clientType}</td>
                         <td>{q.opprtunity_name}</td>
+                        <td>{q.value}</td>
                       </>
                     ) : (
                       <>
