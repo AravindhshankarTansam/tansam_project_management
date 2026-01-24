@@ -446,6 +446,72 @@ const handleSubmit = async (e) => {
 
   return "—";
 };
+function MultiSelectChips({ options, value, onChange, placeholder }) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = (id) => {
+    if (value.includes(id)) {
+      onChange(value.filter((v) => v !== id));
+    } else {
+      onChange([...value, id]);
+    }
+  };
+
+  const remove = (id) => {
+    onChange(value.filter((v) => v !== id));
+  };
+
+  return (
+    <div className="multi-select">
+      <div
+        className="multi-select-input"
+        onClick={() => setOpen(!open)}
+      >
+        {value.length === 0 ? (
+          <span className="placeholder">{placeholder}</span>
+        ) : (
+          <div className="chips">
+            {value.map((id) => {
+              const opt = options.find((o) => o.id === id);
+              return (
+                <span className="chip" key={id}>
+                  {opt?.name}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(id);
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+        )}
+        <span className="arrow">▾</span>
+      </div>
+
+      {open && (
+        <div className="multi-select-dropdown">
+          {options.map((opt) => (
+            <div
+              key={opt.id}
+              className={`option ${
+                value.includes(opt.id) ? "selected" : ""
+              }`}
+              onClick={() => toggle(opt.id)}
+            >
+              {opt.name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 
   /* ================= UI ================= */
@@ -642,30 +708,13 @@ const handleSubmit = async (e) => {
               </div>
               <div className="form-group">
                 <label>Labs</label>
-                <select
-                  multiple
-                  value={form.labIds}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      labIds: Array.from(
-                        e.target.selectedOptions,
-                        (opt) => opt.value,
-                      ),
-                    })
-                  }
-                >
-                  {labs.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
 
-                <small>
-                  Hold <b>Ctrl</b> (Windows) / <b>Cmd</b> (Mac) to select
-                  multiple labs
-                </small>
+                <MultiSelectChips
+                  options={labs}
+                  value={form.labIds}
+                  onChange={(ids) => setForm({ ...form, labIds: ids })}
+                  placeholder="Select labs"
+                />
               </div>
 
               <div className="form-group">
