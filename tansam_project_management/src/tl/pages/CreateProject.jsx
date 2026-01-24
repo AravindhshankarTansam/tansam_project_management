@@ -178,6 +178,38 @@ useEffect(() => {
     return opportunities.find((o) => o.opportunity_id === form.opportunityId);
   }, [form.opportunityId, opportunities]);
 
+const derivedFromOpportunity = useMemo(() => {
+  if (!selectedOpportunity) {
+    return {
+      clientType: "",
+      workCategory: "",
+      labs: "",
+    };
+  }
+
+  return {
+    clientType: selectedOpportunity.client_type_name || "",
+    workCategory: selectedOpportunity.work_category_name || "",
+    labs: (() => {
+      const v = selectedOpportunity.lab_name;
+      if (!v) return "";
+
+      if (Array.isArray(v)) return v.join(", ");
+
+      if (typeof v === "string" && v.trim().startsWith("[")) {
+        try {
+          return JSON.parse(v).join(", ");
+        } catch {
+          return v;
+        }
+      }
+
+      return v;
+    })(),
+  };
+}, [selectedOpportunity]);
+
+
   /* ================= DERIVED AUTO-FILL VALUES ================= */
 
   // Pure computation — no state updates here
@@ -398,9 +430,10 @@ useEffect(() => {
       <table className="project-table">
         <thead>
           <tr>
-            <th>Project</th>
-            <th>Client</th>
-            <th>Type</th>
+            <th>Project Name</th>
+            <th>Client Name</th>
+            <th>Client Type</th>
+            <th>Project Type</th>
             {/* <th>Client Details</th> */}
             <th>Start</th>
             <th>End</th>
@@ -424,6 +457,8 @@ useEffect(() => {
                   {/* ← Green color (same as your app's green) */}
                 </button>
               </td>
+              <td>{p.clientType || "—"}</td>
+
 
               <td>{p.projectType}</td>
               {/* <td className="client-details-col">
@@ -609,6 +644,28 @@ useEffect(() => {
                   ))}
                 </select>
               )}
+              {(isCustomer || isCustomerPOC) && selectedOpportunity && (
+  <>
+    <input
+      value={derivedFromOpportunity.clientType}
+      placeholder="Client Type"
+      disabled
+    />
+
+    <input
+      value={derivedFromOpportunity.workCategory}
+      placeholder="Work Category"
+      disabled
+    />
+
+    <input
+      value={derivedFromOpportunity.labs}
+      placeholder="Labs"
+      disabled
+    />
+  </>
+)}
+
 
               <input
                 name="projectName"
