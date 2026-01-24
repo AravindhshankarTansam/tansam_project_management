@@ -9,6 +9,12 @@ import {
 import { getUserById } from "../utils/user.helper.js";
 
 /* ======================================================
+   CONFIG
+====================================================== */
+
+const CEO_EMAIL = "ceo@yourcompany.com";
+
+/* ======================================================
    HELPERS
 ====================================================== */
 
@@ -30,13 +36,35 @@ const normalizeStage = (stage) => {
 
 const normalize = (v) => (v?.trim() ? v.trim() : null);
 
+const normalizeClientName = (name) =>
+  name ? name.trim().replace(/\s+/g, " ").toUpperCase() : null;
+
+const fuzzyKey = (name) => {
+  const clean = normalizeClientName(name);
+  if (!clean || clean.length < 10) return clean;
+  return clean.slice(0, 5) + clean.slice(-5);
+};
+
+const normalizeAssignedUsers = (assignedTo) => {
+  if (!assignedTo) return null;
+  if (Array.isArray(assignedTo)) return assignedTo.map(String).join(",");
+  return String(assignedTo);
+};
+
+const parseAssignedUsers = (assignedTo) => {
+  if (!assignedTo) return [];
+  return String(assignedTo)
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+};
+
 /* ======================================================
    ID GENERATORS
 ====================================================== */
 
 const generateOpportunityId = async (db) => {
   const year = new Date().getFullYear();
-
   const [rows] = await db.execute(
     `
     SELECT opportunity_id
@@ -49,18 +77,12 @@ const generateOpportunityId = async (db) => {
   );
 
   let seq = 1;
-
   if (rows.length) {
-    const lastId = rows[0].opportunity_id; // OPP-2026-004
-    const lastSeq = parseInt(lastId.split("-")[2], 10);
-    seq = lastSeq + 1;
+    seq = parseInt(rows[0].opportunity_id.split("-")[2], 10) + 1;
   }
 
   return `OPP-${year}-${String(seq).padStart(3, "0")}`;
 };
-
-
-
 
 const generateClientId = async (db) => {
   const [rows] = await db.execute(
@@ -82,17 +104,8 @@ const generateClientId = async (db) => {
 };
 
 /* ======================================================
-   CREATE OPPORTUNITY (UI + CSV SAFE)
+   CREATE OPPORTUNITY
 ====================================================== */
-
-const normalizeClientName = (name) =>
-  name ? name.trim().replace(/\s+/g, " ").toUpperCase() : null;
-
-const fuzzyKey = (name) => {
-  const clean = normalizeClientName(name);
-  if (!clean || clean.length < 10) return clean;
-  return clean.slice(0, 5) + clean.slice(-5);
-};
 
 export const createOpportunity = async (req, res) => {
   try {
@@ -123,57 +136,48 @@ export const createOpportunity = async (req, res) => {
     await initSchemas(db, { coordinator: true });
 
     const normalizedClientName = normalizeClientName(clientName);
-
     const opportunityId = await generateOpportunityId(db);
+
+    /* ========= CLIENT CHECK (UNCHANGED) ========= */
+
+    const [[exactClient]] = await db.execute(
+      `
+      SELECT client_id
+      FROM opportunities_coordinator
+      WHERE UPPER(client_name) = ?
+      LIMIT 1
+      `,
+      [normalizedClientName]
+    );
+
     let clientId;
 
-    /* ========= SIMILAR CLIENT CHECK ========= */
+    if (exactClient) {
+      clientId = exactClient.client_id;
+    } else {
+      const key = fuzzyKey(normalizedClientName);
 
-    // ✅ STEP 1: Exact match (PRIMARY)
-const [[exactClient]] = await db.execute(
-  `
-  SELECT client_id, client_name
-  FROM opportunities_coordinator
-  WHERE UPPER(client_name) = ?
-  LIMIT 1
-  `,
-  [normalizedClientName]
-);
+      const [[similarClient]] = await db.execute(
+        `
+        SELECT client_id, client_name
+        FROM opportunities_coordinator
+        WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
+        LIMIT 1
+        `,
+        [key]
+      );
 
-// ✅ STEP 2: Fuzzy match (WARNING only)
-let similarClient = null;
+      if (similarClient && !isNewClient) {
+        return res.status(409).json({
+          code: "SIMILAR_CLIENT_FOUND",
+          existingClient: similarClient,
+        });
+      }
 
-if (!exactClient) {
-  const key = fuzzyKey(normalizedClientName);
+      clientId = await generateClientId(db);
+    }
 
-  const [[row]] = await db.execute(
-    `
-    SELECT client_id, client_name
-    FROM opportunities_coordinator
-    WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
-    LIMIT 1
-    `,
-    [key]
-  );
-
-  similarClient = row;
-}
-
-
-
-if (exactClient) {
-  // 🔁 SAME CLIENT → SAME ID
-  clientId = exactClient.client_id;
-} else if (similarClient && !isNewClient) {
-  // ⚠ Warn user
-  return res.status(409).json({
-    code: "SIMILAR_CLIENT_FOUND",
-    existingClient: similarClient,
-  });
-} else {
-  // 🆕 Truly new client
-  clientId = await generateClientId(db);
-}
+    const assignedStr = normalizeAssignedUsers(assignedTo);
 
     /* ========= INSERT ========= */
 
@@ -208,36 +212,40 @@ if (exactClient) {
         leadSource || null,
         leadDescription || null,
         leadStatus || "NEW",
-        normalize(assignedTo),
+        assignedStr,
         req.user.id,
         req.user.name || req.user.username,
         req.user.role,
       ]
     );
 
-    /* ========= MAIL ========= */
+    /* ========= MAIL (MULTI + CEO) ========= */
 
-    if (assignedTo) {
-      const assignedUser = await getUserById(db, assignedTo);
-      const assignor = await getUserById(db, req.user.id);
+    const assignor = await getUserById(db, req.user.id);
+    const userIds = parseAssignedUsers(assignedStr);
+    const emails = [];
 
-      if (assignedUser?.email) {
-        await sendMail({
-          to: [assignedUser.email, assignor?.email].filter(Boolean),
-          subject: `New Opportunity Assigned - ${opportunityName}`,
-          html: assignedOpportunityTemplate({
-            userName: assignedUser.name,
-            opportunityId,
-            opportunityName,
-            clientName: normalizedClientName,
-            stage: leadStatus || "NEW",
-            assignedBy: assignor?.name || "Coordinator",
-            contactPerson,
-            contactEmail,
-            contactPhone,
-          }),
-        });
-      }
+    for (const id of userIds) {
+      const u = await getUserById(db, id);
+      if (u?.email) emails.push(u.email);
+    }
+
+    if (emails.length) {
+      await sendMail({
+        to: [...new Set([...emails, CEO_EMAIL])],
+        subject: `New Opportunity Assigned - ${opportunityName}`,
+        html: assignedOpportunityTemplate({
+          userName: "Team",
+          opportunityId,
+          opportunityName,
+          clientName: normalizedClientName,
+          stage: leadStatus || "NEW",
+          assignedBy: assignor?.name || "Coordinator",
+          contactPerson,
+          contactEmail,
+          contactPhone,
+        }),
+      });
     }
 
     res.status(201).json({
@@ -250,6 +258,236 @@ if (exactClient) {
     res.status(500).json({ message: "Failed to create opportunity" });
   }
 };
+
+/* ======================================================
+   UPDATE OPPORTUNITY
+====================================================== */
+
+// export const updateOpportunity = async (req, res) => {
+//   try {
+//     const { opportunity_id } = req.params;
+//     const {
+//       opportunityName,
+//       clientName,
+//       contactPerson,
+//       contactEmail,
+//       contactPhone,
+//       leadSource,
+//       leadDescription,
+//       leadStatus,
+//       assignedTo,
+//       isNewClient,
+//       client_id,
+//     } = req.body;
+
+//     const db = await connectDB();
+//     await initSchemas(db, { coordinator: true });
+
+//     const [[oldOpp]] = await db.execute(
+//       `SELECT * FROM opportunities_coordinator WHERE opportunity_id = ?`,
+//       [opportunity_id]
+//     );
+
+//     if (!oldOpp) {
+//       return res.status(404).json({ message: "Opportunity not found" });
+//     }
+
+//     const clean = (v) =>
+//       v === undefined || v === null ? "" : String(v).trim();
+
+//     const contactChanged =
+//       clean(oldOpp.client_name) !== clean(clientName) ||
+//       clean(oldOpp.contact_person) !== clean(contactPerson) ||
+//       clean(oldOpp.contact_email) !== clean(contactEmail) ||
+//       clean(oldOpp.contact_phone) !== clean(contactPhone);
+
+//     /* ========= CLIENT LOGIC (UNCHANGED) ========= */
+
+//     let finalClientId = oldOpp.client_id;
+//     let finalClientName = oldOpp.client_name;
+
+//     if (clientName && !client_id) {
+//       const normalizedClientName = normalizeClientName(clientName);
+
+//       if (normalizedClientName !== oldOpp.client_name) {
+//         const key = fuzzyKey(normalizedClientName);
+
+//         const [[similarClient]] = await db.execute(
+//           `
+//           SELECT client_id, client_name
+//           FROM opportunities_coordinator
+//           WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
+//             AND client_id != ?
+//           LIMIT 1
+//           `,
+//           [key, oldOpp.client_id]
+//         );
+
+//         if (similarClient && !isNewClient) {
+//           return res.status(409).json({
+//             code: "SIMILAR_CLIENT_FOUND",
+//             existingClient: similarClient,
+//           });
+//         }
+
+//         await db.execute(
+//           `UPDATE opportunities_coordinator SET client_name = ? WHERE client_id = ?`,
+//           [normalizedClientName, oldOpp.client_id]
+//         );
+
+//         finalClientName = normalizedClientName;
+//       }
+//     }
+
+//     if (client_id && client_id !== oldOpp.client_id) {
+//       const [[row]] = await db.execute(
+//         `SELECT client_name FROM opportunities_coordinator WHERE client_id = ? LIMIT 1`,
+//         [client_id]
+//       );
+
+//       if (!row) {
+//         return res.status(400).json({ message: "Invalid client selected" });
+//       }
+
+//       finalClientId = client_id;
+//       finalClientName = row.client_name;
+//     }
+
+//     /* ========= ASSIGNMENT CHANGE ========= */
+
+//     const newAssigned = parseAssignedUsers(assignedTo);
+//     const oldAssigned = parseAssignedUsers(oldOpp.assigned_to);
+
+//     const assignmentChanged =
+//       JSON.stringify([...newAssigned].sort()) !==
+//       JSON.stringify([...oldAssigned].sort());
+
+//     /* ========= UPDATE ========= */
+
+//     const assignedStr = normalizeAssignedUsers(assignedTo);
+
+//     await db.execute(
+//       `
+//       UPDATE opportunities_coordinator
+//       SET
+//         opportunity_name = COALESCE(?, opportunity_name),
+//         client_id        = ?,
+//         client_name      = ?,
+//         contact_person   = COALESCE(?, contact_person),
+//         contact_email    = COALESCE(?, contact_email),
+//         contact_phone    = COALESCE(?, contact_phone),
+//         lead_source      = COALESCE(?, lead_source),
+//         lead_description = COALESCE(?, lead_description),
+//         lead_status      = COALESCE(?, lead_status),
+//         assigned_to      = COALESCE(?, assigned_to)
+//       WHERE opportunity_id = ?
+//       `,
+//       [
+//         normalize(opportunityName),
+//         finalClientId,
+//         finalClientName,
+//         normalize(contactPerson),
+//         normalize(contactEmail),
+//         normalize(contactPhone),
+//         leadSource || null,
+//         leadDescription || null,
+//         leadStatus || null,
+//         assignedStr,
+//         opportunity_id,
+//       ]
+//     );
+
+//     /* ========= MAILS ========= */
+
+//     const assignor = await getUserById(db, req.user.id);
+
+//     if (assignmentChanged) {
+//       const newEmails = [];
+//       const oldEmails = [];
+
+//       for (const id of newAssigned) {
+//         const u = await getUserById(db, id);
+//         if (u?.email) newEmails.push(u.email);
+//       }
+
+//       for (const id of oldAssigned) {
+//         const u = await getUserById(db, id);
+//         if (u?.email) oldEmails.push(u.email);
+//       }
+
+//       const removed = oldEmails.filter((e) => !newEmails.includes(e));
+//       if (removed.length) {
+//         await sendMail({
+//           to: removed,
+//           subject: "Opportunity Reassigned",
+//           html: unassignedOpportunityTemplate({
+//             userName: "Team",
+//             opportunityId,
+//             opportunityName: oldOpp.opportunity_name,
+//             clientName: oldOpp.client_name,
+//             reassignedTo: "Another team",
+//           }),
+//         });
+//       }
+
+//       if (newEmails.length) {
+//         await sendMail({
+//           to: [...new Set([...newEmails, CEO_EMAIL])],
+//           subject: "New Opportunity Assigned",
+//           html: assignedOpportunityTemplate({
+//             userName: "Team",
+//             opportunityId,
+//             opportunityName: opportunityName || oldOpp.opportunity_name,
+//             clientName: finalClientName,
+//             stage: leadStatus || oldOpp.lead_status,
+//             assignedBy: assignor?.name || "Coordinator",
+//             contactPerson,
+//             contactEmail,
+//             contactPhone,
+//           }),
+//         });
+//       }
+//     }
+
+//     if (contactChanged && !assignmentChanged && oldOpp.assigned_to) {
+//       const emails = [];
+
+//       for (const id of oldAssigned) {
+//         const u = await getUserById(db, id);
+//         if (u?.email) emails.push(u.email);
+//       }
+
+//       if (emails.length) {
+//         await sendMail({
+//           to: [...new Set([...emails, CEO_EMAIL])],
+//           subject: "Opportunity Contact Details Updated",
+//           html: opportunityContactUpdatedTemplate({
+//             userName: "Team",
+//             opportunityId,
+//             opportunityName: opportunityName || oldOpp.opportunity_name,
+//             clientName: finalClientName,
+//             assignedBy: req.user.name || "Coordinator",
+//             oldContact: {
+//               contactPerson: oldOpp.contact_person,
+//               contactEmail: oldOpp.contact_email,
+//               contactPhone: oldOpp.contact_phone,
+//             },
+//             newContact: {
+//               contactPerson,
+//               contactEmail,
+//               contactPhone,
+//             },
+//           }),
+//         });
+//       }
+//     }
+
+//     res.json({ message: "Opportunity updated successfully" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Update failed" });
+//   }
+// };
 
 export const checkSimilarClient = async (req, res) => {
   const { name } = req.query;
@@ -319,8 +557,8 @@ export const updateOpportunity = async (req, res) => {
       leadDescription,
       leadStatus,
       assignedTo,
-      isNewClient,      // 👈 REQUIRED
-      client_id,        // 👈 OPTIONAL (explicit switch)
+      isNewClient,
+      client_id,
     } = req.body;
 
     const db = await connectDB();
@@ -330,45 +568,36 @@ export const updateOpportunity = async (req, res) => {
       `SELECT * FROM opportunities_coordinator WHERE opportunity_id = ?`,
       [opportunity_id]
     );
-    const clean = (v) =>
-  v === undefined || v === null ? "" : String(v).trim();
-
-const contactChanged =
-  clean(oldOpp.client_name) !== clean(clientName) ||
-  clean(oldOpp.contact_person) !== clean(contactPerson) ||
-  clean(oldOpp.contact_email) !== clean(contactEmail) ||
-  clean(oldOpp.contact_phone) !== clean(contactPhone);
-
 
     if (!oldOpp) {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
+    const clean = (v) =>
+      v === undefined || v === null ? "" : String(v).trim();
+
+    const contactChanged =
+      clean(oldOpp.client_name) !== clean(clientName) ||
+      clean(oldOpp.contact_person) !== clean(contactPerson) ||
+      clean(oldOpp.contact_email) !== clean(contactEmail) ||
+      clean(oldOpp.contact_phone) !== clean(contactPhone);
+
+    /* ========= CLIENT LOGIC (UNCHANGED) ========= */
+
     let finalClientId = oldOpp.client_id;
     let finalClientName = oldOpp.client_name;
 
-    /* ================= CLIENT NAME LOGIC ================= */
-
-    if (clientName) {
+    if (clientName && !client_id) {
       const normalizedClientName = normalizeClientName(clientName);
 
-      if (
-        normalizedClientName !== oldOpp.client_name &&
-        !client_id
-      ) {
+      if (normalizedClientName !== oldOpp.client_name) {
         const key = fuzzyKey(normalizedClientName);
 
         const [[similarClient]] = await db.execute(
           `
           SELECT client_id, client_name
           FROM opportunities_coordinator
-          WHERE
-            UPPER(
-              CONCAT(
-                LEFT(client_name, 5),
-                RIGHT(client_name, 5)
-              )
-            ) = ?
+          WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
             AND client_id != ?
           LIMIT 1
           `,
@@ -378,17 +607,12 @@ const contactChanged =
         if (similarClient && !isNewClient) {
           return res.status(409).json({
             code: "SIMILAR_CLIENT_FOUND",
-            message: "A similar client already exists",
             existingClient: similarClient,
           });
         }
 
         await db.execute(
-          `
-          UPDATE opportunities_coordinator
-          SET client_name = ?
-          WHERE client_id = ?
-          `,
+          `UPDATE opportunities_coordinator SET client_name = ? WHERE client_id = ?`,
           [normalizedClientName, oldOpp.client_id]
         );
 
@@ -396,24 +620,32 @@ const contactChanged =
       }
     }
 
-    /* ================= EXPLICIT CLIENT SWITCH ================= */
-
     if (client_id && client_id !== oldOpp.client_id) {
-      finalClientId = client_id;
-
-      const [[clientRow]] = await db.execute(
+      const [[row]] = await db.execute(
         `SELECT client_name FROM opportunities_coordinator WHERE client_id = ? LIMIT 1`,
         [client_id]
       );
 
-      if (!clientRow) {
+      if (!row) {
         return res.status(400).json({ message: "Invalid client selected" });
       }
 
-      finalClientName = clientRow.client_name;
+      finalClientId = client_id;
+      finalClientName = row.client_name;
     }
 
-    /* ================= UPDATE OPPORTUNITY ================= */
+    /* ========= ASSIGNMENT CHANGE ========= */
+
+    const newAssigned = parseAssignedUsers(assignedTo);
+    const oldAssigned = parseAssignedUsers(oldOpp.assigned_to);
+
+    const assignmentChanged =
+      JSON.stringify([...newAssigned].sort()) !==
+      JSON.stringify([...oldAssigned].sort());
+
+    /* ========= UPDATE ========= */
+
+    const assignedStr = normalizeAssignedUsers(assignedTo);
 
     await db.execute(
       `
@@ -441,47 +673,51 @@ const contactChanged =
         leadSource || null,
         leadDescription || null,
         leadStatus || null,
-        normalize(assignedTo),
+        assignedStr,
         opportunity_id,
       ]
     );
 
-    /* ================= MAIL (ADDED) ================= */
-
-    const assignmentChanged =
-      assignedTo && String(oldOpp.assigned_to) !== String(assignedTo);
+    /* ========= MAILS ========= */
 
     const assignor = await getUserById(db, req.user.id);
 
     if (assignmentChanged) {
-      const newUser = await getUserById(db, assignedTo);
-      const oldUser = oldOpp.assigned_to
-        ? await getUserById(db, oldOpp.assigned_to)
-        : null;
+      const newEmails = [];
+      const oldEmails = [];
 
-      // 🔁 Mail to old assigned user
-      if (oldUser?.email) {
+      for (const id of newAssigned) {
+        const u = await getUserById(db, id);
+        if (u?.email) newEmails.push(u.email);
+      }
+
+      for (const id of oldAssigned) {
+        const u = await getUserById(db, id);
+        if (u?.email) oldEmails.push(u.email);
+      }
+
+      const removed = oldEmails.filter((e) => !newEmails.includes(e));
+      if (removed.length) {
         await sendMail({
-          to: oldUser.email,
+          to: removed,
           subject: "Opportunity Reassigned",
           html: unassignedOpportunityTemplate({
-            userName: oldUser.name,
-            opportunityId: opportunity_id,
+            userName: "Team",
+            opportunityId,
             opportunityName: oldOpp.opportunity_name,
             clientName: oldOpp.client_name,
-            reassignedTo: newUser?.name || "Another user",
+            reassignedTo: "Another team",
           }),
         });
       }
 
-      // 🟢 Mail to new assigned user
-      if (newUser?.email) {
+      if (newEmails.length) {
         await sendMail({
-          to: newUser.email,
+          to: [...new Set([...newEmails, CEO_EMAIL])],
           subject: "New Opportunity Assigned",
           html: assignedOpportunityTemplate({
-            userName: newUser.name,
-            opportunityId: opportunity_id,
+            userName: "Team",
+            opportunityId,
             opportunityName: opportunityName || oldOpp.opportunity_name,
             clientName: finalClientName,
             stage: leadStatus || oldOpp.lead_status,
@@ -493,35 +729,39 @@ const contactChanged =
         });
       }
     }
-   /* ================= CONTACT UPDATE MAIL ================= */
 
-if (contactChanged && !assignmentChanged && oldOpp.assigned_to) {
-  const assignedUser = await getUserById(db, oldOpp.assigned_to);
+    if (contactChanged && !assignmentChanged && oldOpp.assigned_to) {
+      const emails = [];
 
-  if (assignedUser?.email) {
-    await sendMail({
-      to: assignedUser.email,
-      subject: "Opportunity Contact Details Updated",
-      html: opportunityContactUpdatedTemplate({
-        userName: assignedUser.name,
-        opportunityId: opportunity_id,
-        opportunityName: opportunityName || oldOpp.opportunity_name,
-        clientName: finalClientName,
-        assignedBy: req.user.name || "Coordinator",
-        oldContact: {
-          contactPerson: oldOpp.contact_person,
-          contactEmail: oldOpp.contact_email,
-          contactPhone: oldOpp.contact_phone,
-        },
-        newContact: {
-          contactPerson,
-          contactEmail,
-          contactPhone,
-        },
-      }),
-    });
-  }
-}
+      for (const id of oldAssigned) {
+        const u = await getUserById(db, id);
+        if (u?.email) emails.push(u.email);
+      }
+
+      if (emails.length) {
+        await sendMail({
+          to: [...new Set([...emails, CEO_EMAIL])],
+          subject: "Opportunity Contact Details Updated",
+          html: opportunityContactUpdatedTemplate({
+            userName: "Team",
+            opportunityId,
+            opportunityName: opportunityName || oldOpp.opportunity_name,
+            clientName: finalClientName,
+            assignedBy: req.user.name || "Coordinator",
+            oldContact: {
+              contactPerson: oldOpp.contact_person,
+              contactEmail: oldOpp.contact_email,
+              contactPhone: oldOpp.contact_phone,
+            },
+            newContact: {
+              contactPerson,
+              contactEmail,
+              contactPhone,
+            },
+          }),
+        });
+      }
+    }
 
     res.json({ message: "Opportunity updated successfully" });
   } catch (err) {

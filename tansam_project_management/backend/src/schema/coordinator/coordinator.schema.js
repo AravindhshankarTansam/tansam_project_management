@@ -4,21 +4,42 @@ export const createCoordinatorSchemas = async (db) => {
       id INT AUTO_INCREMENT PRIMARY KEY,
 
       opportunity_id VARCHAR(20) NOT NULL UNIQUE,
-
       opportunity_name VARCHAR(150) NOT NULL,
 
       client_id VARCHAR(20) NOT NULL,
       client_name VARCHAR(150) NOT NULL,
 
+      /* ================= ADMIN MASTER LINKS ================= */
+
+      lab_id INT,
+      lab_name VARCHAR(100),
+
+      work_category_id INT,
+      work_category_name VARCHAR(100),
+
+      project_type_id INT,
+      project_type_name VARCHAR(100),
+
+      client_type_id INT,
+      client_type_name VARCHAR(100),
+
+      /* ================= CONTACT ================= */
+
       contact_person VARCHAR(100),
       contact_email VARCHAR(100),
       contact_phone VARCHAR(20),
+
+      /* ================= LEAD ================= */
 
       lead_source ENUM('WEBSITE','REFERRAL','CALL','EMAIL'),
       lead_description LONGTEXT,
       lead_status ENUM('NEW','EXISTING') DEFAULT 'NEW',
 
+      /* ================= ASSIGNMENT ================= */
+
       assigned_to VARCHAR(255),
+
+      /* ================= AUDIT ================= */
 
       created_by INT NOT NULL COMMENT 'coordinator user id',
       created_by_name VARCHAR(100) COMMENT 'creator name',
@@ -28,11 +49,18 @@ export const createCoordinatorSchemas = async (db) => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
+      /* ================= INDEXES ================= */
+
       INDEX idx_opportunity_id (opportunity_id),
       INDEX idx_client_id (client_id),
+      INDEX idx_lab_id (lab_id),
+      INDEX idx_work_category_id (work_category_id),
+      INDEX idx_project_type_id (project_type_id),
+      INDEX idx_client_type_id (client_type_id),
       INDEX idx_created_by (created_by)
     )
   `);
+
 
     await db.execute(`
     CREATE TABLE IF NOT EXISTS opportunity_tracker (
