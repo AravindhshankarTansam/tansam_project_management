@@ -544,6 +544,10 @@
 .checkbox-item input {
   cursor: pointer;
 }
+.grid-item.full-width {
+  grid-column: span 3;
+}
+  
 
 /* Responsive - Stack on smaller screens */
 @media (max-width: 1024px) {
