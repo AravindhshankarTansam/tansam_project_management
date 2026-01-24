@@ -166,7 +166,7 @@ const paginatedProjects = useMemo(() => {
 
 
   return (
-    <div className="ceo-projects">
+    <div className="ceo-quotations">
       <ToastContainer autoClose={1200} />
 
       <div className="page-header">
