@@ -116,6 +116,11 @@ export const createOpportunity = async (req, res) => {
     const {
       opportunityName,
       clientName,
+
+      labIds,                 // ✅ ARRAY ["1","3"]
+      workCategoryId,
+      clientTypeId,
+
       contactPerson,
       contactEmail,
       contactPhone,
@@ -127,9 +132,9 @@ export const createOpportunity = async (req, res) => {
     } = req.body;
 
     if (!opportunityName || !clientName) {
-      return res
-        .status(400)
-        .json({ message: "Opportunity name and client name are required" });
+      return res.status(400).json({
+        message: "Opportunity name and client name are required",
+      });
     }
 
     const db = await connectDB();
@@ -138,7 +143,7 @@ export const createOpportunity = async (req, res) => {
     const normalizedClientName = normalizeClientName(clientName);
     const opportunityId = await generateOpportunityId(db);
 
-    /* ========= CLIENT CHECK (UNCHANGED) ========= */
+    /* ================= CLIENT CHECK ================= */
 
     const [[exactClient]] = await db.execute(
       `
@@ -177,9 +182,50 @@ export const createOpportunity = async (req, res) => {
       clientId = await generateClientId(db);
     }
 
+    /* ================= LABS (MULTI – JSON) ================= */
+
+    let labIdsJson = JSON.stringify([]);
+    let labNamesJson = JSON.stringify([]);
+
+    if (Array.isArray(labIds) && labIds.length) {
+      const placeholders = labIds.map(() => "?").join(",");
+
+      const [labs] = await db.execute(
+        `SELECT id, name FROM labs_admin WHERE id IN (${placeholders})`,
+        labIds
+      );
+
+      labIdsJson = JSON.stringify(labs.map(l => Number(l.id)));
+      labNamesJson = JSON.stringify(labs.map(l => l.name));
+    }
+
+    /* ================= WORK CATEGORY ================= */
+
+    let workCategoryName = null;
+    if (workCategoryId) {
+      const [[wc]] = await db.execute(
+        `SELECT name FROM work_categories WHERE id = ?`,
+        [workCategoryId]
+      );
+      workCategoryName = wc?.name || null;
+    }
+
+    /* ================= CLIENT TYPE ================= */
+
+    let clientTypeName = null;
+    if (clientTypeId) {
+      const [[ct]] = await db.execute(
+        `SELECT name FROM client_types_admin WHERE id = ?`,
+        [clientTypeId]
+      );
+      clientTypeName = ct?.name || null;
+    }
+
+    /* ================= ASSIGNMENT ================= */
+
     const assignedStr = normalizeAssignedUsers(assignedTo);
 
-    /* ========= INSERT ========= */
+    /* ================= INSERT ================= */
 
     await db.execute(
       `
@@ -188,6 +234,14 @@ export const createOpportunity = async (req, res) => {
         opportunity_name,
         client_id,
         client_name,
+
+        lab_id,
+        lab_name,
+        work_category_id,
+        work_category_name,
+        client_type_id,
+        client_type_name,
+
         contact_person,
         contact_email,
         contact_phone,
@@ -199,13 +253,25 @@ export const createOpportunity = async (req, res) => {
         created_by_name,
         created_by_role
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (
+        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      )
       `,
       [
         opportunityId,
         normalize(opportunityName),
         clientId,
         normalizedClientName,
+
+        labIdsJson,            //  JSON
+        labNamesJson,          //  JSON
+        workCategoryId || null,
+        workCategoryName,
+        clientTypeId || null,
+        clientTypeName,
+
         normalize(contactPerson),
         normalize(contactEmail),
         normalize(contactPhone),
@@ -219,7 +285,7 @@ export const createOpportunity = async (req, res) => {
       ]
     );
 
-    /* ========= MAIL (MULTI + CEO) ========= */
+    /* ================= MAIL ================= */
 
     const assignor = await getUserById(db, req.user.id);
     const userIds = parseAssignedUsers(assignedStr);
@@ -258,236 +324,6 @@ export const createOpportunity = async (req, res) => {
     res.status(500).json({ message: "Failed to create opportunity" });
   }
 };
-
-/* ======================================================
-   UPDATE OPPORTUNITY
-====================================================== */
-
-// export const updateOpportunity = async (req, res) => {
-//   try {
-//     const { opportunity_id } = req.params;
-//     const {
-//       opportunityName,
-//       clientName,
-//       contactPerson,
-//       contactEmail,
-//       contactPhone,
-//       leadSource,
-//       leadDescription,
-//       leadStatus,
-//       assignedTo,
-//       isNewClient,
-//       client_id,
-//     } = req.body;
-
-//     const db = await connectDB();
-//     await initSchemas(db, { coordinator: true });
-
-//     const [[oldOpp]] = await db.execute(
-//       `SELECT * FROM opportunities_coordinator WHERE opportunity_id = ?`,
-//       [opportunity_id]
-//     );
-
-//     if (!oldOpp) {
-//       return res.status(404).json({ message: "Opportunity not found" });
-//     }
-
-//     const clean = (v) =>
-//       v === undefined || v === null ? "" : String(v).trim();
-
-//     const contactChanged =
-//       clean(oldOpp.client_name) !== clean(clientName) ||
-//       clean(oldOpp.contact_person) !== clean(contactPerson) ||
-//       clean(oldOpp.contact_email) !== clean(contactEmail) ||
-//       clean(oldOpp.contact_phone) !== clean(contactPhone);
-
-//     /* ========= CLIENT LOGIC (UNCHANGED) ========= */
-
-//     let finalClientId = oldOpp.client_id;
-//     let finalClientName = oldOpp.client_name;
-
-//     if (clientName && !client_id) {
-//       const normalizedClientName = normalizeClientName(clientName);
-
-//       if (normalizedClientName !== oldOpp.client_name) {
-//         const key = fuzzyKey(normalizedClientName);
-
-//         const [[similarClient]] = await db.execute(
-//           `
-//           SELECT client_id, client_name
-//           FROM opportunities_coordinator
-//           WHERE UPPER(CONCAT(LEFT(client_name,5), RIGHT(client_name,5))) = ?
-//             AND client_id != ?
-//           LIMIT 1
-//           `,
-//           [key, oldOpp.client_id]
-//         );
-
-//         if (similarClient && !isNewClient) {
-//           return res.status(409).json({
-//             code: "SIMILAR_CLIENT_FOUND",
-//             existingClient: similarClient,
-//           });
-//         }
-
-//         await db.execute(
-//           `UPDATE opportunities_coordinator SET client_name = ? WHERE client_id = ?`,
-//           [normalizedClientName, oldOpp.client_id]
-//         );
-
-//         finalClientName = normalizedClientName;
-//       }
-//     }
-
-//     if (client_id && client_id !== oldOpp.client_id) {
-//       const [[row]] = await db.execute(
-//         `SELECT client_name FROM opportunities_coordinator WHERE client_id = ? LIMIT 1`,
-//         [client_id]
-//       );
-
-//       if (!row) {
-//         return res.status(400).json({ message: "Invalid client selected" });
-//       }
-
-//       finalClientId = client_id;
-//       finalClientName = row.client_name;
-//     }
-
-//     /* ========= ASSIGNMENT CHANGE ========= */
-
-//     const newAssigned = parseAssignedUsers(assignedTo);
-//     const oldAssigned = parseAssignedUsers(oldOpp.assigned_to);
-
-//     const assignmentChanged =
-//       JSON.stringify([...newAssigned].sort()) !==
-//       JSON.stringify([...oldAssigned].sort());
-
-//     /* ========= UPDATE ========= */
-
-//     const assignedStr = normalizeAssignedUsers(assignedTo);
-
-//     await db.execute(
-//       `
-//       UPDATE opportunities_coordinator
-//       SET
-//         opportunity_name = COALESCE(?, opportunity_name),
-//         client_id        = ?,
-//         client_name      = ?,
-//         contact_person   = COALESCE(?, contact_person),
-//         contact_email    = COALESCE(?, contact_email),
-//         contact_phone    = COALESCE(?, contact_phone),
-//         lead_source      = COALESCE(?, lead_source),
-//         lead_description = COALESCE(?, lead_description),
-//         lead_status      = COALESCE(?, lead_status),
-//         assigned_to      = COALESCE(?, assigned_to)
-//       WHERE opportunity_id = ?
-//       `,
-//       [
-//         normalize(opportunityName),
-//         finalClientId,
-//         finalClientName,
-//         normalize(contactPerson),
-//         normalize(contactEmail),
-//         normalize(contactPhone),
-//         leadSource || null,
-//         leadDescription || null,
-//         leadStatus || null,
-//         assignedStr,
-//         opportunity_id,
-//       ]
-//     );
-
-//     /* ========= MAILS ========= */
-
-//     const assignor = await getUserById(db, req.user.id);
-
-//     if (assignmentChanged) {
-//       const newEmails = [];
-//       const oldEmails = [];
-
-//       for (const id of newAssigned) {
-//         const u = await getUserById(db, id);
-//         if (u?.email) newEmails.push(u.email);
-//       }
-
-//       for (const id of oldAssigned) {
-//         const u = await getUserById(db, id);
-//         if (u?.email) oldEmails.push(u.email);
-//       }
-
-//       const removed = oldEmails.filter((e) => !newEmails.includes(e));
-//       if (removed.length) {
-//         await sendMail({
-//           to: removed,
-//           subject: "Opportunity Reassigned",
-//           html: unassignedOpportunityTemplate({
-//             userName: "Team",
-//             opportunityId,
-//             opportunityName: oldOpp.opportunity_name,
-//             clientName: oldOpp.client_name,
-//             reassignedTo: "Another team",
-//           }),
-//         });
-//       }
-
-//       if (newEmails.length) {
-//         await sendMail({
-//           to: [...new Set([...newEmails, CEO_EMAIL])],
-//           subject: "New Opportunity Assigned",
-//           html: assignedOpportunityTemplate({
-//             userName: "Team",
-//             opportunityId,
-//             opportunityName: opportunityName || oldOpp.opportunity_name,
-//             clientName: finalClientName,
-//             stage: leadStatus || oldOpp.lead_status,
-//             assignedBy: assignor?.name || "Coordinator",
-//             contactPerson,
-//             contactEmail,
-//             contactPhone,
-//           }),
-//         });
-//       }
-//     }
-
-//     if (contactChanged && !assignmentChanged && oldOpp.assigned_to) {
-//       const emails = [];
-
-//       for (const id of oldAssigned) {
-//         const u = await getUserById(db, id);
-//         if (u?.email) emails.push(u.email);
-//       }
-
-//       if (emails.length) {
-//         await sendMail({
-//           to: [...new Set([...emails, CEO_EMAIL])],
-//           subject: "Opportunity Contact Details Updated",
-//           html: opportunityContactUpdatedTemplate({
-//             userName: "Team",
-//             opportunityId,
-//             opportunityName: opportunityName || oldOpp.opportunity_name,
-//             clientName: finalClientName,
-//             assignedBy: req.user.name || "Coordinator",
-//             oldContact: {
-//               contactPerson: oldOpp.contact_person,
-//               contactEmail: oldOpp.contact_email,
-//               contactPhone: oldOpp.contact_phone,
-//             },
-//             newContact: {
-//               contactPerson,
-//               contactEmail,
-//               contactPhone,
-//             },
-//           }),
-//         });
-//       }
-//     }
-
-//     res.json({ message: "Opportunity updated successfully" });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Update failed" });
-//   }
-// };
 
 export const checkSimilarClient = async (req, res) => {
   const { name } = req.query;
@@ -547,9 +383,15 @@ export const getOpportunities = async (req, res) => {
 export const updateOpportunity = async (req, res) => {
   try {
     const { opportunity_id } = req.params;
+
     const {
       opportunityName,
       clientName,
+
+      labIds,                 // ✅ ARRAY ["1","3"]
+      workCategoryId,
+      clientTypeId,
+
       contactPerson,
       contactEmail,
       contactPhone,
@@ -564,6 +406,8 @@ export const updateOpportunity = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { coordinator: true });
 
+    /* ================= FETCH OLD DATA ================= */
+
     const [[oldOpp]] = await db.execute(
       `SELECT * FROM opportunities_coordinator WHERE opportunity_id = ?`,
       [opportunity_id]
@@ -573,16 +417,7 @@ export const updateOpportunity = async (req, res) => {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
-    const clean = (v) =>
-      v === undefined || v === null ? "" : String(v).trim();
-
-    const contactChanged =
-      clean(oldOpp.client_name) !== clean(clientName) ||
-      clean(oldOpp.contact_person) !== clean(contactPerson) ||
-      clean(oldOpp.contact_email) !== clean(contactEmail) ||
-      clean(oldOpp.contact_phone) !== clean(contactPhone);
-
-    /* ========= CLIENT LOGIC (UNCHANGED) ========= */
+    /* ================= CLIENT LOGIC ================= */
 
     let finalClientId = oldOpp.client_id;
     let finalClientName = oldOpp.client_name;
@@ -634,39 +469,94 @@ export const updateOpportunity = async (req, res) => {
       finalClientName = row.client_name;
     }
 
-    /* ========= ASSIGNMENT CHANGE ========= */
+    /* ================= LABS (MULTI – JSON) ================= */
 
-    const newAssigned = parseAssignedUsers(assignedTo);
-    const oldAssigned = parseAssignedUsers(oldOpp.assigned_to);
+    let finalLabIds = oldOpp.lab_id;
+    let finalLabNames = oldOpp.lab_name;
 
-    const assignmentChanged =
-      JSON.stringify([...newAssigned].sort()) !==
-      JSON.stringify([...oldAssigned].sort());
+    if (Array.isArray(labIds)) {
+      if (labIds.length === 0) {
+        finalLabIds = JSON.stringify([]);
+        finalLabNames = JSON.stringify([]);
+      } else {
+        const placeholders = labIds.map(() => "?").join(",");
 
-    /* ========= UPDATE ========= */
+        const [labs] = await db.execute(
+          `SELECT id, name FROM labs_admin WHERE id IN (${placeholders})`,
+          labIds
+        );
+
+        finalLabIds = JSON.stringify(labs.map(l => Number(l.id)));
+        finalLabNames = JSON.stringify(labs.map(l => l.name));
+      }
+    }
+
+    /* ================= WORK CATEGORY ================= */
+
+    let finalWorkCategoryName = oldOpp.work_category_name;
+
+    if (workCategoryId) {
+      const [[wc]] = await db.execute(
+        `SELECT name FROM work_categories WHERE id = ?`,
+        [workCategoryId]
+      );
+      finalWorkCategoryName = wc?.name || null;
+    }
+
+    /* ================= CLIENT TYPE ================= */
+
+    let finalClientTypeName = oldOpp.client_type_name;
+
+    if (clientTypeId) {
+      const [[ct]] = await db.execute(
+        `SELECT name FROM client_types_admin WHERE id = ?`,
+        [clientTypeId]
+      );
+      finalClientTypeName = ct?.name || null;
+    }
+
+    /* ================= ASSIGNMENT ================= */
 
     const assignedStr = normalizeAssignedUsers(assignedTo);
+
+    /* ================= UPDATE ================= */
 
     await db.execute(
       `
       UPDATE opportunities_coordinator
       SET
-        opportunity_name = COALESCE(?, opportunity_name),
-        client_id        = ?,
-        client_name      = ?,
-        contact_person   = COALESCE(?, contact_person),
-        contact_email    = COALESCE(?, contact_email),
-        contact_phone    = COALESCE(?, contact_phone),
-        lead_source      = COALESCE(?, lead_source),
-        lead_description = COALESCE(?, lead_description),
-        lead_status      = COALESCE(?, lead_status),
-        assigned_to      = COALESCE(?, assigned_to)
+        opportunity_name   = COALESCE(?, opportunity_name),
+        client_id          = ?,
+        client_name        = ?,
+
+        lab_id             = ?,
+        lab_name           = ?,
+        work_category_id   = COALESCE(?, work_category_id),
+        work_category_name = ?,
+        client_type_id     = COALESCE(?, client_type_id),
+        client_type_name   = ?,
+
+        contact_person     = COALESCE(?, contact_person),
+        contact_email      = COALESCE(?, contact_email),
+        contact_phone      = COALESCE(?, contact_phone),
+        lead_source        = COALESCE(?, lead_source),
+        lead_description   = COALESCE(?, lead_description),
+        lead_status        = COALESCE(?, lead_status),
+        assigned_to        = COALESCE(?, assigned_to)
       WHERE opportunity_id = ?
       `,
       [
         normalize(opportunityName),
         finalClientId,
         finalClientName,
+
+        finalLabIds,              // ✅ JSON
+        finalLabNames,            // ✅ JSON
+        workCategoryId || null,
+        finalWorkCategoryName,
+        clientTypeId || null,
+        finalClientTypeName,
+
         normalize(contactPerson),
         normalize(contactEmail),
         normalize(contactPhone),
@@ -678,92 +568,8 @@ export const updateOpportunity = async (req, res) => {
       ]
     );
 
-    /* ========= MAILS ========= */
-
-    const assignor = await getUserById(db, req.user.id);
-
-    if (assignmentChanged) {
-      const newEmails = [];
-      const oldEmails = [];
-
-      for (const id of newAssigned) {
-        const u = await getUserById(db, id);
-        if (u?.email) newEmails.push(u.email);
-      }
-
-      for (const id of oldAssigned) {
-        const u = await getUserById(db, id);
-        if (u?.email) oldEmails.push(u.email);
-      }
-
-      const removed = oldEmails.filter((e) => !newEmails.includes(e));
-      if (removed.length) {
-        await sendMail({
-          to: removed,
-          subject: "Opportunity Reassigned",
-          html: unassignedOpportunityTemplate({
-            userName: "Team",
-            opportunityId,
-            opportunityName: oldOpp.opportunity_name,
-            clientName: oldOpp.client_name,
-            reassignedTo: "Another team",
-          }),
-        });
-      }
-
-      if (newEmails.length) {
-        await sendMail({
-          to: [...new Set([...newEmails, CEO_EMAIL])],
-          subject: "New Opportunity Assigned",
-          html: assignedOpportunityTemplate({
-            userName: "Team",
-            opportunityId,
-            opportunityName: opportunityName || oldOpp.opportunity_name,
-            clientName: finalClientName,
-            stage: leadStatus || oldOpp.lead_status,
-            assignedBy: assignor?.name || "Coordinator",
-            contactPerson,
-            contactEmail,
-            contactPhone,
-          }),
-        });
-      }
-    }
-
-    if (contactChanged && !assignmentChanged && oldOpp.assigned_to) {
-      const emails = [];
-
-      for (const id of oldAssigned) {
-        const u = await getUserById(db, id);
-        if (u?.email) emails.push(u.email);
-      }
-
-      if (emails.length) {
-        await sendMail({
-          to: [...new Set([...emails, CEO_EMAIL])],
-          subject: "Opportunity Contact Details Updated",
-          html: opportunityContactUpdatedTemplate({
-            userName: "Team",
-            opportunityId,
-            opportunityName: opportunityName || oldOpp.opportunity_name,
-            clientName: finalClientName,
-            assignedBy: req.user.name || "Coordinator",
-            oldContact: {
-              contactPerson: oldOpp.contact_person,
-              contactEmail: oldOpp.contact_email,
-              contactPhone: oldOpp.contact_phone,
-            },
-            newContact: {
-              contactPerson,
-              contactEmail,
-              contactPhone,
-            },
-          }),
-        });
-      }
-    }
-
     res.json({ message: "Opportunity updated successfully" });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Update failed" });

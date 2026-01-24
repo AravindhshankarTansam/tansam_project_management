@@ -17,9 +17,6 @@ export const createCoordinatorSchemas = async (db) => {
       work_category_id INT,
       work_category_name VARCHAR(100),
 
-      project_type_id INT,
-      project_type_name VARCHAR(100),
-
       client_type_id INT,
       client_type_name VARCHAR(100),
 
