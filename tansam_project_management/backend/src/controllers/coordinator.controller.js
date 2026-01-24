@@ -383,6 +383,7 @@ export const getOpportunities = async (req, res) => {
 export const updateOpportunity = async (req, res) => {
   try {
     const { opportunity_id } = req.params;
+    const opportunityId = req.params.opportunity_id.trim();
 
     const {
       opportunityName,
@@ -519,6 +520,24 @@ export const updateOpportunity = async (req, res) => {
 
     const assignedStr = normalizeAssignedUsers(assignedTo);
 
+    const oldAssigned = parseAssignedUsers(oldOpp.assigned_to);
+    const newAssigned = parseAssignedUsers(assignedStr);
+
+        const addedUsers = newAssigned.filter(
+      id => !oldAssigned.includes(id)
+      );
+
+
+      const removedUsers = oldAssigned.filter(
+      id => !newAssigned.includes(id)
+      );
+    /* ================= CONTACT CHANGE ================= */
+
+    const contactChanged =
+      (oldOpp.contact_person || "") !== (contactPerson || "") ||
+      (oldOpp.contact_email || "") !== (contactEmail || "") ||
+      (oldOpp.contact_phone || "") !== (contactPhone || "");
+
     /* ================= UPDATE ================= */
 
     await db.execute(
@@ -550,8 +569,8 @@ export const updateOpportunity = async (req, res) => {
         finalClientId,
         finalClientName,
 
-        finalLabIds,              // ✅ JSON
-        finalLabNames,            // ✅ JSON
+        finalLabIds,
+        finalLabNames,
         workCategoryId || null,
         finalWorkCategoryName,
         clientTypeId || null,
@@ -567,6 +586,98 @@ export const updateOpportunity = async (req, res) => {
         opportunity_id,
       ]
     );
+
+    /* ================= MAILS ================= */
+/* ================= MAILS ================= */
+
+const assignor = await getUserById(db, req.user.id);
+
+/* ================= NEW ASSIGNEES ================= */
+if (addedUsers.length) {
+  const emails = [];
+
+  for (const id of addedUsers) {
+    const u = await getUserById(db, id);
+    if (u?.email) emails.push(u.email);
+  }
+
+  if (emails.length) {
+    await sendMail({
+      to: [...new Set([...emails, CEO_EMAIL])],
+      subject: "New Opportunity Assigned",
+      html: assignedOpportunityTemplate({
+        userName: "Team",
+        opportunityId,
+        opportunityName: opportunityName || oldOpp.opportunity_name,
+        clientName: finalClientName,
+        stage: leadStatus || oldOpp.lead_status,
+        assignedBy: assignor?.name || "Coordinator",
+        contactPerson,
+        contactEmail,
+        contactPhone,
+      }),
+    });
+  }
+}
+
+/* ================= REMOVED ASSIGNEES ================= */
+if (removedUsers.length) {
+  const emails = [];
+
+  for (const id of removedUsers) {
+    const u = await getUserById(db, id);
+    if (u?.email) emails.push(u.email);
+  }
+
+  if (emails.length) {
+    await sendMail({
+      to: emails,
+      subject: "Opportunity Reassigned",
+      html: unassignedOpportunityTemplate({
+        userName: "Team",
+        opportunityId,
+        opportunityName: oldOpp.opportunity_name,
+        clientName: oldOpp.client_name,
+        reassignedTo: "Another team member",
+      }),
+    });
+  }
+}
+
+/* ================= CONTACT UPDATE ================= */
+if (contactChanged && !addedUsers.length && oldOpp.assigned_to) {
+  const emails = [];
+
+  for (const id of oldAssigned) {
+    const u = await getUserById(db, id);
+    if (u?.email) emails.push(u.email);
+  }
+
+  if (emails.length) {
+    await sendMail({
+      to: [...new Set([...emails, CEO_EMAIL])],
+      subject: "Opportunity Contact Details Updated",
+      html: opportunityContactUpdatedTemplate({
+        userName: "Team",
+        opportunityId,
+        opportunityName: opportunityName || oldOpp.opportunity_name,
+        clientName: finalClientName,
+        assignedBy: assignor?.name || "Coordinator",
+        oldContact: {
+          contactPerson: oldOpp.contact_person,
+          contactEmail: oldOpp.contact_email,
+          contactPhone: oldOpp.contact_phone,
+        },
+        newContact: {
+          contactPerson,
+          contactEmail,
+          contactPhone,
+        },
+      }),
+    });
+  }
+
+    }
 
     res.json({ message: "Opportunity updated successfully" });
 
