@@ -15,6 +15,9 @@ import {
   getUsers,
   createUser,
   updateUser,
+  getClientTypes,
+  createClientType,
+  updateClientType
 } from "../controllers/admin.controller.js";
 import {getOpportunities,} from "../controllers/coordinator.controller.js";
 
@@ -44,8 +47,31 @@ router.get(
 router.post("/project-types", authMiddleware, roleMiddleware(["ADMIN"]), createProjectType);
 router.put("/project-types/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateProjectType);
 
+// CLIENT TYPES (ADMIN)
+router.get(
+  "/client-types",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "TEAM LEAD"]),
+  getClientTypes
+);
+
+router.post(
+  "/client-types",
+  authMiddleware,
+  roleMiddleware(["ADMIN"]),
+  createClientType
+);
+
+router.put(
+  "/client-types/:id",
+  authMiddleware,
+  roleMiddleware(["ADMIN"]),
+  updateClientType
+);
+
+
 // WORK CATEGORIES (ADMIN)
-router.get("/work-categories", authMiddleware, roleMiddleware(["ADMIN","FINANCE"]), getWorkCategories);
+router.get("/work-categories", authMiddleware, roleMiddleware(["ADMIN","TEAM LEAD","FINANCE"]), getWorkCategories);
 router.post("/work-categories", authMiddleware, roleMiddleware(["ADMIN"]), createWorkCategory);
 router.put("/work-categories/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateWorkCategory);
 
