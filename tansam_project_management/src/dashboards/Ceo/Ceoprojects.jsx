@@ -19,6 +19,8 @@ export default function CeoProjects() {
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedLab, setSelectedLab] = useState("");
+
 
 
   /* ================= LOAD PROJECTS ================= */
@@ -76,32 +78,79 @@ export default function CeoProjects() {
 //   useEffect(() => {
 //   setCurrentPage(1);
 // }, [searchTerm, selectedClient, selectedType]);
+const labOptions = useMemo(() => {
+  const labs = new Set();
+
+  projects.forEach((p) => {
+    if (!p.labNames) return;
+
+    if (Array.isArray(p.labNames)) {
+      p.labNames.forEach((l) => labs.add(l));
+    } else if (typeof p.labNames === "string") {
+      try {
+        const parsed = JSON.parse(p.labNames);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((l) => labs.add(l));
+        } else {
+          labs.add(p.labNames);
+        }
+      } catch {
+        labs.add(p.labNames);
+      }
+    }
+  });
+
+  return Array.from(labs);
+}, [projects]);
+
 
 
   /* ================= FILTERED DATA ================= */
-  const filteredProjects = useMemo(() => {
-    return projects.filter(p => {
-      const matchesSearch =
-        !searchTerm ||
-        p.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.clientName?.toLowerCase().includes(searchTerm.toLowerCase());
+const filteredProjects = useMemo(() => {
+  return projects.filter((p) => {
+    const matchesSearch =
+      !searchTerm ||
+      p.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.clientName?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesClient =
-        !selectedClient || p.clientName === selectedClient;
+    const matchesClient =
+      !selectedClient || p.clientName === selectedClient;
 
-      const matchesType =
-        !selectedType || p.projectType === selectedType;
+    const matchesType =
+      !selectedType || p.projectType === selectedType;
 
-      return matchesSearch && matchesClient && matchesType;
-    });
-  }, [projects, searchTerm, selectedClient, selectedType]);
+    const matchesLab =
+      !selectedLab ||
+      (Array.isArray(p.labNames)
+        ? p.labNames.includes(selectedLab)
+        : (() => {
+            try {
+              const parsed = JSON.parse(p.labNames);
+              return Array.isArray(parsed)
+                ? parsed.includes(selectedLab)
+                : p.labNames === selectedLab;
+            } catch {
+              return p.labNames === selectedLab;
+            }
+          })());
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setSelectedClient("");
-    setSelectedType(""); 
-    setCurrentPage(1); 
-  };
+    return (
+      matchesSearch &&
+      matchesClient &&
+      matchesType &&
+      matchesLab
+    );
+  });
+}, [projects, searchTerm, selectedClient, selectedType, selectedLab]);
+
+
+const clearFilters = () => {
+  setSearchTerm("");
+  setSelectedClient("");
+  setSelectedType("");
+  setSelectedLab("");
+  setCurrentPage(1);
+};
 
   const formatDate = (date) => {
   if (!date) return "—";
@@ -129,24 +178,25 @@ const paginatedProjects = useMemo(() => {
 
       {/* ================= FILTER BAR ================= */}
       <div className="filter-bar">
-      <input
-  type="text"
-  placeholder="Search project or client..."
-  value={searchTerm}
-  onChange={(e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // ✅ reset here
-  }}
-/>
-
+        <input
+          type="text"
+          placeholder="Search project or client..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // ✅ reset here
+          }}
+        />
 
         <select
           value={selectedClient}
           onChange={(e) => setSelectedClient(e.target.value)}
         >
           <option value="">All Clients</option>
-          {clientOptions.map(c => (
-            <option key={c} value={c}>{c}</option>
+          {clientOptions.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
         </select>
 
@@ -155,12 +205,28 @@ const paginatedProjects = useMemo(() => {
           onChange={(e) => setSelectedType(e.target.value)}
         >
           <option value="">All Project Types</option>
-          {typeOptions.map(t => (
-            <option key={t} value={t}>{t}</option>
+          {typeOptions.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedLab}
+          onChange={(e) => {
+            setSelectedLab(e.target.value);
+            setCurrentPage(1);
+          }}
+        >
+          <option value="">All Labs</option>
+          {labOptions.map((lab) => (
+            <option key={lab} value={lab}>
+              {lab}
+            </option>
           ))}
         </select>
 
-        {(searchTerm || selectedClient || selectedType) && (
+        {(searchTerm || selectedClient || selectedType|| selectedLab) && (
           <button className="clear-btn" onClick={clearFilters}>
             Clear
           </button>
@@ -169,81 +235,107 @@ const paginatedProjects = useMemo(() => {
 
       {/* ================= TABLE ================= */}
       <div className="table-card">
-  {loading ? (
-    <div className="loading">Loading projects...</div>
-  ) : filteredProjects.length === 0 ? (
-    <div className="empty-state">No projects found</div>
-  ) : (
-    <>
-      <table className="projects-table">
-        <thead>
-          <tr>
-            <th>Project</th>
-            <th>Client</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Start</th>
-            <th>End</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedProjects.map((p) => (
-            <tr key={p.id}>
-              <td>{p.projectName}</td>
-              <td>{p.clientName}</td>
-              <td>
-                <span className={`type-badge ${p.projectType?.toLowerCase()}`}>
-                  {p.projectType}
-                </span>
-              </td>
-              <td>
-                <span
-                  className={`status-badge ${followupStatuses[p.id]
-                    ?.toLowerCase()
-                    .replace(" ", "-")}`}
+        {loading ? (
+          <div className="loading">Loading projects...</div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="empty-state">No projects found</div>
+        ) : (
+          <>
+            <table className="projects-table">
+              <thead>
+                <tr>
+                  <th>Project Name</th>
+                  <th>Client Name</th>
+                  <th>Client Type</th>
+                  <th>Project Type</th>
+                  <th>Project Status</th>
+                  <th>Labs</th>
+                  <th>Work Category</th>
+                  <th>Start</th>
+                  <th>End</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {paginatedProjects.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.projectName}</td>
+
+                    <td>{p.clientName}</td>
+
+                    <td>
+                      <span className="pill pill-client">
+                        {p.clientType || "—"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`type-badge ${p.projectType?.toLowerCase()}`}
+                      >
+                        {p.projectType}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`status-badge ${followupStatuses[p.id]
+                          ?.toLowerCase()
+                          .replace(" ", "-")}`}
+                      >
+                        {followupStatuses[p.id] || "Planned"}
+                      </span>
+                    </td>
+
+                    <td>
+                      {Array.isArray(p.labNames)
+                        ? p.labNames.join(", ")
+                        : p.labNames || "—"}
+                    </td>
+
+                    <td>{p.workCategory || "—"}</td>
+
+                    <td>{formatDate(p.startDate)}</td>
+
+                    <td>{formatDate(p.endDate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* ✅ PAGINATION GOES HERE */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
                 >
-                  {followupStatuses[p.id]}
-                </span>
-              </td>
-              <td>{formatDate(p.startDate)}</td>
-              <td>{formatDate(p.endDate)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  Prev
+                </button>
 
-      {/* ✅ PAGINATION GOES HERE */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Prev
-          </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      className={currentPage === page ? "active" : ""}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              className={currentPage === page ? "active" : ""}
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </button>
-          ))}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
-    </>
-  )}
-</div>
-
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

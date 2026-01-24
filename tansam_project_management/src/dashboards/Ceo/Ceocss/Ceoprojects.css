@@ -233,3 +233,14 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pill-client {
+  background: #eef2ff;
+  color: #3730a3;
+}
