@@ -1,16 +1,19 @@
-
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
 
+/* ======================================================
+   CREATE PROJECT
+====================================================== */
 export const createProject = async (req, res) => {
   try {
     const db = await connectDB();
+    await initSchemas(db, { project: true });
 
     const {
       projectType,
       projectName,
       clientName,
-      opportunityId,          // ← coming from frontend
+      opportunityId,
       startDate,
       endDate,
       status,
@@ -20,27 +23,46 @@ export const createProject = async (req, res) => {
 
     const poFilePath = req.file ? req.file.path : null;
 
-    // Normalize type (replace spaces with underscore, uppercase)
     const normalizedType = projectType
       ?.toUpperCase()
-      .replace(/\s+/g, "_") || "";
+      .replace(/\s+/g, "_");
 
     let finalProjectName = projectName;
     let finalClientName = clientName;
     let oppId = null;
 
-    // ================= SAVE OPPORTUNITY ID FOR BOTH CUSTOMER AND CUSTOMER_POC =================
+    // ✅ MUST BE DECLARED (THIS FIXES YOUR ERROR)
+    let lab_id = null;
+    let lab_name = null;
+    let work_category_id = null;
+    let work_category_name = null;
+    let client_type_id = null;
+    let client_type_name = null;
+
+    /* ================= OPPORTUNITY DATA ================= */
     if (normalizedType === "CUSTOMER" || normalizedType === "CUSTOMER_POC") {
       if (!opportunityId) {
-        return res.status(400).json({ 
-          message: "Opportunity ID is required for Customer / Customer POC projects" 
+        return res.status(400).json({
+          message:
+            "Opportunity ID is required for Customer / Customer POC projects",
         });
       }
 
       const [[opp]] = await db.execute(
-        `SELECT opportunity_id, opportunity_name, client_name
-         FROM opportunities_coordinator
-         WHERE opportunity_id = ?`,
+        `
+        SELECT
+          opportunity_id,
+          opportunity_name,
+          client_name,
+          lab_id,
+          lab_name,
+          work_category_id,
+          work_category_name,
+          client_type_id,
+          client_type_name
+        FROM opportunities_coordinator
+        WHERE opportunity_id = ?
+        `,
         [opportunityId]
       );
 
@@ -48,31 +70,68 @@ export const createProject = async (req, res) => {
         return res.status(400).json({ message: "Invalid opportunity ID" });
       }
 
-      // Auto-fill if frontend didn't provide (optional safety)
-      finalProjectName = finalProjectName || opp.opportunity_name;
-      finalClientName = finalClientName || opp.client_name;
-      oppId = opp.opportunity_id; // ← This is what saves it!
+      // ✅ COPY MASTER DATA (SAFE)
+      lab_id = opp.lab_id;
+      lab_name = opp.lab_name;
+      work_category_id = opp.work_category_id;
+      work_category_name = opp.work_category_name;
+      client_type_id = opp.client_type_id;
+      client_type_name = opp.client_type_name;
+
+      finalProjectName ||= opp.opportunity_name;
+      finalClientName ||= opp.client_name;
+      oppId = opp.opportunity_id;
     }
 
-    // ================= CUSTOMER VALIDATION =================
-    if (normalizedType === "CUSTOMER" && (!quotationNumber || !poNumber || !poFilePath)) {
+    /* ================= CUSTOMER VALIDATION ================= */
+    if (
+      normalizedType === "CUSTOMER" &&
+      (!quotationNumber || !poNumber || !poFilePath)
+    ) {
       return res.status(400).json({
-        message: "Quotation Number, PO Number, and PO File are required for Customer projects",
+        message:
+          "Quotation Number, PO Number, and PO File are required for Customer projects",
       });
     }
 
-    // ================= INSERT INTO PROJECTS =================
+    /* ================= INSERT PROJECT ================= */
     const [result] = await db.execute(
-      `INSERT INTO projects
-       (project_name, client_name, project_type, opportunity_id,
-        start_date, end_date, status,
-        quotation_number, po_number, po_file)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `
+      INSERT INTO projects (
+        project_name,
+        client_name,
+        project_type,
+        opportunity_id,
+
+        lab_id,
+        lab_name,
+        work_category_id,
+        work_category_name,
+        client_type_id,
+        client_type_name,
+
+        start_date,
+        end_date,
+        status,
+        quotation_number,
+        po_number,
+        po_file
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
       [
         finalProjectName,
         finalClientName,
         normalizedType,
-        oppId,                    // ← Now saved for both types
+        oppId,
+
+        lab_id,
+        lab_name,
+        work_category_id,
+        work_category_name,
+        client_type_id,
+        client_type_name,
+
         startDate,
         endDate,
         status || "Planned",
@@ -84,10 +143,9 @@ export const createProject = async (req, res) => {
 
     const projectId = result.insertId;
 
-    // ================= PROJECT REFERENCE (only for POC) =================
+    /* ================= PROJECT REFERENCE ================= */
     if (normalizedType === "CUSTOMER_POC" && oppId) {
       const projectReference = `${oppId}/prj-${projectId}`;
-
       await db.execute(
         `UPDATE projects SET project_reference=? WHERE id=?`,
         [projectReference, projectId]
@@ -104,34 +162,33 @@ export const createProject = async (req, res) => {
   }
 };
 
-
+/* ======================================================
+   GET PROJECTS
+====================================================== */
 export const getProjects = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { project: true });
-const [rows] = await db.execute(`
-  SELECT
-    p.id,
-    p.project_reference AS projectReference,
-    p.project_name AS projectName,
-    p.client_name AS clientName,
-    p.project_type AS projectType,
-    p.opportunity_id AS opportunityId,
-    p.start_date AS startDate,
-    p.end_date AS endDate,
-    p.status,
 
-    -- 👇 OPPORTUNITY CLIENT DETAILS
-    o.contact_person AS contactPerson,
-    o.contact_email  AS contactEmail,
-    o.contact_phone  AS contactPhone,
-    o.assigned_to    AS assignedTo
+    const [rows] = await db.execute(`
+      SELECT
+        p.id,
+        p.project_reference AS projectReference,
+        p.project_name AS projectName,
+        p.client_name AS clientName,
+        p.project_type AS projectType,
+        p.opportunity_id AS opportunityId,
 
-  FROM projects p
-  LEFT JOIN opportunities_coordinator o
-    ON p.opportunity_id = o.opportunity_id
-  ORDER BY p.id DESC
-`);
+        p.client_type_name AS clientType,
+        p.work_category_name AS workCategory,
+        p.lab_name AS labNames,
+
+        p.start_date AS startDate,
+        p.end_date AS endDate,
+        p.status
+      FROM projects p
+      ORDER BY p.id DESC
+    `);
 
     res.json(rows);
   } catch (err) {
@@ -139,8 +196,9 @@ const [rows] = await db.execute(`
   }
 };
 
-
-/* ✅ UPDATE PROJECT */
+/* ======================================================
+   UPDATE PROJECT
+====================================================== */
 export const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -161,7 +219,8 @@ export const updateProject = async (req, res) => {
     const db = await connectDB();
 
     await db.execute(
-      `UPDATE projects SET
+      `
+      UPDATE projects SET
         project_name = ?,
         client_name = ?,
         project_type = ?,
@@ -171,7 +230,8 @@ export const updateProject = async (req, res) => {
         quotation_number = ?,
         po_number = ?,
         po_file = ?
-       WHERE id = ?`,
+      WHERE id = ?
+      `,
       [
         projectName,
         clientName,
@@ -192,9 +252,9 @@ export const updateProject = async (req, res) => {
   }
 };
 
-
-
-/* ✅ DELETE PROJECT */
+/* ======================================================
+   DELETE PROJECT
+====================================================== */
 export const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
