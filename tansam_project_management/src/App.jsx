@@ -36,7 +36,7 @@ import TeamMember from "./tl/pages/teammember.jsx";
 // import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
 /* CEO */
-import CeoDashboard from "./dashboards/Ceo/CeoDashboard.jsx";
+// import CeoDashboard from "./dashboards/Ceo/CeoDashboard.jsx";
 import CeoProjects from "./dashboards/Ceo/Ceoprojects.jsx";
 import CeoQuotation from "./dashboards/Ceo/Ceoquotation.jsx";
 
@@ -121,7 +121,7 @@ function App() {
     </PrivateRoute>
   }
 >
-  <Route index element={<CeoDashboard />} />
+  {/* <Route index element={<CeoDashboard />} /> */}
   <Route path="ceoprojects" element={<CeoProjects />} />
   <Route path="ceoquotation" element={<CeoQuotation />} />
 </Route>

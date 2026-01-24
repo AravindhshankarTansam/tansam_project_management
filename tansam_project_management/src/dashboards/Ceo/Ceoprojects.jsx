@@ -4,7 +4,10 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/Ceoprojects.css";
 
 import { fetchProjects } from "../../services/project.api";
-import { fetchProjectFollowups } from "../../services/projectFollowup.api";
+import { fetchProjectFollowups } from "../../services/projectfollowup.api";
+
+  const ROWS_PER_PAGE = 10;
+
 
 export default function CeoProjects() {
   const [projects, setProjects] = useState([]);
@@ -15,6 +18,8 @@ export default function CeoProjects() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedType, setSelectedType] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -68,6 +73,10 @@ export default function CeoProjects() {
     () => [...new Set(projects.map(p => p.projectType).filter(Boolean))],
     [projects]
   );
+//   useEffect(() => {
+//   setCurrentPage(1);
+// }, [searchTerm, selectedClient, selectedType]);
+
 
   /* ================= FILTERED DATA ================= */
   const filteredProjects = useMemo(() => {
@@ -90,17 +99,22 @@ export default function CeoProjects() {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedClient("");
-    setSelectedType("");
+    setSelectedType(""); 
+    setCurrentPage(1); 
   };
 
-  const formatDate = (date) =>
-    date
-      ? new Date(date).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-      : "—";
+  const formatDate = (date) => {
+  if (!date) return "—";
+  return new Date(date).toISOString().split("T")[0];
+};
+const totalPages = Math.ceil(filteredProjects.length / ROWS_PER_PAGE);
+
+const paginatedProjects = useMemo(() => {
+  const start = (currentPage - 1) * ROWS_PER_PAGE;
+  return filteredProjects.slice(start, start + ROWS_PER_PAGE);
+}, [filteredProjects, currentPage]);
+
+
 
   return (
     <div className="ceo-projects">
@@ -115,12 +129,16 @@ export default function CeoProjects() {
 
       {/* ================= FILTER BAR ================= */}
       <div className="filter-bar">
-        <input
-          type="text"
-          placeholder="Search project or client..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <input
+  type="text"
+  placeholder="Search project or client..."
+  value={searchTerm}
+  onChange={(e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // ✅ reset here
+  }}
+/>
+
 
         <select
           value={selectedClient}
@@ -151,45 +169,81 @@ export default function CeoProjects() {
 
       {/* ================= TABLE ================= */}
       <div className="table-card">
-        {loading ? (
-          <div className="loading">Loading projects...</div>
-        ) : filteredProjects.length === 0 ? (
-          <div className="empty-state">No projects found</div>
-        ) : (
-          <table className="projects-table">
-            <thead>
-              <tr>
-                <th>Project</th>
-                <th>Client</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Start</th>
-                <th>End</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjects.map(p => (
-                <tr key={p.id}>
-                  <td>{p.projectName}</td>
-                  <td>{p.clientName}</td>
-                  <td>
-                    <span className={`type-badge ${p.projectType?.toLowerCase()}`}>
-                      {p.projectType}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`status-badge ${followupStatuses[p.id]?.toLowerCase().replace(" ", "-")}`}>
-                      {followupStatuses[p.id]}
-                    </span>
-                  </td>
-                  <td>{formatDate(p.startDate)}</td>
-                  <td>{formatDate(p.endDate)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+  {loading ? (
+    <div className="loading">Loading projects...</div>
+  ) : filteredProjects.length === 0 ? (
+    <div className="empty-state">No projects found</div>
+  ) : (
+    <>
+      <table className="projects-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Client</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Start</th>
+            <th>End</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedProjects.map((p) => (
+            <tr key={p.id}>
+              <td>{p.projectName}</td>
+              <td>{p.clientName}</td>
+              <td>
+                <span className={`type-badge ${p.projectType?.toLowerCase()}`}>
+                  {p.projectType}
+                </span>
+              </td>
+              <td>
+                <span
+                  className={`status-badge ${followupStatuses[p.id]
+                    ?.toLowerCase()
+                    .replace(" ", "-")}`}
+                >
+                  {followupStatuses[p.id]}
+                </span>
+              </td>
+              <td>{formatDate(p.startDate)}</td>
+              <td>{formatDate(p.endDate)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* ✅ PAGINATION GOES HERE */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              className={currentPage === page ? "active" : ""}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </>
+  )}
+</div>
+
     </div>
   );
 }
