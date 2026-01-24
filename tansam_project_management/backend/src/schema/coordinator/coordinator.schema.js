@@ -11,8 +11,8 @@ export const createCoordinatorSchemas = async (db) => {
 
       /* ================= ADMIN MASTER LINKS ================= */
 
-      lab_id INT,
-      lab_name VARCHAR(100),
+      lab_id JSON COMMENT 'array of lab ids',
+      lab_name JSON COMMENT 'array of lab names',
 
       work_category_id INT,
       work_category_name VARCHAR(100),
