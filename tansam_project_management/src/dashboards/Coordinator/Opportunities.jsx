@@ -11,7 +11,9 @@ import {
   createOpportunityTracker,
   updateOpportunityTracker,
 } from "../../services/coordinator/coordinator.tracker.api";
-import { fetchUsers } from "../../services/admin/admin.roles.api.js";
+import { fetchUsers ,  fetchLabs,
+  fetchWorkCategories,
+  fetchClientTypes, } from "../../services/admin/admin.roles.api.js";
 import { FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import "./CSS/Opportunities.css";
 import ProgressTracker from "./Tracker.jsx";
@@ -30,6 +32,9 @@ export default function Opportunities() {
   const [showModal, setShowModal] = useState(false);
   const [viewData, setViewData] = useState(null);
   const [opportunities, setOpportunities] = useState([]);
+  const [labs, setLabs] = useState([]);
+  const [workCategories, setWorkCategories] = useState([]);
+  const [clientTypes, setClientTypes] = useState([]);
   const [trackers, setTrackers] = useState([]);
   const [isPreview, setIsPreview] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -45,7 +50,7 @@ export default function Opportunities() {
     contactPhone: "",
   });
 
-   const ITEMS_PER_PAGE = 15; // change to 5 / 20 if needed
+   const ITEMS_PER_PAGE = 10; // change to 5 / 20 if needed
 
    const [currentPage, setCurrentPage] = useState(1);
 
@@ -79,45 +84,62 @@ export default function Opportunities() {
   });
 
   /* ================= FORM STATE (Add/Edit) ================= */
-  const [form, setForm] = useState({
-    opportunity_id: null,
-    opportunityName: "",
-    clientName: "",
-    contactPerson: "",
-    contactEmail: "",
-    contactPhone: "",
-    leadSource: "",
-    leadDescription: "",
-    status: "NEW",          // ← Opportunity status (NEW/EXISTING)
-    stage: "NEW",           // ← Tracker stage (full pipeline)
-    assignedTo: "",
-    next_followup_date: "",
-    next_action: "",
-  });
+const [form, setForm] = useState({
+  opportunity_id: null,
+  opportunityName: "",
+  clientName: "",
+
+  labIds: [],
+  workCategoryId: "",
+  clientTypeId: "",
+
+  contactPerson: "",
+  contactEmail: "",
+  contactPhone: "",
+  leadSource: "",
+  leadDescription: "",
+  status: "NEW",
+  stage: "NEW",
+
+  assignedTo: [], // 👈 ARRAY now
+
+  next_followup_date: "",
+  next_action: "",
+});
 
   /* ================= LOAD ================= */
   useEffect(() => {
     loadAll();
   }, []);
-
-  const loadAll = async () => {
-    try {
-      setLoading(true);
-      const [oppData, trackerData, usersData] = await Promise.all([
+const loadAll = async () => {
+  try {
+    setLoading(true);
+    const [
+      oppData,
+      trackerData,
+      usersData,
+      labsData,
+      workCatsData,
+      clientTypesData,
+    ] = await Promise.all([
       fetchOpportunities(),
       fetchOpportunityTrackers(),
-      fetchUsers(),                // 👈 ADD
+      fetchUsers(),
+      fetchLabs(),
+      fetchWorkCategories(),
+      fetchClientTypes(),
     ]);
 
-      setUsers(usersData || []);
-      setOpportunities(oppData || []);
-      setTrackers(trackerData || []);
-    } catch (err) {
-      alert(err.message || "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setUsers(usersData || []);
+    setLabs(labsData || []);
+    setWorkCategories(workCatsData || []);
+    setClientTypes(clientTypesData || []);
+    setOpportunities(oppData || []);
+    setTrackers(trackerData || []);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getTrackerForOpportunity = (oppId) =>
     trackers.find((t) => t.opportunity_id === oppId) || {};
@@ -129,24 +151,37 @@ export default function Opportunities() {
     (u) => u.role !== "COORDINATOR"
   );
 
+//   const handleMultiSelect = (e) => {
+//   const values = Array.from(e.target.selectedOptions).map(
+//     (opt) => opt.value
+//   );
+//   setForm({ ...form, assignedTo: values });
+// };
   /* ================= HANDLERS ================= */
-  const resetForm = () => {
-    setForm({
-      opportunity_id: null,
-      opportunityName: "",
-      clientName: "",
-      contactPerson: "",
-      contactEmail: "",
-      contactPhone: "",
-      leadSource: "",
-      leadDescription: "",
-      status: "NEW",          // ← Opportunity status
-      stage: "NEW",           // ← Tracker stage
-      assignedTo: "",
-      next_followup_date: "",
-      next_action: "",
-    });
-  };
+const resetForm = () => {
+  setForm({
+    opportunity_id: null,
+    opportunityName: "",
+    clientName: "",
+
+    labIds: [],
+    workCategoryId: "",
+    clientTypeId: "",
+
+    contactPerson: "",
+    contactEmail: "",
+    contactPhone: "",
+    leadSource: "",
+    leadDescription: "",
+    status: "NEW",
+    stage: "NEW",
+
+    assignedTo: [], // ✅ MUST be array
+
+    next_followup_date: "",
+    next_action: "",
+  });
+};
 
   const openAddModal = () => {
     setIsEdit(false);
@@ -154,13 +189,12 @@ export default function Opportunities() {
     setShowModal(true);
   };
 
- const openEditModal = (row) => {
+const openEditModal = (row) => {
   const tracker = getTrackerForOpportunity(row.opportunity_id);
 
   setIsEdit(true);
   setOriginalAssignedTo(row.assigned_to);
 
-  // ✅ STORE ORIGINAL SNAPSHOT
   setOriginalClientName(row.client_name);
   setOriginalContact({
     contactPerson: row.contact_person || "",
@@ -172,6 +206,25 @@ export default function Opportunities() {
     opportunity_id: row.opportunity_id,
     opportunityName: row.opportunity_name,
     clientName: row.client_name,
+
+        labIds: (() => {
+        if (!row.lab_id) return [];
+
+        // If MySQL driver already parsed JSON
+        if (Array.isArray(row.lab_id)) return row.lab_id;
+
+        // If it comes as JSON string
+        try {
+          const parsed = JSON.parse(row.lab_id);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      })(),
+
+    workCategoryId: row.work_category_id || "",
+    clientTypeId: row.client_type_id || "",
+
     contactPerson: row.contact_person || "",
     contactEmail: row.contact_email || "",
     contactPhone: row.contact_phone || "",
@@ -179,7 +232,9 @@ export default function Opportunities() {
     leadDescription: row.lead_description || "",
     status: row.lead_status || "NEW",
     stage: tracker.stage || row.lead_status || "NEW",
-    assignedTo: row.assigned_to || "",
+
+    assignedTo: row.assigned_to ? row.assigned_to.split(",") : [],
+
     next_followup_date: tracker.next_followup_date?.slice(0, 10) || "",
     next_action: tracker.next_action || "",
   });
@@ -197,11 +252,13 @@ const handleSubmit = async (e) => {
   try {
     setLoading(true);
 
-    const isReassign =
-      isEdit &&
-      originalAssignedTo &&
-      String(originalAssignedTo) !== String(form.assignedTo);
-
+        const isReassign =
+        isEdit &&
+        JSON.stringify(
+          (originalAssignedTo || "").split(",").sort()
+        ) !== JSON.stringify(
+          [...form.assignedTo].sort()
+        );
       const clientChanged =
         isEdit && form.clientName !== originalClientName;
 
@@ -232,18 +289,23 @@ const handleSubmit = async (e) => {
     let opportunityId;
 
     // 🔹 OPPORTUNITY PAYLOAD
-   opportunityPayload = {
+    opportunityPayload = {
       opportunityName: form.opportunityName,
       clientName: form.clientName,
+
+      labIds: form.labIds,
+      workCategoryId: form.workCategoryId || null,
+      clientTypeId: form.clientTypeId || null,
+
       contactPerson: form.contactPerson,
       contactEmail: form.contactEmail,
       contactPhone: form.contactPhone,
       leadSource: form.leadSource,
       leadDescription: form.leadDescription,
       leadStatus: form.status,
-      assignedTo: form.assignedTo,
-    };
 
+      assignedTo: form.assignedTo, // 👈 ARRAY
+    };
 
     delete opportunityPayload.status;
     delete opportunityPayload.next_followup_date;
@@ -450,11 +512,18 @@ const handleSubmit = async (e) => {
                       <td>{item.client_name}</td>
                       <td>{item.lead_source || "-"}</td>
                       <td>
-                        {getUserById(item.assigned_to)
-                          ? getUserById(item.assigned_to).name ||
-                            getUserById(item.assigned_to).username
-                          : "-"}
-                      </td>
+                          {item.assigned_to
+                            ? item.assigned_to
+                                .split(",")
+                                .map(
+                                  (id) =>
+                                    getUserById(id)?.name ||
+                                    getUserById(id)?.username
+                                )
+                                .filter(Boolean)
+                                .join(", ")
+                            : "-"}
+                        </td>
                       <td>
                         <span className={`status ${tracker.stage?.toLowerCase() || "new"}`}>
                           {tracker.stage || "NEW"}
@@ -551,23 +620,88 @@ const handleSubmit = async (e) => {
                   onChange={handleChange}
                 />
               </div>
+              <div className="form-group">
+                <label>Labs</label>
+                <select
+                  multiple
+                  value={form.labIds}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      labIds: Array.from(
+                        e.target.selectedOptions,
+                        (opt) => opt.value
+                      ),
+                    })
+                  }
+                >
+                  {labs.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                </select>
+
+                <small>
+                  Hold <b>Ctrl</b> (Windows) / <b>Cmd</b> (Mac) to select multiple labs
+                </small>
+              </div>
 
               <div className="form-group">
-                <label>Assigned To</label>
+                <label>Work Category</label>
                 <select
-                  name="assignedTo"
-                  value={form.assignedTo}
+                  name="workCategoryId"
+                  value={form.workCategoryId}
                   onChange={handleChange}
                 >
-                  <option value="">Select User</option>
-                 {assignableUsers.map((u) => (
+                  <option value="">Select Category</option>
+                  {workCategories.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+                <div className="form-group">
+                  <label>Client Type</label>
+                  <select
+                    name="clientTypeId"
+                    value={form.clientTypeId}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Client Type</option>
+                    {clientTypes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+           <div className="form-group">
+              <label>Assigned To</label>
+              <select
+                multiple
+                value={form.assignedTo}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    assignedTo: Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    ),
+                  })
+                }
+              >
+                {assignableUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name || u.username}
                   </option>
                 ))}
-                </select>
-              </div>
-
+              </select>
+              <small>Hold Ctrl (Windows) / Cmd (Mac) to select multiple users</small>
+            </div>
               <div className="form-group">
                 <label>Contact Email</label>
                 <input
@@ -740,9 +874,17 @@ const handleSubmit = async (e) => {
               <div className="grid-item">
                 <label>Assigned To</label>
                 <p>
-                  {getUserById(viewData.assigned_to)
-                    ? `${getUserById(viewData.assigned_to).name || getUserById(viewData.assigned_to).username}
-                      (${getUserById(viewData.assigned_to).role})`
+                  {viewData.assigned_to
+                    ? viewData.assigned_to
+                        .split(",")
+                        .map((id) => {
+                          const u = getUserById(id);
+                          return u
+                            ? `${u.name || u.username} (${u.role})`
+                            : null;
+                        })
+                        .filter(Boolean)
+                        .join(", ")
                     : "—"}
                 </p>
               </div>
