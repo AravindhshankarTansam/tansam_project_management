@@ -168,7 +168,6 @@ export const createProject = async (req, res) => {
 export const getProjects = async (req, res) => {
   try {
     const db = await connectDB();
-    await initSchemas(db, { project: true });
 
     const [rows] = await db.execute(`
       SELECT
@@ -183,10 +182,17 @@ export const getProjects = async (req, res) => {
         p.work_category_name AS workCategory,
         p.lab_name AS labNames,
 
+        o.contact_person AS contactPerson,
+        o.contact_email AS contactEmail,
+        o.contact_phone AS contactPhone,
+        o.assigned_to AS assignedTo,
+
         p.start_date AS startDate,
         p.end_date AS endDate,
         p.status
       FROM projects p
+      LEFT JOIN opportunities_coordinator o
+        ON p.opportunity_id = o.opportunity_id
       ORDER BY p.id DESC
     `);
 
@@ -195,6 +201,7 @@ export const getProjects = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 /* ======================================================
    UPDATE PROJECT
