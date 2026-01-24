@@ -244,3 +244,81 @@
   background: #eef2ff;
   color: #3730a3;
 }
+/* ================================
+   MULTI-SELECT CHIPS (for Labs filter)
+================================ */
+.multi-select {
+  position: relative;
+  min-width: 220px;
+}
+
+.multi-select-input {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  min-height: 38px;
+}
+
+.multi-select-input .placeholder {
+  color: #94a3b8;
+}
+
+.multi-select-input .chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.multi-select-input .chip {
+  background: #dcfce7;
+  color: #166534;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.multi-select-input .chip button {
+  background: none;
+  border: none;
+  color: #166534;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.multi-select-input .arrow {
+  margin-left: auto;
+  color: #64748b;
+}
+
+.multi-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.multi-select-dropdown .option {
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.multi-select-dropdown .option:hover,
+.multi-select-dropdown .option.selected {
+  background: #f1f5f9;
+}
