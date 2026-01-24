@@ -93,7 +93,7 @@ toRight: {
     fontSize: 9,
   },
 
-  
+    
   // Compact Table Styles
 tableHeader: {
   flexDirection: "row",
