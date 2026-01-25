@@ -15,11 +15,19 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
     const updatedItems = [...quotation.items];
     updatedItems[index][field] = value;
 
-  const qty = parseFloat(updatedItems[index].qty) || 0;
+const qty = parseFloat(updatedItems[index].qty) || 0;
 const unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
-const tax = parseFloat(updatedItems[index].tax) || 0;
-updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
-    setQuotation({ ...quotation, items: updatedItems });
+const tax = parseFloat(updatedItems[index].tax) || 0; // % (for info only)
+
+const baseAmount = qty * unitPrice;
+
+// OPTIONAL: calculate tax separately (do NOT add)
+const taxAmount = baseAmount * (tax / 100);
+
+updatedItems[index].total = baseAmount.toFixed(2);
+
+setQuotation({ ...quotation, items: updatedItems });
+
   };
 
   const addRow = () => {
@@ -33,9 +41,14 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
     setQuotation({ ...quotation, items: updatedItems });
   };
 
-  const totalServiceValue = quotation.items
-    .reduce((acc, item) => acc + parseFloat(item.total || 0), 0)
-    .toFixed(2);
+const totalServiceValue = quotation.items
+  .reduce((acc, item) => {
+    const base = parseFloat(item.total || 0);
+    const taxPercent = parseFloat(item.tax || 0);
+    const taxAmount = base * (taxPercent / 100);
+    return acc + base + taxAmount;
+  }, 0)
+  .toFixed(2);
 
   return (
     <div style={{ marginBottom: "30px" }}>
@@ -142,16 +155,15 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
 />
 
                 </td>
-                <td
-                  style={{
-                    border: "1px solid #000",
-                    padding: "8px",
-                    textAlign: "right",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {item.total}
-                </td>
+            <td style={{ border: "1px solid #000", padding: "8px", textAlign: "right" }}>
+  {(() => {
+    const baseTotal = Number(item.total || 0);
+    const taxPercent = Number(item.tax || 0);
+    const taxAmount = (baseTotal * taxPercent) / 100;
+    return (baseTotal + taxAmount).toFixed(2);
+  })()}
+</td>
+
                 <td
                   style={{
                     border: "1px solid #000",
@@ -357,22 +369,20 @@ boxSizing: "border-box",
           <label style={{ display: "block" }}>
             <strong>Subject:</strong>
             <textarea
-              rows={2}
+              rows={8}
               value={quotation.subject || ""}
               onChange={(e) =>
                 setQuotation({ ...quotation, subject: e.target.value })
               }
               placeholder="e.g., Quote offer for Industrial Visit 2.5 hours at TANSAM Centre"
               style={{
-                width: "100%",
-                padding: "10px",
-                fontSize: "12px",
-                fontFamily: "Arial, sans-serif",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                resize: "vertical",
-                minHeight: "50px",
-                lineHeight: "6.0",
+               width: "100%",
+      padding: "12px",
+      fontSize: "14px",
+      lineHeight: "1.0",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      resize: "vertical",
               }}
             />
           </label>
@@ -409,9 +419,7 @@ boxSizing: "border-box",
 
         {/* ✅ FIXED TERMS & CONDITIONS WITH LOADING/ERROR */}
         <div style={{ marginTop: "30px" }}>
-          <h3 style={{ textDecoration: "underline", marginBottom: "10px" }}>
-            Terms & Conditions
-          </h3>
+         
           <p style={{ fontSize: "14px", marginBottom: "6px" }}>
             Applicable Terms & Conditions are available at:
           </p>
@@ -611,8 +619,8 @@ boxSizing: "border-box",
                 kindAttn={quotation.kindAttn}
                 subject={quotation.subject}
                 items={quotation.items}
-                terms={quotation.terms}
-                termsContent={termsContent}
+              termsContent={quotation.termsContent} 
+              
                 financeManagerName={quotation.financeManagerName}
                 designation="Manager - Operations"
                 signatureUrl={
@@ -850,7 +858,7 @@ const [quotation, setQuotation] = useState(() => ({
     subject: initialQuotation?.subject || "",
     clientName: initialQuotation?.clientName || "",
     kindAttn: initialQuotation?.kindAttn || "",
-    items: initialQuotation?.items || [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+    items: initialQuotation?.items || [{ description: "", qty: "", unitPrice: "", tax:"", total: "0.00" }],
     terms: initialQuotation?.terms || [],
     termsContent: initialQuotation?.termsContent || "",
     financeManagerName: initialQuotation?.financeManagerName || "",
