@@ -198,6 +198,10 @@ const FinanceDocument = ({
   handleSaveQuotation,
   showTermsModal,
   setShowTermsModal,
+    termsList,
+     selectedTerms,
+  toggleTermSelection,
+  applySelectedTerms,
   termsLoading,
   termsError,
   termsContent,
@@ -704,36 +708,63 @@ boxSizing: "border-box",
                 </button>
               </div>
               {termsLoading ? (
-                <div style={{ textAlign: "center", padding: "40px" }}>
-                  <div style={{ fontSize: "18px", color: "#1976d2" }}>
-                    🔄 Loading Terms...
-                  </div>
-                </div>
-              ) : termsError ? (
-                <div
-                  style={{
-                    padding: "20px",
-                    backgroundColor: "#ffebee",
-                    borderRadius: "8px",
-                    color: "#d32f2f",
-                    textAlign: "center",
-                  }}
-                >
-                  ❌ {termsError}
-                </div>
-              ) : (
-                <div
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "20px",
-                    minHeight: "200px",
-                    fontSize: "14px",
-                    lineHeight: "1.6",
-                    backgroundColor: "#f9f9f9",
-                  }}
-                  dangerouslySetInnerHTML={{ __html: termsContent }}
-                />
-              )}
+  <p>Loading...</p>
+) : termsError ? (
+  <p style={{ color: "red" }}>{termsError}</p>
+) : (
+  <>
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Term Title</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+     {Array.isArray(termsList) && termsList.length > 0 ? (
+  termsList.map((term) => (
+    <tr key={term.id}>
+      <td style={{ textAlign: "center" }}>
+        <input
+          type="checkbox"
+          checked={selectedTerms.some(t => t.id === term.id)}
+          onChange={() => toggleTermSelection(term)}
+        />
+      </td>
+      <td>{term.title}</td>
+      <td>{term.description}</td>
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan={3} style={{ textAlign: "center", padding: "20px" }}>
+      No active terms available
+    </td>
+  </tr>
+)}
+
+      </tbody>
+    </table>
+
+    <div style={{ textAlign: "right", marginTop: "20px" }}>
+      <button
+        onClick={applySelectedTerms}
+        style={{
+          background: "#1F4E79",
+          color: "#fff",
+          padding: "8px 16px",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Apply Selected Terms
+      </button>
+    </div>
+  </>
+)}
+
             </div>
           </div>
         )}
@@ -831,7 +862,9 @@ const [quotation, setQuotation] = useState(() => ({
 useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
- 
+ const [activeTermsList, setActiveTermsList] = useState([]);
+const [selectedTerms, setSelectedTerms] = useState([]);
+
   // ✅ ALL REQUIRED STATES
 const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`);
   const [date, setDate] = useState(initialQuotation?.date || new Date().toISOString().split("T")[0]);
@@ -843,6 +876,23 @@ const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date(
   const [termsContent, setTermsContent] = useState("<p>Loading terms...</p>");
   const [termsLoading, setTermsLoading] = useState(true);
   const [termsError, setTermsError] = useState(null);
+
+  const toggleTermSelection = (term) => {
+  setSelectedTerms((prev) => {
+    const exists = prev.find((t) => t.id === term.id);
+    if (exists) {
+      return prev.filter((t) => t.id !== term.id);
+    }
+    return [...prev, term];
+  });
+};
+const applySelectedTerms = () => {
+  setQuotation((prev) => ({
+    ...prev,
+    terms: selectedTerms,
+  }));
+  setShowTermsModal(false);
+};
 useEffect(() => {
   if (!quotation.id) return;
 
@@ -883,21 +933,24 @@ useEffect(() => {
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
 useEffect(() => {
-    const fetchTerms = async () => {
-      try {
-        setTermsLoading(true);
-        const terms = await getActiveTerms();
-        const htmlContent = terms?.content || "<p>No active terms available</p>";
-        setTermsContent(htmlContent);
-        setQuotation(prev => ({ ...prev, termsContent: htmlContent }));
-      } catch (err) {
-        setTermsError(err.message);
-      } finally {
-        setTermsLoading(false);
-      }
-    };
-    fetchTerms();
-  }, []);
+  const fetchTerms = async () => {
+    try {
+      setTermsLoading(true);
+      const terms = await getActiveTerms();
+
+      console.log("TERMS API RESPONSE 👉", terms);
+
+      setActiveTermsList(Array.isArray(terms) ? terms : terms.data || []);
+    } catch (err) {
+      setTermsError(err.message);
+    } finally {
+      setTermsLoading(false);
+    }
+  };
+  fetchTerms();
+}, []);
+
+
 
   // ✅ FIXED handleSaveQuotation
   const handleSaveQuotation = async () => {
@@ -957,6 +1010,7 @@ dataToSend.append("quotation_id", quotation.id);
       showTermsModal={showTermsModal}
       setShowTermsModal={setShowTermsModal}
       termsLoading={termsLoading}
+      termsList={activeTermsList}
       termsError={termsError}
       termsContent={termsContent}
     />

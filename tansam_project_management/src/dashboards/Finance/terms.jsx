@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Editor } from "@tinymce/tinymce-react";
-import "../../layouts/CSS/terms.css";
 import ToggleSwitch from "./toggleSwitch";
 import {
   addTerms,
@@ -11,21 +10,25 @@ import {
 
 const Terms = () => {
   const editorRef = useRef(null);
-  const initialContent = "<p>Enter description here...</p>";
+
+  const INITIAL_CONTENT = "<p>Enter description here...</p>";
 
   const [termsList, setTermsList] = useState([]);
   const [currentTerm, setCurrentTerm] = useState(null);
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState(INITIAL_CONTENT);
   const [isActive, setIsActive] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
   const [isSaveEnabled, setIsSaveEnabled] = useState(false);
 
-  // Fetch terms from backend
+  /* ---------------- FETCH TERMS ---------------- */
   const fetchTerms = async () => {
     try {
-      const data = await getTerms(); // fetch all terms
-      setTermsList(data);
+      const data = await getTerms();
+
+      // ✅ ensure array
+      setTermsList(Array.isArray(data) ? data : []);
     } catch (err) {
-      alert("Failed to fetch terms: " + err.message);
+      alert("Failed to fetch terms");
     }
   };
 
@@ -33,189 +36,253 @@ const Terms = () => {
     fetchTerms();
   }, []);
 
+  /* ---------------- ENABLE SAVE ONLY WHEN TEXT EXISTS ---------------- */
   useEffect(() => {
-    const hasText = content.replace(/<[^>]+>/g, "").trim().length > 0;
-    setIsSaveEnabled(hasText);
+    const plainText = content.replace(/<[^>]*>/g, "").trim();
+    setIsSaveEnabled(plainText.length > 0);
   }, [content]);
 
-  const handleEditorChange = (newContent) => setContent(newContent);
-
+  /* ---------------- SAVE / UPDATE ---------------- */
   const handleSave = async () => {
-    const savedContent = editorRef.current.getContent({ format: "html" });
-    if (!savedContent || savedContent === initialContent) {
-      alert("Please enter some content first!");
+    const htmlContent = editorRef.current?.getContent() || "";
+
+    if (!htmlContent.replace(/<[^>]*>/g, "").trim()) {
+      alert("Please enter valid content");
       return;
     }
 
     try {
       if (currentTerm) {
         await updateTerms(currentTerm.id, {
-          content: savedContent,
+          content: htmlContent,
           status: isActive ? "Active" : "In-Active",
         });
-        alert("Term updated successfully!");
       } else {
         await addTerms({
-          content: savedContent,
+          content: htmlContent,
           status: isActive ? "Active" : "In-Active",
         });
-        alert("Term added successfully!");
       }
-      fetchTerms();
+
+      await fetchTerms();
       handleCancel();
-    } catch (err) {
-      alert("Save failed: " + err.message);
+    } catch {
+      alert("Save failed");
     }
   };
 
-  const handleCancel = () => {
-    setCurrentTerm(null);
-    setContent(initialContent);
-    setIsActive(false);
-  };
-
+  /* ---------------- EDIT ---------------- */
   const handleEdit = (term) => {
     setCurrentTerm(term);
     setContent(term.content);
     setIsActive(term.status === "Active");
-    if (editorRef.current) {
-      editorRef.current.setContent(term.content);
+    setShowEditor(true);
+
+    setTimeout(() => {
+     setContent(term.content);
+
+    }, 0);
+  };
+
+  /* ---------------- DELETE ---------------- */
+  const handleDelete = async (id) => {
+    if (window.confirm("Delete this term?")) {
+      await deleteTerms(id);
+      fetchTerms();
     }
   };
 
-  const handleDelete = async (termId) => {
-    if (window.confirm("Are you sure you want to delete this term?")) {
-      try {
-        await deleteTerms(termId);
-        alert("Term deleted successfully!");
-        fetchTerms();
-        if (currentTerm?.id === termId) handleCancel();
-      } catch (err) {
-        alert("Delete failed: " + err.message);
-      }
-    }
+  /* ---------------- CANCEL ---------------- */
+  const handleCancel = () => {
+    setCurrentTerm(null);
+    setContent(INITIAL_CONTENT);
+    setIsActive(false);
+    setShowEditor(false);
+  };
+
+  /* ---------------- STYLES ---------------- */
+  const thStyle = {
+    textAlign: "left",
+    padding: "12px",
+    fontSize: "14px",
+    fontWeight: 600,
+    background: "#f1f5f9",
+  };
+
+  const tdStyle = {
+    padding: "12px",
+    fontSize: "14px",
+    verticalAlign: "top",
+    lineHeight: "1.5",
+    whiteSpace: "normal",
   };
 
   return (
-    <div style={{ maxWidth: "900px", margin: "20px auto", fontFamily: "Arial, sans-serif" }}>
-      {/* Editor Card */}
-      <div style={{ padding: "20px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-        <h2>{currentTerm ? "Edit Term" : "Add Term"}</h2>
-        <Editor
-          apiKey="gdoyqtp9jm9j8qwtbigjgmhk2kpvrufyklno8ms7ug62qw3t"
-          onInit={(evt, editor) => (editorRef.current = editor)}
-          initialValue={content}
-          onEditorChange={handleEditorChange}
-          init={{
-            height: 250,
-            menubar: false,
-            plugins:
-              "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount",
-            toolbar:
-              "undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help | link image",
-            content_style:
-              "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-          }}
-        />
+    <div style={{ maxWidth: 900, margin: "20px auto" }}>
+      {/* ADD BUTTON */}
+      {!showEditor && (
+        <div style={{ textAlign: "right", marginBottom: 15 }}>
+          <button
+            onClick={() => setShowEditor(true)}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 6,
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            + Add Terms
+          </button>
+        </div>
+      )}
 
-        <div style={{ marginTop: "15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <ToggleSwitch isOn={isActive} onToggle={() => setIsActive(!isActive)} />
-          <div>
-            <button
-              onClick={handleSave}
-              disabled={!isSaveEnabled}
-              style={{
-                marginRight: "10px",
-                padding: "8px 16px",
-                borderRadius: "5px",
-                backgroundColor: isSaveEnabled ? "#007bff" : "#ccc",
-                color: "#fff",
-                cursor: isSaveEnabled ? "pointer" : "not-allowed",
-                border: "none",
-              }}
-            >
-              {currentTerm ? "Update" : "Save"}
-            </button>
-            <button
-              onClick={handleCancel}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "5px",
-                backgroundColor: "#f0f0f0",
-                border: "1px solid #ccc",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
+      {/* EDITOR */}
+      {showEditor && (
+        <div
+          style={{
+            background: "#fff",
+            padding: 20,
+            borderRadius: 10,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            marginBottom: 30,
+          }}
+        >
+          <h3>{currentTerm ? "Edit Terms" : "Add Terms"}</h3>
+
+          <Editor
+            apiKey="gdoyqtp9jm9j8qwtbigjgmhk2kpvrufyklno8ms7ug62qw3t"
+            onInit={(evt, editor) => (editorRef.current = editor)}
+         value={content}   // ✅ controlled editor
+
+            onEditorChange={setContent}
+            init={{
+              height: 260,
+              menubar: false,
+              toolbar:
+                "undo redo | bold italic underline | bullist numlist | link",
+            }}
+          />
+
+          <div
+            style={{
+              marginTop: 15,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <ToggleSwitch
+              isOn={isActive}
+              onToggle={() => setIsActive((prev) => !prev)}
+            />
+
+            <div>
+              <button
+                onClick={handleSave}
+                disabled={!isSaveEnabled}
+                style={{
+                  marginRight: 10,
+                  padding: "8px 16px",
+                  background: "#2563eb",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 5,
+                }}
+              >
+                {currentTerm ? "Update" : "Save"}
+              </button>
+
+              <button
+                onClick={handleCancel}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 5,
+                  border: "1px solid #ccc",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Terms List */}
-      <h3 style={{ marginTop: "30px", marginBottom: "15px" }}>Existing Terms</h3>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-        {termsList.length === 0 ? (
-          <p>No terms available.</p>
-        ) : (
-          termsList.map((term) => (
-            <div
-              key={term.id}
-              style={{
-                backgroundColor: "#fff",
-                padding: "15px",
-                borderRadius: "10px",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                width: "300px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ marginBottom: "10px", minHeight: "80px" }}>
-                {term.content.replace(/<[^>]+>/g, "").slice(0, 150)}...
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span
-                  style={{
-                    padding: "2px 8px",
-                    borderRadius: "8px",
-                    backgroundColor: term.status === "Active" ? "#d4edda" : "#f8d7da",
-                    color: term.status === "Active" ? "#155724" : "#721c24",
-                    fontSize: "12px",
-                  }}
-                >
-                  {term.status}
-                </span>
-                <div>
+      {/* TABLE */}
+      <h3>Existing Terms</h3>
+
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          background: "#fff",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          borderRadius: 8,
+          overflow: "hidden",
+          tableLayout: "auto", // ✅ IMPORTANT FIX
+        }}
+      >
+        <thead>
+          <tr>
+            <th style={thStyle}>Term Preview</th>
+            <th style={thStyle}>Status</th>
+            <th style={thStyle}>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {termsList.length === 0 ? (
+            <tr>
+              <td colSpan="3" style={{ padding: 15, textAlign: "center" }}>
+                No terms available
+              </td>
+            </tr>
+          ) : (
+            termsList.map((term) => (
+              <tr key={term.id} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                <td style={tdStyle}>
+                  {term.content
+                    .replace(/<[^>]*>/g, "")
+                    .slice(0, 150)}
+                  …
+                </td>
+
+                <td style={tdStyle}>
+                  <span
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: 12,
+                      fontSize: 12,
+                      background:
+                        term.status === "Active" ? "#dcfce7" : "#fee2e2",
+                      color:
+                        term.status === "Active" ? "#166534" : "#991b1b",
+                    }}
+                  >
+                    {term.status}
+                  </span>
+                </td>
+
+                <td style={tdStyle}>
                   <button
                     onClick={() => handleEdit(term)}
-                    style={{
-                      marginRight: "8px",
-                      padding: "4px 8px",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                    }}
+                    style={{ marginRight: 10 }}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(term.id)}
-                    style={{
-                      padding: "4px 8px",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      color: "red",
-                    }}
+                    style={{ color: "red" }}
                   >
                     Delete
                   </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
