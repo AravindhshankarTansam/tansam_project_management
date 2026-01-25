@@ -110,10 +110,9 @@ export const getActiveTerms = async (req, res) => {
       SELECT * FROM terms_conditions
       WHERE status='Active'
       ORDER BY id DESC
-      LIMIT 1
     `);
 
-    res.json(rows[0] || null);
+    res.json(rows); // return the full array
   } catch (error) {
     console.error("Get Active Terms Error:", error);
     res.status(500).json({ message: "Server error" });

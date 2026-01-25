@@ -733,7 +733,8 @@ boxSizing: "border-box",
           />
         </td>
         <td>{term.title}</td>
-        <td>{term.description}</td>
+       <td dangerouslySetInnerHTML={{ __html: term.description }} />
+
       </tr>
     ))
   ) : (
@@ -885,11 +886,33 @@ const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date(
     return [...prev, term];
   });
 };
+const htmlToPlainText = (html) => {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+
+  // convert list items into new lines
+  const lines = Array.from(div.querySelectorAll("li")).map(
+    li => li.textContent.trim()
+  );
+
+  // fallback if not a list
+  if (lines.length === 0) {
+    return div.textContent.replace(/\u00A0/g, " ").trim();
+  }
+
+  return lines.map((line, i) => `${i + 1}. ${line}`).join("\n\n");
+};
 const applySelectedTerms = () => {
-  setQuotation((prev) => ({
+  const formattedText = selectedTerms
+    .map(term => htmlToPlainText(term.description))
+    .join("\n\n");
+
+  setQuotation(prev => ({
     ...prev,
     terms: selectedTerms,
+    termsContent: formattedText, // ✅ textarea content
   }));
+
   setShowTermsModal(false);
 };
 useEffect(() => {
@@ -1020,7 +1043,8 @@ dataToSend.append("quotation_id", quotation.id);
       showTermsModal={showTermsModal}
       setShowTermsModal={setShowTermsModal}
      termsList={activeTermsList}
-      selectedTerms={selectedTerms}           // ✅ add this
+      selectedTerms={selectedTerms}    
+        applySelectedTerms={applySelectedTerms}       // ✅ add this
   toggleTermSelection={toggleTermSelection}
   termsLoading={termsLoading}
   termsError={termsError}
