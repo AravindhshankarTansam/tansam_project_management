@@ -721,30 +721,29 @@ boxSizing: "border-box",
           <th>Description</th>
         </tr>
       </thead>
-      <tbody>
-     {Array.isArray(termsList) && termsList.length > 0 ? (
-  termsList.map((term) => (
-    <tr key={term.id}>
-      <td style={{ textAlign: "center" }}>
-        <input
-          type="checkbox"
-          checked={selectedTerms.some(t => t.id === term.id)}
-          onChange={() => toggleTermSelection(term)}
-        />
-      </td>
-      <td>{term.title}</td>
-      <td>{term.description}</td>
+   <tbody>
+  {Array.isArray(termsList) && termsList.length > 0 ? (
+    termsList.map((term) => (
+      <tr key={term.id}>
+        <td style={{ textAlign: "center" }}>
+          <input
+            type="checkbox"
+            checked={selectedTerms.some(t => t.id === term.id)}
+            onChange={() => toggleTermSelection(term)}
+          />
+        </td>
+        <td>{term.title}</td>
+        <td>{term.description}</td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={3} style={{ textAlign: "center" }}>No active terms available</td>
     </tr>
-  ))
-) : (
-  <tr>
-    <td colSpan={3} style={{ textAlign: "center", padding: "20px" }}>
-      No active terms available
-    </td>
-  </tr>
-)}
+  )}
+</tbody>
 
-      </tbody>
+
     </table>
 
     <div style={{ textAlign: "right", marginTop: "20px" }}>
@@ -936,19 +935,30 @@ useEffect(() => {
   const fetchTerms = async () => {
     try {
       setTermsLoading(true);
-      const terms = await getActiveTerms();
+      const response = await getActiveTerms();
+      console.log("TERMS API RESPONSE:", response);
 
-      console.log("TERMS API RESPONSE 👉", terms);
+      const list = Array.isArray(response) ? response : response.data ? response.data : [response];
 
-      setActiveTermsList(Array.isArray(terms) ? terms : terms.data || []);
+      const formatted = list
+        .filter(term => term.status === "Active")
+        .map(term => ({
+          id: term.id,
+          title: `Term #${term.id}`,
+          description: term.content,
+        }));
+
+      setActiveTermsList(formatted);   // ✅ This is what modal reads
     } catch (err) {
-      setTermsError(err.message);
+      setTermsError(err.message || "Failed to fetch terms");
     } finally {
       setTermsLoading(false);
     }
   };
   fetchTerms();
 }, []);
+
+
 
 
 
@@ -1009,9 +1019,11 @@ dataToSend.append("quotation_id", quotation.id);
       handleSaveQuotation={handleSaveQuotation}
       showTermsModal={showTermsModal}
       setShowTermsModal={setShowTermsModal}
-      termsLoading={termsLoading}
-      termsList={activeTermsList}
-      termsError={termsError}
+     termsList={activeTermsList}
+      selectedTerms={selectedTerms}           // ✅ add this
+  toggleTermSelection={toggleTermSelection}
+  termsLoading={termsLoading}
+  termsError={termsError}
       termsContent={termsContent}
     />
   );
