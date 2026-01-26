@@ -303,9 +303,10 @@ const initializePaymentFields = (status, currentData) => {
 
   const handleSaveQuotation = async () => {
     try {
-      const finalValue =
-        (parseFloat(newQuotation.value || 0) || 0) +
-        (parseFloat(newQuotation.gst || 0) || 0);
+ const baseValue = parseFloat(newQuotation.value || 0);
+    const gstRate = parseFloat(newQuotation.gst || 0);
+    const gstAmount = (baseValue * gstRate) / 100;
+    const totalValue = baseValue + gstAmount;
 
    const payload = {
   quotationNo: editId
@@ -321,9 +322,7 @@ const initializePaymentFields = (status, currentData) => {
   lab_id: newQuotation.lab_id,
   lab_name: newQuotation.lab_name,
   description: newQuotation.description,
-  value:
-    (parseFloat(newQuotation.value || 0) || 0) +
-    (parseFloat(newQuotation.gst || 0) || 0),
+  value:totalValue,
   gst: newQuotation.gst,
   totalValue: parseFloat(newQuotation.totalValue) || 0,
   date: newQuotation.date,
@@ -615,26 +614,39 @@ const initializePaymentFields = (status, currentData) => {
                           <FaEdit />
                         </button>
                           {q.quotationStatus === "Approved" && (
-  <FaMoneyCheckAlt
-    style={{ cursor: "pointer", color: "green" }}
-    title="Payment"
-    onClick={() => {
-      // Load quotation and initialize payment fields
+<FaMoneyCheckAlt
+  style={{ cursor: "pointer", color: "green" }}
+   size={30}
+  title="Payment"
+  onClick={async () => {
+    try {
+      // fetch latest quotations from DB
+      const allQuotations = await getQuotations();
+      const latestQuotation = allQuotations.find((item) => item.id === q.id);
+
+      if (!latestQuotation) return alert("Quotation not found");
+
+      // set state with latest payment info
       setNewQuotation({
-        ...q,
-        paymentPhase: "Started",
-        revisedCost: q.revisedCost || "",
-        poReceived: q.poReceived || "No",
-        paymentReceived: q.paymentReceived || "No",
-        paymentAmount: q.paymentAmount || "",
-        paymentPendingReason: q.paymentPendingReason || "",
+        ...latestQuotation,
+        paymentPhase: latestQuotation.paymentPhase || "Started",
+        revisedCost: latestQuotation.revisedCost || "",
+        poReceived: latestQuotation.poReceived || "No",
+        paymentReceived: latestQuotation.paymentReceived || "No",
+        paymentAmount: latestQuotation.paymentAmount || "",
+        paymentPendingReason: latestQuotation.paymentPendingReason || "",
       });
 
-      setEditId(null);        // ✅ REMOVE edit quotation
-  setShowModal(false);    // ✅ CLOSE edit modal
-  setShowPaymentForm(true); // show payment section
-    }}
-  />
+      setEditId(null); // ensure edit modal is closed
+      setShowModal(false);
+      setShowPaymentForm(true); // open payment modal
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load payment details");
+    }
+  }}
+/>
+
 )}
 
                         <button
@@ -650,7 +662,7 @@ const initializePaymentFields = (status, currentData) => {
                             onClick={() => handleEditGeneratedQuotation(q)}
                             title="Edit Generated Quotation"
                           >
-                            <MdEditDocument />
+                            <MdEditDocument size={30} />
                           </button>
                         ) : (
                           <button
@@ -661,7 +673,7 @@ const initializePaymentFields = (status, currentData) => {
                             }}
                             title="Generate Quotation"
                           >
-                            <FaFilePdf />
+                            <FaFilePdf   size={30} />
                           </button>
                         )}
                       </td>
