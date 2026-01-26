@@ -630,9 +630,9 @@ const initializePaymentFields = (status, currentData) => {
         paymentPendingReason: q.paymentPendingReason || "",
       });
 
-      setEditId(q.id);          // mark the quotation being edited
-      setShowModal(true);       // open modal
-      setShowPaymentForm(true); // show payment section
+      setEditId(null);        // ✅ REMOVE edit quotation
+  setShowModal(false);    // ✅ CLOSE edit modal
+  setShowPaymentForm(true); // show payment section
     }}
   />
 )}
@@ -916,25 +916,90 @@ const initializePaymentFields = (status, currentData) => {
                 />
               </div>
               <div className="form-group">
-  <label>Quotation Status *</label>
-  <select
-    value={newQuotation.quotationStatus}
-    onChange={(e) =>
-      setNewQuotation({
-        ...newQuotation,
-        quotationStatus: e.target.value,
-      })
-    }
-  >
-    <option value="Draft">Draft</option>
-    <option value="Submitted">Submitted</option>
-    <option value="Approved">Approved</option>
-    <option value="Rejected">Rejected</option>
-  </select>
-</div>
+            <label>Quotation Status *</label>
+              <select
+                value={newQuotation.quotationStatus}
+               onChange={(e) =>
+               setNewQuotation({
+                ...newQuotation,
+                    quotationStatus: e.target.value,
+                    })
+              }
+              >
+            <option value="Draft">Draft</option>
+             <option value="Submitted">Submitted</option>
+             <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+         </select>
+        </div>
 
               {/* PAYMENT PHASE */}
-       {showPaymentForm && (
+  
+
+            </div>
+  
+
+            {/* LIVE QUOTATION PREVIEW */}
+            <div
+              className="quotation-preview"
+              style={{
+                border: "1px solid #ccc",
+                padding: "20px",
+                marginTop: "20px",
+                backgroundColor: "#fffefe",
+                maxHeight: "400px",
+                overflowY: "auto",
+              }}
+            >
+              <h2 style={{ textAlign: "center" }}>Quotation</h2>
+              <p>
+                <strong>Quotation No:</strong> {newQuotation.quotationNo}
+              </p>
+              <p>
+                <strong>Date:</strong> {newQuotation.date}
+              </p>
+              <p>
+                <strong>Opportunity Name:</strong>{" "}
+                {newQuotation.opprtunity_name}
+              </p>
+              <p>
+                <strong>Client:</strong> {newQuotation.clientName} (
+                {newQuotation.client_type_name})
+              </p>
+              <p>
+                <strong>Lab:</strong> {newQuotation.lab_name}
+              </p>
+              <p>
+                <strong>Work Category:</strong>{" "}
+                {newQuotation.work_category_name}
+              </p>
+              <p>
+                <strong>Description:</strong> {newQuotation.description}
+              </p>
+              <p>
+                <strong>Quote Value (Incl. GST):</strong> ₹{" "}
+                {calculateTotalValue()}
+              </p>
+            </div>
+
+            {/* ACTIONS */}
+            <div className="modal-actions">
+              <button className="btn-save" onClick={handleSaveQuotation}>
+                {editId ? "Update Quotation" : "Create & Save Quotation"}
+              </button>
+
+              {/* <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
+          Generate DOCX
+        </button> */}
+
+              <button className="btn-cancel" onClick={closeModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+         {showPaymentForm && (
   <div className="modal-overlay" onClick={() => setShowPaymentForm(false)}>
     <div className="modal" onClick={(e) => e.stopPropagation()}>
       <div className="modal-header">
@@ -1058,70 +1123,6 @@ const initializePaymentFields = (status, currentData) => {
     </div>
   </div>
 )}
-
-
-            </div>
-
-            {/* LIVE QUOTATION PREVIEW */}
-            <div
-              className="quotation-preview"
-              style={{
-                border: "1px solid #ccc",
-                padding: "20px",
-                marginTop: "20px",
-                backgroundColor: "#fffefe",
-                maxHeight: "400px",
-                overflowY: "auto",
-              }}
-            >
-              <h2 style={{ textAlign: "center" }}>Quotation</h2>
-              <p>
-                <strong>Quotation No:</strong> {newQuotation.quotationNo}
-              </p>
-              <p>
-                <strong>Date:</strong> {newQuotation.date}
-              </p>
-              <p>
-                <strong>Opportunity Name:</strong>{" "}
-                {newQuotation.opprtunity_name}
-              </p>
-              <p>
-                <strong>Client:</strong> {newQuotation.clientName} (
-                {newQuotation.client_type_name})
-              </p>
-              <p>
-                <strong>Lab:</strong> {newQuotation.lab_name}
-              </p>
-              <p>
-                <strong>Work Category:</strong>{" "}
-                {newQuotation.work_category_name}
-              </p>
-              <p>
-                <strong>Description:</strong> {newQuotation.description}
-              </p>
-              <p>
-                <strong>Quote Value (Incl. GST):</strong> ₹{" "}
-                {calculateTotalValue()}
-              </p>
-            </div>
-
-            {/* ACTIONS */}
-            <div className="modal-actions">
-              <button className="btn-save" onClick={handleSaveQuotation}>
-                {editId ? "Update Quotation" : "Create & Save Quotation"}
-              </button>
-
-              {/* <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
-          Generate DOCX
-        </button> */}
-
-              <button className="btn-cancel" onClick={closeModal}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
