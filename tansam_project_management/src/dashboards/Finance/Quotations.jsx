@@ -13,6 +13,8 @@ import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
 import { getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api.js";
+import { FaMoneyCheckAlt } from "react-icons/fa";
+
 import Select from "react-select";
 
 export default function Quotations() {
@@ -21,12 +23,17 @@ export default function Quotations() {
   const [pageSize, setPageSize] = useState(5);
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const [workCategories, setWorkCategories] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [labs, setLabs] = useState([]);
   const [activeTab, setActiveTab] = useState("quotation");
   const [showDoc, setShowDoc] = useState(false);
+const openPaymentModal = (quotation) => {
+  setNewQuotation(quotation);
+  setShowPaymentModal(true);
+};
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
   const workCategoryOptions = [
@@ -55,12 +62,12 @@ export default function Quotations() {
     gst: "",
     totalValue: "",
     date: "",
-    revisedCost: "",
-    paymentPhase: "Not Started",
-    poReceived: "No",
-    paymentReceived: "No",
-    paymentAmount: "",
-    paymentPendingReason: "",
+   quotationStatus: "Draft",
+  revisedCost: "",
+  poReceived: "No",
+  paymentReceived: "No",
+  paymentAmount: "",
+  paymentPendingReason: "",
   });
 
   const clearAllFilters = () => {
@@ -179,6 +186,45 @@ export default function Quotations() {
 
     loadWorkCategories();
   }, []);
+useEffect(() => {
+  if (newQuotation.quotationStatus === "Approved") {
+    setNewQuotation((prev) => ({
+      ...prev,
+      paymentPhase: "Started",
+    }));
+  } else {
+    setNewQuotation((prev) => ({
+      ...prev,
+      paymentPhase: "Not Started",
+      revisedCost: "",
+      poReceived: "No",
+      paymentReceived: "No",
+      paymentAmount: "",
+      paymentPendingReason: "",
+    }));
+  }
+}, [newQuotation.quotationStatus]);
+const initializePaymentFields = (status, currentData) => {
+  if (status === "Approved") {
+    return {
+      paymentPhase: currentData.paymentPhase || "Started",
+      revisedCost: currentData.revisedCost || "",
+      poReceived: currentData.poReceived || "No",
+      paymentReceived: currentData.paymentReceived || "No",
+      paymentAmount: currentData.paymentAmount || "",
+      paymentPendingReason: currentData.paymentPendingReason || "",
+    };
+  } else {
+    return {
+      paymentPhase: "Not Started",
+      revisedCost: "",
+      poReceived: "No",
+      paymentReceived: "No",
+      paymentAmount: "",
+      paymentPendingReason: "",
+    };
+  }
+};
 
   useEffect(() => {
     const loadLabs = async () => {
@@ -240,6 +286,7 @@ export default function Quotations() {
     setEditId(quotation.id);
     setNewQuotation({
       ...quotation,
+      ...initializePaymentFields(quotation.quotationStatus, quotation),
       paymentPhase: quotation.paymentPhase || "Not Started",
       revisedCost: quotation.revisedCost || "",
       poReceived: quotation.poReceived || "No",
@@ -260,43 +307,40 @@ export default function Quotations() {
         (parseFloat(newQuotation.value || 0) || 0) +
         (parseFloat(newQuotation.gst || 0) || 0);
 
-      const payload = {
-        quotationNo: editId
-          ? newQuotation.quotationNo
-          : newQuotation.quotationNo || generateQuotationNo(data),
-
-        opprtunity_name: newQuotation.opprtunity_name,
-
-        client_id: newQuotation.client_id,
-        clientName: newQuotation.clientName,
-
-        // ✅ MUST SEND ID
-        client_type_id: newQuotation.client_type_id,
-        client_type_name: newQuotation.client_type_name,
-
-        work_category_id: newQuotation.work_category_id,
-        work_category_name: newQuotation.work_category_name,
-
-        lab_id: newQuotation.lab_id,
-        lab_name: newQuotation.lab_name,
-
-        description: newQuotation.description,
-
-        value:
-          (parseFloat(newQuotation.value || 0) || 0) +
-          (parseFloat(newQuotation.gst || 0) || 0),
-
-        gst: newQuotation.gst,
-        totalValue: parseFloat(newQuotation.totalValue) || 0,
-        date: newQuotation.date,
-
+   const payload = {
+  quotationNo: editId
+    ? newQuotation.quotationNo
+    : newQuotation.quotationNo || generateQuotationNo(data),
+  opprtunity_name: newQuotation.opprtunity_name,
+  client_id: newQuotation.client_id,
+  clientName: newQuotation.clientName,
+  client_type_id: newQuotation.client_type_id,
+  client_type_name: newQuotation.client_type_name,
+  work_category_id: newQuotation.work_category_id,
+  work_category_name: newQuotation.work_category_name,
+  lab_id: newQuotation.lab_id,
+  lab_name: newQuotation.lab_name,
+  description: newQuotation.description,
+  value:
+    (parseFloat(newQuotation.value || 0) || 0) +
+    (parseFloat(newQuotation.gst || 0) || 0),
+  gst: newQuotation.gst,
+  totalValue: parseFloat(newQuotation.totalValue) || 0,
+  date: newQuotation.date,
+  quotationStatus: newQuotation.quotationStatus,
+  // ✅ only include payment fields if Approved
+  ...(newQuotation.quotationStatus === "Approved"
+    ? {
         paymentPhase: newQuotation.paymentPhase,
         revisedCost: newQuotation.revisedCost,
         poReceived: newQuotation.poReceived,
         paymentReceived: newQuotation.paymentReceived,
         paymentAmount: newQuotation.paymentAmount,
         paymentPendingReason: newQuotation.paymentPendingReason,
-      };
+      }
+    : {}),
+};
+
 
       if (editId) {
         await updateQuotation(editId, payload);
@@ -570,6 +614,29 @@ export default function Quotations() {
                         >
                           <FaEdit />
                         </button>
+                          {q.quotationStatus === "Approved" && (
+  <FaMoneyCheckAlt
+    style={{ cursor: "pointer", color: "green" }}
+    title="Payment"
+    onClick={() => {
+      // Load quotation and initialize payment fields
+      setNewQuotation({
+        ...q,
+        paymentPhase: "Started",
+        revisedCost: q.revisedCost || "",
+        poReceived: q.poReceived || "No",
+        paymentReceived: q.paymentReceived || "No",
+        paymentAmount: q.paymentAmount || "",
+        paymentPendingReason: q.paymentPendingReason || "",
+      });
+
+      setEditId(q.id);          // mark the quotation being edited
+      setShowModal(true);       // open modal
+      setShowPaymentForm(true); // show payment section
+    }}
+  />
+)}
+
                         <button
                           className="btn-delete"
                           onClick={() => deleteRow(q.id)}
@@ -848,104 +915,151 @@ export default function Quotations() {
                   }
                 />
               </div>
-              {/* PAYMENT PHASE */}
               <div className="form-group">
-                <label>Payment Phase *</label>
-                <select
-                  value={newQuotation.paymentPhase}
+  <label>Quotation Status *</label>
+  <select
+    value={newQuotation.quotationStatus}
+    onChange={(e) =>
+      setNewQuotation({
+        ...newQuotation,
+        quotationStatus: e.target.value,
+      })
+    }
+  >
+    <option value="Draft">Draft</option>
+    <option value="Submitted">Submitted</option>
+    <option value="Approved">Approved</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+</div>
+
+              {/* PAYMENT PHASE */}
+       {showPaymentForm && (
+  <div className="modal-overlay" onClick={() => setShowPaymentForm(false)}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h3>Enter Payment Details</h3>
+        <button className="btn-close" onClick={() => setShowPaymentForm(false)}>
+          ✕
+        </button>
+      </div>
+
+      <div className="modal-form">
+        <div className="form-group">
+          <label>Payment Phase *</label>
+          <select
+            value={newQuotation.paymentPhase}
+            onChange={(e) =>
+              setNewQuotation({ ...newQuotation, paymentPhase: e.target.value })
+            }
+          >
+            <option value="Not Started">Not Started</option>
+            <option value="Started">Started</option>
+          </select>
+        </div>
+
+        {newQuotation.paymentPhase === "Started" && (
+          <>
+            <div className="form-group">
+              <label>Revised Cost</label>
+              <input
+                type="number"
+                value={newQuotation.revisedCost}
+                onChange={(e) =>
+                  setNewQuotation({ ...newQuotation, revisedCost: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="form-group">
+              <label>PO Received *</label>
+              <select
+                value={newQuotation.poReceived}
+                onChange={(e) =>
+                  setNewQuotation({ ...newQuotation, poReceived: e.target.value })
+                }
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Payment Received *</label>
+              <select
+                value={newQuotation.paymentReceived}
+                onChange={(e) =>
+                  setNewQuotation({
+                    ...newQuotation,
+                    paymentReceived: e.target.value,
+                  })
+                }
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            {newQuotation.paymentReceived === "Yes" && (
+              <div className="form-group">
+                <label>Payment Amount</label>
+                <input
+                  type="number"
+                  value={newQuotation.paymentAmount}
+                  onChange={(e) =>
+                    setNewQuotation({ ...newQuotation, paymentAmount: e.target.value })
+                  }
+                />
+              </div>
+            )}
+
+            {newQuotation.paymentReceived === "No" && (
+              <div className="form-group">
+                <label>Payment Pending Reason</label>
+                <textarea
+                  rows="2"
+                  value={newQuotation.paymentPendingReason}
                   onChange={(e) =>
                     setNewQuotation({
                       ...newQuotation,
-                      paymentPhase: e.target.value,
+                      paymentPendingReason: e.target.value,
                     })
                   }
-                >
-                  <option value="Not Started">Not Started</option>
-                  <option value="Started">Started</option>
-                </select>
+                />
               </div>
+            )}
+          </>
+        )}
+      </div>
 
-              {newQuotation.paymentPhase === "Started" && (
-                <>
-                  <div className="form-group">
-                    <label>Revised Cost</label>
-                    <input
-                      type="number"
-                      value={newQuotation.revisedCost}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          revisedCost: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+      <div className="modal-actions">
+        <button
+          className="btn-save"
+          onClick={async () => {
+            try {
+              await updateQuotation(newQuotation.id, newQuotation); // save payment
+              setShowPaymentForm(false);
+              // optionally refresh your quotation list
+            } catch (err) {
+              console.error(err);
+              alert("Error saving payment details");
+            }
+          }}
+        >
+          Save Payment
+        </button>
+        <button
+          className="btn-cancel"
+          onClick={() => setShowPaymentForm(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-                  <div className="form-group">
-                    <label>PO Received *</label>
-                    <select
-                      value={newQuotation.poReceived}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          poReceived: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
-                  </div>
 
-                  <div className="form-group">
-                    <label>Payment Received *</label>
-                    <select
-                      value={newQuotation.paymentReceived}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          paymentReceived: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
-                  </div>
-
-                  {newQuotation.paymentReceived === "Yes" && (
-                    <div className="form-group">
-                      <label>Payment Amount</label>
-                      <input
-                        type="number"
-                        value={newQuotation.paymentAmount}
-                        onChange={(e) =>
-                          setNewQuotation({
-                            ...newQuotation,
-                            paymentAmount: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-
-                  {newQuotation.paymentReceived === "No" && (
-                    <div className="form-group">
-                      <label>Payment Pending Reason</label>
-                      <textarea
-                        rows="2"
-                        value={newQuotation.paymentPendingReason}
-                        onChange={(e) =>
-                          setNewQuotation({
-                            ...newQuotation,
-                            paymentPendingReason: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-                </>
-              )}
             </div>
 
             {/* LIVE QUOTATION PREVIEW */}

@@ -159,7 +159,7 @@ const totalServiceValue = quotation.items
   {(() => {
     const baseTotal = Number(item.total || 0);
     const taxPercent = Number(item.tax || 0);
-    const taxAmount = (baseTotal * taxPercent) / 100;
+    const taxAmount = baseTotal *(taxPercent/100) ;
     return (baseTotal + taxAmount).toFixed(2);
   })()}
 </td>
