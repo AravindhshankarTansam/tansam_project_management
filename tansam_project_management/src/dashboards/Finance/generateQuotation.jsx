@@ -69,11 +69,12 @@ const totalServiceValue = quotation.items
               <th style={{ border: "1px solid #000", padding: "12px", width: "30%" }}>
                 Product Description
               </th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Qty
-              </th>
+            
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Unit Price
+              </th>
+                <th style={{ border: "1px solid #000", padding: "8px" }}>
+                Qty
               </th>
                 <th style={{ border: "1px solid #000", padding: "4px" }}>
                 TAX
@@ -112,12 +113,13 @@ const totalServiceValue = quotation.items
                     }}
                   />
                 </td>
+             
                 <td style={{ border: "1px solid #000", padding: "8px" }}>
                   <input
                     type="number"
-                    value={item.qty}
+                    value={item.unitPrice}
                     onChange={(e) =>
-                      handleRowChange(index, "qty", e.target.value)
+                      handleRowChange(index, "unitPrice", e.target.value)
                     }
                     style={{
                       width: "100%",
@@ -126,12 +128,12 @@ const totalServiceValue = quotation.items
                     }}
                   />
                 </td>
-                <td style={{ border: "1px solid #000", padding: "8px" }}>
+                   <td style={{ border: "1px solid #000", padding: "8px" }}>
                   <input
                     type="number"
-                    value={item.unitPrice}
+                    value={item.qty}
                     onChange={(e) =>
-                      handleRowChange(index, "unitPrice", e.target.value)
+                      handleRowChange(index, "qty", e.target.value)
                     }
                     style={{
                       width: "100%",

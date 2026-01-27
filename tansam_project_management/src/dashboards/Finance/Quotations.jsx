@@ -62,7 +62,6 @@ const openPaymentModal = (quotation) => {
 unitPrice: "",
 qty: "",
 gst: "",
-
     date: "",
    quotationStatus: "Draft",
   revisedCost: "",
@@ -70,6 +69,7 @@ gst: "",
   paymentReceived: "No",
   paymentAmount: "",
   paymentPendingReason: "",
+   items: [{ description: "", qty: "", unitPrice: "", gst: "", total: "0.00" }],
   });
 
   const clearAllFilters = () => {
@@ -349,6 +349,7 @@ const totalValue =
   qty: newQuotation.qty || 0,
   gst: newQuotation.gst || 0,
   value: totalValue, 
+items: JSON.stringify(newQuotation.items), 
   date: newQuotation.date,
   quotationStatus: newQuotation.quotationStatus,
   // ✅ only include payment fields if Approved

@@ -7,7 +7,7 @@ import { G } from "@react-pdf/renderer";
 export const getQuotations = async (req, res) => {
   try {
     const db = await connectDB();
-     await initSchemas(db, { finance: true });
+    await initSchemas(db, { finance: true });
     const [rows] = await db.execute(
       "SELECT * FROM quotations ORDER BY id ASC"
     );
@@ -23,6 +23,28 @@ export const addQuotation = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
+    const { unitPrice = 0, qty = 0, gst = 0, ...otherFields } = req.body;
+
+  // Instead of just JSON.stringify(req.body.items)
+const itemDetails = JSON.stringify(
+  (req.body.items && req.body.items.length)
+    ? req.body.items.map(item => ({
+       
+        qty: Number(item.qty || 0),
+        unitPrice: Number(item.unitPrice || 0),
+        gst: Number(item.gst || 0),
+       
+      }))
+    : [{
+        
+        qty: Number(req.body.qty || 0),
+        unitPrice: Number(req.body.unitPrice || 0),
+        gst: Number(req.body.gst || 0),
+     
+      }]
+);
+// ensure string
+
 
     const {
       opprtunity_name,
@@ -37,6 +59,7 @@ export const addQuotation = async (req, res) => {
       description,
       value,
       date,
+      quotationStatus = 'Draft',
     } = req.body;
 
     // 🔑 Fetch client_id
@@ -58,42 +81,45 @@ export const addQuotation = async (req, res) => {
 
     const client_id = client.client_id;
 
-    const [result] = await db.execute(
-      `
-      INSERT INTO quotations (
-        opprtunity_name,
-        quotationNo,
-        client_id,
-        clientName,
-        client_type_id,
-        client_type_name,
-        work_category_id,
-        work_category_name,
-        lab_id,
-        lab_name,
-        description,
-        value,
-        date,
-        quotationStatus
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Draft')
-      `,
-      [
-        opprtunity_name,
-        quotationNo,
-        client_id,
-        clientName,
-        client_type_id,
-        client_type_name,
-        work_category_id,
-        work_category_name,
-        lab_id,
-        lab_name,
-        description,
-        value,
-        date,
-      ]
-    );
+   const [result] = await db.execute(
+  `
+  INSERT INTO quotations (
+    opprtunity_name,
+    quotationNo,
+    client_id,
+    clientName,
+    client_type_id,
+    client_type_name,
+    work_category_id,
+    work_category_name,
+    lab_id,
+    lab_name,
+    description,
+    itemDetails,
+    value,
+    date,
+    quotationStatus
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+  [
+    opprtunity_name,
+    quotationNo,
+    client_id,
+    clientName,
+    client_type_id,
+    client_type_name,
+    work_category_id,
+    work_category_name,
+    lab_id,
+    lab_name,
+    description,
+    itemDetails,
+    value,
+    date,
+    quotationStatus, // defaulted to 'Draft' in JS destructuring
+  ]
+);
 
     res.status(201).json({
       id: result.insertId,
@@ -131,6 +157,8 @@ export const updateQuotation = async (req, res) => {
 
     const currentStatus = existing.quotationStatus;
 
+
+
     // -----------------------------
     // Sanitize all fields to avoid undefined
     // -----------------------------
@@ -142,6 +170,7 @@ export const updateQuotation = async (req, res) => {
       "work_category_name",
       "lab_name",
       "description",
+      "itemDetails",
       "value",
       "date",
       "quotationStatus",
@@ -155,7 +184,23 @@ export const updateQuotation = async (req, res) => {
     ].forEach((key) => {
       safeBody[key] = req.body[key] ?? null;
     });
-
+safeBody.itemDetails = JSON.stringify(
+  (req.body.items && req.body.items.length)
+    ? req.body.items.map(item => ({
+        description: item.description || "",
+        qty: Number(item.qty || 0),
+        unitPrice: Number(item.unitPrice || 0),
+        gst: Number(item.gst || 0),
+        total: Number(item.qty || 0) * Number(item.unitPrice || 0) * (1 + Number(item.gst || 0)/100)
+      }))
+    : [{
+        description: "",
+        qty: Number(req.body.qty || 0),
+        unitPrice: Number(req.body.unitPrice || 0),
+        gst: Number(req.body.gst || 0),
+        total: Number(req.body.qty || 0) * Number(req.body.unitPrice || 0) * (1 + Number(req.body.gst || 0)/100)
+      }]
+);
     // -----------------------------
     // Determine final status
     // -----------------------------
@@ -184,21 +229,21 @@ export const updateQuotation = async (req, res) => {
     const paymentData =
       finalStatus === "Approved"
         ? {
-            paymentPhase: safeBody.paymentPhase ?? "Started",
-            revisedCost: safeBody.revisedCost ?? null,
-            poReceived: safeBody.poReceived ?? "No",
-            paymentReceived: safeBody.paymentReceived ?? "No",
-            paymentAmount: safeBody.paymentAmount ?? null,
-            paymentPendingReason: safeBody.paymentPendingReason ?? null,
-          }
+          paymentPhase: safeBody.paymentPhase ?? "Started",
+          revisedCost: safeBody.revisedCost ?? null,
+          poReceived: safeBody.poReceived ?? "No",
+          paymentReceived: safeBody.paymentReceived ?? "No",
+          paymentAmount: safeBody.paymentAmount ?? null,
+          paymentPendingReason: safeBody.paymentPendingReason ?? null,
+        }
         : {
-            paymentPhase: "Not Started",
-            revisedCost: null,
-            poReceived: "No",
-            paymentReceived: "No",
-            paymentAmount: null,
-            paymentPendingReason: null,
-          };
+          paymentPhase: "Not Started",
+          revisedCost: null,
+          poReceived: "No",
+          paymentReceived: "No",
+          paymentAmount: null,
+          paymentPendingReason: null,
+        };
 
     // -----------------------------
     // Update quotation in DB
@@ -213,6 +258,7 @@ export const updateQuotation = async (req, res) => {
         work_category_name = ?,
         lab_name = ?,
         description = ?,
+          itemDetails = ?,
         value = ?,
         date = ?,
         quotationStatus = ?,
@@ -232,6 +278,7 @@ export const updateQuotation = async (req, res) => {
         safeBody.work_category_name,
         safeBody.lab_name,
         safeBody.description,
+       safeBody.itemDetails,
         safeBody.value,
         safeBody.date,
         finalStatus,
@@ -293,7 +340,7 @@ export const deleteQuotation = async (req, res) => {
 
 export const getQuotationById = async (id) => {
   const db = await connectDB();
-      await initSchemas(db, { finance: true });
+  await initSchemas(db, { finance: true });
   const [rows] = await db.execute("SELECT * FROM quotations WHERE id=?", [id]);
   return rows[0]; // or null if not found
 };
