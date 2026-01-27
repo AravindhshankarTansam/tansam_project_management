@@ -430,6 +430,95 @@ const handleSubmit = async (e) => {
     startIndex,
     startIndex + ITEMS_PER_PAGE
   );
+  const formatLabs = (lab) => {
+  if (!lab) return "—";
+
+  if (Array.isArray(lab)) return lab.join(", ");
+
+  if (typeof lab === "string") {
+    try {
+      const parsed = JSON.parse(lab);
+      return Array.isArray(parsed) ? parsed.join(", ") : lab;
+    } catch {
+      return lab;
+    }
+  }
+
+  return "—";
+};
+function MultiSelectChips({
+  options,
+  value,
+  onChange,
+  placeholder,
+  labelKey = "name",
+}) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = (id) => {
+    if (value.includes(id)) {
+      onChange(value.filter((v) => v !== id));
+    } else {
+      onChange([...value, id]);
+    }
+  };
+
+  const remove = (id) => {
+    onChange(value.filter((v) => v !== id));
+  };
+
+  return (
+    <div className="multi-select">
+      <div
+        className="multi-select-input"
+        onClick={() => setOpen(!open)}
+      >
+        {value.length === 0 ? (
+          <span className="placeholder">{placeholder}</span>
+        ) : (
+          <div className="chips">
+            {value.map((id) => {
+              const opt = options.find((o) => String(o.id) === String(id));
+              return (
+                <span className="chip" key={id}>
+                  {opt?.[labelKey] || opt?.username}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(id);
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+        )}
+        <span className="arrow">▾</span>
+      </div>
+
+      {open && (
+        <div className="multi-select-dropdown">
+          {options.map((opt) => (
+            <div
+              key={opt.id}
+              className={`option ${
+                value.includes(opt.id) ? "selected" : ""
+              }`}
+              onClick={() => toggle(opt.id)}
+            >
+              {opt[labelKey] || opt.username}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 
   /* ================= UI ================= */
   return (
@@ -512,25 +601,29 @@ const handleSubmit = async (e) => {
                       <td>{item.client_name}</td>
                       <td>{item.lead_source || "-"}</td>
                       <td>
-                          {item.assigned_to
-                            ? item.assigned_to
-                                .split(",")
-                                .map(
-                                  (id) =>
-                                    getUserById(id)?.name ||
-                                    getUserById(id)?.username
-                                )
-                                .filter(Boolean)
-                                .join(", ")
-                            : "-"}
-                        </td>
+                        {item.assigned_to
+                          ? item.assigned_to
+                              .split(",")
+                              .map(
+                                (id) =>
+                                  getUserById(id)?.name ||
+                                  getUserById(id)?.username,
+                              )
+                              .filter(Boolean)
+                              .join(", ")
+                          : "-"}
+                      </td>
                       <td>
-                        <span className={`status ${tracker.stage?.toLowerCase() || "new"}`}>
+                        <span
+                          className={`status ${tracker.stage?.toLowerCase() || "new"}`}
+                        >
                           {tracker.stage || "NEW"}
                         </span>
                       </td>
                       <td>
-                        <span className={`status ${item.lead_status?.toLowerCase() || "new"}`}>
+                        <span
+                          className={`status ${item.lead_status?.toLowerCase() || "new"}`}
+                        >
                           {item.lead_status || "NEW"}
                         </span>
                       </td>
@@ -556,33 +649,32 @@ const handleSubmit = async (e) => {
           </table>
         )}
         {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Prev
-          </button>
-
-          {[...Array(totalPages)].map((_, i) => (
+          <div className="pagination">
             <button
-              key={i}
-              className={currentPage === i + 1 ? "active" : ""}
-              onClick={() => setCurrentPage(i + 1)}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
             >
-              {i + 1}
+              Prev
             </button>
-          ))}
 
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                className={currentPage === i + 1 ? "active" : ""}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
 
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ADD / EDIT MODAL - Now with both Stage and Status */}
@@ -622,29 +714,13 @@ const handleSubmit = async (e) => {
               </div>
               <div className="form-group">
                 <label>Labs</label>
-                <select
-                  multiple
-                  value={form.labIds}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      labIds: Array.from(
-                        e.target.selectedOptions,
-                        (opt) => opt.value
-                      ),
-                    })
-                  }
-                >
-                  {labs.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
 
-                <small>
-                  Hold <b>Ctrl</b> (Windows) / <b>Cmd</b> (Mac) to select multiple labs
-                </small>
+                <MultiSelectChips
+                  options={labs}
+                  value={form.labIds}
+                  onChange={(ids) => setForm({ ...form, labIds: ids })}
+                  placeholder="Select labs"
+                />
               </div>
 
               <div className="form-group">
@@ -663,45 +739,34 @@ const handleSubmit = async (e) => {
                 </select>
               </div>
 
-                <div className="form-group">
-                  <label>Client Type</label>
-                  <select
-                    name="clientTypeId"
-                    value={form.clientTypeId}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Client Type</option>
-                    {clientTypes.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-           <div className="form-group">
-              <label>Assigned To</label>
-              <select
-                multiple
-                value={form.assignedTo}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    assignedTo: Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    ),
-                  })
-                }
-              >
-                {assignableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name || u.username}
-                  </option>
-                ))}
-              </select>
-              <small>Hold Ctrl (Windows) / Cmd (Mac) to select multiple users</small>
-            </div>
+              <div className="form-group">
+                <label>Client Type</label>
+                <select
+                  name="clientTypeId"
+                  value={form.clientTypeId}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Client Type</option>
+                  {clientTypes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Assigned To</label>
+
+                <MultiSelectChips
+                  options={assignableUsers}
+                  value={form.assignedTo}
+                  onChange={(ids) => setForm({ ...form, assignedTo: ids })}
+                  placeholder="Select users"
+                  labelKey="name"
+                />
+              </div>
+
               <div className="form-group">
                 <label>Contact Email</label>
                 <input
@@ -752,11 +817,7 @@ const handleSubmit = async (e) => {
               {/* Stage (full pipeline) */}
               <div className="form-group">
                 <label>Stage</label>
-                <select
-                  name="stage"
-                  value={form.stage}
-                  onChange={handleChange}
-                >
+                <select name="stage" value={form.stage} onChange={handleChange}>
                   {STAGES.map((stage) => (
                     <option key={stage} value={stage}>
                       {stage}
@@ -793,17 +854,13 @@ const handleSubmit = async (e) => {
                   {!isPreview ? (
                     <RichTextEditor
                       value={form.leadDescription}
-                      onChange={(v) =>
-                        setForm({ ...form, leadDescription: v })
-                      }
+                      onChange={(v) => setForm({ ...form, leadDescription: v })}
                     />
                   ) : (
                     <div
                       className="preview-content"
                       dangerouslySetInnerHTML={{
-                        __html:
-                          form.leadDescription ||
-                          "<p>No description</p>",
+                        __html: form.leadDescription || "<p>No description</p>",
                       }}
                     />
                   )}
@@ -818,7 +875,8 @@ const handleSubmit = async (e) => {
                 >
                   {isPreview ? "Back to Edit" : "Preview"}
                 </button>
-                <button type="submit">Save
+                <button type="submit">
+                  Save
                   {loading && (
                     <div className="global-loader">
                       <div className="spinner"></div>
@@ -856,7 +914,9 @@ const handleSubmit = async (e) => {
                 </p>
               </div>
               <div className="view-header-right">
-                <span className={`status-badge ${viewData.lead_status?.toLowerCase()}`}>
+                <span
+                  className={`status-badge ${viewData.lead_status?.toLowerCase()}`}
+                >
                   {viewData.lead_status}
                 </span>
                 <button className="close-btn" onClick={() => setViewData(null)}>
@@ -866,11 +926,13 @@ const handleSubmit = async (e) => {
             </div>
 
             {/* Contact Details - 3x3 Grid */}
+            {/* DETAILS GRID */}
             <div className="contact-grid">
               <div className="grid-item">
                 <label>Contact Person</label>
                 <p>{viewData.contact_person || "—"}</p>
               </div>
+
               <div className="grid-item">
                 <label>Assigned To</label>
                 <p>
@@ -888,17 +950,36 @@ const handleSubmit = async (e) => {
                     : "—"}
                 </p>
               </div>
+
               <div className="grid-item">
                 <label>Email</label>
                 <p>{viewData.contact_email || "—"}</p>
               </div>
+
               <div className="grid-item">
                 <label>Phone</label>
                 <p>{viewData.contact_phone || "—"}</p>
               </div>
+
               <div className="grid-item">
                 <label>Source</label>
                 <p>{viewData.lead_source || "—"}</p>
+              </div>
+
+              {/* ✅ NEW FIELDS */}
+              <div className="grid-item">
+                <label>Client Type</label>
+                <p>{viewData.client_type_name || "—"}</p>
+              </div>
+
+              <div className="grid-item">
+                <label>Work Category</label>
+                <p>{viewData.work_category_name || "—"}</p>
+              </div>
+
+              <div className="grid-item">
+                <label>Labs</label>
+                <p>{formatLabs(viewData.lab_name)}</p>
               </div>
               <div className="grid-item empty"></div>
             </div>
@@ -913,10 +994,14 @@ const handleSubmit = async (e) => {
                     <span
                       className={`status ${(getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW").toLowerCase()}`}
                     >
-                      {getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
+                      {getTrackerForOpportunity(viewData.opportunity_id)
+                        .stage || "NEW"}
                     </span>
                     <ProgressTracker
-                      currentStage={getTrackerForOpportunity(viewData.opportunity_id).stage || "NEW"}
+                      currentStage={
+                        getTrackerForOpportunity(viewData.opportunity_id)
+                          .stage || "NEW"
+                      }
                     />
                   </div>
                 </div>
@@ -924,8 +1009,11 @@ const handleSubmit = async (e) => {
                 <div className="info-item">
                   <label>Next Follow-up Date</label>
                   <p>
-                    {getTrackerForOpportunity(viewData.opportunity_id).next_followup_date
-                      ? getTrackerForOpportunity(viewData.opportunity_id).next_followup_date.slice(0, 10)
+                    {getTrackerForOpportunity(viewData.opportunity_id)
+                      .next_followup_date
+                      ? getTrackerForOpportunity(
+                          viewData.opportunity_id,
+                        ).next_followup_date.slice(0, 10)
                       : "—"}
                   </p>
                 </div>
@@ -933,7 +1021,8 @@ const handleSubmit = async (e) => {
                 <div className="info-item">
                   <label>Next Action</label>
                   <p>
-                    {getTrackerForOpportunity(viewData.opportunity_id).next_action || "—"}
+                    {getTrackerForOpportunity(viewData.opportunity_id)
+                      .next_action || "—"}
                   </p>
                 </div>
               </div>
@@ -945,7 +1034,9 @@ const handleSubmit = async (e) => {
               <div
                 className="description-content"
                 dangerouslySetInnerHTML={{
-                  __html: viewData.lead_description || "<p>No description available</p>",
+                  __html:
+                    viewData.lead_description ||
+                    "<p>No description available</p>",
                 }}
               />
             </div>
@@ -953,73 +1044,73 @@ const handleSubmit = async (e) => {
         </div>
       )}
       {clientConflict && (
-  <div className="modal-overlay">
-    <div className="modal-card">
-      <h3>Client Already Exists</h3>
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h3>Client Already Exists</h3>
 
-      <p>
-        A client with a similar name already exists:
-        <br />
-        <b>{clientConflict.existingClient.client_name}</b>
-      </p>
+            <p>
+              A client with a similar name already exists:
+              <br />
+              <b>{clientConflict.existingClient.client_name}</b>
+            </p>
 
-      <p>What would you like to do?</p>
+            <p>What would you like to do?</p>
 
-      <div className="modal-actions">
-        <button
-          onClick={async () => {
-            // 👉 Use existing client
-            await createOpportunity({
-              ...pendingPayload,
-              client_id: clientConflict.existingClient.client_id,
-            });
+            <div className="modal-actions">
+              <button
+                onClick={async () => {
+                  // 👉 Use existing client
+                  await createOpportunity({
+                    ...pendingPayload,
+                    client_id: clientConflict.existingClient.client_id,
+                  });
 
-            setClientConflict(null);
-            setPendingPayload(null);
-            setShowModal(false);
-            loadAll();
-          }}
-        >
-          Use Existing Client
-        </button>
+                  setClientConflict(null);
+                  setPendingPayload(null);
+                  setShowModal(false);
+                  loadAll();
+                }}
+              >
+                Use Existing Client
+              </button>
 
-        <button
-          className="danger"
-          onClick={async () => {
-            // 👉 Force new client creation
-            await createOpportunity({
-              ...pendingPayload,
-              isNewClient: true,
-            });
+              <button
+                className="danger"
+                onClick={async () => {
+                  // 👉 Force new client creation
+                  await createOpportunity({
+                    ...pendingPayload,
+                    isNewClient: true,
+                  });
 
-            setClientConflict(null);
-            setPendingPayload(null);
-            setShowModal(false);
-            loadAll();
-          }}
-        >
-          Create New Client
-        </button>
+                  setClientConflict(null);
+                  setPendingPayload(null);
+                  setShowModal(false);
+                  loadAll();
+                }}
+              >
+                Create New Client
+              </button>
 
-        <button
-          className="cancel-btn"
-          onClick={() => {
-            setClientConflict(null);
-            setPendingPayload(null);
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                className="cancel-btn"
+                onClick={() => {
+                  setClientConflict(null);
+                  setPendingPayload(null);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast.open && (
-          <div className={`toast toast-${toast.type} toast-${toast.position}`}>
-            {toast.message}
-          </div>
-        )}
+        <div className={`toast toast-${toast.type} toast-${toast.position}`}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

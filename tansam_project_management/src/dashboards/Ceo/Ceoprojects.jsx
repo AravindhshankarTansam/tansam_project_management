@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/Ceoprojects.css";
@@ -6,8 +6,7 @@ import "./Ceocss/Ceoprojects.css";
 import { fetchProjects } from "../../services/project.api";
 import { fetchProjectFollowups } from "../../services/projectfollowup.api";
 
-  const ROWS_PER_PAGE = 10;
-
+const ROWS_PER_PAGE = 10;
 
 export default function CeoProjects() {
   const [projects, setProjects] = useState([]);
@@ -18,10 +17,8 @@ export default function CeoProjects() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedType, setSelectedType] = useState("");
+  const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedLab, setSelectedLab] = useState("");
-
-
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -75,95 +72,143 @@ export default function CeoProjects() {
     () => [...new Set(projects.map(p => p.projectType).filter(Boolean))],
     [projects]
   );
-//   useEffect(() => {
-//   setCurrentPage(1);
-// }, [searchTerm, selectedClient, selectedType]);
-const labOptions = useMemo(() => {
-  const labs = new Set();
 
-  projects.forEach((p) => {
-    if (!p.labNames) return;
+  const labOptions = useMemo(() => {
+    const labs = new Set();
+    projects.forEach((p) => {
+      if (!p.labNames) return;
 
-    if (Array.isArray(p.labNames)) {
-      p.labNames.forEach((l) => labs.add(l));
-    } else if (typeof p.labNames === "string") {
-      try {
-        const parsed = JSON.parse(p.labNames);
-        if (Array.isArray(parsed)) {
-          parsed.forEach((l) => labs.add(l));
-        } else {
-          labs.add(p.labNames);
+      let labArray = [];
+      if (Array.isArray(p.labNames)) {
+        labArray = p.labNames;
+      } else if (typeof p.labNames === "string") {
+        try {
+          const parsed = JSON.parse(p.labNames);
+          labArray = Array.isArray(parsed) ? parsed : [p.labNames];
+        } catch {
+          labArray = [p.labNames];
         }
-      } catch {
-        labs.add(p.labNames);
       }
-    }
-  });
-
-  return Array.from(labs);
-}, [projects]);
-
-
+      labArray.forEach(l => labs.add(l.trim()));
+    });
+    return Array.from(labs);
+  }, [projects]);
 
   /* ================= FILTERED DATA ================= */
-const filteredProjects = useMemo(() => {
-  return projects.filter((p) => {
-    const matchesSearch =
-      !searchTerm ||
-      p.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.clientName?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      const matchesSearch =
+        !searchTerm ||
+        p.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.clientName?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesClient =
-      !selectedClient || p.clientName === selectedClient;
+      const matchesClient =
+        !selectedClient || p.clientName === selectedClient;
 
-    const matchesType =
-      !selectedType || p.projectType === selectedType;
+      const matchesType =
+        !selectedType || p.projectType === selectedType;
 
-    const matchesLab =
-      !selectedLab ||
-      (Array.isArray(p.labNames)
-        ? p.labNames.includes(selectedLab)
-        : (() => {
+      const matchesLabs =
+        selectedLabs.length === 0 ||
+        selectedLabs.some(lab => {
+          if (Array.isArray(p.labNames)) {
+            return p.labNames.includes(lab);
+          }
+          if (typeof p.labNames === "string") {
             try {
               const parsed = JSON.parse(p.labNames);
-              return Array.isArray(parsed)
-                ? parsed.includes(selectedLab)
-                : p.labNames === selectedLab;
+              return Array.isArray(parsed) ? parsed.includes(lab) : p.labNames === lab;
             } catch {
-              return p.labNames === selectedLab;
+              return p.labNames === lab;
             }
-          })());
+          }
+          return false;
+        });
 
-    return (
-      matchesSearch &&
-      matchesClient &&
-      matchesType &&
-      matchesLab
-    );
-  });
-}, [projects, searchTerm, selectedClient, selectedType, selectedLab]);
+      return matchesSearch && matchesClient && matchesType && matchesLabs;
+    });
+  }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
 
-
-const clearFilters = () => {
-  setSearchTerm("");
-  setSelectedClient("");
-  setSelectedType("");
-  setSelectedLab("");
-  setCurrentPage(1);
-};
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedClient("");
+    setSelectedType("");
+    setSelectedLabs([]); // Clear multi-select
+    setCurrentPage(1);
+  };
 
   const formatDate = (date) => {
-  if (!date) return "—";
-  return new Date(date).toISOString().split("T")[0];
-};
-const totalPages = Math.ceil(filteredProjects.length / ROWS_PER_PAGE);
+    if (!date) return "—";
+    return new Date(date).toISOString().split("T")[0];
+  };
 
-const paginatedProjects = useMemo(() => {
-  const start = (currentPage - 1) * ROWS_PER_PAGE;
-  return filteredProjects.slice(start, start + ROWS_PER_PAGE);
-}, [filteredProjects, currentPage]);
+  const totalPages = Math.ceil(filteredProjects.length / ROWS_PER_PAGE);
 
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    return filteredProjects.slice(start, start + ROWS_PER_PAGE);
+  }, [filteredProjects, currentPage]);
 
+  /* ================= MULTI-SELECT CHIPS COMPONENT ================= */
+  function MultiSelectChips({
+    options,
+    value,
+    onChange,
+    placeholder = "Select labs...",
+  }) {
+    const [open, setOpen] = useState(false);
+
+    const toggle = (lab) => {
+      if (value.includes(lab)) {
+        onChange(value.filter(v => v !== lab));
+      } else {
+        onChange([...value, lab]);
+      }
+    };
+
+    const remove = (lab) => {
+      onChange(value.filter(v => v !== lab));
+    };
+
+    return (
+      <div className="multi-select">
+        <div className="multi-select-input" onClick={() => setOpen(!open)}>
+          {value.length === 0 ? (
+            <span className="placeholder">{placeholder}</span>
+          ) : (
+            <div className="chips">
+              {value.map(lab => (
+                <span className="chip" key={lab}>
+                  {lab}
+                  <button type="button" onClick={(e) => {
+                    e.stopPropagation();
+                    remove(lab);
+                  }}>
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <span className="arrow">▾</span>
+        </div>
+
+        {open && (
+          <div className="multi-select-dropdown">
+            {options.map(lab => (
+              <div
+                key={lab}
+                className={`option ${value.includes(lab) ? "selected" : ""}`}
+                onClick={() => toggle(lab)}
+              >
+                {lab}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="ceo-quotations">
@@ -184,16 +229,19 @@ const paginatedProjects = useMemo(() => {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setCurrentPage(1); // ✅ reset here
+            setCurrentPage(1);
           }}
         />
 
         <select
           value={selectedClient}
-          onChange={(e) => setSelectedClient(e.target.value)}
+          onChange={(e) => {
+            setSelectedClient(e.target.value);
+            setCurrentPage(1);
+          }}
         >
           <option value="">All Clients</option>
-          {clientOptions.map((c) => (
+          {clientOptions.map(c => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -202,31 +250,28 @@ const paginatedProjects = useMemo(() => {
 
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          onChange={(e) => {
+            setSelectedType(e.target.value);
+            setCurrentPage(1);
+          }}
         >
           <option value="">All Project Types</option>
-          {typeOptions.map((t) => (
+          {typeOptions.map(t => (
             <option key={t} value={t}>
               {t}
             </option>
           ))}
         </select>
-        <select
-          value={selectedLab}
-          onChange={(e) => {
-            setSelectedLab(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="">All Labs</option>
-          {labOptions.map((lab) => (
-            <option key={lab} value={lab}>
-              {lab}
-            </option>
-          ))}
-        </select>
 
-        {(searchTerm || selectedClient || selectedType|| selectedLab) && (
+        {/* Multi-select for Labs */}
+        <MultiSelectChips
+          options={labOptions}
+          value={selectedLabs}
+          onChange={setSelectedLabs}
+          placeholder="Select labs..."
+        />
+
+        {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
           <button className="clear-btn" onClick={clearFilters}>
             Clear
           </button>
@@ -260,23 +305,17 @@ const paginatedProjects = useMemo(() => {
                 {paginatedProjects.map((p) => (
                   <tr key={p.id}>
                     <td>{p.projectName}</td>
-
                     <td>{p.clientName}</td>
-
                     <td>
                       <span className="pill pill-client">
                         {p.clientType || "—"}
                       </span>
                     </td>
-
                     <td>
-                      <span
-                        className={`type-badge ${p.projectType?.toLowerCase()}`}
-                      >
+                      <span className={`type-badge ${p.projectType?.toLowerCase()}`}>
                         {p.projectType}
                       </span>
                     </td>
-
                     <td>
                       <span
                         className={`status-badge ${followupStatuses[p.id]
@@ -286,24 +325,20 @@ const paginatedProjects = useMemo(() => {
                         {followupStatuses[p.id] || "Planned"}
                       </span>
                     </td>
-
                     <td>
                       {Array.isArray(p.labNames)
                         ? p.labNames.join(", ")
                         : p.labNames || "—"}
                     </td>
-
                     <td>{p.workCategory || "—"}</td>
-
                     <td>{formatDate(p.startDate)}</td>
-
                     <td>{formatDate(p.endDate)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            {/* ✅ PAGINATION GOES HERE */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="pagination">
                 <button
@@ -313,17 +348,15 @@ const paginatedProjects = useMemo(() => {
                   Prev
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      className={currentPage === page ? "active" : ""}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    className={currentPage === page ? "active" : ""}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
 
                 <button
                   disabled={currentPage === totalPages}
