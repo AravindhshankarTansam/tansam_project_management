@@ -329,6 +329,18 @@ const totalValue =
       })()
     : Number(newQuotation.value || 0);
 
+    if (newQuotation.quotationStatus === "Approved") {
+      const matchingOpp = opportunities.find(
+        (opp) =>
+          opp.opportunity_name === newQuotation.opprtunity_name.split(",")[0]
+      );
+
+      if (!matchingOpp || matchingOpp.stage !== "WON") {
+        return alert(
+          "Quotation cannot be approved because the opportunity stage is not 'WON'."
+        );
+      }
+    }
 
    const payload = {
   quotationNo: editId
