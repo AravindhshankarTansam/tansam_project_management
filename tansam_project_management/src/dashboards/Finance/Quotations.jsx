@@ -34,6 +34,7 @@ const openPaymentModal = (quotation) => {
   setNewQuotation(quotation);
   setShowPaymentModal(true);
 };
+const [paymentQuotationId, setPaymentQuotationId] = useState(null);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
   const workCategoryOptions = [
@@ -66,7 +67,9 @@ gst: "",
    quotationStatus: "Draft",
   revisedCost: "",
   poReceived: "No",
+   poNumber: "",
   paymentReceived: "No",
+  paymentReceivedDate: "",
   paymentAmount: "",
   paymentPendingReason: "",
    items: [{ description: "", qty: "", unitPrice: "", gst: "", total: "0.00" }],
@@ -208,7 +211,9 @@ useEffect(() => {
       paymentPhase: "Not Started",
       revisedCost: "",
       poReceived: "No",
+      poNumber: "",
       paymentReceived: "No",
+      paymentReceivedDate: "",
       paymentAmount: "",
       paymentPendingReason: "",
     }));
@@ -220,7 +225,9 @@ const initializePaymentFields = (status, currentData) => {
       paymentPhase: currentData.paymentPhase || "Started",
       revisedCost: currentData.revisedCost || "",
       poReceived: currentData.poReceived || "No",
+      poNumber: currentData.poNumber || "",
       paymentReceived: currentData.paymentReceived || "No",
+      paymentReceivedDate: currentData.paymentReceivedDate || "",
       paymentAmount: currentData.paymentAmount || "",
       paymentPendingReason: currentData.paymentPendingReason || "",
     };
@@ -229,7 +236,9 @@ const initializePaymentFields = (status, currentData) => {
       paymentPhase: "Not Started",
       revisedCost: "",
       poReceived: "No",
+      poNumber: "",
       paymentReceived: "No",
+      paymentReceivedDate: "",
       paymentAmount: "",
       paymentPendingReason: "",
     };
@@ -306,7 +315,9 @@ const calculateTotalValue = () => {
       paymentPhase: quotation.paymentPhase || "Not Started",
       revisedCost: quotation.revisedCost || "",
       poReceived: quotation.poReceived || "No",
+        poNumber: quotation.poNumber || "",
       paymentReceived: quotation.paymentReceived || "No",
+      paymentReceivedDate: quotation.paymentReceivedDate || "",
       paymentAmount: quotation.paymentAmount || "",
       paymentPendingReason: quotation.paymentPendingReason || "",
     });
@@ -370,7 +381,9 @@ items: JSON.stringify(newQuotation.items),
         paymentPhase: newQuotation.paymentPhase,
         revisedCost: newQuotation.revisedCost,
         poReceived: newQuotation.poReceived,
+        poNumber: newQuotation.poNumber,
         paymentReceived: newQuotation.paymentReceived,
+        paymentReceivedDate: newQuotation.paymentReceivedDate,
         paymentAmount: newQuotation.paymentAmount,
         paymentPendingReason: newQuotation.paymentPendingReason,
       }
@@ -664,12 +677,15 @@ items: JSON.stringify(newQuotation.items),
       if (!latestQuotation) return alert("Quotation not found");
 
       // set state with latest payment info
+      setPaymentQuotationId(latestQuotation.id)
       setNewQuotation({
         ...latestQuotation,
         paymentPhase: latestQuotation.paymentPhase || "Started",
         revisedCost: latestQuotation.revisedCost || "",
         poReceived: latestQuotation.poReceived || "No",
+        poNumber: latestQuotation.poNumber || "",
         paymentReceived: latestQuotation.paymentReceived || "No",
+        paymentReceivedDate: latestQuotation.paymentReceivedDate || "",
         paymentAmount: latestQuotation.paymentAmount || "",
         paymentPendingReason: latestQuotation.paymentPendingReason || "",
       });
@@ -720,9 +736,11 @@ items: JSON.stringify(newQuotation.items),
                       <td>
                         <strong>{q.quotationNo}</strong>
                       </td>
-                      <td>{q.paymentPhase || "Not Started"}</td>
+                      <td>{q.paymentPhase || "Not Started"}</td>   
                       <td>{q.revisedCost || "-"}</td>
+                      
                       <td>{q.poReceived || "No"}</td>
+                       <td>{q.poNumber || "-"}</td>
                       <td>{q.paymentReceived || "No"}</td>
                       <td>{q.paymentAmount || "-"}</td>
                       <td>{q.paymentPendingReason || "-"}</td>
@@ -1259,7 +1277,7 @@ items: JSON.stringify(newQuotation.items),
       </div>
 
       <div className="modal-actions">
-        <button
+               <button
           className="btn-save"
           onClick={async () => {
             try {
