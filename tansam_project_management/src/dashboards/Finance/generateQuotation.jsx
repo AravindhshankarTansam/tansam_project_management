@@ -925,6 +925,8 @@ const applySelectedTerms = () => {
 
   setShowTermsModal(false);
 };
+
+
 useEffect(() => {
   if (!quotation.id) return;
 
@@ -936,14 +938,31 @@ useEffect(() => {
 
       setRefNo(generated.refNo || refNo);
       setDate(generated.date || date);
-
+ const rawItems =
+    typeof generated.items === "string"
+      ? JSON.parse(generated.items)
+      : Array.isArray(generated.items)
+      ? generated.items
+      : [];
       setQuotation(prev => ({
         ...prev,
         clientName: generated.clientName || "",
         kindAttn: generated.kindAttn || "",
         subject: generated.subject || "",
         financeManagerName: generated.financeManagerName || "",
-        items: JSON.parse(generated.items || "[]"),
+       items: rawItems.map(item => ({
+  description: item.description || "",
+  unitPrice: item.unitPrice ?? "",
+  qty: item.qty ?? "",
+  tax: item.gst ?? item.tax ?? "",
+  total:
+    item.total ??
+    (
+      Number(item.qty || 0) *
+      Number(item.unitPrice || 0)
+    ).toFixed(2),
+})),
+
         terms: JSON.parse(generated.terms || "[]"),
         termsContent: generated.termsContent || "",
 

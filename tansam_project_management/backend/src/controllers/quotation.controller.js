@@ -205,6 +205,26 @@ safeBody.itemDetails = JSON.stringify(
     // Determine final status
     // -----------------------------
     const finalStatus = safeBody.quotationStatus ?? currentStatus;
+const [[opp]] = await db.execute(
+  `
+  SELECT lead_status
+  FROM opportunities_coordinator
+  WHERE opportunity_name = ?
+  LIMIT 1
+  `,
+  [safeBody.opprtunity_name]
+);
+
+if (!opp) {
+  return res.status(400).json({ message: "Opportunity not found" });
+}
+
+// ❌ Block approval if not WON
+if (safeBody.quotationStatus === "Approved" && opp.lead_status !== "WON") {
+  return res.status(403).json({
+    message: "Quotation can be approved only when opportunity stage is WON",
+  });
+}
 
     // -----------------------------
     // Ensure client_id exists
