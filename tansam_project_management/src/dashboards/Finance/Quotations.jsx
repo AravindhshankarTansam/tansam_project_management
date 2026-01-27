@@ -329,18 +329,18 @@ const totalValue =
       })()
     : Number(newQuotation.value || 0);
 
-    if (newQuotation.quotationStatus === "Approved") {
-      const matchingOpp = opportunities.find(
-        (opp) =>
-          opp.opportunity_name === newQuotation.opprtunity_name.split(",")[0]
-      );
+    // if (newQuotation.quotationStatus === "Approved") {
+    //   const matchingOpp = opportunities.find(
+    //     (opp) =>
+    //       opp.opportunity_name === newQuotation.opprtunity_name.split(",")[0]
+    //   );
 
-      if (!matchingOpp || matchingOpp.stage !== "WON") {
-        return alert(
-          "Quotation cannot be approved because the opportunity stage is not 'WON'."
-        );
-      }
-    }
+    //   if (!matchingOpp || matchingOpp.stage !== "WON") {
+    //     return alert(
+    //       "Quotation cannot be approved because the opportunity stage is not 'WON'."
+    //     );
+    //   }
+    // }
 
    const payload = {
   quotationNo: editId
@@ -779,6 +779,7 @@ items: JSON.stringify(newQuotation.items),
 
       {/* ✅ IMPROVED MODAL */}
       {showModal && (
+        
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -1176,6 +1177,18 @@ items: JSON.stringify(newQuotation.items),
                 <option value="Yes">Yes</option>
               </select>
             </div>
+{newQuotation.poReceived === "Yes" && (
+  <div className="form-group">
+    <label>Purchase Order Number *</label>
+    <input
+      type="text"
+      value={newQuotation.poNumber || ""}
+      onChange={(e) =>
+        setNewQuotation({ ...newQuotation, poNumber: e.target.value })
+      }
+    />
+  </div>
+)}
 
             <div className="form-group">
               <label>Payment Received *</label>
@@ -1193,18 +1206,38 @@ items: JSON.stringify(newQuotation.items),
               </select>
             </div>
 
-            {newQuotation.paymentReceived === "Yes" && (
-              <div className="form-group">
-                <label>Payment Amount</label>
-                <input
-                  type="number"
-                  value={newQuotation.paymentAmount}
-                  onChange={(e) =>
-                    setNewQuotation({ ...newQuotation, paymentAmount: e.target.value })
-                  }
-                />
-              </div>
-            )}
+      {newQuotation.paymentReceived === "Yes" && (
+  <>
+    <div className="form-group">
+      <label>Payment Amount</label>
+      <input
+        type="number"
+        value={newQuotation.paymentAmount}
+        onChange={(e) =>
+          setNewQuotation({
+            ...newQuotation,
+            paymentAmount: e.target.value,
+          })
+        }
+      />
+    </div>
+
+    <div className="form-group">
+      <label>Payment Received Date *</label>
+      <input
+        type="date"
+        value={newQuotation.paymentReceivedDate || ""}
+        onChange={(e) =>
+          setNewQuotation({
+            ...newQuotation,
+            paymentReceivedDate: e.target.value,
+          })
+        }
+      />
+    </div>
+  </>
+)}
+
 
             {newQuotation.paymentReceived === "No" && (
               <div className="form-group">

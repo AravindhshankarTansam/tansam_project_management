@@ -177,8 +177,10 @@ export const updateQuotation = async (req, res) => {
       "paymentPhase",
       "revisedCost",
       "poReceived",
+   "poNumber",
       "paymentReceived",
       "paymentAmount",
+      "paymentReceivedDate",
       "paymentPendingReason",
       "client_id",
     ].forEach((key) => {
@@ -255,16 +257,20 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
           paymentPhase: safeBody.paymentPhase ?? "Started",
           revisedCost: safeBody.revisedCost ?? null,
           poReceived: safeBody.poReceived ?? "No",
+          poNumber: safeBody.poNumber ?? null,   
           paymentReceived: safeBody.paymentReceived ?? "No",
           paymentAmount: safeBody.paymentAmount ?? null,
+          paymentReceivedDate: safeBody.paymentReceivedDate ?? null,
           paymentPendingReason: safeBody.paymentPendingReason ?? null,
         }
         : {
           paymentPhase: "Not Started",
           revisedCost: null,
           poReceived: "No",
+            poNumber: null,  
           paymentReceived: "No",
           paymentAmount: null,
+             paymentReceivedDate: null,          
           paymentPendingReason: null,
         };
 
@@ -288,8 +294,10 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         paymentPhase = ?,
         revisedCost = ?,
         poReceived = ?,
+          poNumber = ?,    
         paymentReceived = ?,
         paymentAmount = ?,
+         paymentReceivedDate = ?,   
         paymentPendingReason = ?,
         client_id = ?
       WHERE id = ?
@@ -308,8 +316,10 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         paymentData.paymentPhase,
         paymentData.revisedCost,
         paymentData.poReceived,
+        paymentData.poNumber,
         paymentData.paymentReceived,
         paymentData.paymentAmount,
+        paymentData.paymentReceivedDate,
         paymentData.paymentPendingReason,
         client_id,
         id,
