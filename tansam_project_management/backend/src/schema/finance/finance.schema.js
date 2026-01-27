@@ -36,6 +36,9 @@ client_type_id VARCHAR(50),
     lab_name VARCHAR(100),
 
     description TEXT,
+     quotationStatus ENUM('draft', 'submitted', 'approved', 'rejected')
+    NOT NULL DEFAULT 'draft',
+
     value DECIMAL(12,2),
     date DATE,
 

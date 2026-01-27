@@ -58,9 +58,11 @@ const openPaymentModal = (quotation) => {
     lab_id: "",
     lab_name: "",
     description: "",
-    value: "",
-    gst: "",
-    totalValue: "",
+   pricingMode: "value", // "value" | "unit"
+unitPrice: "",
+qty: "",
+gst: "",
+
     date: "",
    quotationStatus: "Draft",
   revisedCost: "",
@@ -155,9 +157,17 @@ const openPaymentModal = (quotation) => {
           seal: null,
         };
       }
+// Ensure unitPrice, qty, gst are passed to GenerateQuotation
+quotationToUse = {
+  ...quotationToUse,
+  unitPrice: newQuotation.unitPrice || 0,
+  qty: newQuotation.qty || 0,
+  gst: newQuotation.gst || 0,
+};
 
       setNewQuotation(quotationToUse);
       setShowGenerateQuotation(true);
+      
     } catch (err) {
       console.error("Error loading generated quotation:", err);
       alert(
@@ -275,12 +285,18 @@ const initializePaymentFields = (status, currentData) => {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const calculateTotalValue = () => {
-    return (
-      (parseFloat(newQuotation.value || 0) || 0) *
-      (1 + (parseFloat(newQuotation.gst || 0) || 0) / 100)
-    ).toFixed(2);
-  };
+const calculateTotalValue = () => {
+  if (newQuotation.pricingMode === "unit") {
+    const unit = Number(newQuotation.unitPrice || 0);
+    const qty = Number(newQuotation.qty || 0);
+    const gst = Number(newQuotation.gst || 0);
+    const base = unit * qty;
+    return (base + (base * gst) / 100).toFixed(2);
+  }
+
+  // ✅ VALUE MODE → user already entered final value
+  return Number(newQuotation.value || 0).toFixed(2);
+};
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
@@ -303,10 +319,16 @@ const initializePaymentFields = (status, currentData) => {
 
   const handleSaveQuotation = async () => {
     try {
- const baseValue = parseFloat(newQuotation.value || 0);
-    const gstRate = parseFloat(newQuotation.gst || 0);
-    const gstAmount = (baseValue * gstRate) / 100;
-    const totalValue = baseValue + gstAmount;
+const totalValue =
+  newQuotation.pricingMode === "unit"
+    ? (() => {
+        const base =
+          Number(newQuotation.unitPrice || 0) *
+          Number(newQuotation.qty || 0);
+        return base + (base * Number(newQuotation.gst || 0)) / 100;
+      })()
+    : Number(newQuotation.value || 0);
+
 
    const payload = {
   quotationNo: editId
@@ -322,9 +344,11 @@ const initializePaymentFields = (status, currentData) => {
   lab_id: newQuotation.lab_id,
   lab_name: newQuotation.lab_name,
   description: newQuotation.description,
-  value:totalValue,
-  gst: newQuotation.gst,
-  totalValue: parseFloat(newQuotation.totalValue) || 0,
+   pricingMode: newQuotation.pricingMode,
+  unitPrice: newQuotation.unitPrice || 0,
+  qty: newQuotation.qty || 0,
+  gst: newQuotation.gst || 0,
+  value: totalValue, 
   date: newQuotation.date,
   quotationStatus: newQuotation.quotationStatus,
   // ✅ only include payment fields if Approved
@@ -708,20 +732,37 @@ const initializePaymentFields = (status, currentData) => {
       </div>
 
       {/* Pagination */}
-      <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-          ← Prev
-        </button>
-        <span>
-          Page {page} of {totalPages || 1}
-        </span>
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          Next →
-        </button>
-      </div>
+    <div className="pagination">
+  {/* Prev */}
+  <button
+    disabled={page === 1}
+    onClick={() => setPage(page - 1)}
+  >
+    ← Prev
+  </button>
+
+  {/* Page Numbers */}
+  {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map(
+    (num) => (
+      <button
+        key={num}
+        className={`page-btn ${page === num ? "active" : ""}`}
+        onClick={() => setPage(num)}
+      >
+        {num}
+      </button>
+    )
+  )}
+
+  {/* Next */}
+  <button
+    disabled={page === totalPages}
+    onClick={() => setPage(page + 1)}
+  >
+    Next →
+  </button>
+</div>
+
 
       {/* ✅ IMPROVED MODAL */}
       {showModal && (
@@ -875,33 +916,90 @@ const initializePaymentFields = (status, currentData) => {
                 <label>Lab</label>
                 <input type="text" value={newQuotation.lab_name} readOnly />
               </div>
-              <div className="form-group">
-                <label>Quote Value *</label>
-                <input
-                  type="number"
-                  value={newQuotation.value}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      value: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                />
-              </div>
+      <div className="form-group">
+  <label>Pricing Mode *</label>
+  <select
+    value={newQuotation.pricingMode}
+    onChange={(e) =>
+      setNewQuotation({
+        ...newQuotation,
+        pricingMode: e.target.value,
+        unitPrice: "",
+        qty: "",
+        gst: "",
+        value: "",
+      })
+    }
+  >
+    <option value="value">Enter Total Value Only</option>
+    <option value="unit">Unit Price × Qty + GST</option>
+  </select>
+</div>
+{newQuotation.pricingMode === "value" && (
+  <div className="form-group">
+    <label>Quote Value *</label>
+    <input
+      type="number"
+      value={newQuotation.value}
+      onChange={(e) =>
+        setNewQuotation({ ...newQuotation, value: e.target.value })
+      }
+    />
+  </div>
+)}
+{newQuotation.pricingMode === "unit" && (
+  <>
+    <div className="form-group">
+      <label>Unit Price *</label>
+      <input
+        type="number"
+        value={newQuotation.unitPrice}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, unitPrice: e.target.value })
+        }
+      />
+    </div>
 
-              <div className="form-group">
-                <label>GST</label>
-                <input
-                  type="number"
-                  value={newQuotation.gst}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      gst: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                />
-              </div>
+    <div className="form-group">
+      <label>Quantity *</label>
+      <input
+        type="number"
+        value={newQuotation.qty}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, qty: e.target.value })
+        }
+      />
+    </div>
+
+    <div className="form-group">
+      <label>GST (%)</label>
+      <input
+        type="number"
+        value={newQuotation.gst}
+        onChange={(e) =>
+          setNewQuotation({ ...newQuotation, gst: e.target.value })
+        }
+      />
+    </div>
+
+    <div className="form-group">
+      <label>Calculated Value</label>
+      <input
+        type="text"
+        readOnly
+        value={(() => {
+          const unit = Number(newQuotation.unitPrice || 0);
+          const qty = Number(newQuotation.qty || 0);
+          const gst = Number(newQuotation.gst || 0);
+          const base = unit * qty;
+          const total = base + (base * gst) / 100;
+          return total.toFixed(2);
+        })()}
+      />
+    </div>
+  </>
+)}
+
 
               <div className="form-group">
                 <label>Work Description *</label>
