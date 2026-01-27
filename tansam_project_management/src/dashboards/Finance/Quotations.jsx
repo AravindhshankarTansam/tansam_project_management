@@ -1038,23 +1038,28 @@ items: JSON.stringify(newQuotation.items),
                   }
                 />
               </div>
-              <div className="form-group">
-            <label>Quotation Status *</label>
-              <select
-                value={newQuotation.quotationStatus}
-               onChange={(e) =>
-               setNewQuotation({
-                ...newQuotation,
-                    quotationStatus: e.target.value,
-                    })
-              }
-              >
-            <option value="Draft">Draft</option>
-             <option value="Submitted">Submitted</option>
-             <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-         </select>
-        </div>
+    <div className="form-group">
+  <label>Quotation Status *</label>
+  <select
+    value={newQuotation.quotationStatus}
+    onChange={(e) =>
+      setNewQuotation({
+        ...newQuotation,
+        quotationStatus: e.target.value,
+      })
+    }
+  >
+    <option value="Draft">Draft</option>
+    {editId && (
+      <>
+        <option value="Submitted">Submitted</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </>
+    )}
+  </select>
+</div>
+
 
               {/* PAYMENT PHASE */}
   
