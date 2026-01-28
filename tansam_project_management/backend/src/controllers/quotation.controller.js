@@ -47,7 +47,8 @@ const itemDetails = JSON.stringify(
 
 
     const {
-      opprtunity_name,
+      opportunity_id,
+      opportunity_name,
       quotationNo,
       clientName,
       client_type_id,
@@ -84,7 +85,8 @@ const itemDetails = JSON.stringify(
    const [result] = await db.execute(
   `
   INSERT INTO quotations (
-    opprtunity_name,
+  opportunity_id,
+    opportunity_name,
     quotationNo,
     client_id,
     clientName,
@@ -100,10 +102,11 @@ const itemDetails = JSON.stringify(
     date,
     quotationStatus
   )
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `,
   [
-    opprtunity_name,
+    opportunity_id,
+    opportunity_name,
     quotationNo,
     client_id,
     clientName,
@@ -164,7 +167,7 @@ export const updateQuotation = async (req, res) => {
     // -----------------------------
     const safeBody = {};
     [
-      "opprtunity_name",
+      "opportunity_name",
       "clientName",
       "client_type_name",
       "work_category_name",
@@ -216,7 +219,7 @@ const [oppRows] = await db.execute(
   WHERE opportunity_name = ? 
   LIMIT 1
   `,
-  [safeBody.opprtunity_name]
+  [safeBody.opportunity_name]
 );
 
 const opp = oppRows[0];
@@ -284,7 +287,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
       `
       UPDATE quotations
       SET
-        opprtunity_name = ?,
+        opportunity_name = ?,
         clientName = ?,
         client_type_name = ?,
         work_category_name = ?,
@@ -307,7 +310,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
       WHERE id = ?
       `,
       [
-        safeBody.opprtunity_name,
+        safeBody.opportunity_name,
         safeBody.clientName,
         safeBody.client_type_name,
         safeBody.work_category_name,

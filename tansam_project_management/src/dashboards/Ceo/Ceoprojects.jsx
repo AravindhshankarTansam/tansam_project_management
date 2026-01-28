@@ -5,7 +5,7 @@ import "./Ceocss/Ceoprojects.css";
 
 import { fetchProjects } from "../../services/project.api";
 import { fetchProjectFollowups } from "../../services/projectfollowup.api";
-
+import { getQuotations } from "../../services/quotation/quotation.api";
 const ROWS_PER_PAGE = 10;
 
 export default function CeoProjects() {
@@ -17,8 +17,10 @@ export default function CeoProjects() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedType, setSelectedType] = useState("");
-  const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
-  const [currentPage, setCurrentPage] = useState(1);
+const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
+const [currentPage, setCurrentPage] = useState(1);
+const [quotations, setQuotations] = useState([]);
+const [labPayments, setLabPayments] = useState({});
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -61,6 +63,41 @@ export default function CeoProjects() {
 
     loadStatuses();
   }, [projects]);
+useEffect(() => {
+  (async () => {
+    try {
+      const data = await getQuotations();
+      setQuotations(data || []);
+    } catch {
+      toast.error("Failed to load quotations");
+    }
+  })();
+}, []);
+useEffect(() => {
+  if (selectedLabs.length === 0) {
+    setLabPayments({});
+    return;
+  }
+
+  const payments = {};
+
+  selectedLabs.forEach((lab) => {
+    let total = 0;
+
+    quotations.forEach((q) => {
+      if (q.lab_name !== lab) return;
+
+      const project = projects.find(p => p.id === q.project_id);
+      if (!project) return;
+
+      total += Number(q.totalAmount || q.amount || 0);
+    });
+
+    payments[lab] = total;
+  });
+
+  setLabPayments(payments);
+}, [selectedLabs, quotations, projects]);
 
   /* ================= FILTER OPTIONS ================= */
   const clientOptions = useMemo(
@@ -136,6 +173,20 @@ export default function CeoProjects() {
     setSelectedLabs([]); // Clear multi-select
     setCurrentPage(1);
   };
+{/* ================= LAB PAYMENT SUMMARY ================= */}
+{selectedLabs.length > 0 && (
+  <div className="lab-payment-cards">
+    {selectedLabs.map((lab) => (
+      <div key={lab} className="lab-card">
+        <h4>{lab}</h4>
+        <p>
+          Total Payment: ₹
+          {(labPayments[lab] || 0).toLocaleString("en-IN")}
+        </p>
+      </div>
+    ))}
+  </div>
+)}
 
   const formatDate = (date) => {
     if (!date) return "—";

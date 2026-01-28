@@ -52,7 +52,8 @@ const [paymentQuotationId, setPaymentQuotationId] = useState(null);
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
-    opprtunity_name: "",
+    opportunity_id: "",
+    opportunity_name: "",
     client_id: "",
     clientName: "",
     client_type_id: "",
@@ -98,7 +99,7 @@ gst: "",
       const baseQuotation = {
         id: originalQuotation.id,
         quotationNo: originalQuotation.quotationNo || "",
-        opprtunity_name: originalQuotation.opprtunity_name || "",
+        opportunity_name: originalQuotation.opportunity_name || "",
         clientName: originalQuotation.clientName || "",
         kindAttn: "",
         subject: "",
@@ -131,9 +132,9 @@ gst: "",
           // original quotation reference
           quotationId: originalQuotation.id,
           quotationNo: originalQuotation.quotationNo,
-          opprtunity_name:
-            originalQuotation.opprtunity_name ||
-            generated.opprtunity_name ||
+          opportunity_name:
+            originalQuotation.opportunity_name ||
+            generated.opportunity_name ||
             "",
           clientName: originalQuotation.clientName || "",
 
@@ -371,7 +372,7 @@ const totalValue =
     // if (newQuotation.quotationStatus === "Approved") {
     //   const matchingOpp = opportunities.find(
     //     (opp) =>
-    //       opp.opportunity_name === newQuotation.opprtunity_name.split(",")[0]
+    //       opp.opportunity_name === newQuotation.opportunity_name.split(",")[0]
     //   );
 
     //   if (!matchingOpp || matchingOpp.stage !== "WON") {
@@ -381,11 +382,21 @@ const totalValue =
     //   }
     // }
 
+ const matchedOpportunity = opportunities.find(
+    (opp) =>
+      opp.opportunity_name ===
+      newQuotation.opportunity_name.split(",")[0] // first selected value
+  );
+
+  const opportunity_id = matchedOpportunity?.opportunity_id || null;
+
+
    const payload = {
   quotationNo: editId
     ? newQuotation.quotationNo
     : newQuotation.quotationNo || generateQuotationNo(data),
-  opprtunity_name: newQuotation.opprtunity_name,
+     opportunity_id,
+  opportunity_name: newQuotation.opportunity_name,
   client_id: newQuotation.client_id,
   clientName: newQuotation.clientName,
   client_type_id: newQuotation.client_type_id,
@@ -433,7 +444,7 @@ items: JSON.stringify(newQuotation.items),
       setEditId(null);
       setNewQuotation({
         quotationNo: "",
-        opprtunity_name: "",
+        opportunity_name: "",
         clientName: "",
         client_type_name: "",
         work_category_name: "",
@@ -468,7 +479,7 @@ items: JSON.stringify(newQuotation.items),
     setEditId(null);
     setNewQuotation({
       quotationNo: "",
-      opprtunity_name: "",
+      opportunity_name: "",
       clientName: "",
       client_type_name: "",
       work_category_name: "",
@@ -520,7 +531,7 @@ items: JSON.stringify(newQuotation.items),
 
             setNewQuotation({
               quotationNo,
-              opprtunity_name: "",
+              opportunity_name: "",
               clientName: "",
               client_type_name: "",
               work_category_name: "",
@@ -664,7 +675,7 @@ items: JSON.stringify(newQuotation.items),
                       <td>
                         <strong>{q.quotationNo}</strong>
                       </td>
-                      <td>{q.opprtunity_name}</td>
+                      <td>{q.opportunity_name}</td>
                       <td>{q.clientName}</td>
                       <td>
                         <span
@@ -860,7 +871,7 @@ items: JSON.stringify(newQuotation.items),
                       client_id: clientId,
                       clientName: selectedClient?.client_name || "",
 
-                      opprtunity_name: "", // reset opportunity selection
+                      opportunity_name: "", // reset opportunity selection
                       work_category_id: selectedClient?.work_category_id || "",
                       work_category_name:
                         selectedClient?.work_category_name || "",
@@ -919,8 +930,8 @@ items: JSON.stringify(newQuotation.items),
                       : []
                   }
                   value={
-                    newQuotation.opprtunity_name
-                      ? newQuotation.opprtunity_name.split(",").map((name) => ({
+                    newQuotation.opportunity_name
+                      ? newQuotation.opportunity_name.split(",").map((name) => ({
                           value: name,
                           label: name,
                         }))
@@ -940,7 +951,7 @@ items: JSON.stringify(newQuotation.items),
 
                     setNewQuotation({
                       ...newQuotation,
-                      opprtunity_name: oppNames.join(","),
+                      opportunity_name: oppNames.join(","),
 
                       // ✅ IDs (VERY IMPORTANT)
                       client_type_id: firstOpp?.client_type_id || "",
@@ -1138,7 +1149,7 @@ items: JSON.stringify(newQuotation.items),
               </p>
               <p>
                 <strong>Opportunity Name:</strong>{" "}
-                {newQuotation.opprtunity_name}
+                {newQuotation.opportunity_name}
               </p>
               <p>
                 <strong>Client:</strong> {newQuotation.clientName} (

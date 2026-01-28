@@ -23,7 +23,7 @@ await db.execute(`
   CREATE TABLE IF NOT EXISTS quotations (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    opprtunity_name VARCHAR(50),
+    opportunity_name VARCHAR(50),
     quotationNo VARCHAR(50) NOT NULL,
 
     client_id VARCHAR(20) NOT NULL,
