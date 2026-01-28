@@ -3,6 +3,13 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/CeoForecast.css";
 
+import {
+  fetchForecasts,
+  createForecast,
+  updateForecast,
+  deleteForecast,
+} from "../../services/ceo/ceo.forecast.api";
+
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
 
@@ -13,39 +20,49 @@ export default function CeoForecast() {
   const [rows, setRows] = useState([]);
   const [workCategories, setWorkCategories] = useState([]);
   const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  /* ================= LOAD MASTER DATA ================= */
+  /* ================= LOAD DATA ================= */
   useEffect(() => {
-    (async () => {
-      try {
-        const [wc, opps] = await Promise.all([
-          fetchWorkCategories(),
-          fetchOpportunities(),
-        ]);
-
-        setWorkCategories(wc || []);
-
-        // unique client names from opportunities
-        const uniqueClients = [
-          ...new Set((opps || []).map(o => o.client_name).filter(Boolean)),
-        ];
-        setClients(uniqueClients);
-      } catch {
-        toast.error("Failed to load forecast masters");
-      }
-    })();
+    loadAll();
   }, []);
+
+  const loadAll = async () => {
+    try {
+      setLoading(true);
+
+      const [forecastData, wc, opps] = await Promise.all([
+        fetchForecasts(),
+        fetchWorkCategories(),
+        fetchOpportunities(),
+      ]);
+
+      setRows(forecastData || []);
+      setWorkCategories(wc || []);
+
+      const uniqueClients = [
+        ...new Set((opps || []).map(o => o.client_name).filter(Boolean)),
+      ];
+      setClients(uniqueClients);
+    } catch {
+      toast.error("Failed to load forecast data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ================= ADD ROW ================= */
   const addRow = () => {
     setRows(prev => [
       ...prev,
       {
-        workCategory: "",
-        clientName: "",
-        totalValue: "",
+        id: null,
+        work_category_id: "",
+        work_category_name: "",
+        client_name: "",
+        total_value: "",
         confidence: "",
-        realizable: "",
+        realizable_value: "",
         fy: "",
         carryover: 0,
         remarks: "",
@@ -59,13 +76,56 @@ export default function CeoForecast() {
       const copy = [...prev];
       copy[index][key] = value;
 
-      // auto-calc carryover
-      const total = Number(copy[index].totalValue || 0);
-      const realizable = Number(copy[index].realizable || 0);
+      const total = Number(copy[index].total_value || 0);
+      const realizable = Number(copy[index].realizable_value || 0);
       copy[index].carryover = total - realizable;
 
       return copy;
     });
+  };
+
+  /* ================= SAVE ================= */
+  const saveRow = async (row, index) => {
+    try {
+      const payload = {
+        workCategoryId: row.work_category_id,
+        workCategoryName: row.work_category_name,
+        clientName: row.client_name,
+        totalValue: row.total_value,
+        confidence: row.confidence,
+        realizable: row.realizable_value,
+        fy: row.fy,
+        carryover: row.carryover,
+        remarks: row.remarks,
+      };
+
+      if (row.id) {
+        await updateForecast(row.id, payload);
+        toast.success("Forecast updated");
+      } else {
+        const created = await createForecast(payload);
+        rows[index].id = created.id;
+        toast.success("Forecast saved");
+      }
+
+      loadAll();
+    } catch {
+      toast.error("Save failed");
+    }
+  };
+
+  /* ================= DELETE ================= */
+  const removeRow = async (row) => {
+    if (!row.id) {
+      setRows(prev => prev.filter(r => r !== row));
+      return;
+    }
+
+    if (!window.confirm("Delete this forecast?")) return;
+
+    await deleteForecast(row.id);
+    toast.success("Forecast deleted");
+    loadAll();
   };
 
   return (
@@ -88,37 +148,42 @@ export default function CeoForecast() {
           <thead>
             <tr>
               <th>Work Category</th>
-              <th>Client Name</th>
+              <th>Client</th>
               <th>Total Value</th>
               <th>Confidence %</th>
-              <th>Realizable FY</th>
+              <th>Realizable</th>
               <th>FY</th>
               <th>Carryover</th>
               <th>Remarks</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan="8" className="empty">
-                  No forecast data added
+                <td colSpan="9" className="empty">
+                  No forecast data
                 </td>
               </tr>
             ) : (
               rows.map((row, i) => (
-                <tr key={i}>
+                <tr key={row.id || i}>
                   {/* Work Category */}
                   <td>
                     <select
-                      value={row.workCategory}
-                      onChange={(e) =>
-                        updateRow(i, "workCategory", e.target.value)
-                      }
+                      value={row.work_category_id}
+                      onChange={(e) => {
+                        const wc = workCategories.find(
+                          w => String(w.id) === e.target.value
+                        );
+                        updateRow(i, "work_category_id", wc.id);
+                        updateRow(i, "work_category_name", wc.name);
+                      }}
                     >
                       <option value="">Select</option>
                       {workCategories.map(w => (
-                        <option key={w.id} value={w.name}>
+                        <option key={w.id} value={w.id}>
                           {w.name}
                         </option>
                       ))}
@@ -128,9 +193,9 @@ export default function CeoForecast() {
                   {/* Client */}
                   <td>
                     <select
-                      value={row.clientName}
+                      value={row.client_name}
                       onChange={(e) =>
-                        updateRow(i, "clientName", e.target.value)
+                        updateRow(i, "client_name", e.target.value)
                       }
                     >
                       <option value="">Select</option>
@@ -142,13 +207,13 @@ export default function CeoForecast() {
                     </select>
                   </td>
 
-                  {/* Total Value */}
+                  {/* Total */}
                   <td>
                     <input
                       type="number"
-                      value={row.totalValue}
+                      value={row.total_value}
                       onChange={(e) =>
-                        updateRow(i, "totalValue", e.target.value)
+                        updateRow(i, "total_value", e.target.value)
                       }
                     />
                   </td>
@@ -163,9 +228,7 @@ export default function CeoForecast() {
                     >
                       <option value="">Select</option>
                       {CONFIDENCE_OPTIONS.map(c => (
-                        <option key={c} value={c}>
-                          {c}%
-                        </option>
+                        <option key={c} value={c}>{c}%</option>
                       ))}
                     </select>
                   </td>
@@ -174,9 +237,9 @@ export default function CeoForecast() {
                   <td>
                     <input
                       type="number"
-                      value={row.realizable}
+                      value={row.realizable_value}
                       onChange={(e) =>
-                        updateRow(i, "realizable", e.target.value)
+                        updateRow(i, "realizable_value", e.target.value)
                       }
                     />
                   </td>
@@ -185,20 +248,16 @@ export default function CeoForecast() {
                   <td>
                     <select
                       value={row.fy}
-                      onChange={(e) =>
-                        updateRow(i, "fy", e.target.value)
-                      }
+                      onChange={(e) => updateRow(i, "fy", e.target.value)}
                     >
                       <option value="">Select</option>
                       {FY_OPTIONS.map(fy => (
-                        <option key={fy} value={fy}>
-                          {fy}
-                        </option>
+                        <option key={fy} value={fy}>{fy}</option>
                       ))}
                     </select>
                   </td>
 
-                  {/* Carryover (auto) */}
+                  {/* Carryover */}
                   <td className="readonly">
                     {row.carryover || 0}
                   </td>
@@ -206,17 +265,27 @@ export default function CeoForecast() {
                   {/* Remarks */}
                   <td>
                     <input
-                      value={row.remarks}
+                      value={row.remarks || ""}
                       onChange={(e) =>
                         updateRow(i, "remarks", e.target.value)
                       }
                     />
+                  </td>
+
+                  {/* Actions */}
+                  <td className="actions">
+                    <button onClick={() => saveRow(row, i)}>Save</button>
+                    <button className="danger" onClick={() => removeRow(row)}>
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+
+        {loading && <p className="loading">Loading…</p>}
       </div>
     </div>
   );
