@@ -22,7 +22,7 @@ export const createQuotationFollowupsSchema = async (db) => {
 await db.execute(`
   CREATE TABLE IF NOT EXISTS quotations (
     id INT AUTO_INCREMENT PRIMARY KEY,
-
+opportunity_id VARCHAR(50),
     opportunity_name VARCHAR(50),
     quotationNo VARCHAR(50) NOT NULL,
 
