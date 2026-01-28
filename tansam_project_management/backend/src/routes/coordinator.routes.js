@@ -30,7 +30,7 @@ const router = express.Router();
 router.get(
   "/opportunities",
   authMiddleware,
-  roleMiddleware(["COORDINATOR", "TEAM LEAD", "FINANCE"]),
+  roleMiddleware(["COORDINATOR", "TEAM LEAD", "FINANCE","CEO"]),
   getOpportunities
 );
 

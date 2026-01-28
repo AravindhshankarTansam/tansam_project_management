@@ -71,7 +71,7 @@ router.put(
 
 
 // WORK CATEGORIES (ADMIN)
-router.get("/work-categories", authMiddleware, roleMiddleware(["ADMIN","TEAM LEAD","FINANCE","COORDINATOR"]), getWorkCategories);
+router.get("/work-categories", authMiddleware, roleMiddleware(["ADMIN","TEAM LEAD","FINANCE","COORDINATOR","CEO"]), getWorkCategories);
 router.post("/work-categories", authMiddleware, roleMiddleware(["ADMIN"]), createWorkCategory);
 router.put("/work-categories/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateWorkCategory);
 
