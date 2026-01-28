@@ -676,6 +676,8 @@ tbody td {
   padding: 20px;
   margin-top: 20px;
   background-color: #fff;
+  overflow: scroll;
+
 }
 
 .quotation-preview h2 {
@@ -933,7 +935,7 @@ button.btn-save:hover {
   padding: 24px !important;
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 16px 24px !important;
+ 
 }
 
 .modal-form .full-width {

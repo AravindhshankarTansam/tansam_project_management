@@ -1118,15 +1118,12 @@ items: JSON.stringify(newQuotation.items),
   
 
             {/* LIVE QUOTATION PREVIEW */}
-            <div
+            {/* <div
               className="quotation-preview"
               style={{
                 border: "1px solid #ccc",
-                padding: "20px",
-                marginTop: "20px",
                 backgroundColor: "#fffefe",
-                maxHeight: "400px",
-                overflowY: "auto",
+                maxHeight: "100px",
               }}
             >
               <h2 style={{ textAlign: "center" }}>Quotation</h2>
@@ -1158,7 +1155,7 @@ items: JSON.stringify(newQuotation.items),
                 <strong>Quote Value (Incl. GST):</strong> ₹{" "}
                 {calculateTotalValue()}
               </p>
-            </div>
+            </div> */}
 
             {/* ACTIONS */}
             <div className="modal-actions">
