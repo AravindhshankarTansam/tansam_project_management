@@ -70,7 +70,7 @@ router.get(
 router.get(
   "/opportunity-tracker",
   authMiddleware,
-  roleMiddleware(["COORDINATOR", "TEAM LEAD", "ADMIN"]),
+  roleMiddleware(["COORDINATOR", "TEAM LEAD", "ADMIN", "FINANCE"]),
   getOpportunityTrackers
 );
 

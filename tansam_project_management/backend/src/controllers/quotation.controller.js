@@ -7,7 +7,7 @@ import { G } from "@react-pdf/renderer";
 export const getQuotations = async (req, res) => {
   try {
     const db = await connectDB();
-     await initSchemas(db, { finance: true });
+    await initSchemas(db, { finance: true });
     const [rows] = await db.execute(
       "SELECT * FROM quotations ORDER BY id ASC"
     );
@@ -23,26 +23,47 @@ export const addQuotation = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
+    const { unitPrice = 0, qty = 0, gst = 0, ...otherFields } = req.body;
+
+  // Instead of just JSON.stringify(req.body.items)
+const itemDetails = JSON.stringify(
+  (req.body.items && req.body.items.length)
+    ? req.body.items.map(item => ({
+       
+        qty: Number(item.qty || 0),
+        unitPrice: Number(item.unitPrice || 0),
+        gst: Number(item.gst || 0),
+       
+      }))
+    : [{
+        
+        qty: Number(req.body.qty || 0),
+        unitPrice: Number(req.body.unitPrice || 0),
+        gst: Number(req.body.gst || 0),
+     
+      }]
+);
+// ensure string
+
 
     const {
-      opprtunity_name,
+      opportunity_id,
+      opportunity_name,
       quotationNo,
       clientName,
-      clientType,
-      workCategory,
-      lab,
+      client_type_id,
+      client_type_name,
+      work_category_id,
+      work_category_name,
+      lab_id,
+      lab_name,
       description,
       value,
       date,
-      paymentPhase,
-      revisedCost,
-      poReceived,
-      paymentReceived,
-      paymentAmount,
-      paymentPendingReason,
+      quotationStatus = 'Draft',
     } = req.body;
 
-    // 🔑 Fetch client_id from coordinator table
+    // 🔑 Fetch client_id
     const [[client]] = await db.execute(
       `
       SELECT client_id
@@ -61,51 +82,51 @@ export const addQuotation = async (req, res) => {
 
     const client_id = client.client_id;
 
-    const [result] = await db.execute(
-      `
-      INSERT INTO quotations (
-        opprtunity_name,
-        quotationNo,
-        client_id,
-        clientName,
-        clientType,
-        workCategory,
-        lab,
-        description,
-        value,
-        date,
-        paymentPhase,
-        revisedCost,
-        poReceived,
-        paymentReceived,
-        paymentAmount,
-        paymentPendingReason
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
-        opprtunity_name,
-        quotationNo,
-        client_id,
-        clientName,
-        clientType,
-        workCategory,
-        lab,
-        description,
-        value,
-        date,
-        paymentPhase ?? null,
-        revisedCost ?? null,
-        poReceived ?? null,
-        paymentReceived ?? null,
-        paymentAmount ?? null,
-        paymentPendingReason ?? null,
-      ]
-    );
+   const [result] = await db.execute(
+  `
+  INSERT INTO quotations (
+  opportunity_id,
+    opportunity_name,
+    quotationNo,
+    client_id,
+    clientName,
+    client_type_id,
+    client_type_name,
+    work_category_id,
+    work_category_name,
+    lab_id,
+    lab_name,
+    description,
+    itemDetails,
+    value,
+    date,
+    quotationStatus
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+  [
+    opportunity_id,
+    opportunity_name,
+    quotationNo,
+    client_id,
+    clientName,
+    client_type_id,
+    client_type_name,
+    work_category_id,
+    work_category_name,
+    lab_id,
+    lab_name,
+    description,
+    itemDetails,
+    value,
+    date,
+    quotationStatus, // defaulted to 'Draft' in JS destructuring
+  ]
+);
 
     res.status(201).json({
       id: result.insertId,
-      client_id,
+      quotationStatus: "Draft",
       message: "Quotation created successfully",
     });
   } catch (error) {
@@ -115,62 +136,218 @@ export const addQuotation = async (req, res) => {
 };
 
 
+
 // Update quotation
+// Update quotation
+// Update quotation
+// Update Quotation
 export const updateQuotation = async (req, res) => {
   try {
-     const db = await connectDB();
+    const db = await connectDB();
     await initSchemas(db, { finance: true });
-    const { id } = req.params;
-    const {
-      opprtunity_name,
-      clientName,
-      clientType,
-      workCategory,
-      
-      lab,
-      description,
-      value,
-      date,
-       paymentPhase,
-    revisedCost,
-    poReceived,
-    paymentReceived,
-    paymentAmount,
-    paymentPendingReason,
-    } = req.body;
 
-  
-await db.execute(
-  `UPDATE quotations
-   SET opprtunity_name=?, clientName=?, clientType=?, workCategory=?, lab=?, description=?, value=?,  date=?, paymentPhase=?, revisedCost=?, poReceived=?, paymentReceived=?, paymentAmount=?, paymentPendingReason=?
-   WHERE id=?`,
-  [
-    opprtunity_name,
-    clientName,
-    clientType,
-    workCategory,
-    lab,
-    description,
-    value,
-    
-    date,
-    paymentPhase,
-    revisedCost,
-    poReceived,
-    paymentReceived,
-    paymentAmount,
-    paymentPendingReason,
-    id,
-  ]
+    const { id } = req.params;
+
+    // Fetch existing quotation
+    const [[existing]] = await db.execute(
+      "SELECT * FROM quotations WHERE id = ?",
+      [id]
+    );
+
+    if (!existing) {
+      return res.status(404).json({ message: "Quotation not found" });
+    }
+
+    const currentStatus = existing.quotationStatus;
+
+
+
+    // -----------------------------
+    // Sanitize all fields to avoid undefined
+    // -----------------------------
+    const safeBody = {};
+    [
+      "opportunity_name",
+      "clientName",
+      "client_type_name",
+      "work_category_name",
+      "lab_name",
+      "description",
+      "itemDetails",
+      "value",
+      "date",
+      "quotationStatus",
+      "project_name",
+      "paymentPhase",
+      "revisedCost",
+      "poReceived",
+   "poNumber",
+      "paymentReceived",
+      "paymentAmount",
+      "paymentReceivedDate",
+      "paymentPendingReason",
+      "client_id",
+    ].forEach((key) => {
+      safeBody[key] = req.body[key] ?? null;
+    });
+safeBody.itemDetails = JSON.stringify(
+  (req.body.items && req.body.items.length)
+    ? req.body.items.map(item => ({
+        description: item.description || "",
+        qty: Number(item.qty || 0),
+        unitPrice: Number(item.unitPrice || 0),
+        gst: Number(item.gst || 0),
+        total: Number(item.qty || 0) * Number(item.unitPrice || 0) * (1 + Number(item.gst || 0)/100)
+      }))
+    : [{
+        description: "",
+        qty: Number(req.body.qty || 0),
+        unitPrice: Number(req.body.unitPrice || 0),
+        gst: Number(req.body.gst || 0),
+        total: Number(req.body.qty || 0) * Number(req.body.unitPrice || 0) * (1 + Number(req.body.gst || 0)/100)
+      }]
+);
+    // -----------------------------
+    // Determine final status
+    // -----------------------------
+    const finalStatus = safeBody.quotationStatus ?? currentStatus;
+// 🔐 Fetch opportunity stage from correct table
+const [oppRows] = await db.execute(
+  `
+  SELECT stage
+  FROM opportunity_tracker
+  WHERE opportunity_name = ? 
+  LIMIT 1
+  `,
+  [safeBody.opportunity_name]
 );
 
+const opp = oppRows[0];
 
-    res.json({ id, ...req.body });
+if (!opp) {
+  return res.status(400).json({ message: "Opportunity not found" });
+}
+
+// ❌ Block approval if not WON
+if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
+  return res.status(403).json({
+    message: "Quotation can be approved only when opportunity stage is WON",
+  });
+}
+
+    // -----------------------------
+    // Ensure client_id exists
+    // -----------------------------
+    let client_id = safeBody.client_id;
+    if (!client_id && safeBody.clientName) {
+      const [[client]] = await db.execute(
+        `SELECT client_id FROM opportunities_coordinator WHERE UPPER(client_name)=UPPER(?) LIMIT 1`,
+        [safeBody.clientName]
+      );
+
+      if (!client) {
+        return res.status(400).json({ message: "Client not found" });
+      }
+      client_id = client.client_id;
+    }
+
+    // -----------------------------
+    // Payment protection
+    // Only update payment fields if Approved
+    // -----------------------------
+    const paymentData =
+      finalStatus === "Approved"
+        ? {
+        opportunity_name: safeBody.opportunity_name,
+          clientName: safeBody.clientName,
+          client_type_name: safeBody.client_type_name,
+          paymentPhase: safeBody.paymentPhase ?? "Started",
+          revisedCost: safeBody.revisedCost ?? null,
+          poReceived: safeBody.poReceived ?? "No",
+          poNumber: safeBody.poNumber ?? null,   
+          paymentReceived: safeBody.paymentReceived ?? "No",
+          paymentAmount: safeBody.paymentAmount ?? null,
+          paymentReceivedDate: safeBody.paymentReceivedDate ?? null,
+          paymentPendingReason: safeBody.paymentPendingReason ?? null,
+        }
+        : {
+       
+          paymentPhase: "Not Started",
+          revisedCost: null,
+          poReceived: "No",
+            poNumber: null,  
+          paymentReceived: "No",
+          paymentAmount: null,
+             paymentReceivedDate: null,          
+          paymentPendingReason: null,
+        };
+
+    // -----------------------------
+    // Update quotation in DB
+    // -----------------------------
+    await db.execute(
+      `
+      UPDATE quotations
+      SET
+        opportunity_name = ?,
+        clientName = ?,
+        client_type_name = ?,
+        work_category_name = ?,
+        lab_name = ?,
+        description = ?,
+          itemDetails = ?,
+        value = ?,
+        date = ?,
+        quotationStatus = ?,
+       
+        paymentPhase = ?,
+        revisedCost = ?,
+        poReceived = ?,
+          poNumber = ?,    
+        paymentReceived = ?,
+        paymentAmount = ?,
+         paymentReceivedDate = ?,   
+        paymentPendingReason = ?,
+        client_id = ?
+      WHERE id = ?
+      `,
+      [
+        safeBody.opportunity_name,
+        safeBody.clientName,
+        safeBody.client_type_name,
+        safeBody.work_category_name,
+        safeBody.lab_name,
+        safeBody.description,
+       safeBody.itemDetails,
+        safeBody.value,
+        safeBody.date,
+        finalStatus,
+      
+        paymentData.paymentPhase,
+        paymentData.revisedCost,
+        paymentData.poReceived,
+        paymentData.poNumber,
+        paymentData.paymentReceived,
+        paymentData.paymentAmount,
+        paymentData.paymentReceivedDate,
+        paymentData.paymentPendingReason,
+        client_id,
+        id,
+      ]
+    );
+
+    res.json({
+      message: "Quotation updated successfully",
+      id,
+      quotationStatus: finalStatus,
+    });
   } catch (error) {
     console.error("Update Quotation Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 };
+
+
 
 // Delete quotation
 export const deleteQuotation = async (req, res) => {
@@ -206,7 +383,7 @@ export const deleteQuotation = async (req, res) => {
 
 export const getQuotationById = async (id) => {
   const db = await connectDB();
-      await initSchemas(db, { finance: true });
+  await initSchemas(db, { finance: true });
   const [rows] = await db.execute("SELECT * FROM quotations WHERE id=?", [id]);
   return rows[0]; // or null if not found
 };

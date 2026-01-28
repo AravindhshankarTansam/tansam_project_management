@@ -25,6 +25,9 @@ const styles = StyleSheet.create({
     fontSize: 9.2,
     fontFamily: "Helvetica",
   },
+sectionGap: {
+  marginTop: 8,
+},
 
   header: {
     flexDirection: "row",
@@ -33,7 +36,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   logo: {
-    height: 30,               // very compact but still recognizable
+    height: 50,               // very compact but still recognizable
   },
 
   titleCenter: {
@@ -48,7 +51,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginVertical: 4,
-    fontSize: 9,
+    fontSize: 10,
   },
 
   toBlock: {
@@ -56,13 +59,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 1.2,
   },
-watermark: {
+watermarkContainer: {
   position: "absolute",
-  top: "35%",
-  left: "15%",
-  width: 350,
-  opacity: 0.8,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
 },
+
+watermark: {
+  width: 350,
+  opacity: 1, // keep watermark subtle
+},
+
 toRow: {
   flexDirection: "row",
   justifyContent: "space-between",
@@ -83,14 +94,15 @@ toRight: {
 
   subject: {
     marginVertical: 5,
-    fontStyle: "italic",
-    fontSize: 9.5,
+    fontFamily: "Helvetica",
+    fontSize: 10,
+    lineHeight: 2,
   },
 
   introText: {
     marginBottom: 6,
     lineHeight: 1.22,
-    fontSize: 9,
+    fontSize: 12,
   },
 
   
@@ -106,7 +118,7 @@ th: {
   paddingVertical: 2.5,
   paddingHorizontal: 3,
   fontWeight: "bold",
-  fontSize: 8,
+  fontSize: 11,
   textAlign: "center",
   borderWidth: 1,
   borderColor: "#000",
@@ -123,7 +135,7 @@ colTotal: { width: "16%", textAlign: "right" },
   descCell: {
     paddingVertical: 3.2,
     paddingHorizontal: 5,
-    fontSize: 8.3,            // small but readable
+    fontSize: 10,            // small but readable
     lineHeight: 1.12,         // very tight → crucial for long descriptions
   },
 
@@ -148,7 +160,7 @@ colTotal: { width: "16%", textAlign: "right" },
     flexDirection: "row",
     marginBottom: 2.5,
     lineHeight: 1.18,
-    fontSize: 8.8,
+    fontSize: 10,
   },
   termLabel: { width: 85 },
 
@@ -211,6 +223,7 @@ export default function QuotationPDF({
   designation = "Manager - Operations",
   signatureUrl,
   sealUrl,
+  termsContent,
 }) {
   return (
     <Document>
@@ -222,7 +235,9 @@ export default function QuotationPDF({
           <Image src={siemens} style={styles.logo} />
           <Image src={tidco} style={styles.logo} />
         </View>
-<Image src={watermark} style={styles.watermark} />
+<View style={styles.watermarkContainer}>
+  <Image src={watermark} style={styles.watermark} />
+</View>
 
         {/* Title */}
         <View style={styles.titleCenter}>
@@ -234,28 +249,27 @@ export default function QuotationPDF({
           </Text>
           <Text style={styles.quotationTitle}>Quotation</Text>
         </View>
-
+<View style={styles.sectionGap} />
         {/* Ref & Date */}
         <View style={styles.refDateRow}>
           <Text>REF: {refNo || "TANSAM/XXXX/2025-26"}</Text>
           <Text>DATE: {date || "DD-MM-YYYY"}</Text>
         </View>
-
+<View style={styles.sectionGap} />
         {/* To + Kind Attn */}
-<View style={styles.toBlock}>
+<View style={styles.refDateRow}>
   <Text>To, {clientName || "INSTITUTE NAME"}</Text>
-  <Text style={{alignItems: "center"}}>
-  
-    kind attn.: {kindAttn || "NAME, DESIGNATION"}
-  </Text>
+  <Text>Kind Attn.: {kindAttn || "NAME, DESIGNATION"}</Text>
 </View>
 
+<View style={styles.sectionGap} />
         {/* Subject */}
         <Text style={styles.subject}>
-          Sub: {subject}
+          Sub: 
+          {subject}
         </Text>
 
-      
+      <View style={styles.sectionGap} />
 <View style={styles.tableHeader}>
   <Text style={[styles.th, styles.colSNo]}>S. No</Text>
   <Text style={[styles.th, styles.colDesc]}>Product description</Text>
@@ -263,7 +277,7 @@ export default function QuotationPDF({
   <Text style={[styles.th, styles.colUnit]}>Unit price</Text>
   <Text style={[styles.th, styles.colTotal]}>Total</Text>
 </View>
-
+<View style={styles.sectionGap} />
 {/* Table Rows */}
 {items.length > 0 ? items.map((item, i) => (
   <View key={i} style={{ flexDirection: "row" }}>
@@ -292,32 +306,18 @@ export default function QuotationPDF({
     {totalAmount ? `₹ ${totalAmount}` : "—"}
   </Text>
 </View>
+{termsContent && (
+  <View style={{ marginTop: 10 }}>
+    <Text style={styles.termsTitle}>Terms & Conditions</Text>
+    <Text style={styles.subject}>
+      {termsContent}
+    </Text>
+  </View>
+)}
 
 
         {/* Very tight Terms */}
-        <View style={{ marginTop: 10 }}>
-          <Text style={styles.termsTitle}>Terms & Conditions</Text>
-
-          <View style={styles.termItem}>
-            <Text style={styles.termLabel}>Validity :</Text>
-            <Text>10/15 days from date of issue</Text>
-          </View>
-
-          <View style={styles.termItem}>
-            <Text style={styles.termLabel}>Payment :</Text>
-            <Text>100% advance</Text>
-          </View>
-
-          <View style={styles.termItem}>
-            <Text style={styles.termLabel}>Delivery :</Text>
-            <Text>As per P.O date</Text>
-          </View>
-
-          <View style={styles.termItem}>
-            <Text style={styles.termLabel}>P.O :</Text>
-            <Text>Within 5 days</Text>
-          </View>
-        </View>
+        
 
         {/* Compact Signature */}
         <View style={styles.signatureBlock}>

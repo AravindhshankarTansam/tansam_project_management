@@ -23,17 +23,22 @@ await db.execute(`
   CREATE TABLE IF NOT EXISTS quotations (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    opprtunity_name VARCHAR(50),
+    opportunity_name VARCHAR(50),
     quotationNo VARCHAR(50) NOT NULL,
 
     client_id VARCHAR(20) NOT NULL,
     clientName VARCHAR(100) NOT NULL,
-
-    clientType VARCHAR(50),
-    workCategory VARCHAR(100),
-    lab VARCHAR(100),
+client_type_id VARCHAR(50),
+    client_type_name VARCHAR(50),
+     work_category_id VARCHAR(100),
+    work_category_name VARCHAR(100),
+    lab_id VARCHAR(100),
+    lab_name VARCHAR(100),
 
     description TEXT,
+     quotationStatus ENUM('draft', 'submitted', 'approved', 'rejected')
+    NOT NULL DEFAULT 'draft',
+
     value DECIMAL(12,2),
     date DATE,
 
@@ -46,7 +51,10 @@ await db.execute(`
     paymentReceived VARCHAR(10),
     paymentAmount DECIMAL(12,2),
     paymentPendingReason TEXT,
-
+    
+    itemDetails LONGTEXT CHECK (JSON_VALID(itemDetails)),
+    poNumber VARCHAR(100),
+    poReceivedDate DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

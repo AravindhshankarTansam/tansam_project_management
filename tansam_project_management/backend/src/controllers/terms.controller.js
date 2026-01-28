@@ -34,15 +34,6 @@ export const addTerms = async (req, res) => {
       return res.status(400).json({ message: "Content is required" });
     }
 
-    // 🔒 Ensure only one ACTIVE term
-    if (status === "Active") {
-      await db.execute(`
-        UPDATE terms_conditions
-        SET status='In-Active'
-        WHERE status='Active'
-      `);
-    }
-
     const [result] = await db.execute(
       `INSERT INTO terms_conditions (content, status)
        VALUES (?, ?)`,
@@ -60,6 +51,7 @@ export const addTerms = async (req, res) => {
   }
 };
 
+
 /* ===========================
    UPDATE TERMS
 =========================== */
@@ -71,18 +63,10 @@ export const updateTerms = async (req, res) => {
     const { id } = req.params;
     const { content, status } = req.body;
 
-    if (status === "Active") {
-      await db.execute(`
-        UPDATE terms_conditions
-        SET status='In-Active'
-        WHERE status='Active'
-      `);
-    }
-
     await db.execute(
       `UPDATE terms_conditions
-       SET content=?, status=?
-       WHERE id=?`,
+       SET content = ?, status = ?
+       WHERE id = ?`,
       [content, status, id]
     );
 
@@ -92,6 +76,7 @@ export const updateTerms = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 /* ===========================
    DELETE TERMS
@@ -125,10 +110,9 @@ export const getActiveTerms = async (req, res) => {
       SELECT * FROM terms_conditions
       WHERE status='Active'
       ORDER BY id DESC
-      LIMIT 1
     `);
 
-    res.json(rows[0] || null);
+    res.json(rows); // return the full array
   } catch (error) {
     console.error("Get Active Terms Error:", error);
     res.status(500).json({ message: "Server error" });

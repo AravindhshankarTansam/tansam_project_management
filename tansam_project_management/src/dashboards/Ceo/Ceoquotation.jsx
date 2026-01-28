@@ -182,12 +182,16 @@ const totalPaymentReceived = useMemo(() => {
                     <th>Client Name</th>
                     <th>Client Type</th>
                     <th>Opportunity Name</th>
+                    <th>Work Category</th>
+                    <th>Lab</th>
                      <th>Quotation Value</th>
                   </>
                 ) : (
                   <>
                     <th>Client Name</th>
                     <th>Client Type</th>
+                   <th>Work Category</th>
+                    <th>Lab</th>
                     <th>Payment Phase</th>
                     <th>Payment Amount</th>
                     <th>Pending Reason</th>
@@ -207,14 +211,18 @@ const totalPaymentReceived = useMemo(() => {
                     {activeTab === "quotation" ? (
                       <>
                         <td>{q.clientName}</td>
-                        <td>{q.clientType}</td>
+                        <td>{q.client_type_name}</td>
                         <td>{q.opprtunity_name}</td>
+                        <td>{q.work_category_name}</td>
+                        <td>{q.lab_name}</td>
                         <td>{q.value}</td>
                       </>
                     ) : (
                       <>
                         <td>{q.clientName}</td>
-                        <td>{q.clientType}</td>
+                      <td>{q.client_type_name}</td>
+                        <td>{q.work_category_name}</td>
+                        <td>{q.lab_name}</td>
                         <td>{q.paymentPhase || "Not Started"}</td>
                         <td>
                           {q.paymentAmount

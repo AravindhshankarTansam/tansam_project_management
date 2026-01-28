@@ -15,11 +15,19 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
     const updatedItems = [...quotation.items];
     updatedItems[index][field] = value;
 
-  const qty = parseFloat(updatedItems[index].qty) || 0;
+const qty = parseFloat(updatedItems[index].qty) || 0;
 const unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
-const tax = parseFloat(updatedItems[index].tax) || 0;
-updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
-    setQuotation({ ...quotation, items: updatedItems });
+const tax = parseFloat(updatedItems[index].tax) || 0; // % (for info only)
+
+const baseAmount = qty * unitPrice;
+
+// OPTIONAL: calculate tax separately (do NOT add)
+const taxAmount = baseAmount * (tax / 100);
+
+updatedItems[index].total = baseAmount.toFixed(2);
+
+setQuotation({ ...quotation, items: updatedItems });
+
   };
 
   const addRow = () => {
@@ -33,9 +41,14 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
     setQuotation({ ...quotation, items: updatedItems });
   };
 
-  const totalServiceValue = quotation.items
-    .reduce((acc, item) => acc + parseFloat(item.total || 0), 0)
-    .toFixed(2);
+const totalServiceValue = quotation.items
+  .reduce((acc, item) => {
+    const base = parseFloat(item.total || 0);
+    const taxPercent = parseFloat(item.tax || 0);
+    const taxAmount = base * (taxPercent / 100);
+    return acc + base + taxAmount;
+  }, 0)
+  .toFixed(2);
 
   return (
     <div style={{ marginBottom: "30px" }}>
@@ -56,11 +69,12 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
               <th style={{ border: "1px solid #000", padding: "12px", width: "30%" }}>
                 Product Description
               </th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Qty
-              </th>
+            
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Unit Price
+              </th>
+                <th style={{ border: "1px solid #000", padding: "8px" }}>
+                Qty
               </th>
                 <th style={{ border: "1px solid #000", padding: "4px" }}>
                 TAX
@@ -99,12 +113,13 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
                     }}
                   />
                 </td>
+             
                 <td style={{ border: "1px solid #000", padding: "8px" }}>
                   <input
                     type="number"
-                    value={item.qty}
+                    value={item.unitPrice}
                     onChange={(e) =>
-                      handleRowChange(index, "qty", e.target.value)
+                      handleRowChange(index, "unitPrice", e.target.value)
                     }
                     style={{
                       width: "100%",
@@ -113,12 +128,12 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
                     }}
                   />
                 </td>
-                <td style={{ border: "1px solid #000", padding: "8px" }}>
+                   <td style={{ border: "1px solid #000", padding: "8px" }}>
                   <input
                     type="number"
-                    value={item.unitPrice}
+                    value={item.qty}
                     onChange={(e) =>
-                      handleRowChange(index, "unitPrice", e.target.value)
+                      handleRowChange(index, "qty", e.target.value)
                     }
                     style={{
                       width: "100%",
@@ -142,16 +157,15 @@ updatedItems[index].total = ((qty * unitPrice) + tax).toFixed(2);
 />
 
                 </td>
-                <td
-                  style={{
-                    border: "1px solid #000",
-                    padding: "8px",
-                    textAlign: "right",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {item.total}
-                </td>
+            <td style={{ border: "1px solid #000", padding: "8px", textAlign: "right" }}>
+  {(() => {
+    const baseTotal = Number(item.total || 0);
+    const taxPercent = Number(item.tax || 0);
+    const taxAmount = baseTotal *(taxPercent/100) ;
+    return (baseTotal + taxAmount).toFixed(2);
+  })()}
+</td>
+
                 <td
                   style={{
                     border: "1px solid #000",
@@ -198,6 +212,10 @@ const FinanceDocument = ({
   handleSaveQuotation,
   showTermsModal,
   setShowTermsModal,
+    termsList,
+     selectedTerms,
+  toggleTermSelection,
+  applySelectedTerms,
   termsLoading,
   termsError,
   termsContent,
@@ -353,22 +371,20 @@ boxSizing: "border-box",
           <label style={{ display: "block" }}>
             <strong>Subject:</strong>
             <textarea
-              rows={2}
+              rows={8}
               value={quotation.subject || ""}
               onChange={(e) =>
                 setQuotation({ ...quotation, subject: e.target.value })
               }
               placeholder="e.g., Quote offer for Industrial Visit 2.5 hours at TANSAM Centre"
               style={{
-                width: "100%",
-                padding: "10px",
-                fontSize: "12px",
-                fontFamily: "Arial, sans-serif",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                resize: "vertical",
-                minHeight: "50px",
-                lineHeight: "6.0",
+               width: "100%",
+      padding: "12px",
+      fontSize: "14px",
+      lineHeight: "1.0",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      resize: "vertical",
               }}
             />
           </label>
@@ -405,9 +421,7 @@ boxSizing: "border-box",
 
         {/* ✅ FIXED TERMS & CONDITIONS WITH LOADING/ERROR */}
         <div style={{ marginTop: "30px" }}>
-          <h3 style={{ textDecoration: "underline", marginBottom: "10px" }}>
-            Terms & Conditions
-          </h3>
+         
           <p style={{ fontSize: "14px", marginBottom: "6px" }}>
             Applicable Terms & Conditions are available at:
           </p>
@@ -607,8 +621,8 @@ boxSizing: "border-box",
                 kindAttn={quotation.kindAttn}
                 subject={quotation.subject}
                 items={quotation.items}
-                terms={quotation.terms}
-                termsContent={termsContent}
+              termsContent={quotation.termsContent} 
+              
                 financeManagerName={quotation.financeManagerName}
                 designation="Manager - Operations"
                 signatureUrl={
@@ -704,36 +718,63 @@ boxSizing: "border-box",
                 </button>
               </div>
               {termsLoading ? (
-                <div style={{ textAlign: "center", padding: "40px" }}>
-                  <div style={{ fontSize: "18px", color: "#1976d2" }}>
-                    🔄 Loading Terms...
-                  </div>
-                </div>
-              ) : termsError ? (
-                <div
-                  style={{
-                    padding: "20px",
-                    backgroundColor: "#ffebee",
-                    borderRadius: "8px",
-                    color: "#d32f2f",
-                    textAlign: "center",
-                  }}
-                >
-                  ❌ {termsError}
-                </div>
-              ) : (
-                <div
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: "20px",
-                    minHeight: "200px",
-                    fontSize: "14px",
-                    lineHeight: "1.6",
-                    backgroundColor: "#f9f9f9",
-                  }}
-                  dangerouslySetInnerHTML={{ __html: termsContent }}
-                />
-              )}
+  <p>Loading...</p>
+) : termsError ? (
+  <p style={{ color: "red" }}>{termsError}</p>
+) : (
+  <>
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Term Title</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+   <tbody>
+  {Array.isArray(termsList) && termsList.length > 0 ? (
+    termsList.map((term) => (
+      <tr key={term.id}>
+        <td style={{ textAlign: "center" }}>
+          <input
+            type="checkbox"
+            checked={selectedTerms.some(t => t.id === term.id)}
+            onChange={() => toggleTermSelection(term)}
+          />
+        </td>
+        <td>{term.title}</td>
+       <td dangerouslySetInnerHTML={{ __html: term.description }} />
+
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={3} style={{ textAlign: "center" }}>No active terms available</td>
+    </tr>
+  )}
+</tbody>
+
+
+    </table>
+
+    <div style={{ textAlign: "right", marginTop: "20px" }}>
+      <button
+        onClick={applySelectedTerms}
+        style={{
+          background: "#1F4E79",
+          color: "#fff",
+          padding: "8px 16px",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Apply Selected Terms
+      </button>
+    </div>
+  </>
+)}
+
             </div>
           </div>
         )}
@@ -819,7 +860,7 @@ const [quotation, setQuotation] = useState(() => ({
     subject: initialQuotation?.subject || "",
     clientName: initialQuotation?.clientName || "",
     kindAttn: initialQuotation?.kindAttn || "",
-    items: initialQuotation?.items || [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+    items: initialQuotation?.items || [{ description: "", qty: "", unitPrice: "", tax:"", total: "0.00" }],
     terms: initialQuotation?.terms || [],
     termsContent: initialQuotation?.termsContent || "",
     financeManagerName: initialQuotation?.financeManagerName || "",
@@ -831,7 +872,9 @@ const [quotation, setQuotation] = useState(() => ({
 useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
- 
+ const [activeTermsList, setActiveTermsList] = useState([]);
+const [selectedTerms, setSelectedTerms] = useState([]);
+
   // ✅ ALL REQUIRED STATES
 const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`);
   const [date, setDate] = useState(initialQuotation?.date || new Date().toISOString().split("T")[0]);
@@ -843,6 +886,47 @@ const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date(
   const [termsContent, setTermsContent] = useState("<p>Loading terms...</p>");
   const [termsLoading, setTermsLoading] = useState(true);
   const [termsError, setTermsError] = useState(null);
+
+  const toggleTermSelection = (term) => {
+  setSelectedTerms((prev) => {
+    const exists = prev.find((t) => t.id === term.id);
+    if (exists) {
+      return prev.filter((t) => t.id !== term.id);
+    }
+    return [...prev, term];
+  });
+};
+const htmlToPlainText = (html) => {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+
+  // convert list items into new lines
+  const lines = Array.from(div.querySelectorAll("li")).map(
+    li => li.textContent.trim()
+  );
+
+  // fallback if not a list
+  if (lines.length === 0) {
+    return div.textContent.replace(/\u00A0/g, " ").trim();
+  }
+
+  return lines.map((line, i) => `${i + 1}. ${line}`).join("\n\n");
+};
+const applySelectedTerms = () => {
+  const formattedText = selectedTerms
+    .map(term => htmlToPlainText(term.description))
+    .join("\n\n");
+
+  setQuotation(prev => ({
+    ...prev,
+    terms: selectedTerms,
+    termsContent: formattedText, // ✅ textarea content
+  }));
+
+  setShowTermsModal(false);
+};
+
+
 useEffect(() => {
   if (!quotation.id) return;
 
@@ -854,14 +938,31 @@ useEffect(() => {
 
       setRefNo(generated.refNo || refNo);
       setDate(generated.date || date);
-
+ const rawItems =
+    typeof generated.items === "string"
+      ? JSON.parse(generated.items)
+      : Array.isArray(generated.items)
+      ? generated.items
+      : [];
       setQuotation(prev => ({
         ...prev,
         clientName: generated.clientName || "",
         kindAttn: generated.kindAttn || "",
         subject: generated.subject || "",
         financeManagerName: generated.financeManagerName || "",
-        items: JSON.parse(generated.items || "[]"),
+       items: rawItems.map(item => ({
+  description: item.description || "",
+  unitPrice: item.unitPrice ?? "",
+  qty: item.qty ?? "",
+  tax: item.gst ?? item.tax ?? "",
+  total:
+    item.total ??
+    (
+      Number(item.qty || 0) *
+      Number(item.unitPrice || 0)
+    ).toFixed(2),
+})),
+
         terms: JSON.parse(generated.terms || "[]"),
         termsContent: generated.termsContent || "",
 
@@ -883,21 +984,35 @@ useEffect(() => {
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
 useEffect(() => {
-    const fetchTerms = async () => {
-      try {
-        setTermsLoading(true);
-        const terms = await getActiveTerms();
-        const htmlContent = terms?.content || "<p>No active terms available</p>";
-        setTermsContent(htmlContent);
-        setQuotation(prev => ({ ...prev, termsContent: htmlContent }));
-      } catch (err) {
-        setTermsError(err.message);
-      } finally {
-        setTermsLoading(false);
-      }
-    };
-    fetchTerms();
-  }, []);
+  const fetchTerms = async () => {
+    try {
+      setTermsLoading(true);
+      const response = await getActiveTerms();
+      console.log("TERMS API RESPONSE:", response);
+
+      const list = Array.isArray(response) ? response : response.data ? response.data : [response];
+
+      const formatted = list
+        .filter(term => term.status === "Active")
+        .map(term => ({
+          id: term.id,
+          title: `Term #${term.id}`,
+          description: term.content,
+        }));
+
+      setActiveTermsList(formatted);   // ✅ This is what modal reads
+    } catch (err) {
+      setTermsError(err.message || "Failed to fetch terms");
+    } finally {
+      setTermsLoading(false);
+    }
+  };
+  fetchTerms();
+}, []);
+
+
+
+
 
   // ✅ FIXED handleSaveQuotation
   const handleSaveQuotation = async () => {
@@ -956,8 +1071,12 @@ dataToSend.append("quotation_id", quotation.id);
       handleSaveQuotation={handleSaveQuotation}
       showTermsModal={showTermsModal}
       setShowTermsModal={setShowTermsModal}
-      termsLoading={termsLoading}
-      termsError={termsError}
+     termsList={activeTermsList}
+      selectedTerms={selectedTerms}    
+        applySelectedTerms={applySelectedTerms}       // ✅ add this
+  toggleTermSelection={toggleTermSelection}
+  termsLoading={termsLoading}
+  termsError={termsError}
       termsContent={termsContent}
     />
   );

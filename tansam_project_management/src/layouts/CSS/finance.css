@@ -84,13 +84,34 @@ tbody td {
 
 .btn-edit { background-color: #e0e0ff; }
 .btn-delete { background-color: #ffe0e0; }
-
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 15px;
-  gap: 10px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
 }
+
+.page-btn {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.page-btn.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  font-weight: 600;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 
 /* Modal */
 .modal-overlay {
@@ -103,13 +124,15 @@ tbody td {
   padding: 20px 12px;
   overflow-y: auto;
   z-index: 1200;
+  width: 100%;
 }
 .modal {
     background: white;
-    /* padding: 32px; */
-    width: -webkit-fill-available;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    padding: 20px 24px;
+    width: 1400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease;
 }
 
 .modal-form input, .modal-form select {
@@ -755,7 +778,7 @@ CSS.modal-overlay {
 }
 
 .quotation-preview .logo-row img {
-  max-height: 60px;
+  max-height: 10px;
 }
 
 /* Signature section */

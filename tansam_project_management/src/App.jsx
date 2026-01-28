@@ -88,7 +88,7 @@ function App() {
     </PrivateRoute>
   }
 >
-  <Route index element={<FinanceDashboard />} />
+  <Route index element={<Quotations/>} />
   <Route path="quotations" element={<Quotations />} />
   <Route path="quotation-followup" element={<QuotationFollowup />} />
  <Route path="terms" element={<Terms />} />
