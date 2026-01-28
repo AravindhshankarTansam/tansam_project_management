@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/CeoForecast.css";
+import { FaSave, FaTrash } from "react-icons/fa";
 
 import {
   fetchForecasts,
@@ -184,7 +185,7 @@ export default function CeoForecast() {
                       value={row.work_category_id}
                       onChange={(e) => {
                         const wc = workCategories.find(
-                          w => String(w.id) === e.target.value
+                          (w) => String(w.id) === e.target.value,
                         );
                         if (!wc) return;
                         updateRow(i, "work_category_id", wc.id);
@@ -192,7 +193,7 @@ export default function CeoForecast() {
                       }}
                     >
                       <option value="">Select</option>
-                      {workCategories.map(w => (
+                      {workCategories.map((w) => (
                         <option key={w.id} value={w.id}>
                           {w.name}
                         </option>
@@ -209,7 +210,7 @@ export default function CeoForecast() {
                       }
                     >
                       <option value="">Select</option>
-                      {clients.map(c => (
+                      {clients.map((c) => (
                         <option key={c} value={c}>
                           {c}
                         </option>
@@ -237,8 +238,10 @@ export default function CeoForecast() {
                       }
                     >
                       <option value="">Select</option>
-                      {CONFIDENCE_OPTIONS.map(c => (
-                        <option key={c} value={c}>{c}%</option>
+                      {CONFIDENCE_OPTIONS.map((c) => (
+                        <option key={c} value={c}>
+                          {c}%
+                        </option>
                       ))}
                     </select>
                   </td>
@@ -259,38 +262,38 @@ export default function CeoForecast() {
                     <input
                       type="month"
                       value={row.fy || ""}
-                      onChange={(e) =>
-                        updateRow(i, "fy", e.target.value)
-                      }
+                      onChange={(e) => updateRow(i, "fy", e.target.value)}
                     />
-                    <div className="fy-label">
-                      {formatMonthYear(row.fy)}
-                    </div>
+                    <div className="fy-label">{formatMonthYear(row.fy)}</div>
                   </td>
 
                   {/* Carryover */}
-                  <td className="readonly">
-                    {row.carryover || 0}
-                  </td>
+                  <td className="readonly">{row.carryover || 0}</td>
 
                   {/* Remarks */}
                   <td>
                     <input
                       value={row.remarks || ""}
-                      onChange={(e) =>
-                        updateRow(i, "remarks", e.target.value)
-                      }
+                      onChange={(e) => updateRow(i, "remarks", e.target.value)}
                     />
                   </td>
 
                   {/* Actions */}
                   <td className="actions">
-                    <button onClick={() => saveRow(row, i)}>Save</button>
                     <button
-                      className="danger"
+                      className="icon-btn save"
+                      title="Save"
+                      onClick={() => saveRow(row, i)}
+                    >
+                      <FaSave />
+                    </button>
+
+                    <button
+                      className="icon-btn delete"
+                      title="Delete"
                       onClick={() => removeRow(row)}
                     >
-                      Delete
+                      <FaTrash />
                     </button>
                   </td>
                 </tr>
