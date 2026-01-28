@@ -66,3 +66,42 @@
   padding: 40px;
   color: #64748b;
 }
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Common icon button */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+/* Save button */
+.icon-btn.save {
+  background-color: #3b82f6; /* Blue */
+  color: #ffffff;
+}
+
+.icon-btn.save:hover {
+  background-color: #2563eb;
+}
+
+/* Delete button */
+.icon-btn.delete {
+  background-color: #ef4444; /* Red */
+  color: #ffffff;
+}
+
+.icon-btn.delete:hover {
+  background-color: #dc2626;
+}
