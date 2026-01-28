@@ -44,14 +44,17 @@ client_type_id VARCHAR(50),
 
     isGenerated TINYINT(1) DEFAULT 0,
     generatedAt DATETIME,
-
+   project_name VARCHAR(255),
     paymentPhase VARCHAR(20),
     revisedCost DECIMAL(12,2),
     poReceived VARCHAR(10),
     paymentReceived VARCHAR(10),
     paymentAmount DECIMAL(12,2),
     paymentPendingReason TEXT,
-
+    
+    itemDetails LONGTEXT CHECK (JSON_VALID(itemDetails)),
+    poNumber VARCHAR(100),
+    poReceivedDate DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

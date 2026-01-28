@@ -174,6 +174,7 @@ export const updateQuotation = async (req, res) => {
       "value",
       "date",
       "quotationStatus",
+      "project_name",
       "paymentPhase",
       "revisedCost",
       "poReceived",
@@ -254,6 +255,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
     const paymentData =
       finalStatus === "Approved"
         ? {
+          project_name: safeBody.project_name ?? null,
           paymentPhase: safeBody.paymentPhase ?? "Started",
           revisedCost: safeBody.revisedCost ?? null,
           poReceived: safeBody.poReceived ?? "No",
@@ -264,6 +266,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
           paymentPendingReason: safeBody.paymentPendingReason ?? null,
         }
         : {
+          project_name: null,
           paymentPhase: "Not Started",
           revisedCost: null,
           poReceived: "No",
@@ -291,6 +294,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         value = ?,
         date = ?,
         quotationStatus = ?,
+        project_name = ?,
         paymentPhase = ?,
         revisedCost = ?,
         poReceived = ?,
@@ -313,6 +317,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         safeBody.value,
         safeBody.date,
         finalStatus,
+        paymentData.project_name,
         paymentData.paymentPhase,
         paymentData.revisedCost,
         paymentData.poReceived,

@@ -14,7 +14,7 @@ import { fetchLabs } from "../../services/admin/admin.roles.api";
 import { getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api.js";
 import { FaMoneyCheckAlt } from "react-icons/fa";
-
+import { fetchProjects } from "../../services/project.api.js";
 import Select from "react-select";
 
 export default function Quotations() {
@@ -30,6 +30,9 @@ const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [labs, setLabs] = useState([]);
   const [activeTab, setActiveTab] = useState("quotation");
   const [showDoc, setShowDoc] = useState(false);
+  const [projects, setProjects] = useState([]);
+const [selectedProject, setSelectedProject] = useState("");
+
 const openPaymentModal = (quotation) => {
   setNewQuotation(quotation);
   setShowPaymentModal(true);
@@ -186,6 +189,28 @@ quotationToUse = {
       setShowGenerateQuotation(true);
     }
   };
+useEffect(() => {
+  const loadProjects = async () => {
+    if (!showPaymentForm || !newQuotation.clientName) return;
+
+    try {
+      const res = await fetchProjects(); // existing project.api.js
+      const filtered = res.filter(
+        (p) =>
+          p.clientName?.toLowerCase() ===
+          newQuotation.clientName?.toLowerCase()
+      );
+      setProjects(filtered);
+    } catch (err) {
+      console.error("Failed to load projects", err);
+      setProjects([]);
+    }
+  };
+
+  loadProjects();
+}, [showPaymentForm, newQuotation.clientName]);
+
+
   useEffect(() => {
     const loadWorkCategories = async () => {
       try {
@@ -208,6 +233,7 @@ useEffect(() => {
   } else {
     setNewQuotation((prev) => ({
       ...prev,
+      project_name: "",
       paymentPhase: "Not Started",
       revisedCost: "",
       poReceived: "No",
@@ -222,6 +248,7 @@ useEffect(() => {
 const initializePaymentFields = (status, currentData) => {
   if (status === "Approved") {
     return {
+      project_name: currentData.project_name || "",
       paymentPhase: currentData.paymentPhase || "Started",
       revisedCost: currentData.revisedCost || "",
       poReceived: currentData.poReceived || "No",
@@ -312,6 +339,7 @@ const calculateTotalValue = () => {
     setNewQuotation({
       ...quotation,
       ...initializePaymentFields(quotation.quotationStatus, quotation),
+      project_name: quotation.project_name || "",
       paymentPhase: quotation.paymentPhase || "Not Started",
       revisedCost: quotation.revisedCost || "",
       poReceived: quotation.poReceived || "No",
@@ -378,6 +406,7 @@ items: JSON.stringify(newQuotation.items),
   // ✅ only include payment fields if Approved
   ...(newQuotation.quotationStatus === "Approved"
     ? {
+       project_name: newQuotation.project_name || "",
         paymentPhase: newQuotation.paymentPhase,
         revisedCost: newQuotation.revisedCost,
         poReceived: newQuotation.poReceived,
@@ -680,6 +709,7 @@ items: JSON.stringify(newQuotation.items),
       setPaymentQuotationId(latestQuotation.id)
       setNewQuotation({
         ...latestQuotation,
+        project_name: latestQuotation.project_name || "",
         paymentPhase: latestQuotation.paymentPhase || "Started",
         revisedCost: latestQuotation.revisedCost || "",
         poReceived: latestQuotation.poReceived || "No",
@@ -736,6 +766,7 @@ items: JSON.stringify(newQuotation.items),
                       <td>
                         <strong>{q.quotationNo}</strong>
                       </td>
+                      <td>{q.project_name || "-"}</td>
                       <td>{q.paymentPhase || "Not Started"}</td>   
                       <td>{q.revisedCost || "-"}</td>
                       
@@ -1157,6 +1188,28 @@ items: JSON.stringify(newQuotation.items),
       </div>
 
       <div className="modal-form">
+
+  <div className="form-group">
+  <label>Project Name *</label>
+  <select
+    value={newQuotation.project_name || ""}
+    onChange={(e) =>
+      setNewQuotation({
+        ...newQuotation,
+        project_name: e.target.value,
+      })
+    }
+  >
+    <option value="">Select Project</option>
+    {projects.map((proj) => (
+      <option key={proj.id} value={proj.projectName}>
+        {proj.projectName}
+      </option>
+    ))}
+  </select>
+</div>
+
+
         <div className="form-group">
           <label>Payment Phase *</label>
           <select
