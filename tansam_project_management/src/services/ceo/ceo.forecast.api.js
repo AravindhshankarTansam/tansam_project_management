@@ -1,6 +1,6 @@
-const BASE_URL = "http://localhost:9899/api/ceo";
+const BASE_URL = "http://localhost:9899/api/ceo/forecast";
 
-/* 🔐 AUTH HEADERS — SAME PATTERN AS ADMIN */
+/* 🔐 AUTH HEADERS */
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -16,11 +16,9 @@ const getAuthHeaders = () => {
   };
 };
 
-/* ============================
-   GET FORECASTS
-============================ */
+/* ================= GET ================= */
 export const fetchForecasts = async () => {
-  const res = await fetch(`${BASE_URL}/forecast`, {
+  const res = await fetch(BASE_URL, {
     headers: getAuthHeaders(),
   });
 
@@ -28,47 +26,41 @@ export const fetchForecasts = async () => {
   return res.json();
 };
 
-/* ============================
-   CREATE FORECAST
-============================ */
+/* ================= CREATE ================= */
 export const createForecast = async (payload) => {
-  const res = await fetch(`${BASE_URL}/forecast`, {
+  const res = await fetch(BASE_URL, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Create forecast failed");
+  if (!res.ok) throw new Error(data.message || "Create failed");
 
   return data;
 };
 
-/* ============================
-   UPDATE FORECAST
-============================ */
+/* ================= UPDATE ================= */
 export const updateForecast = async (id, payload) => {
-  const res = await fetch(`${BASE_URL}/forecast/${id}`, {
+  const res = await fetch(`${BASE_URL}/${id}`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Update forecast failed");
+  if (!res.ok) throw new Error(data.message || "Update failed");
 
   return data;
 };
 
-/* ============================
-   DELETE FORECAST
-============================ */
+/* ================= DELETE ================= */
 export const deleteForecast = async (id) => {
-  const res = await fetch(`${BASE_URL}/forecast/${id}`, {
+  const res = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
 
-  if (!res.ok) throw new Error("Delete forecast failed");
+  if (!res.ok) throw new Error("Delete failed");
   return res.json();
 };

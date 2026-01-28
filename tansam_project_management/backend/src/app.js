@@ -66,7 +66,8 @@ app.use(
   app.use("/api", membersRoutes);
   app.use("/api", projectTypeRoutes);
   app.use("/api", projectFollowupRoutes);
-  app.use("/api", CeoforecastRoutes);
+  app.use("/api/ceo/forecast", CeoforecastRoutes);
+
 
 
   export default app;
