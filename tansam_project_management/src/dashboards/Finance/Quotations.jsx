@@ -856,50 +856,43 @@ items: JSON.stringify(newQuotation.items),
                 <label>Quotation No *</label>
                 <input type="text" value={newQuotation.quotationNo} readOnly />
               </div>
+<div className="form-group">
+   <label>Client Name(s) *</label>
 
-              <div className="form-group">
-                <label>Client *</label>
-                <select
-                  value={newQuotation.client_id}
-                  onChange={(e) => {
-                    const clientId = e.target.value;
-                    const selectedClient = opportunities.find(
-                      (opp) => String(opp.client_id) === String(clientId),
-                    );
-
-                    setNewQuotation({
-                      ...newQuotation,
-                      client_id: clientId,
-                      clientName: selectedClient?.client_name || "",
-
-                      opportunity_name: "", // reset opportunity selection
-                      work_category_id: selectedClient?.work_category_id || "",
-                      work_category_name:
-                        selectedClient?.work_category_name || "",
-                      lab_id: selectedClient?.lab_id || "",
-                      lab_name: selectedClient?.lab_name || "",
-                      client_type_id: selectedClient?.client_type_id || "",
-                      client_type_name: selectedClient?.client_type_name || "", // default if missing
-                    });
-                  }}
-                >
-                  <option value="">Select Client</option>
-                  {opportunities
-                    .map((opp) => ({
-                      client_id: opp.client_id,
-                      client_name: opp.client_name,
-                    }))
-                    .filter(
-                      (v, i, a) =>
-                        a.findIndex((t) => t.client_id === v.client_id) === i,
-                    ) // unique clients
-                    .map((client) => (
-                      <option key={client.client_id} value={client.client_id}>
-                        {client.client_name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+            <select
+  value={newQuotation.client_id}
+  onChange={(e) => {
+    const clientId = e.target.value;
+    setNewQuotation({
+      ...newQuotation,
+      client_id: clientId,
+      clientName: "", // keep blank for now
+      opportunity_name: "", // reset opportunity selection
+      work_category_id: "",
+      work_category_name: "",
+      lab_id: "",
+      lab_name: "",
+      client_type_id: "",
+      client_type_name: "",
+    });
+  }}
+>
+  <option value="">Select Client</option>
+  {opportunities
+    .map((opp) => ({
+      client_id: opp.client_id,
+      client_name: opp.client_name,
+    }))
+    .filter(
+      (v, i, a) => a.findIndex((t) => t.client_id === v.client_id) === i
+    )
+    .map((client) => (
+      <option key={client.client_id} value={client.client_id}>
+        {client.client_name}
+      </option>
+    ))}
+</select>
+</div>
 
               {/* OPPORTUNITY SELECTION (filtered by selected client) */}
               {/* OPPORTUNITY SELECTION AS CHECKBOXES */}
@@ -908,66 +901,61 @@ items: JSON.stringify(newQuotation.items),
               <div className="form-group">
                 <label>Opportunity Name(s) *</label>
 
-                <Select
-                  isMulti
-                  isDisabled={!newQuotation.client_id}
-                  placeholder={
-                    newQuotation.client_id
-                      ? "Select Opportunity"
-                      : "Select Client First"
-                  }
-                  options={
-                    newQuotation.client_id
-                      ? opportunities
-                          .filter(
-                            (opp) =>
-                              String(opp.client_id) ===
-                              String(newQuotation.client_id),
-                          )
-                          .map((opp) => ({
-                            value: opp.opportunity_name,
-                            label: opp.opportunity_name,
-                          }))
-                      : []
-                  }
-                  value={
-                    newQuotation.opportunity_name
-                      ? newQuotation.opportunity_name.split(",").map((name) => ({
-                          value: name,
-                          label: name,
-                        }))
-                      : []
-                  }
-                  onChange={(selected) => {
-                    const oppNames = selected
-                      ? selected.map((s) => s.value)
-                      : [];
+               <Select
+  isMulti
+  isDisabled={!newQuotation.client_id}
+  placeholder={
+    newQuotation.client_id
+      ? "Select Opportunity"
+      : "Select Client First"
+  }
+  options={
+    newQuotation.client_id
+      ? opportunities
+          .filter(
+            (opp) => String(opp.client_id) === String(newQuotation.client_id)
+          )
+          .map((opp) => ({
+            value: opp.opportunity_name,
+            label: opp.opportunity_name,
+          }))
+      : []
+  }
+  value={
+    newQuotation.opportunity_name
+      ? newQuotation.opportunity_name.split(",").map((name) => ({
+          value: name,
+          label: name,
+        }))
+      : []
+  }
+  onChange={(selected) => {
+    const oppNames = selected ? selected.map((s) => s.value) : [];
 
-                    const firstOpp = opportunities.find(
-                      (opp) =>
-                        String(opp.client_id) ===
-                          String(newQuotation.client_id) &&
-                        oppNames.includes(opp.opportunity_name),
-                    );
+    const firstOpp = opportunities.find(
+      (opp) =>
+        String(opp.client_id) === String(newQuotation.client_id) &&
+        oppNames.includes(opp.opportunity_name)
+    );
 
-                    setNewQuotation({
-                      ...newQuotation,
-                      opportunity_name: oppNames.join(","),
+    setNewQuotation({
+      ...newQuotation,
+      opportunity_name: oppNames.join(","),
+      clientName: firstOpp?.client_name || "",
+      
+      // Auto-fill only AFTER opportunity selection
+      client_type_id: firstOpp?.client_type_id || "",
+      client_type_name: firstOpp?.client_type_name || "",
+      work_category_id: firstOpp?.work_category_id || "",
+      work_category_name: firstOpp?.work_category_name || "",
+      lab_id: firstOpp?.lab_id || "",
+      lab_name: firstOpp?.lab_name
+        ? JSON.parse(firstOpp.lab_name).join(", ")
+        : "",
+    });
+  }}
+/>
 
-                      // ✅ IDs (VERY IMPORTANT)
-                      client_type_id: firstOpp?.client_type_id || "",
-                      work_category_id: firstOpp?.work_category_id || "",
-                      lab_id: firstOpp?.lab_id || "",
-
-                      // ✅ Names
-                      client_type_name: firstOpp?.client_type_name || "",
-                      work_category_name: firstOpp?.work_category_name || "",
-                      lab_name: firstOpp?.lab_name
-                        ? JSON.parse(firstOpp.lab_name).join(", ")
-                        : "",
-                    });
-                  }}
-                />
               </div>
 
               <div className="form-group">

@@ -36,7 +36,7 @@ client_type_id VARCHAR(50),
     lab_name VARCHAR(100),
 
     description TEXT,
-     quotationStatus ENUM('draft', 'submitted', 'approved', 'rejected')
+     quotationStatus ENUM('Draft', 'Submitted', 'Approved', 'Rejected')
     NOT NULL DEFAULT 'draft',
 
     value DECIMAL(12,2),
@@ -54,7 +54,7 @@ client_type_id VARCHAR(50),
     
     itemDetails LONGTEXT CHECK (JSON_VALID(itemDetails)),
     poNumber VARCHAR(100),
-    poReceivedDate DATE,
+    paymentReceivedDate DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
