@@ -14,7 +14,16 @@ import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
 
 const CONFIDENCE_OPTIONS = [0, 30, 75, 100];
-const FY_OPTIONS = ["2025-26", "2026-27", "2027-28"];
+
+/* ================= HELPER ================= */
+const formatMonthYear = (value) => {
+  if (!value) return "";
+  const [year, month] = value.split("-");
+  return new Date(year, month - 1).toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+};
 
 export default function CeoForecast() {
   const [rows, setRows] = useState([]);
@@ -94,7 +103,7 @@ export default function CeoForecast() {
         totalValue: row.total_value,
         confidence: row.confidence,
         realizable: row.realizable_value,
-        fy: row.fy,
+        fy: row.fy, // YYYY-MM
         carryover: row.carryover,
         remarks: row.remarks,
       };
@@ -152,7 +161,7 @@ export default function CeoForecast() {
               <th>Total Value</th>
               <th>Confidence %</th>
               <th>Realizable</th>
-              <th>FY</th>
+              <th>FY (Month)</th>
               <th>Carryover</th>
               <th>Remarks</th>
               <th>Actions</th>
@@ -177,6 +186,7 @@ export default function CeoForecast() {
                         const wc = workCategories.find(
                           w => String(w.id) === e.target.value
                         );
+                        if (!wc) return;
                         updateRow(i, "work_category_id", wc.id);
                         updateRow(i, "work_category_name", wc.name);
                       }}
@@ -207,7 +217,7 @@ export default function CeoForecast() {
                     </select>
                   </td>
 
-                  {/* Total */}
+                  {/* Total Value */}
                   <td>
                     <input
                       type="number"
@@ -244,17 +254,18 @@ export default function CeoForecast() {
                     />
                   </td>
 
-                  {/* FY */}
+                  {/* FY – Month Picker */}
                   <td>
-                    <select
-                      value={row.fy}
-                      onChange={(e) => updateRow(i, "fy", e.target.value)}
-                    >
-                      <option value="">Select</option>
-                      {FY_OPTIONS.map(fy => (
-                        <option key={fy} value={fy}>{fy}</option>
-                      ))}
-                    </select>
+                    <input
+                      type="month"
+                      value={row.fy || ""}
+                      onChange={(e) =>
+                        updateRow(i, "fy", e.target.value)
+                      }
+                    />
+                    <div className="fy-label">
+                      {formatMonthYear(row.fy)}
+                    </div>
                   </td>
 
                   {/* Carryover */}
@@ -275,7 +286,10 @@ export default function CeoForecast() {
                   {/* Actions */}
                   <td className="actions">
                     <button onClick={() => saveRow(row, i)}>Save</button>
-                    <button className="danger" onClick={() => removeRow(row)}>
+                    <button
+                      className="danger"
+                      onClick={() => removeRow(row)}
+                    >
                       Delete
                     </button>
                   </td>
