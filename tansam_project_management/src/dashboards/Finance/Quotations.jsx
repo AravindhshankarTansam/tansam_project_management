@@ -895,69 +895,48 @@ items: JSON.stringify(newQuotation.items),
 </select>
 </div>
 
-              {/* OPPORTUNITY SELECTION (filtered by selected client) */}
-              {/* OPPORTUNITY SELECTION AS CHECKBOXES */}
-              {/* OPPORTUNITY SELECTION (filtered by selected client) */}
+          
+<div className="form-group">
+   <label>Opportunity Name(s) *</label>
 
-              <div className="form-group">
-                <label>Opportunity Name(s) *</label>
-
-               <Select
-  isMulti
-  isDisabled={!newQuotation.client_id}
-  placeholder={
-    newQuotation.client_id
-      ? "Select Opportunity"
-      : "Select Client First"
-  }
-  options={
-    newQuotation.client_id
-      ? opportunities
-          .filter(
-            (opp) => String(opp.client_id) === String(newQuotation.client_id)
-          )
-          .map((opp) => ({
-            value: opp.opportunity_name,
-            label: opp.opportunity_name,
-          }))
-      : []
-  }
-  value={
-    newQuotation.opportunity_name
-      ? newQuotation.opportunity_name.split(",").map((name) => ({
-          value: name,
-          label: name,
-        }))
-      : []
-  }
-  onChange={(selected) => {
-    const oppNames = selected ? selected.map((s) => s.value) : [];
-
-    const firstOpp = opportunities.find(
-      (opp) =>
-        String(opp.client_id) === String(newQuotation.client_id) &&
-        oppNames.includes(opp.opportunity_name)
-    );
-
-    setNewQuotation({
-      ...newQuotation,
-      opportunity_name: oppNames.join(","),
-      clientName: firstOpp?.client_name || "",
+            <select
+    value={newQuotation.opportunity_name ? newQuotation.opportunity_name.split(",") : []}
+    onChange={(e) => {
+      const selectedOpportunityNames = Array.from(e.target.selectedOptions).map(
+        (option) => option.value
+      );
       
-      // Auto-fill only AFTER opportunity selection
-      client_type_id: firstOpp?.client_type_id || "",
-      client_type_name: firstOpp?.client_type_name || "",
-      work_category_id: firstOpp?.work_category_id || "",
-      work_category_name: firstOpp?.work_category_name || "",
-      lab_id: firstOpp?.lab_id || "",
-      lab_name: firstOpp?.lab_name
-        ? JSON.parse(firstOpp.lab_name).join(", ")
-        : "",
-    });
-  }}
-/>
+      // Reset other fields based on selected opportunities
+      const firstOpp = opportunities.find(
+        (opp) =>
+          String(opp.client_id) === String(newQuotation.client_id) &&
+          selectedOpportunityNames.includes(opp.opportunity_name)
+      );
 
-              </div>
+      setNewQuotation({
+        ...newQuotation,
+        opportunity_name: selectedOpportunityNames.join(","),
+        clientName: "", // keep blank for now
+        work_category_id: firstOpp?.work_category_id || "",
+        work_category_name: firstOpp?.work_category_name || "",
+        lab_id: firstOpp?.lab_id || "",
+        lab_name: firstOpp?.lab_name ? JSON.parse(firstOpp.lab_name).join(", ") : "",
+        client_type_id: firstOpp?.client_type_id || "",
+        client_type_name: firstOpp?.client_type_name || "",
+      });
+    }}
+>
+  <option value="">Select Opportunity</option>
+     {newQuotation.client_id &&
+      opportunities
+        .filter((opp) => String(opp.client_id) === String(newQuotation.client_id))
+        .map((opp) => (
+          <option key={opp.opportunity_name} value={opp.opportunity_name}>
+            {opp.opportunity_name}
+          </option>
+        ))}
+</select>
+</div>
 
               <div className="form-group">
                 <label>Client Type</label>
