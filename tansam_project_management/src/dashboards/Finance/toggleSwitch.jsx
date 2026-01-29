@@ -1,5 +1,5 @@
 import React from "react";
-import "../../layouts/CSS/toggleSwitch.css";
+import "./Financecss/toggleSwitch.css";
 const ToggleSwitch = ({ isOn, onToggle }) => {
 return (
 <div className="toggle-container"> <label className="switch">

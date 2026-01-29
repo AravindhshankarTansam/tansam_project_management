@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../../layouts/CSS/finance.css";
+import "./Financecss/finance.css";
 import { useEffect } from "react";
 
 import {

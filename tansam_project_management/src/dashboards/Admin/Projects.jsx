@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { FaEye, FaEllipsisH, FaTrash, FaEdit } from "react-icons/fa";
 
-import "../../layouts/CSS/projects.css";
+// import "./Admincss/projects.css";
 
 const PROJECT_STATUSES = [
   

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import "../../layouts/CSS/finance.css";
+import "./Financecss/finance.css";
+
 import GenerateQuotation from "./generateQuotation";
 import {
   getQuotations,
@@ -30,13 +31,13 @@ const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [labs, setLabs] = useState([]);
   const [activeTab, setActiveTab] = useState("quotation");
   const [showDoc, setShowDoc] = useState(false);
-  const [projects, setProjects] = useState([]);
-const [selectedProject, setSelectedProject] = useState("");
+//   const [projects, setProjects] = useState([]);
+// const [selectedProject, setSelectedProject] = useState("");
 
-const openPaymentModal = (quotation) => {
-  setNewQuotation(quotation);
-  setShowPaymentModal(true);
-};
+// const openPaymentModal = (quotation) => {
+//   setNewQuotation(quotation);
+//   setShowPaymentModal(true);
+// };
 const [paymentQuotationId, setPaymentQuotationId] = useState(null);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
