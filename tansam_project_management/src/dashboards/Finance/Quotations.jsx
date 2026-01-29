@@ -913,7 +913,7 @@ items: JSON.stringify(newQuotation.items),
               {/* OPPORTUNITY SELECTION AS CHECKBOXES */}
               {/* OPPORTUNITY SELECTION (filtered by selected client) */}
 
- <div className="form-group">
+ {/* <div className="form-group">
  
 
 <MultiSelectDropdown
@@ -953,8 +953,44 @@ items: JSON.stringify(newQuotation.items),
 />
 
 
-</div>
+</div> */}
+<MultiSelectDropdown
+  label="Opportunity Name(s) *"
+  options={opportunities.filter(
+    o => String(o.client_id) === String(newQuotation.client_id)
+  )}
+  displayKey="opportunity_name"
+  valueKey="opportunity_name"
+  selectedValues={
+    newQuotation.opportunity_name
+      ? newQuotation.opportunity_name.split(",")
+      : []
+  }
+  placeholder="Select Opportunity"
+  onChange={(selected) => {
+    const firstOpp = opportunities.find(
+      o =>
+        String(o.client_id) === String(newQuotation.client_id) &&
+        selected.includes(o.opportunity_name)
+    );
 
+    setNewQuotation({
+      ...newQuotation,
+      // send as comma-separated string for backend
+      opportunity_name: selected.join(","),
+
+      clientName: firstOpp?.client_name || "",
+      work_category_id: firstOpp?.work_category_id || "",
+      work_category_name: firstOpp?.work_category_name || "",
+      lab_id: firstOpp?.lab_id || "",
+      lab_name: firstOpp?.lab_name
+        ? JSON.parse(firstOpp.lab_name).join(", ")
+        : "",
+      client_type_id: firstOpp?.client_type_id || "",
+      client_type_name: firstOpp?.client_type_name || "",
+    });
+  }}
+/>
 
 
               <div className="form-group">

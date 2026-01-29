@@ -26,17 +26,21 @@
 .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 6px 10px;
+  padding: 6px 8px; /* reduce horizontal padding */
   cursor: pointer;
+  /* ensures a small space between checkbox and label */
+}
+
+.dropdown-item input {
+  margin: 0; /* remove default margin */
+  flex-shrink: 0; /* prevent checkbox from shrinking */
 }
 
 .dropdown-item:hover {
   background-color: #f5f5f5;
 }
 
-.dropdown-item input {
-  margin-right: 8px;
-}
+
 
 .dropdown-empty {
   padding: 10px;
