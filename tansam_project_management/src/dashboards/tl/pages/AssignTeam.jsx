@@ -3,17 +3,17 @@ import { FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { fetchProjects } from "../../services/project.api";
+import { fetchProjects } from "../../../services/project.api";
 import {
   fetchAssignments,
   createAssignment,
   deleteAssignment,
   updateAssignment,
-} from "../../services/assignTeam.api";
-import { fetchDepartments } from "../../services/department.api";
-import { fetchMembers } from "../../services/member.api";
+} from "../../../services/assignTeam.api";
+import { fetchDepartments } from "../../../services/department.api";
+import { fetchMembers } from "../../../services/member.api";
 
-import "./AssignTeam.css";
+import "../CSS/AssignTeam.css";
 
 const formatDate = (date) => {
   if (!date) return "";
@@ -39,7 +39,7 @@ export default function AssignTeam() {
     memberName: "",
     role: "",
     departmentId: "",
-    effort: "",
+    // effort: "",
     startDate: "",
     endDate: "",
   });
@@ -69,7 +69,7 @@ export default function AssignTeam() {
       memberName: assignment.memberName,
       role: assignment.role,
       departmentId: assignment.departmentId,
-      effort: assignment.effort,
+      // effort: assignment.effort,
       startDate: formatDate(assignment.startDate),
       endDate: formatDate(assignment.endDate),
     });
@@ -90,7 +90,7 @@ export default function AssignTeam() {
         memberName: form.memberName.trim(),
         role: form.role.trim(),
         departmentId: Number(form.departmentId),
-        effort: form.effort,
+        // effort: form.effort,
         startDate: form.startDate,
         endDate: form.endDate,
       };
@@ -113,7 +113,7 @@ export default function AssignTeam() {
         memberName: "",
         role: "",
         departmentId: "",
-        effort: "",
+        // effort: "",
         startDate: "",
         endDate: "",
       });
@@ -244,7 +244,7 @@ export default function AssignTeam() {
                 ))}
               </select>
 
-              <input name="effort" placeholder="Effort" value={form.effort} onChange={handleChange} required />
+              {/* <input name="effort" placeholder="Effort" value={form.effort} onChange={handleChange} required /> */}
               <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
               <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
 

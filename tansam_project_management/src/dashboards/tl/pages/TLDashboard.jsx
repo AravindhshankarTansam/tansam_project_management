@@ -1,4 +1,4 @@
-import "./TLDashboard.css";
+import "../CSS/TLDashboard.css";
 import { useEffect, useState } from "react";
 import {
   FiArrowUpRight,
@@ -7,8 +7,8 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 
-import { fetchProjects } from "../../services/project.api";
-import { fetchProjectFollowups } from "../../services/projectfollowup.api";
+import { fetchProjects } from "../../../services/project.api";
+import { fetchProjectFollowups } from "../../../services/projectfollowup.api";
 
 import {
   PieChart,

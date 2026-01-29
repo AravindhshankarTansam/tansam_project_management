@@ -8,14 +8,17 @@ export const createAssignTeamSchema = async (db) => {
       role VARCHAR(100) NOT NULL,
       department_id INT NOT NULL,
 
-      estimated_effort VARCHAR(50) NOT NULL,
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
 
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-      FOREIGN KEY (department_id) REFERENCES departments(id)
+      FOREIGN KEY (project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE,
+
+      FOREIGN KEY (department_id)
+        REFERENCES departments(id)
     )
   `);
 };

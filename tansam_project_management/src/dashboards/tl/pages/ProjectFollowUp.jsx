@@ -9,14 +9,14 @@ import {
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./ProjectFollowUp.css";
+import "../CSS/ProjectFollowUp.css";
 
 import {
   fetchProjectFollowups,
   updateProjectFollowup,
   getPOFileUrl,
-} from "../../services/projectfollowup.api";
-import RichTextEditor from "../../components/RichTextEditor";
+} from "../../../services/projectfollowup.api";
+import RichTextEditor from "../../../components/RichTextEditor";
 
 const PROJECTS_PER_PAGE = 10;
 

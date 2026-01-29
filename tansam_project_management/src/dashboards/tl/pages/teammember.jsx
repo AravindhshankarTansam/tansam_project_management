@@ -10,15 +10,16 @@
   import { ToastContainer, toast } from "react-toastify";
   import "react-toastify/dist/ReactToastify.css";
 
-  import { fetchDepartments } from "../../services/department.api";
+  import { fetchDepartments } from "../../../services/department.api";
   import {
     fetchMembers,
     createMember,
     deleteMember,
     updateMember,
-  } from "../../services/member.api";
+  } from "../../../services/member.api";
 
-  import "./teammember.css";
+import "../CSS/teammember.css";
+
 
   const MEMBERS_PER_PAGE = 8;
 

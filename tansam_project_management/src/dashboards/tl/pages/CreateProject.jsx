@@ -13,20 +13,20 @@ import {
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./CreateProject.css";
+import "../CSS/CreateProject.css";
 
 import {
   createProject,
   fetchProjects,
   updateProject,
   deleteProject,
-} from "../../services/project.api";
+} from "../../../services/project.api";
 
-import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
-import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
-import { getQuotations } from "../../services/quotation/quotation.api";
+import { fetchProjectTypes } from "../../../services/admin/admin.roles.api";
+import { fetchOpportunities } from "../../../services/coordinator/coordinator.opportunity.api";
+import { getQuotations } from "../../../services/quotation/quotation.api";
 import { fetchOpportunityTrackers } 
-  from "../../services/coordinator/coordinator.tracker.api";
+  from "../../../services/coordinator/coordinator.tracker.api";
 
 
 /* ================= CONSTANTS ================= */
