@@ -113,30 +113,11 @@ tbody td {
 }
 
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;       /* ← changed from center → better on mobile */
-  padding: 20px 12px;
-  overflow-y: auto;
-  z-index: 1200;
-  width: 100%;
-}
-.modal {
-    background: white;
-    border-radius: 12px;
-    padding: 20px 24px;
-    width: 1400px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.3s ease;
-}
+
+
 
 .modal-form input, .modal-form select {
-  width: 100%;
+  width: 50%;
   margin-bottom: 10px;
   padding: 6px 10px;
   border-radius: 6px;
@@ -393,16 +374,6 @@ tbody td {
 /* ✅ IMPROVED MODAL */
 
 
-.modal {
-  background: white;
-  padding: 0;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-}
 
 .modal-header h3 {
   margin: 0;
@@ -604,24 +575,8 @@ tbody td {
   color: #e74c3c;
 }
 /* Container for the modal */
-CSS.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;          /* ← center is fine, but see note below */
-  z-index: 1000;
-  /* Important: allow scrolling on overlay if needed */
-           /* breathing room on small screens */
-}
 
-.modal {
-    background: white;
-   
-    width: webkit-fill-available;
-   
-}
+
 
 .modal-header {
   position: sticky;
@@ -721,6 +676,8 @@ CSS.modal-overlay {
   padding: 20px;
   margin-top: 20px;
   background-color: #fff;
+  overflow: scroll;
+
 }
 
 .quotation-preview h2 {
@@ -937,4 +894,71 @@ button.btn-save:hover {
 
 .react-select__multi-value__remove {
   margin-left: auto;
+}
+/* ===============================
+   FORCE MODAL FIX (OVERRIDE ALL)
+================================ */
+
+.modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 9999 !important;
+}
+
+.modal {
+  background: #ffffff !important;
+  width: 55% !important;
+  max-width: 1100px !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+.modal-header {
+  position: sticky !important;
+  top: 0 !important;
+  background: #ffffff !important;
+  padding: 16px 24px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  z-index: 10 !important;
+}
+
+.modal-form {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+ 
+}
+
+.modal-form .full-width {
+  grid-column: span 2 !important;
+}
+
+.modal-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: #f9fafb !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid #e5e7eb !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  z-index: 10 !important;
+}
+
+@media (max-width: 768px) {
+  .modal-form {
+    grid-template-columns: 1fr !important;
+  }
+  .modal-form .full-width {
+    grid-column: span 1 !important;
+  }
 }
