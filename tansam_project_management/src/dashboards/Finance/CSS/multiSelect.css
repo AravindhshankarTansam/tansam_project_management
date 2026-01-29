@@ -26,21 +26,27 @@
 .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 6px 8px; /* reduce horizontal padding */
+  padding: 5px 10px;
+  gap: 4px; /* minimal space between checkbox and text */
   cursor: pointer;
-  /* ensures a small space between checkbox and label */
 }
 
-.dropdown-item input {
-  margin: 0; /* remove default margin */
-  flex-shrink: 0; /* prevent checkbox from shrinking */
+.dropdown-item input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .dropdown-item:hover {
   background-color: #f5f5f5;
 }
 
-
+.dropdown-item input {
+  margin: 0;      /* remove default margins */
+  flex-shrink: 0; /* prevent shrinking */
+  width: 16px;    /* fixed checkbox size */
+  height: 16px;
+}
 
 .dropdown-empty {
   padding: 10px;
