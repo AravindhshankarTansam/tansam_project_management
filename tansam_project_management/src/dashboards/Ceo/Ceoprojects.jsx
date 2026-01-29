@@ -20,7 +20,8 @@ export default function CeoProjects() {
 const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
 const [currentPage, setCurrentPage] = useState(1);
 const [quotations, setQuotations] = useState([]);
-const [labPayments, setLabPayments] = useState({});
+
+const [projectPayments, setProjectPayments] = useState({});
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -30,6 +31,19 @@ const [labPayments, setLabPayments] = useState({});
         setProjects(data || []);
       } catch {
         toast.error("Failed to load projects");
+      }
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getQuotations();
+        setQuotations(data || []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load quotation data");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -63,41 +77,42 @@ const [labPayments, setLabPayments] = useState({});
 
     loadStatuses();
   }, [projects]);
+// After fetching projects and quotations
+// ---------------------------
+// Fetch quotations and map revenue per opportunity
+// ---------------------------
 useEffect(() => {
   (async () => {
     try {
-      const data = await getQuotations();
-      setQuotations(data || []);
-    } catch {
-      toast.error("Failed to load quotations");
+      const data = await getQuotations(); // fetch all quotations
+      if (!data) return;
+
+      const paymentsMap = {};
+
+      data.forEach((q) => {
+        // Only consider approved and received payments
+        if (q.quotationStatus === "Approved" && q.paymentReceived === "Yes") {
+          const oppId = q.opportunity_id?.trim().toUpperCase(); // normalize key
+          const amount = Number(q.paymentAmount || 0);
+
+          if (oppId) {
+            // accumulate if multiple quotations for same opportunity
+            paymentsMap[oppId] = (paymentsMap[oppId] || 0) + amount;
+          }
+
+          console.log("Quotation:", q.quotationNo, "opportunity_id:", q.opportunity_id, "paymentAmount:", q.paymentAmount);
+        }
+      });
+
+      console.log("Payments Map:", paymentsMap);
+      setProjectPayments(paymentsMap);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load quotation payments");
     }
   })();
 }, []);
-useEffect(() => {
-  if (selectedLabs.length === 0) {
-    setLabPayments({});
-    return;
-  }
 
-  const payments = {};
-
-  selectedLabs.forEach((lab) => {
-    let total = 0;
-
-    quotations.forEach((q) => {
-      if (q.lab_name !== lab) return;
-
-      const project = projects.find(p => p.id === q.project_id);
-      if (!project) return;
-
-      total += Number(q.totalAmount || q.amount || 0);
-    });
-
-    payments[lab] = total;
-  });
-
-  setLabPayments(payments);
-}, [selectedLabs, quotations, projects]);
 
   /* ================= FILTER OPTIONS ================= */
   const clientOptions = useMemo(
@@ -174,19 +189,6 @@ useEffect(() => {
     setCurrentPage(1);
   };
 {/* ================= LAB PAYMENT SUMMARY ================= */}
-{selectedLabs.length > 0 && (
-  <div className="lab-payment-cards">
-    {selectedLabs.map((lab) => (
-      <div key={lab} className="lab-card">
-        <h4>{lab}</h4>
-        <p>
-          Total Payment: ₹
-          {(labPayments[lab] || 0).toLocaleString("en-IN")}
-        </p>
-      </div>
-    ))}
-  </div>
-)}
 
   const formatDate = (date) => {
     if (!date) return "—";
@@ -347,6 +349,7 @@ useEffect(() => {
                   <th>Project Status</th>
                   <th>Labs</th>
                   <th>Work Category</th>
+                  <th>Revenue</th>
                   <th>Start</th>
                   <th>End</th>
                 </tr>
@@ -382,6 +385,12 @@ useEffect(() => {
                         : p.labNames || "—"}
                     </td>
                     <td>{p.workCategory || "—"}</td>
+          <td>
+  ₹{projectPayments[p.opportunityId?.trim().toUpperCase()] || "0"}
+</td>
+
+
+
                     <td>{formatDate(p.startDate)}</td>
                     <td>{formatDate(p.endDate)}</td>
                   </tr>

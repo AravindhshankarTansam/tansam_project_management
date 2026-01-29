@@ -402,3 +402,30 @@ export const downloadQuotationDocx = async (req, res) => {
   });
   res.send(buffer);
 };
+export const getPaymentsByOpportunity = async (req, res) => {
+  try {
+    const { opportunity_id } = req.params;
+
+    const db = await connectDB();
+    await initSchemas(db, { finance: true });
+
+    const [results] = await db.execute(
+      `
+      SELECT paymentAmount
+      FROM quotations
+      WHERE opportunity_id = ?
+        AND quotationStatus = 'Approved'
+        AND paymentReceived = 'Yes'
+      `,
+      [opportunity_id]
+    );
+
+    res.json({
+      opportunity_id,
+      payments: results.map(r => Number(r.paymentAmount)), // convert to numbers
+    });
+  } catch (error) {
+    console.error("Get Payments Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -48,3 +48,10 @@ export const deleteQuotation = async (id) => {
   if (!res.ok) throw new Error("Failed to delete quotation");
   return res.json();
 };
+// Get payments for a specific opportunity
+
+export const getPaymentsByOpportunity = async () => {
+  const res = await fetch(QUOTATIONS_URL, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error("Failed to fetch quotations");
+  return res.json();
+};
