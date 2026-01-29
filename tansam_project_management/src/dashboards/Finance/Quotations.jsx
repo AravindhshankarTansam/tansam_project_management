@@ -353,6 +353,7 @@ const calculateTotalValue = () => {
       paymentPendingReason: quotation.paymentPendingReason || "",
     });
     setShowModal(true);
+    
   };
 
   useEffect(() => {
@@ -708,21 +709,18 @@ items: JSON.stringify(newQuotation.items),
                           {q.quotationStatus === "Approved" && (
 <FaMoneyCheckAlt
   style={{ cursor: "pointer", color: "green" }}
-   size={30}
+  size={30}
   title="Payment"
   onClick={async () => {
     try {
-      // fetch latest quotations from DB
       const allQuotations = await getQuotations();
       const latestQuotation = allQuotations.find((item) => item.id === q.id);
 
       if (!latestQuotation) return alert("Quotation not found");
 
-      // set state with latest payment info
-      setPaymentQuotationId(latestQuotation.id)
+      setPaymentQuotationId(latestQuotation.id);
       setNewQuotation({
         ...latestQuotation,
-        
         paymentPhase: latestQuotation.paymentPhase || "Started",
         revisedCost: latestQuotation.revisedCost || "",
         poReceived: latestQuotation.poReceived || "No",
@@ -733,15 +731,16 @@ items: JSON.stringify(newQuotation.items),
         paymentPendingReason: latestQuotation.paymentPendingReason || "",
       });
 
-      setEditId(null); // ensure edit modal is closed
+      setEditId(null);
       setShowModal(false);
-      setShowPaymentForm(true); // open payment modal
+      setShowPaymentForm(true); // ✅ this shows the form
     } catch (err) {
       console.error(err);
       alert("Failed to load payment details");
     }
   }}
 />
+
 
 )}
 
@@ -842,339 +841,247 @@ items: JSON.stringify(newQuotation.items),
       {/* ✅ IMPROVED MODAL */}
       {showModal && (
         
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
-              <button className="btn-close" onClick={closeModal}>
+        <div className="unique-form-container">
+  {/* Quotation Form */}
+  <div className="unique-form-section">
+    <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
+<button className="btn-close" onClick={closeModal}>
                 ✕
               </button>
-            </div>
-
-            {/* FORM */}
-            <div className="modal-form">
-              <div className="form-group">
-                <label>Quotation No *</label>
-                <input type="text" value={newQuotation.quotationNo} readOnly />
-              </div>
-<div className="form-group">
-   <label>Client Name(s) *</label>
-
-            <select
-  value={newQuotation.client_id}
-  onChange={(e) => {
-    const clientId = e.target.value;
-    setNewQuotation({
-      ...newQuotation,
-      client_id: clientId,
-      clientName: "", // keep blank for now
-      opportunity_name: "", // reset opportunity selection
-      work_category_id: "",
-      work_category_name: "",
-      lab_id: "",
-      lab_name: "",
-      client_type_id: "",
-      client_type_name: "",
-    });
-  }}
->
-  <option value="">Select Client</option>
-  {opportunities
-    .map((opp) => ({
-      client_id: opp.client_id,
-      client_name: opp.client_name,
-    }))
-    .filter(
-      (v, i, a) => a.findIndex((t) => t.client_id === v.client_id) === i
-    )
-    .map((client) => (
-      <option key={client.client_id} value={client.client_id}>
-        {client.client_name}
-      </option>
-    ))}
-</select>
-</div>
-
-          
-<div className="form-group">
-   <label>Opportunity Name(s) *</label>
-
-            <select
-    value={newQuotation.opportunity_name ? newQuotation.opportunity_name.split(",") : []}
-    onChange={(e) => {
-      const selectedOpportunityNames = Array.from(e.target.selectedOptions).map(
-        (option) => option.value
-      );
-      
-      // Reset other fields based on selected opportunities
-      const firstOpp = opportunities.find(
-        (opp) =>
-          String(opp.client_id) === String(newQuotation.client_id) &&
-          selectedOpportunityNames.includes(opp.opportunity_name)
-      );
-
-      setNewQuotation({
-        ...newQuotation,
-        opportunity_name: selectedOpportunityNames.join(","),
-        clientName: "", // keep blank for now
-        work_category_id: firstOpp?.work_category_id || "",
-        work_category_name: firstOpp?.work_category_name || "",
-        lab_id: firstOpp?.lab_id || "",
-        lab_name: firstOpp?.lab_name ? JSON.parse(firstOpp.lab_name).join(", ") : "",
-        client_type_id: firstOpp?.client_type_id || "",
-        client_type_name: firstOpp?.client_type_name || "",
-      });
-    }}
->
-  <option value="">Select Opportunity</option>
-     {newQuotation.client_id &&
-      opportunities
-        .filter((opp) => String(opp.client_id) === String(newQuotation.client_id))
-        .map((opp) => (
-          <option key={opp.opportunity_name} value={opp.opportunity_name}>
-            {opp.opportunity_name}
-          </option>
-        ))}
-</select>
-</div>
-
-              <div className="form-group">
-                <label>Client Type</label>
-                <input
-                  type="text"
-                  value={newQuotation.client_type_name}
-                  readOnly
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Work Category</label>
-                <input
-                  type="text"
-                  value={newQuotation.work_category_name}
-                  readOnly
-                />
-              </div>
-              <div className="form-group">
-                <label>Lab</label>
-                <input type="text" value={newQuotation.lab_name} readOnly />
-              </div>
+    <div className="unique-form-grid">
+      {/* Quotation No */}
       <div className="form-group">
-  <label>Pricing Mode *</label>
-  <select
-    value={newQuotation.pricingMode}
-    onChange={(e) =>
-      setNewQuotation({
-        ...newQuotation,
-        pricingMode: e.target.value,
-        unitPrice: "",
-        qty: "",
-        gst: "",
-        value: "",
-      })
-    }
-  >
-    <option value="value">Enter Total Value Only</option>
-    <option value="unit">Unit Price × Qty + GST</option>
-  </select>
-</div>
-{newQuotation.pricingMode === "value" && (
-  <div className="form-group">
-    <label>Quote Value *</label>
-    <input
-      type="number"
-      value={newQuotation.value}
-      onChange={(e) =>
-        setNewQuotation({ ...newQuotation, value: e.target.value })
-      }
-    />
-  </div>
-)}
-{newQuotation.pricingMode === "unit" && (
-  <>
-    <div className="form-group">
-      <label>Unit Price *</label>
-      <input
-        type="number"
-        value={newQuotation.unitPrice}
-        onChange={(e) =>
-          setNewQuotation({ ...newQuotation, unitPrice: e.target.value })
-        }
-      />
-    </div>
-
-    <div className="form-group">
-      <label>Quantity *</label>
-      <input
-        type="number"
-        value={newQuotation.qty}
-        onChange={(e) =>
-          setNewQuotation({ ...newQuotation, qty: e.target.value })
-        }
-      />
-    </div>
-
-    <div className="form-group">
-      <label>GST (%)</label>
-      <input
-        type="number"
-        value={newQuotation.gst}
-        onChange={(e) =>
-          setNewQuotation({ ...newQuotation, gst: e.target.value })
-        }
-      />
-    </div>
-
-    <div className="form-group">
-      <label>Calculated Value</label>
-      <input
-        type="text"
-        readOnly
-        value={(() => {
-          const unit = Number(newQuotation.unitPrice || 0);
-          const qty = Number(newQuotation.qty || 0);
-          const gst = Number(newQuotation.gst || 0);
-          const base = unit * qty;
-          const total = base + (base * gst) / 100;
-          return total.toFixed(2);
-        })()}
-      />
-    </div>
-  </>
-)}
-
-
-              <div className="form-group">
-                <label>Work Description *</label>
-                <textarea
-                  value={newQuotation.description}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      description: e.target.value,
-                    })
-                  }
-                  rows="4"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Quotation Date *</label>
-                <input
-                  type="date"
-                  value={newQuotation.date}
-                  onChange={(e) =>
-                    setNewQuotation({ ...newQuotation, date: e.target.value })
-                  }
-                />
-              </div>
-    <div className="form-group">
-  <label>Quotation Status *</label>
-  <select
-    value={newQuotation.quotationStatus}
-    onChange={(e) =>
-      setNewQuotation({
-        ...newQuotation,
-        quotationStatus: e.target.value,
-      })
-    }
-  >
-    <option value="Draft">Draft</option>
-    {editId && (
-      <>
-        <option value="Submitted">Submitted</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-      </>
-    )}
-  </select>
-</div>
-
-
-              {/* PAYMENT PHASE */}
-  
-
-            </div>
-  
-
-            {/* LIVE QUOTATION PREVIEW */}
-            {/* <div
-              className="quotation-preview"
-              style={{
-                border: "1px solid #ccc",
-                backgroundColor: "#fffefe",
-                maxHeight: "100px",
-              }}
-            >
-              <h2 style={{ textAlign: "center" }}>Quotation</h2>
-              <p>
-                <strong>Quotation No:</strong> {newQuotation.quotationNo}
-              </p>
-              <p>
-                <strong>Date:</strong> {newQuotation.date}
-              </p>
-              <p>
-                <strong>Opportunity Name:</strong>{" "}
-                {newQuotation.opportunity_name}
-              </p>
-              <p>
-                <strong>Client:</strong> {newQuotation.clientName} (
-                {newQuotation.client_type_name})
-              </p>
-              <p>
-                <strong>Lab:</strong> {newQuotation.lab_name}
-              </p>
-              <p>
-                <strong>Work Category:</strong>{" "}
-                {newQuotation.work_category_name}
-              </p>
-              <p>
-                <strong>Description:</strong> {newQuotation.description}
-              </p>
-              <p>
-                <strong>Quote Value (Incl. GST):</strong> ₹{" "}
-                {calculateTotalValue()}
-              </p>
-            </div> */}
-
-            {/* ACTIONS */}
-            <div className="modal-actions">
-              <button className="btn-save" onClick={handleSaveQuotation}>
-                {editId ? "Update Quotation" : "Create & Save Quotation"}
-              </button>
-
-              {/* <button className="btn-download" onClick={() => downloadDocx(newQuotation)}>
-          Generate DOCX
-        </button> */}
-
-              <button className="btn-cancel" onClick={closeModal}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-         {showPaymentForm && (
-  <div className="modal-overlay" onClick={() => setShowPaymentForm(false)}>
-    <div className="modal" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header">
-        <h3>Enter Payment Details</h3>
-        <button className="btn-close" onClick={() => setShowPaymentForm(false)}>
-          ✕
-        </button>
+        <label>Quotation No *</label>
+        <input type="text" value={newQuotation.quotationNo} readOnly />
       </div>
 
-      <div className="modal-form">
+      {/* Client Name */}
+      <div className="form-group">
+        <label>Client Name(s) *</label>
+        <select
+          value={newQuotation.client_id}
+          onChange={(e) => {
+            const clientId = e.target.value;
+            setNewQuotation({
+              ...newQuotation,
+              client_id: clientId,
+              clientName: "",
+              opportunity_name: "",
+              work_category_id: "",
+              work_category_name: "",
+              lab_id: "",
+              lab_name: "",
+              client_type_id: "",
+              client_type_name: "",
+            });
+          }}
+        >
+          <option value="">Select Client</option>
+          {opportunities
+            .map((opp) => ({ client_id: opp.client_id, client_name: opp.client_name }))
+            .filter((v, i, a) => a.findIndex((t) => t.client_id === v.client_id) === i)
+            .map((client) => (
+              <option key={client.client_id} value={client.client_id}>
+                {client.client_name}
+              </option>
+            ))}
+        </select>
+      </div>
 
-  
+      {/* Opportunity Name(s) */}
+      <div className="form-group">
+        <label>Opportunity Name(s) *</label>
+        <select
+          value={newQuotation.opportunity_name ? newQuotation.opportunity_name.split(",") : []}
+          onChange={(e) => {
+            const selectedOpportunityNames = Array.from(e.target.selectedOptions).map(
+              (option) => option.value
+            );
+            const firstOpp = opportunities.find(
+              (opp) =>
+                String(opp.client_id) === String(newQuotation.client_id) &&
+                selectedOpportunityNames.includes(opp.opportunity_name)
+            );
+            setNewQuotation({
+              ...newQuotation,
+              opportunity_name: selectedOpportunityNames.join(","),
+              clientName: "",
+              work_category_id: firstOpp?.work_category_id || "",
+              work_category_name: firstOpp?.work_category_name || "",
+              lab_id: firstOpp?.lab_id || "",
+              lab_name: firstOpp?.lab_name ? JSON.parse(firstOpp.lab_name).join(", ") : "",
+              client_type_id: firstOpp?.client_type_id || "",
+              client_type_name: firstOpp?.client_type_name || "",
+            });
+          }}
+        >
+          <option value="">Select Opportunity</option>
+          {newQuotation.client_id &&
+            opportunities
+              .filter((opp) => String(opp.client_id) === String(newQuotation.client_id))
+              .map((opp) => (
+                <option key={opp.opportunity_name} value={opp.opportunity_name}>
+                  {opp.opportunity_name}
+                </option>
+              ))}
+        </select>
+      </div>
 
+      {/* Client Type */}
+      <div className="form-group">
+        <label>Client Type</label>
+        <input type="text" value={newQuotation.client_type_name} readOnly />
+      </div>
+
+      {/* Work Category */}
+      <div className="form-group">
+        <label>Work Category</label>
+        <input type="text" value={newQuotation.work_category_name} readOnly />
+      </div>
+
+      {/* Lab */}
+      <div className="form-group">
+        <label>Lab</label>
+        <input type="text" value={newQuotation.lab_name} readOnly />
+      </div>
+
+      {/* Pricing Mode */}
+      <div className="form-group">
+        <label>Pricing Mode *</label>
+        <select
+          value={newQuotation.pricingMode}
+          onChange={(e) =>
+            setNewQuotation({
+              ...newQuotation,
+              pricingMode: e.target.value,
+              unitPrice: "",
+              qty: "",
+              gst: "",
+              value: "",
+            })
+          }
+        >
+          <option value="value">Enter Total Value Only</option>
+          <option value="unit">Unit Price × Qty + GST</option>
+        </select>
+      </div>
+
+      {/* Dynamic Value / Unit Price Fields */}
+      {newQuotation.pricingMode === "value" && (
+        <div className="form-group">
+          <label>Quote Value *</label>
+          <input
+            type="number"
+            value={newQuotation.value}
+            onChange={(e) => setNewQuotation({ ...newQuotation, value: e.target.value })}
+          />
+        </div>
+      )}
+
+      {newQuotation.pricingMode === "unit" && (
+        <>
+          <div className="form-group">
+            <label>Unit Price *</label>
+            <input
+              type="number"
+              value={newQuotation.unitPrice}
+              onChange={(e) => setNewQuotation({ ...newQuotation, unitPrice: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label>Quantity *</label>
+            <input
+              type="number"
+              value={newQuotation.qty}
+              onChange={(e) => setNewQuotation({ ...newQuotation, qty: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label>GST (%)</label>
+            <input
+              type="number"
+              value={newQuotation.gst}
+              onChange={(e) => setNewQuotation({ ...newQuotation, gst: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label>Calculated Value</label>
+            <input
+              type="text"
+              readOnly
+              value={(() => {
+                const unit = Number(newQuotation.unitPrice || 0);
+                const qty = Number(newQuotation.qty || 0);
+                const gst = Number(newQuotation.gst || 0);
+                const base = unit * qty;
+                return (base + (base * gst) / 100).toFixed(2);
+              })()}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Work Description */}
+      <div className="form-group">
+        <label>Work Description *</label>
+        <textarea
+          rows="4"
+          value={newQuotation.description}
+          onChange={(e) => setNewQuotation({ ...newQuotation, description: e.target.value })}
+        />
+      </div>
+
+      {/* Quotation Date */}
+      <div className="form-group">
+        <label>Quotation Date *</label>
+        <input
+          type="date"
+          value={newQuotation.date}
+          onChange={(e) => setNewQuotation({ ...newQuotation, date: e.target.value })}
+        />
+      </div>
+
+      {/* Quotation Status */}
+      <div className="form-group">
+        <label>Quotation Status *</label>
+        <select
+          value={newQuotation.quotationStatus}
+          onChange={(e) => setNewQuotation({ ...newQuotation, quotationStatus: e.target.value })}
+        >
+          <option value="Draft">Draft</option>
+          {editId && (
+            <>
+              <option value="Submitted">Submitted</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </>
+          )}
+        </select>
+      </div>
+    </div>
+
+    {/* Action Buttons */}
+    <div className="unique-form-actions">
+      <button className="btn-save" onClick={handleSaveQuotation}>
+        {editId ? "Update Quotation" : "Create & Save Quotation"}
+      </button>
+      <button className="btn-cancel" onClick={() => {/* optional reset */}}>
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  {/* ================= Payment Form Inline ================= */}
+  {showPaymentForm && (
+    <div className="unique-form-section"  >
+      <h3>Enter Payment Details</h3>
+
+      <div className="unique-form-grid">
         <div className="form-group">
           <label>Payment Phase *</label>
           <select
             value={newQuotation.paymentPhase}
-            onChange={(e) =>
-              setNewQuotation({ ...newQuotation, paymentPhase: e.target.value })
-            }
+            onChange={(e) => setNewQuotation({ ...newQuotation, paymentPhase: e.target.value })}
           >
             <option value="Not Started">Not Started</option>
             <option value="Started">Started</option>
@@ -1188,9 +1095,7 @@ items: JSON.stringify(newQuotation.items),
               <input
                 type="number"
                 value={newQuotation.revisedCost}
-                onChange={(e) =>
-                  setNewQuotation({ ...newQuotation, revisedCost: e.target.value })
-                }
+                onChange={(e) => setNewQuotation({ ...newQuotation, revisedCost: e.target.value })}
               />
             </div>
 
@@ -1198,75 +1103,56 @@ items: JSON.stringify(newQuotation.items),
               <label>PO Received *</label>
               <select
                 value={newQuotation.poReceived}
-                onChange={(e) =>
-                  setNewQuotation({ ...newQuotation, poReceived: e.target.value })
-                }
+                onChange={(e) => setNewQuotation({ ...newQuotation, poReceived: e.target.value })}
               >
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
-{newQuotation.poReceived === "Yes" && (
-  <div className="form-group">
-    <label>Purchase Order Number *</label>
-    <input
-      type="text"
-      value={newQuotation.poNumber || ""}
-      onChange={(e) =>
-        setNewQuotation({ ...newQuotation, poNumber: e.target.value })
-      }
-    />
-  </div>
-)}
+
+            {newQuotation.poReceived === "Yes" && (
+              <div className="form-group">
+                <label>Purchase Order Number *</label>
+                <input
+                  type="text"
+                  value={newQuotation.poNumber || ""}
+                  onChange={(e) => setNewQuotation({ ...newQuotation, poNumber: e.target.value })}
+                />
+              </div>
+            )}
 
             <div className="form-group">
               <label>Payment Received *</label>
               <select
                 value={newQuotation.paymentReceived}
-                onChange={(e) =>
-                  setNewQuotation({
-                    ...newQuotation,
-                    paymentReceived: e.target.value,
-                  })
-                }
+                onChange={(e) => setNewQuotation({ ...newQuotation, paymentReceived: e.target.value })}
               >
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </div>
 
-      {newQuotation.paymentReceived === "Yes" && (
-  <>
-    <div className="form-group">
-      <label>Payment Amount</label>
-      <input
-        type="number"
-        value={newQuotation.paymentAmount}
-        onChange={(e) =>
-          setNewQuotation({
-            ...newQuotation,
-            paymentAmount: e.target.value,
-          })
-        }
-      />
-    </div>
+            {newQuotation.paymentReceived === "Yes" && (
+              <>
+                <div className="form-group">
+                  <label>Payment Amount</label>
+                  <input
+                    type="number"
+                    value={newQuotation.paymentAmount}
+                    onChange={(e) => setNewQuotation({ ...newQuotation, paymentAmount: e.target.value })}
+                  />
+                </div>
 
-    <div className="form-group">
-      <label>Payment Received Date *</label>
-      <input
-        type="date"
-        value={newQuotation.paymentReceivedDate || ""}
-        onChange={(e) =>
-          setNewQuotation({
-            ...newQuotation,
-            paymentReceivedDate: e.target.value,
-          })
-        }
-      />
-    </div>
-  </>
-)}
-
+                <div className="form-group">
+                  <label>Payment Received Date *</label>
+                  <input
+                    type="date"
+                    value={newQuotation.paymentReceivedDate || ""}
+                    onChange={(e) => setNewQuotation({ ...newQuotation, paymentReceivedDate: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
 
             {newQuotation.paymentReceived === "No" && (
               <div className="form-group">
@@ -1274,12 +1160,7 @@ items: JSON.stringify(newQuotation.items),
                 <textarea
                   rows="2"
                   value={newQuotation.paymentPendingReason}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      paymentPendingReason: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setNewQuotation({ ...newQuotation, paymentPendingReason: e.target.value })}
                 />
               </div>
             )}
@@ -1287,14 +1168,14 @@ items: JSON.stringify(newQuotation.items),
         )}
       </div>
 
-      <div className="modal-actions">
-               <button
+      {/* Payment Action Buttons */}
+      <div className="unique-form-actions">
+        <button
           className="btn-save"
           onClick={async () => {
             try {
-              await updateQuotation(newQuotation.id, newQuotation); // save payment
-              setShowPaymentForm(false);
-              // optionally refresh your quotation list
+              await updateQuotation(newQuotation.id, newQuotation);
+              setShowPaymentForm(true);
             } catch (err) {
               console.error(err);
               alert("Error saving payment details");
@@ -1303,15 +1184,14 @@ items: JSON.stringify(newQuotation.items),
         >
           Save Payment
         </button>
-        <button
-          className="btn-cancel"
-          onClick={() => setShowPaymentForm(false)}
-        >
+        <button className="btn-cancel" onClick={() => setShowPaymentForm(false)}>
           Cancel
         </button>
       </div>
     </div>
-  </div>
+  )}
+</div>
+
 )}
     </div>
   );

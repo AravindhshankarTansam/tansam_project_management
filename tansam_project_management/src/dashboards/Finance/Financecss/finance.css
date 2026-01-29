@@ -938,3 +938,102 @@ button.btn-save:hover {
 .react-select__multi-value__remove {
   margin-left: auto;
 }
+
+/* ================= Unique Inline Quotation & Payment Form ================= */
+.unique-form-container {
+  position: fixed;
+  inset: 0; /* top:0; bottom:0; left:0; right:0; */
+  background: rgba(0, 0, 0, 0.5); /* dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* above table */
+  overflow-y: auto; /* scroll if tall form */
+}
+.unique-form-container h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+/* Two-column grid layout */
+.unique-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px 24px;
+}
+
+.unique-form-grid .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.unique-form-grid label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.unique-form-grid input,
+.unique-form-grid select,
+.unique-form-grid textarea {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.unique-form-grid input:focus,
+.unique-form-grid select:focus,
+.unique-form-grid textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 4px rgba(59, 130, 246, 0.5);
+}
+
+/* Action buttons */
+.unique-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.unique-form-actions .btn-save,
+.unique-form-actions .btn-cancel {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.unique-form-actions .btn-save {
+  background-color: #3b82f6;
+  color: #fff;
+}
+.unique-form-actions .btn-save:hover {
+  background-color: #2563eb;
+}
+
+.unique-form-actions .btn-cancel {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+.unique-form-actions .btn-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+/* Optional: section separators */
+.unique-form-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 800px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
