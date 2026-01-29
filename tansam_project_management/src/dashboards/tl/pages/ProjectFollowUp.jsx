@@ -15,8 +15,8 @@ import {
   fetchProjectFollowups,
   updateProjectFollowup,
   getPOFileUrl,
-} from "../../services/projectfollowup.api";
-import RichTextEditor from "../../components/RichTextEditor";
+} from "../../../services/projectfollowup.api";
+import RichTextEditor from "../../../components/RichTextEditor";
 
 const PROJECTS_PER_PAGE = 10;
 

@@ -7,7 +7,7 @@ import {
   fetchDepartments,
   createDepartment,
   deleteDepartment,
-} from "../../services/department.api";
+} from "../../../services/department.api";
 
 import "../CSS/department.css";
 

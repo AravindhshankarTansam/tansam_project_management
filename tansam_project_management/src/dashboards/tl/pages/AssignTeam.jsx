@@ -3,15 +3,15 @@ import { FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { fetchProjects } from "../../services/project.api";
+import { fetchProjects } from "../../../services/project.api";
 import {
   fetchAssignments,
   createAssignment,
   deleteAssignment,
   updateAssignment,
-} from "../../services/assignTeam.api";
-import { fetchDepartments } from "../../services/department.api";
-import { fetchMembers } from "../../services/member.api";
+} from "../../../services/assignTeam.api";
+import { fetchDepartments } from "../../../services/department.api";
+import { fetchMembers } from "../../../services/member.api";
 
 import "../CSS/AssignTeam.css";
 

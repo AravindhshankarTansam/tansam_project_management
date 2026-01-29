@@ -20,13 +20,13 @@ import {
   fetchProjects,
   updateProject,
   deleteProject,
-} from "../../services/project.api";
+} from "../../../services/project.api";
 
-import { fetchProjectTypes } from "../../services/admin/admin.roles.api";
-import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
-import { getQuotations } from "../../services/quotation/quotation.api";
+import { fetchProjectTypes } from "../../../services/admin/admin.roles.api";
+import { fetchOpportunities } from "../../../services/coordinator/coordinator.opportunity.api";
+import { getQuotations } from "../../../services/quotation/quotation.api";
 import { fetchOpportunityTrackers } 
-  from "../../services/coordinator/coordinator.tracker.api";
+  from "../../../services/coordinator/coordinator.tracker.api";
 
 
 /* ================= CONSTANTS ================= */

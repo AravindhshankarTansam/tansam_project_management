@@ -27,13 +27,13 @@ import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
 import GenerateQuotation from "./dashboards/Finance/generateQuotation.jsx";
 
 /* TEAM LEADER */
-import TLDashboard from "./tl/pages/TLDashboard.jsx";
-import CreateProject from "./tl/pages/CreateProject.jsx";
-import ProjectFollowUp from "./tl/pages/ProjectFollowUp.jsx";
+import TLDashboard from "./dashboards/tl/pages/TLDashboard.jsx";
+import CreateProject from "./dashboards/tl/pages/CreateProject.jsx";
+import ProjectFollowUp from "./dashboards/tl/pages/ProjectFollowUp.jsx";
 // import Summary from "./tl/pages/Summary.jsx";
-import AssignTeam from "./tl/pages/AssignTeam.jsx";
-import Department from "./tl/pages/department.jsx";
-import TeamMember from "./tl/pages/teammember.jsx";
+import AssignTeam from "./dashboards/tl/pages/AssignTeam.jsx";
+import Department from "./dashboards/tl/pages/department.jsx";
+import TeamMember from "./dashboards/tl/pages/teammember.jsx";
 // import ProjectTypes from "./tl/pages/projectTypes.jsx";
 
 /* CEO */
