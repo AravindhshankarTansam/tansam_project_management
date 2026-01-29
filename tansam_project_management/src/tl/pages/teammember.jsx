@@ -18,7 +18,8 @@
     updateMember,
   } from "../../services/member.api";
 
-  import "./teammember.css";
+import "../CSS/teammember.css";
+
 
   const MEMBERS_PER_PAGE = 8;
 

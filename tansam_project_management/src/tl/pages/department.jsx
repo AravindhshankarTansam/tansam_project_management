@@ -9,7 +9,7 @@ import {
   deleteDepartment,
 } from "../../services/department.api";
 
-import "./department.css";
+import "../CSS/department.css";
 
 export default function Departments() {
   const [departments, setDepartments] = useState([]);

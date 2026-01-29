@@ -13,7 +13,7 @@ import {
 import { fetchDepartments } from "../../services/department.api";
 import { fetchMembers } from "../../services/member.api";
 
-import "./AssignTeam.css";
+import "../CSS/AssignTeam.css";
 
 const formatDate = (date) => {
   if (!date) return "";

@@ -1,4 +1,4 @@
-import "./TLDashboard.css";
+import "../CSS/TLDashboard.css";
 import { useEffect, useState } from "react";
 import {
   FiArrowUpRight,

@@ -9,7 +9,7 @@ import {
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./ProjectFollowUp.css";
+import "../CSS/ProjectFollowUp.css";
 
 import {
   fetchProjectFollowups,

@@ -13,7 +13,7 @@ import {
 } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./CreateProject.css";
+import "../CSS/CreateProject.css";
 
 import {
   createProject,
