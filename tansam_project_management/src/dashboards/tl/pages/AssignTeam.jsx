@@ -39,7 +39,7 @@ export default function AssignTeam() {
     memberName: "",
     role: "",
     departmentId: "",
-    effort: "",
+    // effort: "",
     startDate: "",
     endDate: "",
   });
@@ -69,7 +69,7 @@ export default function AssignTeam() {
       memberName: assignment.memberName,
       role: assignment.role,
       departmentId: assignment.departmentId,
-      effort: assignment.effort,
+      // effort: assignment.effort,
       startDate: formatDate(assignment.startDate),
       endDate: formatDate(assignment.endDate),
     });
@@ -90,7 +90,7 @@ export default function AssignTeam() {
         memberName: form.memberName.trim(),
         role: form.role.trim(),
         departmentId: Number(form.departmentId),
-        effort: form.effort,
+        // effort: form.effort,
         startDate: form.startDate,
         endDate: form.endDate,
       };
@@ -113,7 +113,7 @@ export default function AssignTeam() {
         memberName: "",
         role: "",
         departmentId: "",
-        effort: "",
+        // effort: "",
         startDate: "",
         endDate: "",
       });
@@ -244,7 +244,7 @@ export default function AssignTeam() {
                 ))}
               </select>
 
-              <input name="effort" placeholder="Effort" value={form.effort} onChange={handleChange} required />
+              {/* <input name="effort" placeholder="Effort" value={form.effort} onChange={handleChange} required /> */}
               <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
               <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
 
