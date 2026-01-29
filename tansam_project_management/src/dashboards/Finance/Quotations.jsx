@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "../../layouts/CSS/finance.css";
+import "./CSS/finance.css";
 import GenerateQuotation from "./generateQuotation";
 import {
   getQuotations,
@@ -7,6 +7,8 @@ import {
   updateQuotation,
   deleteQuotation,
 } from "../../services/quotation/quotation.api";
+import MultiSelectDropdown from "./MultiSelectDropdown";
+
 import { FaFileWord, FaEdit, FaTrash, FaFilePdf } from "react-icons/fa";
 import { MdEditDocument } from "react-icons/md";
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
@@ -393,13 +395,16 @@ const totalValue =
     //   }
     // }
 
- const matchedOpportunity = opportunities.find(
-    (opp) =>
-      opp.opportunity_name ===
-      newQuotation.opportunity_name.split(",")[0] // first selected value
-  );
+const selectedOpportunities = Array.isArray(newQuotation.opportunity_name)
+  ? newQuotation.opportunity_name
+  : [newQuotation.opportunity_name]; // convert single string to array if needed
 
-  const opportunity_id = matchedOpportunity?.opportunity_id || null;
+const matchedOpportunity = opportunities.find(
+  (opp) => opp.opportunity_name === selectedOpportunities[0]
+);
+
+const opportunity_id = matchedOpportunity?.opportunity_id || null;
+
 
 
    const payload = {
@@ -909,98 +914,45 @@ items: JSON.stringify(newQuotation.items),
               {/* OPPORTUNITY SELECTION (filtered by selected client) */}
 
  <div className="form-group">
-  <label>Opportunity Name(s) *</label>
+ 
 
-  <div
-    className="customDropdown"
-    onClick={(e) => e.stopPropagation()}
-  >
-    {/* Header */}
-    <div
-      className="dropdownHeader"
-      onClick={() =>
-        setShowOpportunityDropdown(!showOpportunityDropdown)
-      }
-    >
-      {newQuotation.opportunity_name ? (
-        <span className="selectedCount">
-          {newQuotation.opportunity_name}
-        </span>
-      ) : (
-        <span className="placeholder">Select Opportunity</span>
-      )}
-    </div>
+<MultiSelectDropdown
+  label="Opportunity Name(s) *"
+  options={opportunities.filter(
+    o => String(o.client_id) === String(newQuotation.client_id)
+  )}
+  displayKey="opportunity_name"
+  valueKey="opportunity_name"
+  selectedValues={
+    Array.isArray(newQuotation.opportunity_name)
+      ? newQuotation.opportunity_name
+      : newQuotation.opportunity_name
+        ? [newQuotation.opportunity_name]
+        : []
+  }
+  placeholder="Select Opportunity"
+  onChange={(selected) => {
+    const firstOpp = opportunities.find(
+      o =>
+        String(o.client_id) === String(newQuotation.client_id) &&
+        selected.includes(o.opportunity_name)
+    );
 
-    {/* Dropdown List */}
-    {showOpportunityDropdown && (
-      <div className="dropdownList">
-        {newQuotation.client_id &&
-          opportunities
-            .filter(
-              (opp) =>
-                String(opp.client_id) ===
-                String(newQuotation.client_id)
-            )
-            .map((opp) => {
-              const selected = newQuotation.opportunity_name
-                ?.split(",")
-                .includes(opp.opportunity_name);
+    setNewQuotation({
+      ...newQuotation,
+      opportunity_name: selected,
+      clientName: firstOpp?.client_name || "",
+      work_category_id: firstOpp?.work_category_id || "",
+      work_category_name: firstOpp?.work_category_name || "",
+      lab_id: firstOpp?.lab_id || "",
+      lab_name: firstOpp?.lab_name ? JSON.parse(firstOpp.lab_name).join(", ") : "",
+      client_type_id: firstOpp?.client_type_id || "",
+      client_type_name: firstOpp?.client_type_name || "",
+    });
+  }}
+/>
 
-              return (
-              <label
-  key={opp.opportunity_name}
-  className="dropdownItem"
-  onClick={(e) => e.stopPropagation()}
->
 
-                  <input
-                    type="checkbox"
-                    value={opp.opportunity_name}
-                    checked={selected}
-                    onChange={(e) => {
-  const value = e.target.value;
-
-  const selectedOpportunityNames =
-    newQuotation.opportunity_name
-      ? newQuotation.opportunity_name.split(",")
-      : [];
-
-  const updatedSelection = selected
-    ? selectedOpportunityNames.filter((v) => v !== value)
-    : [...selectedOpportunityNames, value];
-
-  const firstOpp = opportunities.find(
-    (o) =>
-      String(o.client_id) === String(newQuotation.client_id) &&
-      updatedSelection.includes(o.opportunity_name)
-  );
-
-  setNewQuotation({
-    ...newQuotation,
-    opportunity_name: updatedSelection.join(","),
-    clientName: "",
-    work_category_id: firstOpp?.work_category_id || "",
-    work_category_name: firstOpp?.work_category_name || "",
-    lab_id: firstOpp?.lab_id || "",
-    lab_name: firstOpp?.lab_name
-      ? JSON.parse(firstOpp.lab_name).join(", ")
-      : "",
-    client_type_id: firstOpp?.client_type_id || "",
-    client_type_name: firstOpp?.client_type_name || "",
-  });
-
-  // ✅ CLOSE DROPDOWN
-  setShowOpportunityDropdown(false);
-}}
-
-                  />
-                  {opp.opportunity_name}
-                </label>
-              );
-            })}
-      </div>
-    )}
-  </div>
 </div>
 
 

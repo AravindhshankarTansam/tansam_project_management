@@ -23,47 +23,39 @@ export const addQuotation = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
-    const { unitPrice = 0, qty = 0, gst = 0, ...otherFields } = req.body;
 
-  // Instead of just JSON.stringify(req.body.items)
-const itemDetails = JSON.stringify(
-  (req.body.items && req.body.items.length)
-    ? req.body.items.map(item => ({
-       
-        qty: Number(item.qty || 0),
-        unitPrice: Number(item.unitPrice || 0),
-        gst: Number(item.gst || 0),
-       
-      }))
-    : [{
-        
-        qty: Number(req.body.qty || 0),
-        unitPrice: Number(req.body.unitPrice || 0),
-        gst: Number(req.body.gst || 0),
-     
-      }]
-);
-// ensure string
+    const { items = [], qty = 0, unitPrice = 0, gst = 0, ...otherFields } = req.body;
 
+    // Prepare itemDetails as string
+    const itemDetails = JSON.stringify(
+      items.length
+        ? items.map(item => ({
+            qty: Number(item.qty || 0),
+            unitPrice: Number(item.unitPrice || 0),
+            gst: Number(item.gst || 0),
+          }))
+        : [{ qty: Number(qty), unitPrice: Number(unitPrice), gst: Number(gst) }]
+    );
 
+    // Extract fields from request
     const {
       opportunity_id,
-      opportunity_name,
-      quotationNo,
+      opportunity_name = null,
+      quotationNo = null,
       clientName,
       client_type_id,
-      client_type_name,
+      client_type_name = null,
       work_category_id,
-      work_category_name,
+      work_category_name = null,
       lab_id,
-      lab_name,
-      description,
-      value,
+      lab_name = null,
+      description = null,
+      value = 0,
       date,
       quotationStatus = 'Draft',
     } = req.body;
 
-    // 🔑 Fetch client_id
+    // 🔑 Fetch client_id from opportunities_coordinator
     const [[client]] = await db.execute(
       `
       SELECT client_id
@@ -75,65 +67,96 @@ const itemDetails = JSON.stringify(
     );
 
     if (!client) {
-      return res.status(400).json({
-        message: "Client not found in opportunities",
-      });
+      return res.status(400).json({ message: "Client not found in opportunities" });
     }
 
     const client_id = client.client_id;
 
-   const [result] = await db.execute(
-  `
-  INSERT INTO quotations (
-  opportunity_id,
-    opportunity_name,
-    quotationNo,
-    client_id,
-    clientName,
-    client_type_id,
-    client_type_name,
-    work_category_id,
-    work_category_name,
-    lab_id,
-    lab_name,
-    description,
-    itemDetails,
-    value,
-    date,
-    quotationStatus
-  )
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `,
-  [
-    opportunity_id,
-    opportunity_name,
-    quotationNo,
-    client_id,
-    clientName,
-    client_type_id,
-    client_type_name,
-    work_category_id,
-    work_category_name,
-    lab_id,
-    lab_name,
-    description,
-    itemDetails,
-    value,
-    date,
-    quotationStatus, // defaulted to 'Draft' in JS destructuring
-  ]
-);
+    // Ensure numeric fields or null
+    const oppId = opportunity_id ? Number(opportunity_id) : null;
+    const clientTypeId = client_type_id ? Number(client_type_id) : null;
+    const workCategoryId = work_category_id ? Number(work_category_id) : null;
+    const labId = lab_id ? Number(lab_id) : null;
+
+    // Format date for MySQL
+    const quotationDate = date
+      ? new Date(date).toISOString().slice(0, 19).replace('T', ' ')
+      : new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    // Debug log to verify values
+    console.log({
+      oppId,
+      opportunity_name,
+      quotationNo,
+      client_id,
+      clientName,
+      clientTypeId,
+      client_type_name,
+      workCategoryId,
+      work_category_name,
+      labId,
+      lab_name,
+      description,
+      itemDetails,
+      value,
+      quotationDate,
+      quotationStatus
+    });
+
+    // Insert into quotations
+    const [result] = await db.execute(
+      `
+      INSERT INTO quotations (
+        opportunity_id,
+        opportunity_name,
+        quotationNo,
+        client_id,
+        clientName,
+        client_type_id,
+        client_type_name,
+        work_category_id,
+        work_category_name,
+        lab_id,
+        lab_name,
+        description,
+        itemDetails,
+        value,
+        date,
+        quotationStatus
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        oppId,
+        opportunity_name,
+        quotationNo,
+        client_id,
+        clientName,
+        clientTypeId,
+        client_type_name,
+        workCategoryId,
+        work_category_name,
+        labId,
+        lab_name,
+        description,
+        itemDetails,
+        Number(value),
+        quotationDate,
+        quotationStatus
+      ]
+    );
 
     res.status(201).json({
       id: result.insertId,
       quotationStatus: "Draft",
       message: "Quotation created successfully",
     });
+
   } catch (error) {
     console.error("Add Quotation Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 
