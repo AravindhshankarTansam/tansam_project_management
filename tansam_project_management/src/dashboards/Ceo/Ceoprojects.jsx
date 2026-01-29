@@ -20,7 +20,7 @@ export default function CeoProjects() {
 const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
 const [currentPage, setCurrentPage] = useState(1);
 const [quotations, setQuotations] = useState([]);
-
+const [labPayments, setLabPayments] = useState({});
 const [projectPayments, setProjectPayments] = useState({});
 
   /* ================= LOAD PROJECTS ================= */
@@ -47,7 +47,38 @@ const [projectPayments, setProjectPayments] = useState({});
       }
     })();
   }, []);
+useEffect(() => {
+  const payments = {};
 
+  projects.forEach((project) => {
+    const oppId = project.opportunityId?.trim()?.toUpperCase();
+    if (!oppId) return;
+
+    // sum approved & received quotations for this opportunity
+    const totalRevenue = quotations
+      .filter(
+        (q) =>
+          q.opportunity_id?.trim()?.toUpperCase() === oppId &&
+          q.quotationStatus === "Approved" &&
+          q.paymentReceived === "Yes"
+      )
+      .reduce((sum, q) => sum + Number(q.paymentAmount || 0), 0);
+
+    if (!totalRevenue) return;
+
+    // get labs for project
+    const labs = Array.isArray(project.labNames)
+      ? project.labNames
+      : (project.labNames ? [project.labNames] : []);
+
+    labs.forEach((lab) => {
+      const key = lab.trim();
+      payments[key] = (payments[key] || 0) + totalRevenue;
+    });
+  });
+
+  setLabPayments(payments);
+}, [projects, quotations]);
   /* ================= LOAD FOLLOWUP STATUS ================= */
   useEffect(() => {
     if (projects.length === 0) return;
@@ -329,6 +360,15 @@ useEffect(() => {
             Clear
           </button>
         )}
+        <div className="lab-cards">
+  {Object.keys(labPayments).map((lab) => (
+    <div key={lab} className="lab-card">
+      <h4>{lab}</h4>
+      <p>₹{labPayments[lab]}</p>
+    </div>
+  ))}
+</div>
+
       </div>
 
       {/* ================= TABLE ================= */}

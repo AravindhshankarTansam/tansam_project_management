@@ -50,8 +50,18 @@ export const deleteQuotation = async (id) => {
 };
 // Get payments for a specific opportunity
 
-export const getPaymentsByOpportunity = async () => {
-  const res = await fetch(QUOTATIONS_URL, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error("Failed to fetch quotations");
-  return res.json();
+export const updateQuotationStatus = async (quotationId, newStatus) => {
+  // Call backend endpoint for status update
+  const res = await fetch(`${QUOTATIONS_URL}/${quotationId}/status`, {
+    method: "PATCH",        // just the method
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ quotationStatus: newStatus }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to update quotation status");
+  }
+
+  return res.json(); // returns { success: true } or { success: false, message: "..."}
 };
