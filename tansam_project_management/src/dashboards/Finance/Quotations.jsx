@@ -34,6 +34,10 @@ export default function Quotations() {
   const [showDoc, setShowDoc] = useState(false);
   const [_projects, setProjects] = useState([]);
   // const [selectedProject, setSelectedProject] = useState("");
+  const [selectedClients, setSelectedClients] = useState([]);
+const [selectedWorkCategories, setSelectedWorkCategories] = useState([]);
+const [selectedLabs, setSelectedLabs] = useState([]);
+
   const [_showOpportunityDropdown, setShowOpportunityDropdown] =
     useState(false);
 
@@ -87,9 +91,9 @@ export default function Quotations() {
   });
 
   const clearAllFilters = () => {
-    setSelectedClient("");
-    setSelectedWorkCategory("");
-    setSelectedLab("");
+    setSelectedClients("");
+    setSelectedWorkCategories("");
+    setSelectedLabs("");
     setPage(1);
   };
 const handleEditGeneratedQuotation = async (originalQuotation) => {
@@ -289,14 +293,22 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
 
     loadOpportunities();
   }, []);
+const filtered = data.filter((q) => {
+  const clientMatch =
+    selectedClients.length === 0 ||
+    selectedClients.includes(q.clientName);
 
-  const filtered = data.filter(
-    (q) =>
-      (selectedClient === "" || q.clientName === selectedClient) &&
-      (selectedWorkCategory === "" ||
-        q.work_category_name === selectedWorkCategory) &&
-      (selectedLab === "" || q.lab_name === selectedLab),
-  );
+  const categoryMatch =
+    selectedWorkCategories.length === 0 ||
+    selectedWorkCategories.includes(q.work_category_name);
+
+  const labMatch =
+    selectedLabs.length === 0 ||
+    selectedLabs.includes(q.lab_name);
+
+  return clientMatch && categoryMatch && labMatch;
+});
+
   const generateQuotationNo = (data) => {
     const numbers = data
       .map((q) => q.quotationNo)
@@ -540,50 +552,38 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
 
       {/* Filters */}
       <div className="filters">
-        <select
-          value={selectedClient}
-          onChange={(e) => {
-            setSelectedClient(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">All Clients</option>
-          {clientOptions.map((client) => (
-            <option key={client} value={client}>
-              {client}
-            </option>
-          ))}
-        </select>
+<MultiSelectDropdown
+  // label="Client"
+  options={clientOptions.map(c => ({ label: c, value: c }))}
+  selectedValues={selectedClients}
+  onChange={(values) => {
+    setSelectedClients(values);
+    setPage(1);
+  }}
+/>
 
-        <select
-          value={selectedWorkCategory}
-          onChange={(e) => {
-            setSelectedWorkCategory(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">All Categories</option>
-          {workCategoryOptions.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
 
-         <select
-      value={selectedLab}
-      onChange={(e) => {
-        setSelectedLab(e.target.value);
-        setPage(1);
-      }}
-    >
-      <option value="">All Labs</option>
-      {labOptions.map((name) => (
-        <option key={name} value={name}>
-          {name}
-        </option>
-      ))}
-    </select>
+      <MultiSelectDropdown
+  // label="Work Category"
+  options={workCategoryOptions.map(w => ({ label: w, value: w }))}
+  selectedValues={selectedWorkCategories}
+  onChange={(values) => {
+    setSelectedWorkCategories(values);
+    setPage(1);
+  }}
+/>
+
+
+  <MultiSelectDropdown
+  // label="Lab"
+  options={labOptions.map(l => ({ label: l, value: l }))}
+  selectedValues={selectedLabs}
+  onChange={(values) => {
+    setSelectedLabs(values);
+    setPage(1);
+  }}
+/>
+
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
           ✕ Clear All
