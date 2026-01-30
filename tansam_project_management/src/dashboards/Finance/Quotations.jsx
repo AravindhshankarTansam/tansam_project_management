@@ -798,7 +798,7 @@ items: JSON.stringify(newQuotation.items),
                       <td>
                         <strong>{q.quotationNo}</strong>
                       </td>
-                      <td>{q.project_name || "-"}</td>
+                      <td>{q.opportunity_name || "-"}</td>
                       <td>{q.paymentPhase || "Not Started"}</td>   
                       <td>{q.revisedCost || "-"}</td>
                       
