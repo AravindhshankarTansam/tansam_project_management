@@ -856,8 +856,8 @@ items: JSON.stringify(newQuotation.items),
       {/* ✅ IMPROVED MODAL */}
       {showModal && (
         
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="finance-modal-overlay" onClick={closeModal}>
+          <div className="finance-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editId ? "Edit Quotation" : "Create New Quotation"}</h3>
               <button className="btn-close" onClick={closeModal}>
@@ -1197,7 +1197,7 @@ onChange={(selected) => {
             </div> */}
 
             {/* ACTIONS */}
-            <div className="modal-actions">
+            <div className="finance-modal-actions">
               <button className="btn-save" onClick={handleSaveQuotation}>
                 {editId ? "Update Quotation" : "Create & Save Quotation"}
               </button>
@@ -1214,8 +1214,8 @@ onChange={(selected) => {
         </div>
       )}
          {showPaymentForm && (
-  <div className="modal-overlay" onClick={() => setShowPaymentForm(false)}>
-    <div className="modal" onClick={(e) => e.stopPropagation()}>
+  <div className="finance-modal-overlay" onClick={() => setShowPaymentForm(false)}>
+    <div className="finance-modal" onClick={(e) => e.stopPropagation()}>
       <div className="modal-header">
         <h3>Enter Payment Details</h3>
         <button className="btn-close" onClick={() => setShowPaymentForm(false)}>
@@ -1346,7 +1346,7 @@ onChange={(selected) => {
         )}
       </div>
 
-      <div className="modal-actions">
+      <div className="finance-modal-actions">
                <button
           className="btn-save"
           onClick={async () => {
