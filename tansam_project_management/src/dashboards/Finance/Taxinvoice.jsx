@@ -190,42 +190,74 @@ export default function Taxinvoice() {
           ))}
         </tbody>
       </table>
+<div className="footer-section">
+  {/* Total in Words - full width above the totals table */}
+  <div className="amount-in-words-block">
+    <strong>Total in Words:</strong> {amountInWords}
+  </div>
 
-      <div className="footer-section">
-        <div className="totals-and-words">
-          <div className="totals-box">
-            <div className="total-row">
-              <span>Total Service Value</span>
-              <span>₹ {serviceValue.toLocaleString("en-IN")}</span>
-            </div>
-            <div className="total-row">
-              <span>SGST @9%</span>
-              <span>₹ {sgst.toLocaleString("en-IN")}</span>
-            </div>
-            <div className="total-row">
-              <span>CGST @9%</span>
-              <span>₹ {cgst.toLocaleString("en-IN")}</span>
-            </div>
-            <div className="total-row grand">
-              <span>Total Service Value with GST</span>
-              <span>₹ {grandTotal.toLocaleString("en-IN")}</span>
-            </div>
-          </div>
+  {/* Totals table - wider, full-width like printed invoice */}
+  <div className="totals-table-block">
+    <div className="total-line">
+      <span className="total-label">Total Service Value</span>
+      <span className="total-value">₹ {serviceValue.toLocaleString("en-IN")}</span>
+    </div>
+    <div className="total-line">
+      <span className="total-label">SGST @9%</span>
+      <span className="total-value">₹ {sgst.toLocaleString("en-IN")}</span>
+    </div>
+    <div className="total-line">
+      <span className="total-label">CGST @9%</span>
+      <span className="total-value">₹ {cgst.toLocaleString("en-IN")}</span>
+    </div>
+    <div className="total-line grand-total">
+      <span className="total-label">Total Service Value with GST</span>
+      <span className="total-value">₹ {grandTotal.toLocaleString("en-IN")}</span>
+    </div>
+  </div>
 
-          <div className="amount-words">
-            <strong>Total in Words:</strong> {amountInWords}
-          </div>
-        </div>
+  {/* Bank Details - one single box below totals */}
+  <div className="bank-details-box">
+    <div className="bank-line">
+      <strong>Bank Name & address:-</strong>
+      <span>ICICI Bank, 20, Egmore High Rd, Egmore, Chennai, Tamil Nadu 600008</span>
+    </div>
+    <div className="bank-line">
+      <strong>Bank A/c No.:</strong>
+      <span>321901001253</span>
+    </div>
+    <div className="bank-line">
+      <strong>IFSC Code:</strong>
+      <span>ICIC0003219</span>
+    </div>
+  </div>
 
-        <div className="bank-details">
-          <strong>Bank Name & address:-</strong>
-          <p>ICICI Bank, 20, Egmore High Rd, Egmore, Chennai, Tamil Nadu 600008</p>
-          <strong>Bank A/c No.:</strong> 321901001253
-          <br />
-          <strong>IFSC Code:</strong> ICIC0003219
-        </div>
-      </div>
+  {/* Authorized Signature - right side */}
+  <div className="signature-section">
+    <div className="signature-box">
+      <p>Authorized Signature</p>
+    </div>
+  </div>
 
+  {/* Footer contact bar */}
+  <div className="invoice-footer-bar">
+    <div className="footer-left">
+      Tel: +91 44 69255700<br />
+      E-Mail: info@tansam.org<br />
+      URL: www.tansam.org
+    </div>
+    <div className="footer-right">
+      C-Wing North, 603, TIDEL Park,<br />
+      No.4, Rajiv Gandhi Salai,<br />
+      Taramani, Chennai-600113
+    </div>
+  </div>
+
+  {/* GSTIN / CIN */}
+  <div className="gstin-bar">
+    GSTIN: 33AAJCT2401Q1Z7 | CIN: U91990TN2022NPL150529
+  </div>
+</div>
       <PDFDownloadLink
         document={
           <TaxInvoicePdf
