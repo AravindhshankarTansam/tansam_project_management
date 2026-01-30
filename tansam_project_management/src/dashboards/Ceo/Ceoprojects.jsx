@@ -145,51 +145,51 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  (async () => {
-    if (!projects || !projectPayments) return;
+  if (!projects || !projectPayments || selectedLabs.length === 0) {
+    setLabPayments({});
+    return;
+  }
 
-    try {
-      const payments = {};
+  try {
+    let totalRevenue = 0;
 
-      // Only calculate for selected labs
-      if (selectedLabs.length > 0) {
-        selectedLabs.forEach((labName) => {
-          const revenue = projects.reduce((sum, project) => {
-            const oppId = project.opportunityId?.trim().toUpperCase();
-            if (!oppId) return sum;
+    projects.forEach((project) => {
+      const oppId = project.opportunityId?.trim().toUpperCase();
+      if (!oppId) return;
 
-            // Normalize project.labNames as array of strings
-            const projectLabNames = (() => {
-              if (!project.labNames) return [];
-              if (Array.isArray(project.labNames)) return project.labNames;
-              if (typeof project.labNames === "string") {
-                try {
-                  const parsed = JSON.parse(project.labNames);
-                  if (Array.isArray(parsed)) return parsed;
-                  return [parsed];
-                } catch {
-                  return project.labNames.split(",").map(l => l.trim());
-                }
-              }
-              return [];
-            })();
-
-            if (projectLabNames.includes(labName)) {
-              return sum + (projectPayments[oppId] || 0);
-            }
-            return sum;
-          }, 0);
-
-          payments[labName] = revenue;
-        });
+      // Normalize labNames
+      let projectLabNames = [];
+      if (Array.isArray(project.labNames)) {
+        projectLabNames = project.labNames;
+      } else if (typeof project.labNames === "string") {
+        try {
+          const parsed = JSON.parse(project.labNames);
+          projectLabNames = Array.isArray(parsed)
+            ? parsed
+            : [parsed];
+        } catch {
+          projectLabNames = project.labNames
+            .split(",")
+            .map((l) => l.trim());
+        }
       }
 
-      setLabPayments(payments); // only selected labs
-    } catch (err) {
-      console.error("Failed to calculate lab payments:", err);
-    }
-  })();
+      // If project has ANY selected lab → add revenue once
+      const hasSelectedLab = selectedLabs.some((lab) =>
+        projectLabNames.includes(lab)
+      );
+
+      if (hasSelectedLab) {
+        totalRevenue += projectPayments[oppId] || 0;
+      }
+    });
+
+    setLabPayments({ total: totalRevenue });
+  } catch (err) {
+    console.error("Failed to calculate lab payments:", err);
+  }
 }, [projects, projectPayments, selectedLabs]);
+
 
 
   /* ================= FILTER OPTIONS ================= */
