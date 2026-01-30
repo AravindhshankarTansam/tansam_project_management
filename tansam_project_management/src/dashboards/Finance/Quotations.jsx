@@ -35,8 +35,8 @@ export default function Quotations() {
   const [_projects, setProjects] = useState([]);
   // const [selectedProject, setSelectedProject] = useState("");
   const [selectedClients, setSelectedClients] = useState([]);
-const [selectedWorkCategories, setSelectedWorkCategories] = useState([]);
-const [selectedLabs, setSelectedLabs] = useState([]);
+  const [selectedWorkCategories, setSelectedWorkCategories] = useState([]);
+  const [selectedLabs, setSelectedLabs] = useState([]);
 
   const [_showOpportunityDropdown, setShowOpportunityDropdown] =
     useState(false);
@@ -51,13 +51,14 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   const workCategoryOptions = [
     ...new Set(data.map((d) => d.work_category_name)),
   ];
-  const labOptions = labs.map((lab) => lab.name); 
-  
+  const labOptions = labs.map((lab) => lab.name);
+
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
   const [selectedLab, setSelectedLab] = useState("");
+
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
@@ -96,85 +97,85 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     setSelectedLabs("");
     setPage(1);
   };
-const handleEditGeneratedQuotation = async (originalQuotation) => {
-  console.log("Edit clicked for quotation ID:", originalQuotation.id);
+  const handleEditGeneratedQuotation = async (originalQuotation) => {
+    console.log("Edit clicked for quotation ID:", originalQuotation.id);
 
-  // ─── Define baseQuotation outside try so it's accessible in catch ───
-  const baseQuotation = {
-    id: originalQuotation.id,
-    quotationNo: originalQuotation.quotationNo || "",
-    opportunity_name: originalQuotation.opportunity_name || "",
-    clientName: originalQuotation.clientName || "",
-    kindAttn: "",
-    subject: "",
-    financeManagerName: "",
-    items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
-    terms: [],
-    termsContent: "",
-    signature: null,
-    seal: null,
-    existingSignature: null,
-    existingSeal: null,
-  };
-  // ────────────────────────────────────────────────
+    // ─── Define baseQuotation outside try so it's accessible in catch ───
+    const baseQuotation = {
+      id: originalQuotation.id,
+      quotationNo: originalQuotation.quotationNo || "",
+      opportunity_name: originalQuotation.opportunity_name || "",
+      clientName: originalQuotation.clientName || "",
+      kindAttn: "",
+      subject: "",
+      financeManagerName: "",
+      items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+      terms: [],
+      termsContent: "",
+      signature: null,
+      seal: null,
+      existingSignature: null,
+      existingSeal: null,
+    };
+    // ────────────────────────────────────────────────
 
-  try {
-    const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
-    console.log("API returned generated data:", generated);
+    try {
+      const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
+      console.log("API returned generated data:", generated);
 
-    let quotationToUse;
+      let quotationToUse;
 
-    if (!generated || !generated.id) {
-      console.warn("No previously generated quotation found for this ID");
+      if (!generated || !generated.id) {
+        console.warn("No previously generated quotation found for this ID");
+        quotationToUse = {
+          ...baseQuotation,
+          refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
+          date: new Date().toISOString().split("T")[0],
+        };
+      } else {
+        console.log("Loading existing generated quotation data");
+        quotationToUse = {
+          ...baseQuotation,
+          quotationId: originalQuotation.id,
+          quotationNo: originalQuotation.quotationNo,
+          opportunity_name: originalQuotation.opportunity_name || generated.opportunity_name || "",
+          clientName: originalQuotation.clientName || "",
+          generatedId: generated.id,
+          refNo: generated.refNo,
+          date: generated.date,
+          items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
+          terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
+          termsContent: generated.termsContent || "",
+          existingSignature: generated.signature ? `http://localhost:9899/${generated.signature}` : null,
+          existingSeal: generated.seal ? `http://localhost:9899/${generated.seal}` : null,
+          signature: null,
+          seal: null,
+        };
+      }
+
+      // Ensure unitPrice, qty, gst are passed to GenerateQuotation
       quotationToUse = {
+        ...quotationToUse,
+        unitPrice: newQuotation.unitPrice || 0,
+        qty: newQuotation.qty || 0,
+        gst: newQuotation.gst || 0,
+      };
+
+      setNewQuotation(quotationToUse);
+      setShowGenerateQuotation(true);
+    } catch (err) {
+      console.error("Error loading generated quotation:", err);
+      alert("Could not load previous generated version. Opening with basic data.");
+
+      // Fallback – now baseQuotation is accessible
+      setNewQuotation({
         ...baseQuotation,
         refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
         date: new Date().toISOString().split("T")[0],
-      };
-    } else {
-      console.log("Loading existing generated quotation data");
-      quotationToUse = {
-        ...baseQuotation,
-        quotationId: originalQuotation.id,
-        quotationNo: originalQuotation.quotationNo,
-        opportunity_name: originalQuotation.opportunity_name || generated.opportunity_name || "",
-        clientName: originalQuotation.clientName || "",
-        generatedId: generated.id,
-        refNo: generated.refNo,
-        date: generated.date,
-        items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
-        terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
-        termsContent: generated.termsContent || "",
-        existingSignature: generated.signature ? `http://localhost:9899/${generated.signature}` : null,
-        existingSeal: generated.seal ? `http://localhost:9899/${generated.seal}` : null,
-        signature: null,
-        seal: null,
-      };
+      });
+      setShowGenerateQuotation(true);
     }
-
-    // Ensure unitPrice, qty, gst are passed to GenerateQuotation
-    quotationToUse = {
-      ...quotationToUse,
-      unitPrice: newQuotation.unitPrice || 0,
-      qty: newQuotation.qty || 0,
-      gst: newQuotation.gst || 0,
-    };
-
-    setNewQuotation(quotationToUse);
-    setShowGenerateQuotation(true);
-  } catch (err) {
-    console.error("Error loading generated quotation:", err);
-    alert("Could not load previous generated version. Opening with basic data.");
-
-    // Fallback – now baseQuotation is accessible
-    setNewQuotation({
-      ...baseQuotation,
-      refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
-      date: new Date().toISOString().split("T")[0],
-    });
-    setShowGenerateQuotation(true);
-  }
-};
+  };
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -196,7 +197,14 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
 
     loadProjects();
   }, [showPaymentForm, newQuotation.clientName]);
-
+  useEffect(() => {
+    const fetchQuotation = async () => {
+      const data = await getQuotations(); // your API call
+      const items = JSON.parse(data.itemDetails || "[]");
+      setUnitPrice(items[0]?.unitPrice || 0);
+    };
+    fetchQuotation();
+  }, []);
   useEffect(() => {
     const closeDropdowns = () => {
       setShowOpportunityDropdown(false);
@@ -293,21 +301,21 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
 
     loadOpportunities();
   }, []);
-const filtered = data.filter((q) => {
-  const clientMatch =
-    selectedClients.length === 0 ||
-    selectedClients.includes(q.clientName);
+  const filtered = data.filter((q) => {
+    const clientMatch =
+      selectedClients.length === 0 ||
+      selectedClients.includes(q.clientName);
 
-  const categoryMatch =
-    selectedWorkCategories.length === 0 ||
-    selectedWorkCategories.includes(q.work_category_name);
+    const categoryMatch =
+      selectedWorkCategories.length === 0 ||
+      selectedWorkCategories.includes(q.work_category_name);
 
-  const labMatch =
-    selectedLabs.length === 0 ||
-    selectedLabs.includes(q.lab_name);
+    const labMatch =
+      selectedLabs.length === 0 ||
+      selectedLabs.includes(q.lab_name);
 
-  return clientMatch && categoryMatch && labMatch;
-});
+    return clientMatch && categoryMatch && labMatch;
+  });
 
   const generateQuotationNo = (data) => {
     const numbers = data
@@ -335,11 +343,32 @@ const filtered = data.filter((q) => {
   //   // ✅ VALUE MODE → user already entered final value
   //   return Number(newQuotation.value || 0).toFixed(2);
   // };
+const handleUnitQtyGstChange = (field, value) => {
+  const updatedItems = [{ 
+    ...newQuotation.items[0], 
+    [field]: Number(value), 
+    total: (() => {
+      const unit = field === "unitPrice" ? Number(value) : Number(newQuotation.items[0].unitPrice);
+      const qty = field === "qty" ? Number(value) : Number(newQuotation.items[0].qty);
+      const gst = field === "gst" ? Number(value) : Number(newQuotation.items[0].gst);
+      const base = unit * qty;
+      return (base + (base * gst) / 100).toFixed(2);
+    })()
+  }];
+  
+  setNewQuotation({ 
+    ...newQuotation, 
+    [field]: value,     // keep top-level for quick display if needed
+    items: updatedItems 
+  });
+};
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
     setNewQuotation({
       ...quotation,
+
+
       ...initializePaymentFields(quotation.quotationStatus, quotation),
 
       paymentPhase: quotation.paymentPhase || "Not Started",
@@ -363,11 +392,11 @@ const filtered = data.filter((q) => {
       const totalValue =
         newQuotation.pricingMode === "unit"
           ? (() => {
-              const base =
-                Number(newQuotation.unitPrice || 0) *
-                Number(newQuotation.qty || 0);
-              return base + (base * Number(newQuotation.gst || 0)) / 100;
-            })()
+            const base =
+              Number(newQuotation.unitPrice || 0) *
+              Number(newQuotation.qty || 0);
+            return base + (base * Number(newQuotation.gst || 0)) / 100;
+          })()
           : Number(newQuotation.value || 0);
 
       // if (newQuotation.quotationStatus === "Approved") {
@@ -419,15 +448,15 @@ const filtered = data.filter((q) => {
         // ✅ only include payment fields if Approved
         ...(newQuotation.quotationStatus === "Approved"
           ? {
-              paymentPhase: newQuotation.paymentPhase,
-              revisedCost: newQuotation.revisedCost,
-              poReceived: newQuotation.poReceived,
-              poNumber: newQuotation.poNumber,
-              paymentReceived: newQuotation.paymentReceived,
-              paymentReceivedDate: newQuotation.paymentReceivedDate,
-              paymentAmount: newQuotation.paymentAmount,
-              paymentPendingReason: newQuotation.paymentPendingReason,
-            }
+            paymentPhase: newQuotation.paymentPhase,
+            revisedCost: newQuotation.revisedCost,
+            poReceived: newQuotation.poReceived,
+            poNumber: newQuotation.poNumber,
+            paymentReceived: newQuotation.paymentReceived,
+            paymentReceivedDate: newQuotation.paymentReceivedDate,
+            paymentAmount: newQuotation.paymentAmount,
+            paymentPendingReason: newQuotation.paymentPendingReason,
+          }
           : {}),
       };
 
@@ -451,6 +480,7 @@ const filtered = data.filter((q) => {
         lab_name: "",
         description: "",
         value: "",
+        unitPrice: "",
         gst: "",
         totalValue: "",
         date: "",
@@ -552,37 +582,37 @@ const filtered = data.filter((q) => {
 
       {/* Filters */}
       <div className="filters">
-<MultiSelectDropdown
-  // label="Client"
-  options={clientOptions.map(c => ({ label: c, value: c }))}
-  selectedValues={selectedClients}
-  onChange={(values) => {
-    setSelectedClients(values);
-    setPage(1);
-  }}
-/>
+        <MultiSelectDropdown
+          // label="Client"
+          options={clientOptions.map(c => ({ label: c, value: c }))}
+          selectedValues={selectedClients}
+          onChange={(values) => {
+            setSelectedClients(values);
+            setPage(1);
+          }}
+        />
 
 
-      <MultiSelectDropdown
-  // label="Work Category"
-  options={workCategoryOptions.map(w => ({ label: w, value: w }))}
-  selectedValues={selectedWorkCategories}
-  onChange={(values) => {
-    setSelectedWorkCategories(values);
-    setPage(1);
-  }}
-/>
+        <MultiSelectDropdown
+          // label="Work Category"
+          options={workCategoryOptions.map(w => ({ label: w, value: w }))}
+          selectedValues={selectedWorkCategories}
+          onChange={(values) => {
+            setSelectedWorkCategories(values);
+            setPage(1);
+          }}
+        />
 
 
-  <MultiSelectDropdown
-  // label="Lab"
-  options={labOptions.map(l => ({ label: l, value: l }))}
-  selectedValues={selectedLabs}
-  onChange={(values) => {
-    setSelectedLabs(values);
-    setPage(1);
-  }}
-/>
+        <MultiSelectDropdown
+          // label="Lab"
+          options={labOptions.map(l => ({ label: l, value: l }))}
+          selectedValues={selectedLabs}
+          onChange={(values) => {
+            setSelectedLabs(values);
+            setPage(1);
+          }}
+        />
 
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
@@ -1017,7 +1047,7 @@ const filtered = data.filter((q) => {
                   }
                 >
                   {" "}
-                  <option value="value">Select Pricing mode</option>
+                  <option value="">Select Pricing mode</option>
                   <option value="value">Enter Total Value Only</option>
                   <option value="unit">Unit Price × Qty + GST</option>
                 </select>
@@ -1041,44 +1071,30 @@ const filtered = data.filter((q) => {
                 <>
                   <div className="form-group">
                     <label>Unit Price *</label>
-                    <input
-                      type="number"
-                      value={newQuotation.unitPrice}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          unitPrice: e.target.value,
-                        })
-                      }
-                    />
+           <input
+  type="number"
+  value={newQuotation.unitPrice}
+  onChange={(e) => handleUnitQtyGstChange("unitPrice", e.target.value)}
+/>
+
                   </div>
 
                   <div className="form-group">
                     <label>Quantity *</label>
-                    <input
-                      type="number"
-                      value={newQuotation.qty}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          qty: e.target.value,
-                        })
-                      }
-                    />
+           <input
+  type="number"
+  value={newQuotation.qty}
+  onChange={(e) => handleUnitQtyGstChange("qty", e.target.value)}
+/>
                   </div>
 
                   <div className="form-group">
                     <label>GST (%)</label>
-                    <input
-                      type="number"
-                      value={newQuotation.gst}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          gst: e.target.value,
-                        })
-                      }
-                    />
+             <input
+  type="number"
+  value={newQuotation.gst}
+  onChange={(e) => handleUnitQtyGstChange("gst", e.target.value)}
+/>
                   </div>
 
                   <div className="form-group">
