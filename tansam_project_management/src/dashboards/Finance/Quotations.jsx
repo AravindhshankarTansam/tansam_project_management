@@ -29,7 +29,7 @@ export default function Quotations() {
 
   const [_workCategories, setWorkCategories] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
-  const [_labs, setLabs] = useState([]);
+  const [labs, setLabs] = useState([]);
   const [activeTab, setActiveTab] = useState("quotation");
   const [showDoc, setShowDoc] = useState(false);
   const [_projects, setProjects] = useState([]);
@@ -47,7 +47,8 @@ export default function Quotations() {
   const workCategoryOptions = [
     ...new Set(data.map((d) => d.work_category_name)),
   ];
-  const labOptions = [...new Set(data.map((d) => d.lab_name))];
+  const labOptions = labs.map((lab) => lab.name); 
+  
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState("");
@@ -310,18 +311,18 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const calculateTotalValue = () => {
-    if (newQuotation.pricingMode === "unit") {
-      const unit = Number(newQuotation.unitPrice || 0);
-      const qty = Number(newQuotation.qty || 0);
-      const gst = Number(newQuotation.gst || 0);
-      const base = unit * qty;
-      return (base + (base * gst) / 100).toFixed(2);
-    }
+  // const calculateTotalValue = () => {
+  //   if (newQuotation.pricingMode === "unit") {
+  //     const unit = Number(newQuotation.unitPrice || 0);
+  //     const qty = Number(newQuotation.qty || 0);
+  //     const gst = Number(newQuotation.gst || 0);
+  //     const base = unit * qty;
+  //     return (base + (base * gst) / 100).toFixed(2);
+  //   }
 
-    // ✅ VALUE MODE → user already entered final value
-    return Number(newQuotation.value || 0).toFixed(2);
-  };
+  //   // ✅ VALUE MODE → user already entered final value
+  //   return Number(newQuotation.value || 0).toFixed(2);
+  // };
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
@@ -569,20 +570,20 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
           ))}
         </select>
 
-        <select
-          value={selectedLab}
-          onChange={(e) => {
-            setSelectedLab(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">All Labs</option>
-          {labOptions.map((lab_name) => (
-            <option key={lab_name} value={lab_name}>
-              {lab_name}
-            </option>
-          ))}
-        </select>
+         <select
+      value={selectedLab}
+      onChange={(e) => {
+        setSelectedLab(e.target.value);
+        setPage(1);
+      }}
+    >
+      <option value="">All Labs</option>
+      {labOptions.map((name) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </select>
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
           ✕ Clear All
