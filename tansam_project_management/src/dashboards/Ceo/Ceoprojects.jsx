@@ -144,6 +144,53 @@ useEffect(() => {
   })();
 }, []);
 
+useEffect(() => {
+  (async () => {
+    if (!projects || !projectPayments) return;
+
+    try {
+      const payments = {};
+
+      // Only calculate for selected labs
+      if (selectedLabs.length > 0) {
+        selectedLabs.forEach((labName) => {
+          const revenue = projects.reduce((sum, project) => {
+            const oppId = project.opportunityId?.trim().toUpperCase();
+            if (!oppId) return sum;
+
+            // Normalize project.labNames as array of strings
+            const projectLabNames = (() => {
+              if (!project.labNames) return [];
+              if (Array.isArray(project.labNames)) return project.labNames;
+              if (typeof project.labNames === "string") {
+                try {
+                  const parsed = JSON.parse(project.labNames);
+                  if (Array.isArray(parsed)) return parsed;
+                  return [parsed];
+                } catch {
+                  return project.labNames.split(",").map(l => l.trim());
+                }
+              }
+              return [];
+            })();
+
+            if (projectLabNames.includes(labName)) {
+              return sum + (projectPayments[oppId] || 0);
+            }
+            return sum;
+          }, 0);
+
+          payments[labName] = revenue;
+        });
+      }
+
+      setLabPayments(payments); // only selected labs
+    } catch (err) {
+      console.error("Failed to calculate lab payments:", err);
+    }
+  })();
+}, [projects, projectPayments, selectedLabs]);
+
 
   /* ================= FILTER OPTIONS ================= */
   const clientOptions = useMemo(
@@ -360,14 +407,18 @@ useEffect(() => {
             Clear
           </button>
         )}
-        <div className="lab-cards">
-  {Object.keys(labPayments).map((lab) => (
-    <div key={lab} className="lab-card">
-      <h4>{lab}</h4>
-      <p>₹{labPayments[lab]}</p>
-    </div>
-  ))}
+<div className="lab-cards">
+  {Object.keys(labPayments).map(labName => {
+    if (labPayments[labName] === 0) return null;
+    return (
+      <div key={labName} className="lab-card">
+        <h4>{labName}</h4>
+        <p>₹{labPayments[labName]}</p>
+      </div>
+    );
+  })}
 </div>
+
 
       </div>
 
