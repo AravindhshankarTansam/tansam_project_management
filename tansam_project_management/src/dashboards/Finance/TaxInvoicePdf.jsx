@@ -1,4 +1,3 @@
-// dashboards/Finance/TaxInvoicePdf.jsx
 import {
   Document,
   Page,
@@ -18,14 +17,15 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     fontFamily: "Helvetica",
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   logo: { height: 40 },
 
-  title: { textAlign: "center", marginBottom: 10 },
+  title: { textAlign: "center", marginBottom: 8 },
   titleMain: { fontSize: 12, fontWeight: "bold" },
   titleSub: { fontSize: 9 },
   invoiceTitle: { fontSize: 12, fontWeight: "bold", marginTop: 4 },
@@ -45,8 +45,8 @@ const styles = StyleSheet.create({
   tableHeader: {
     flexDirection: "row",
     borderWidth: 1,
-    backgroundColor: "#f1f5f9",
     marginTop: 10,
+    backgroundColor: "#f1f5f9",
   },
   th: {
     padding: 5,
@@ -66,22 +66,56 @@ const styles = StyleSheet.create({
   colUnit: { width: "14%" },
   colAmt: { width: "14%" },
 
-  totalsBox: {
-    width: "50%",
-    alignSelf: "flex-end",
-    borderWidth: 1,
-    marginTop: 8,
+  /* ===== BOTTOM SECTION ===== */
+
+  bottomRow: {
+    flexDirection: "row",
+    marginTop: 10,
   },
-  totalRow: {
+
+  totalsLeft: {
+    width: "50%",
+    paddingRight: 10,
+  },
+
+  totalsRight: {
+    width: "50%",
+    borderWidth: 1,
+    borderColor: "#000",
+  },
+
+  totalLine: {
     flexDirection: "row",
     borderBottomWidth: 1,
+    borderColor: "#000",
   },
-  totalLabel: { flex: 1, padding: 5 },
-  totalValue: { width: "40%", padding: 5, textAlign: "right" },
+  totalLabel: {
+    flex: 1,
+    padding: 5,
+  },
+  totalValue: {
+    width: "40%",
+    padding: 5,
+    textAlign: "right",
+  },
+
+  wordsBlock: {
+    borderWidth: 1,
+    borderColor: "#000",
+    padding: 6,
+    marginTop: 6,
+  },
+
+  bankBlock: {
+    borderWidth: 1,
+    borderColor: "#000",
+    padding: 6,
+    marginTop: 6,
+  },
 
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 26,
     left: 26,
     right: 26,
     backgroundColor: "#1F4E79",
@@ -107,6 +141,7 @@ export default function TaxInvoicePdf({
   invoiceDate,
   terms,
   duration,
+  registeredOffice,
   billTo,
   shipTo,
   items,
@@ -115,7 +150,7 @@ export default function TaxInvoicePdf({
   cgst,
   totalWithGst,
   amountInWords,
-  bankName,
+  bankNameAddress,
   bankAccount,
   ifsc,
 }) {
@@ -140,18 +175,17 @@ export default function TaxInvoicePdf({
           <Text style={styles.invoiceTitle}>TAX INVOICE</Text>
         </View>
 
-        {/* INFO */}
+        {/* TOP INFO */}
         <View style={styles.boxRow}>
           <View style={styles.boxCell}>
-            <Text>Invoice No: {invoiceNo}</Text>
-            <Text>Date: {invoiceDate}</Text>
-            <Text>Terms: {terms}</Text>
-            <Text>Duration: {duration}</Text>
+            <Text>Invoice No : {invoiceNo}</Text>
+            <Text>Invoice Date : {invoiceDate}</Text>
+            <Text>Terms : {terms}</Text>
+            <Text>Duration : {duration}</Text>
           </View>
           <View style={styles.boxCell}>
-            <Text>Registered Office:</Text>
-            <Text>19A Rukmini Lakshmipathy Road</Text>
-            <Text>Egmore, Chennai – 600008</Text>
+            <Text>Registered office address :</Text>
+            <Text>{registeredOffice}</Text>
           </View>
         </View>
 
@@ -164,17 +198,19 @@ export default function TaxInvoicePdf({
           <View style={styles.boxCell}>
             <Text style={{ fontWeight: "bold" }}>Ship To</Text>
             <Text>{shipTo}</Text>
-            <Text>Place of Supply: Tamil Nadu (33)</Text>
+            <Text>Place of Service/Supply : Tamil Nadu (33)</Text>
           </View>
         </View>
 
         {/* TABLE */}
         <View style={styles.tableHeader}>
-          <Text style={[styles.th, styles.colSl]}>Sl</Text>
-          <Text style={[styles.th, styles.colDesc]}>Description</Text>
-          <Text style={[styles.th, styles.colSAC]}>SAC</Text>
+          <Text style={[styles.th, styles.colSl]}>Sl. No</Text>
+          <Text style={[styles.th, styles.colDesc]}>DESCRIPTION</Text>
+          <Text style={[styles.th, styles.colSAC]}>SAC/HSN Code</Text>
           <Text style={[styles.th, styles.colAMC]}>AMC</Text>
-          <Text style={[styles.th, styles.colUnit]}>Unit</Text>
+          <Text style={[styles.th, styles.colUnit]}>
+            Unit Price / Development cost
+          </Text>
           <Text style={[styles.th, styles.colAmt]}>Amount</Text>
         </View>
 
@@ -184,46 +220,57 @@ export default function TaxInvoicePdf({
             <Text style={[styles.td, styles.colDesc]}>{item.description}</Text>
             <Text style={[styles.td, styles.colSAC]}>{item.sac}</Text>
             <Text style={[styles.td, styles.colAMC]}>{item.amc}</Text>
-            <Text style={[styles.td, styles.colUnit]}>{item.unitPrice}</Text>
+            <Text style={[styles.td, styles.colUnit]}>{item.unit}</Text>
             <Text style={[styles.td, styles.colAmt]}>{item.amount}</Text>
           </View>
         ))}
 
-        {/* TOTALS */}
-        <View style={styles.totalsBox}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>{serviceValue}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>SGST @ 9%</Text>
-            <Text style={styles.totalValue}>{sgst}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>CGST @ 9%</Text>
-            <Text style={styles.totalValue}>{cgst}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Grand Total</Text>
-            <Text style={styles.totalValue}>{totalWithGst}</Text>
+        {/* ===== BOTTOM SECTION (MATCHES PHOTO) ===== */}
+        <View style={styles.bottomRow}>
+          {/* LEFT EMPTY (like scanned invoice) */}
+          <View style={styles.totalsLeft} />
+
+          {/* RIGHT TOTALS BOX */}
+          <View style={styles.totalsRight}>
+            <View style={styles.totalLine}>
+              <Text style={styles.totalLabel}>Total Service Value</Text>
+              <Text style={styles.totalValue}>₹ {serviceValue}</Text>
+            </View>
+            <View style={styles.totalLine}>
+              <Text style={styles.totalLabel}>SGST @ 9%</Text>
+              <Text style={styles.totalValue}>₹ {sgst}</Text>
+            </View>
+            <View style={styles.totalLine}>
+              <Text style={styles.totalLabel}>CGST @ 9%</Text>
+              <Text style={styles.totalValue}>₹ {cgst}</Text>
+            </View>
+            <View style={styles.totalLine}>
+              <Text style={styles.totalLabel}>
+                Total Service Value with GST
+              </Text>
+              <Text style={styles.totalValue}>₹ {totalWithGst}</Text>
+            </View>
           </View>
         </View>
 
-        <Text style={{ marginTop: 6 }}>
-          Amount in Words: {amountInWords}
-        </Text>
+        {/* TOTAL IN WORDS */}
+        <View style={styles.wordsBlock}>
+          <Text>Total in Words: {amountInWords}</Text>
+        </View>
 
-        {/* BANK */}
-        <Text style={{ marginTop: 6, fontWeight: "bold" }}>Bank Details</Text>
-        <Text>{bankName}</Text>
-        <Text>A/c No: {bankAccount}</Text>
-        <Text>IFSC: {ifsc}</Text>
+        {/* BANK DETAILS */}
+        <View style={styles.bankBlock}>
+          <Text>Bank Name & address:-</Text>
+          <Text>{bankNameAddress}</Text>
+          <Text>Bank A/c No.: {bankAccount}</Text>
+          <Text>IFSC Code: {ifsc}</Text>
+        </View>
 
         {/* FOOTER */}
         <View style={styles.footer}>
           <Text style={styles.footerCell}>Tel: +91 44 69255700</Text>
-          <Text style={styles.footerCell}>info@tansam.org</Text>
-          <Text style={styles.footerCell}>www.tansam.org</Text>
+          <Text style={styles.footerCell}>E-Mail: info@tansam.org</Text>
+          <Text style={styles.footerCell}>URL: www.tansam.org</Text>
         </View>
 
         <View style={styles.gstBar}>
