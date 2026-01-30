@@ -322,3 +322,16 @@
 .multi-select-dropdown .option.selected {
   background: #f1f5f9;
 }
+.lab-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+
+  width: fit-content;
+  font-size: 13px;
+}

@@ -670,9 +670,11 @@ items: JSON.stringify(newQuotation.items),
               ) : (
                 <>
                   <th>Quotation No</th>
+                  <th>Opportunity Name</th>
                   <th>Payment Phase</th>
                   <th>Revised Cost</th>
                   <th>PO Received</th>
+                  <th>Purchase order number</th>
                   <th>Payment Received</th>
                   <th>Payment Amount</th>
                   <th>Pending Reason</th>
@@ -719,7 +721,38 @@ items: JSON.stringify(newQuotation.items),
                         >
                           <FaEdit />
                         </button>
-                          {q.quotationStatus === "Approved" && (
+       
+
+                        <button
+                          className="btn-delete"
+                          onClick={() => deleteRow(q.id)}
+                          title="Delete"
+                        >
+                          <FaTrash />
+                        </button>
+
+                        {q.isGenerated ? (
+                          <button
+                            className="btn-medit"
+                            onClick={() => handleEditGeneratedQuotation(q)}
+                            title="Edit Generated Quotation"
+                          >
+                            <MdEditDocument size={30} />
+                          </button>
+                        ) : (
+                          <button
+                            className="btn-generate"
+                            onClick={() => {
+                              setNewQuotation(q);
+                              setShowGenerateQuotation(true);
+                            }}
+                            title="Generate Quotation"
+                          >
+                            <FaFilePdf   size={30} />
+                          </button>
+                        )}
+
+                                           {q.quotationStatus === "Approved" && (
 <FaMoneyCheckAlt
   style={{ cursor: "pointer", color: "green" }}
    size={30}
@@ -758,34 +791,6 @@ items: JSON.stringify(newQuotation.items),
 />
 
 )}
-
-                        <button
-                          className="btn-delete"
-                          onClick={() => deleteRow(q.id)}
-                          title="Delete"
-                        >
-                          <FaTrash />
-                        </button>
-                        {q.isGenerated ? (
-                          <button
-                            className="btn-medit"
-                            onClick={() => handleEditGeneratedQuotation(q)}
-                            title="Edit Generated Quotation"
-                          >
-                            <MdEditDocument size={30} />
-                          </button>
-                        ) : (
-                          <button
-                            className="btn-generate"
-                            onClick={() => {
-                              setNewQuotation(q);
-                              setShowGenerateQuotation(true);
-                            }}
-                            title="Generate Quotation"
-                          >
-                            <FaFilePdf   size={30} />
-                          </button>
-                        )}
                       </td>
                     </>
                   ) : (
@@ -986,9 +991,10 @@ onChange={(selected) => {
     work_category_id: matchedOpps[0]?.work_category_id || "",
     work_category_name: matchedOpps[0]?.work_category_name || "",
     lab_id: matchedOpps[0]?.lab_id || "",
-    lab_name: matchedOpps[0]?.lab_name
-      ? JSON.parse(matchedOpps[0].lab_name).join(", ")
-      : "",
+    // lab_name: matchedOpps[0]?.lab_name
+    //   ? JSON.parse(matchedOpps[0].lab_name).join(", ")
+    //   : "",
+       lab_name: matchedOpps[0]?.lab_name || "",
     client_type_id: matchedOpps[0]?.client_type_id || "",
     client_type_name: matchedOpps[0]?.client_type_name || "",
   });
