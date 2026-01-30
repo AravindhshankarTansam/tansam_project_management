@@ -1158,7 +1158,7 @@ items: JSON.stringify(newQuotation.items),
             </div> */}
 
             {/* ACTIONS */}
-            <div className="finance-finance-modal-actions">
+            <div className="finance-modal-actions">
               <button className="btn-save" onClick={handleSaveQuotation}>
                 {editId ? "Update Quotation" : "Create & Save Quotation"}
               </button>
@@ -1307,7 +1307,7 @@ items: JSON.stringify(newQuotation.items),
         )}
       </div>
 
-      <div className="finance-finance-modal-actions">
+      <div className="finance-modal-actions">
                <button
           className="btn-save"
           onClick={async () => {
