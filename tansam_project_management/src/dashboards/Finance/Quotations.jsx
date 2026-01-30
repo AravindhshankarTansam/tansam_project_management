@@ -1032,7 +1032,7 @@ onChange={(selected) => {
         value: "",
       })
     }
-  >
+  >  <option value="value">Select Pricing mode</option>
     <option value="value">Enter Total Value Only</option>
     <option value="unit">Unit Price × Qty + GST</option>
   </select>
