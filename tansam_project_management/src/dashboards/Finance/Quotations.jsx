@@ -967,29 +967,33 @@ items: JSON.stringify(newQuotation.items),
       : []
   }
   placeholder="Select Opportunity"
-  onChange={(selected) => {
-    const firstOpp = opportunities.find(
-      o =>
-        String(o.client_id) === String(newQuotation.client_id) &&
-        selected.includes(o.opportunity_name)
-    );
+onChange={(selected) => {
+  const matchedOpps = opportunities.filter(
+    o =>
+      String(o.client_id) === String(newQuotation.client_id) &&
+      selected.includes(o.opportunity_name)
+  );
 
-    setNewQuotation({
-      ...newQuotation,
-      // send as comma-separated string for backend
-      opportunity_name: selected.join(","),
+  setNewQuotation({
+    ...newQuotation,
 
-      clientName: firstOpp?.client_name || "",
-      work_category_id: firstOpp?.work_category_id || "",
-      work_category_name: firstOpp?.work_category_name || "",
-      lab_id: firstOpp?.lab_id || "",
-      lab_name: firstOpp?.lab_name
-        ? JSON.parse(firstOpp.lab_name).join(", ")
-        : "",
-      client_type_id: firstOpp?.client_type_id || "",
-      client_type_name: firstOpp?.client_type_name || "",
-    });
-  }}
+    // ✅ store BOTH
+    opportunity_name: matchedOpps.map(o => o.opportunity_name).join(","),
+    opportunity_id: matchedOpps.map(o => o.opportunity_id).join(","),
+
+    // take details from FIRST opportunity only
+    clientName: matchedOpps[0]?.client_name || "",
+    work_category_id: matchedOpps[0]?.work_category_id || "",
+    work_category_name: matchedOpps[0]?.work_category_name || "",
+    lab_id: matchedOpps[0]?.lab_id || "",
+    lab_name: matchedOpps[0]?.lab_name
+      ? JSON.parse(matchedOpps[0].lab_name).join(", ")
+      : "",
+    client_type_id: matchedOpps[0]?.client_type_id || "",
+    client_type_name: matchedOpps[0]?.client_type_name || "",
+  });
+}}
+
 />
 
 

@@ -73,10 +73,17 @@ export const addQuotation = async (req, res) => {
     const client_id = client.client_id;
 
     // Ensure numeric fields or null
-    const oppId = opportunity_id ? Number(opportunity_id) : null;
+    const oppId =
+  opportunity_id !== undefined && opportunity_id !== null
+    ? String(opportunity_id)
+    : null;
+
     const clientTypeId = client_type_id ? Number(client_type_id) : null;
     const workCategoryId = work_category_id ? Number(work_category_id) : null;
-    const labId = lab_id ? Number(lab_id) : null;
+  const labId =
+  lab_id !== undefined && lab_id !== null
+    ? String(lab_id)
+    : null;
 
     // Format date for MySQL
     const quotationDate = date
