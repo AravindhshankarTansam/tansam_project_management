@@ -41,25 +41,32 @@ export default function Taxinvoice() {
 
   const amountInWords = "Six Lakh Forty Nine Thousand Only";
 
-  return (
+ return (
     <div className="invoice-editor">
-      {/* Header - exactly like PDF */}
-      <div className="invoice-top-header">
-        <div className="logos-container">
-          <img src={tnlogo} alt="TN Govt Logo" className="header-logo" />
-          <img src={tansamLogo} alt="TANSAM Logo" className="header-logo" />
-          <img src={tidco} alt="TIDCO Logo" className="header-logo" />
+      {/* Fixed Header - matching original printed invoice */}
+      <div className="invoice-header-fixed">
+        {/* Logos row */}
+        <div className="logos-row">
+          <img src={tnlogo} alt="TN Govt" className="logo-small left-logo" />
+          <div className="center-logo-container">
+            <img src={tansamLogo} alt="TANSAM" className="logo-main" />
+            <p className="powered-by">Powered by SIEMENS</p>
+          </div>
+          <img src={tidco} alt="TIDCO" className="logo-small right-logo" />
         </div>
 
-        <div className="company-title-block">
-          <h2 className="company-name">
+        {/* Company name & subtitle */}
+        <div className="company-info">
+          <h2 className="company-main-title">
             Tamil Nadu Smart and Advanced Manufacturing Centre
           </h2>
           <p className="company-subtitle">
             (A Government of Tamil Nadu Enterprise wholly owned by TIDCO)
           </p>
-          <h1 className="invoice-main-title">TAX INVOICE</h1>
         </div>
+
+        {/* TAX INVOICE title */}
+        <h1 className="tax-invoice-title">TAX INVOICE</h1>
       </div>
 
       <hr className="header-divider" />

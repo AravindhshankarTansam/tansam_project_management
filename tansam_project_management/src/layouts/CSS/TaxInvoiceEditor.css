@@ -7,6 +7,85 @@
   border-radius: 8px;
   font-family: 'Helvetica', Arial, sans-serif;
 }
+.invoice-header-fixed {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logos-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;                    /* space between logos */
+  margin-bottom: 12px;
+}
+
+.logo-small {
+  height: 45px;                 /* smaller side logos */
+  width: auto;
+  object-fit: contain;
+}
+
+.left-logo {
+  margin-right: auto;           /* push to left if needed */
+}
+
+.right-logo {
+  margin-left: auto;
+}
+
+.center-logo-container {
+  text-align: center;
+}
+
+.logo-main {
+  height: 70px;                 /* TANSAM logo bigger & center */
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.powered-by {
+  font-size: 9px;
+  color: #555;
+  margin: 0;
+  font-style: italic;
+}
+
+.company-info {
+  margin: 8px 0 12px;
+}
+
+.company-main-title {
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0 0 3px;
+  color: #003333;
+  line-height: 1.2;
+}
+
+.company-subtitle {
+  font-size: 10px;
+  margin: 0;
+  color: #444;
+  font-weight: 500;
+}
+
+.tax-invoice-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin: 8px 0 15px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Optional: stronger divider line like in printed invoice */
+.header-divider {
+  border: none;
+  border-top: 2px solid #006666;
+  margin: 0 0 25px;
+}
 
 .header-section h1 {
   text-align: center;
