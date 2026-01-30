@@ -25,6 +25,8 @@ import QuotationFollowup from "./dashboards/Finance/QuotationFollowup.jsx";
 // import FinanceReports from "./dashboards/Finance/Reports.jsx";
 import FinanceDashboard from "./dashboards/Finance/FinanceDashboard.jsx";
 import GenerateQuotation from "./dashboards/Finance/generateQuotation.jsx";
+import Taxinvoice from "./dashboards/Finance/Taxinvoice.jsx";
+
 
 /* TEAM LEADER */
 import TLDashboard from "./dashboards/tl/pages/TLDashboard.jsx";
@@ -93,6 +95,7 @@ function App() {
   <Route path="quotation-followup" element={<QuotationFollowup />} />
  <Route path="terms" element={<Terms />} />
  <Route path="generateQuotation" element ={<GenerateQuotation/>} />
+ <Route path="taxinvoice" element ={<Taxinvoice/>} />
   {/* Add other finance children routes here, like Reports */}
   <Route path="reports" element={<Reports />} />
 </Route>

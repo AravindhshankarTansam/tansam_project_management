@@ -1,0 +1,68 @@
+.invoice-editor {
+  background: #fff;
+  padding: 24px;
+  max-width: 1100px;
+}
+
+.box-row {
+  display: flex;
+  border: 1px solid #000;
+  margin-bottom: 12px;
+}
+
+.box-cell {
+  flex: 1;
+  padding: 10px;
+  border-right: 1px solid #000;
+}
+
+.box-cell:last-child {
+  border-right: none;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: none;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+input:focus,
+textarea:focus {
+  outline: 1px solid #1f4e79;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.invoice-table th,
+.invoice-table td {
+  border: 1px solid #000;
+  padding: 6px;
+}
+
+.invoice-table input {
+  border: none;
+}
+
+.totals-box {
+  width: 320px;
+  margin-left: auto;
+  border: 1px solid #000;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.download-btn {
+  display: inline-block;
+  margin-top: 20px;
+  background: #1f4e79;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 4px;
+}
