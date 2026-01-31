@@ -133,6 +133,29 @@ const styles = StyleSheet.create({
     fontSize: 8,
     textAlign: "center",
   },
+    signatureRow: {
+    flexDirection: "row",
+    marginTop: 14,
+  },
+
+  signatureSpacer: {
+    width: "50%",
+  },
+
+  signatureBox: {
+    width: "50%",
+    borderWidth: 1,
+    borderColor: "#000",
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  signatureText: {
+    fontSize: 9,
+    fontWeight: "bold",
+  },
+
 });
 
 export default function TaxInvoicePdf({
@@ -262,6 +285,16 @@ export default function TaxInvoicePdf({
             </View>
           </View>
         </View>
+                {/* AUTHORIZED SIGNATURE */}
+        <View style={styles.signatureRow}>
+          <View style={styles.signatureSpacer} />
+          <View style={styles.signatureBox}>
+            <Text style={styles.signatureText}>
+              Authorized Signature
+            </Text>
+          </View>
+        </View>
+
 
         {/* FOOTER */}
         <View style={styles.footer}>
