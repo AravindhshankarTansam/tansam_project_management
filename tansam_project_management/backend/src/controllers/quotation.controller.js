@@ -194,10 +194,22 @@ export const updateQuotation = async (req, res) => {
 
     const currentStatus = existing.quotationStatus;
 
+    // -----------------------------
+    // Helper functions
+    // -----------------------------
+    const sanitizeDecimal = (val) => {
+      if (val === '' || val === undefined || val === null) return null;
+      return Number(val);
+    };
 
+    const sanitizeDate = (val) => {
+      if (!val || val.trim() === "") return null;
+      // Optional: validate YYYY-MM-DD format
+      return val;
+    };
 
     // -----------------------------
-    // Sanitize all fields to avoid undefined
+    // Sanitize all fields
     // -----------------------------
     const safeBody = {};
     [
@@ -207,114 +219,103 @@ export const updateQuotation = async (req, res) => {
       "work_category_name",
       "lab_name",
       "description",
-      "itemDetails",
-      "value",
       "date",
       "quotationStatus",
       "project_name",
       "paymentPhase",
-      "revisedCost",
       "poReceived",
-   "poNumber",
+      "poNumber",
       "paymentReceived",
-      "paymentAmount",
       "paymentReceivedDate",
       "paymentPendingReason",
-      "client_id",
+      "client_id"
     ].forEach((key) => {
-      safeBody[key] = req.body[key] ?? null;
+      let val = req.body[key] ?? null;
+      if (key === "paymentReceivedDate" || key === "date") {
+        val = sanitizeDate(val);
+      }
+      safeBody[key] = val;
     });
-safeBody.itemDetails = JSON.stringify(
-  (req.body.items && req.body.items.length)
-    ? req.body.items.map(item => ({
-        description: item.description || "",
-        qty: Number(item.qty || 0),
-        unitPrice: Number(item.unitPrice || 0),
-        gst: Number(item.gst || 0),
-        total: Number(item.qty || 0) * Number(item.unitPrice || 0) * (1 + Number(item.gst || 0)/100)
-      }))
-    : [{
-        description: "",
-        qty: Number(req.body.qty || 0),
-        unitPrice: Number(req.body.unitPrice || 0),
-        gst: Number(req.body.gst || 0),
-        total: Number(req.body.qty || 0) * Number(req.body.unitPrice || 0) * (1 + Number(req.body.gst || 0)/100)
-      }]
-);
+
+    // Numeric fields
+    safeBody.revisedCost = sanitizeDecimal(req.body.revisedCost);
+    safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
+    safeBody.value = sanitizeDecimal(req.body.value);
+
+    // Handle itemDetails array
+    safeBody.itemDetails = JSON.stringify(
+      (req.body.items && req.body.items.length)
+        ? req.body.items.map(item => ({
+            description: item.description || "",
+            qty: sanitizeDecimal(item.qty) || 0,
+            unitPrice: sanitizeDecimal(item.unitPrice) || 0,
+            gst: sanitizeDecimal(item.gst) || 0,
+            total: ((sanitizeDecimal(item.qty) || 0) * (sanitizeDecimal(item.unitPrice) || 0) * (1 + (sanitizeDecimal(item.gst) || 0)/100))
+          }))
+        : [{
+            description: "",
+            qty: sanitizeDecimal(req.body.qty) || 0,
+            unitPrice: sanitizeDecimal(req.body.unitPrice) || 0,
+            gst: sanitizeDecimal(req.body.gst) || 0,
+            total: ((sanitizeDecimal(req.body.qty) || 0) * (sanitizeDecimal(req.body.unitPrice) || 0) * (1 + (sanitizeDecimal(req.body.gst) || 0)/100))
+          }]
+    );
+
     // -----------------------------
     // Determine final status
     // -----------------------------
     const finalStatus = safeBody.quotationStatus ?? currentStatus;
-// 🔐 Fetch opportunity stage from correct table
-const [oppRows] = await db.execute(
-  `
-  SELECT stage
-  FROM opportunity_tracker
-  WHERE opportunity_name = ? 
-  LIMIT 1
-  `,
-  [safeBody.opportunity_name]
-);
 
-const opp = oppRows[0];
+    // Fetch opportunity stage
+    const [oppRows] = await db.execute(
+      `SELECT stage FROM opportunity_tracker WHERE opportunity_name = ? LIMIT 1`,
+      [safeBody.opportunity_name]
+    );
+    const opp = oppRows[0];
 
-if (!opp) {
-  return res.status(400).json({ message: "Opportunity not found" });
-}
+    if (!opp) return res.status(400).json({ message: "Opportunity not found" });
 
-// ❌ Block approval if not WON
-if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
-  return res.status(403).json({
-    message: "Quotation can be approved only when opportunity stage is WON",
-  });
-}
+    // Block approval if stage not WON
+    if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
+      return res.status(403).json({
+        message: "Quotation can be approved only when opportunity stage is WON",
+      });
+    }
 
-    // -----------------------------
     // Ensure client_id exists
-    // -----------------------------
     let client_id = safeBody.client_id;
     if (!client_id && safeBody.clientName) {
       const [[client]] = await db.execute(
         `SELECT client_id FROM opportunities_coordinator WHERE UPPER(client_name)=UPPER(?) LIMIT 1`,
         [safeBody.clientName]
       );
-
-      if (!client) {
-        return res.status(400).json({ message: "Client not found" });
-      }
+      if (!client) return res.status(400).json({ message: "Client not found" });
       client_id = client.client_id;
     }
 
-    // -----------------------------
-    // Payment protection
-    // Only update payment fields if Approved
-    // -----------------------------
+    // Payment data based on status
     const paymentData =
       finalStatus === "Approved"
         ? {
-        opportunity_name: safeBody.opportunity_name,
-          clientName: safeBody.clientName,
-          client_type_name: safeBody.client_type_name,
-          paymentPhase: safeBody.paymentPhase ?? "Started",
-          revisedCost: safeBody.revisedCost ?? null,
-          poReceived: safeBody.poReceived ?? "No",
-          poNumber: safeBody.poNumber ?? null,   
-          paymentReceived: safeBody.paymentReceived ?? "No",
-          paymentAmount: safeBody.paymentAmount ?? null,
-          paymentReceivedDate: safeBody.paymentReceivedDate ?? null,
-          paymentPendingReason: safeBody.paymentPendingReason ?? null,
-        }
+            paymentPhase: safeBody.paymentPhase ?? "Started",
+            revisedCost: safeBody.revisedCost,
+            poReceived: safeBody.poReceived ?? "No",
+            poNumber: safeBody.poNumber,
+            paymentReceived: safeBody.paymentReceived ?? "No",
+            paymentAmount: safeBody.paymentAmount,
+            paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
+            paymentPendingReason: safeBody.paymentPendingReason
+          }
         : {
-       
-          paymentPhase: "Not Started",
-          revisedCost: null,
-          poReceived: "No",
-            poNumber: null,  
-          paymentReceived: "No",
-          paymentAmount: null,
-             paymentReceivedDate: null,          
-          paymentPendingReason: null,
-        };
+            paymentPhase: "Not Started",
+            revisedCost: null,
+            poReceived: "No",
+            poNumber: null,
+            paymentReceived: "No",
+            paymentAmount: null,
+            paymentReceivedDate: null,
+            paymentPendingReason: null
+          };
 
     // -----------------------------
     // Update quotation in DB
@@ -329,18 +330,17 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         work_category_name = ?,
         lab_name = ?,
         description = ?,
-          itemDetails = ?,
+        itemDetails = ?,
         value = ?,
         date = ?,
         quotationStatus = ?,
-       
         paymentPhase = ?,
         revisedCost = ?,
         poReceived = ?,
-          poNumber = ?,    
+        poNumber = ?,    
         paymentReceived = ?,
         paymentAmount = ?,
-         paymentReceivedDate = ?,   
+        paymentReceivedDate = ?,   
         paymentPendingReason = ?,
         client_id = ?
       WHERE id = ?
@@ -352,11 +352,10 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         safeBody.work_category_name,
         safeBody.lab_name,
         safeBody.description,
-       safeBody.itemDetails,
+        safeBody.itemDetails,
         safeBody.value,
         safeBody.date,
         finalStatus,
-      
         paymentData.paymentPhase,
         paymentData.revisedCost,
         paymentData.poReceived,
@@ -366,7 +365,7 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
         paymentData.paymentReceivedDate,
         paymentData.paymentPendingReason,
         client_id,
-        id,
+        id
       ]
     );
 
@@ -375,11 +374,13 @@ if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
       id,
       quotationStatus: finalStatus,
     });
+
   } catch (error) {
     console.error("Update Quotation Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 
