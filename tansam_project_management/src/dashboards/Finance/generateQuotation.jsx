@@ -3,7 +3,7 @@ import tnlogo from "../../assets/tansam/tnlogo.png";
 import tansamoldlogo from "../../assets/tansam/tansamoldlogo.png";
 import siemens from "../../assets/tansam/siemens.png";
 import tidco from "../../assets/tansam/tidcologo.png";
-import "../../layouts/CSS/GenerateQuotation.css";
+import "./CSS/generateQuotation.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { getActiveTerms } from "../../services/quotation/terms.api";
 import { saveGeneratedQuotation, getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";

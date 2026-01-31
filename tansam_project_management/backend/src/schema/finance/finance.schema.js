@@ -57,7 +57,7 @@ client_type_id VARCHAR(50),
     paymentReceivedDate DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
+    pricingMode VARCHAR(100),
     INDEX idx_client_id (client_id),
 
     CONSTRAINT fk_quotation_client
