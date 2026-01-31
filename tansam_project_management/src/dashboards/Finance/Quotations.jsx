@@ -55,9 +55,9 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
-  const [selectedClient, setSelectedClient] = useState("");
-  const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
-  const [selectedLab, setSelectedLab] = useState("");
+  // const [selectedClient, setSelectedClient] = useState("");
+  // const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
+  // const [selectedLab, setSelectedLab] = useState("");
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
@@ -554,12 +554,14 @@ const filtered = data.filter((q) => {
       <div className="filters">
 <MultiSelectDropdown
   // label="Client"
+ 
   options={clientOptions.map(c => ({ label: c, value: c }))}
   selectedValues={selectedClients}
   onChange={(values) => {
     setSelectedClients(values);
     setPage(1);
   }}
+   placeholder="Select Client"
 />
 
 
@@ -571,6 +573,7 @@ const filtered = data.filter((q) => {
     setSelectedWorkCategories(values);
     setPage(1);
   }}
+  placeholder="Select Work Category"
 />
 
 
@@ -582,11 +585,12 @@ const filtered = data.filter((q) => {
     setSelectedLabs(values);
     setPage(1);
   }}
+  placeholder="Select Lab"
 />
 
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
-          ✕ Clear All
+          ✕ 
         </button>
 
         <div className="page-size-ui">
@@ -1017,7 +1021,7 @@ const filtered = data.filter((q) => {
                   }
                 >
                   {" "}
-                  <option value="value">Select Pricing mode</option>
+                  <option value="">Select Pricing mode</option>
                   <option value="value">Enter Total Value Only</option>
                   <option value="unit">Unit Price × Qty + GST</option>
                 </select>
