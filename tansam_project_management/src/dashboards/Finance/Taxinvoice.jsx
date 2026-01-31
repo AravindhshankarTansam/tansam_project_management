@@ -68,6 +68,17 @@ export default function Taxinvoice() {
   const sgst = Math.round((serviceValue * invoice.sgstRate) / 100);
   const cgst = Math.round((serviceValue * invoice.cgstRate) / 100);
   const grandTotal = serviceValue + sgst + cgst;
+  const [signatureImage, setSignatureImage] = useState(null);
+  const handleSignatureUpload = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    setSignatureImage(reader.result); // base64
+  };
+  reader.readAsDataURL(file);
+};
 
   // Auto-update Total in Words when grandTotal changes (unless user manually edited it)
   useEffect(() => {
@@ -258,12 +269,28 @@ export default function Taxinvoice() {
           </div>
         </div>
 
-        {/* Authorized Signature */}
-        <div className="signature-area">
-          <div className="signature-box">
-            Authorized Signature
-          </div>
-        </div>
+      {/* Authorized Signature */}
+<div className="signature-area">
+  <div className="signature-box">
+    {signatureImage ? (
+      <img
+        src={signatureImage}
+        alt="Authorized Signature"
+        className="signature-preview"
+      />
+    ) : (
+      "Authorized Signature"
+    )}
+  </div>
+
+  <input
+    type="file"
+    accept="image/png,image/jpeg"
+    onChange={handleSignatureUpload}
+    className="signature-upload"
+  />
+</div>
+
 
         {/* Footer bar */}
         <div className="footer-contact-bar">
@@ -304,6 +331,7 @@ export default function Taxinvoice() {
             bankNameAddress={invoice.bankNameAddress}
             bankAccount={invoice.bankAccount}
             ifsc={invoice.ifscCode}
+            signatureImage={signatureImage} 
           />
         }
         fileName={`TAX_INVOICE_${invoice.invoiceNo.replace(/\//g, "_")}.pdf`}

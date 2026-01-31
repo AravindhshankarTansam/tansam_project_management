@@ -155,6 +155,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "bold",
   },
+  signatureImg: {
+  height: 40,
+  objectFit: "contain",
+},
+
 
 });
 
@@ -175,6 +180,7 @@ export default function TaxInvoicePdf({
   bankNameAddress,
   bankAccount,
   ifsc,
+  signatureImage,
 }) {
   return (
     <Document>
@@ -285,15 +291,18 @@ export default function TaxInvoicePdf({
             </View>
           </View>
         </View>
-                {/* AUTHORIZED SIGNATURE */}
-        <View style={styles.signatureRow}>
-          <View style={styles.signatureSpacer} />
-          <View style={styles.signatureBox}>
-            <Text style={styles.signatureText}>
-              Authorized Signature
-            </Text>
-          </View>
-        </View>
+               {/* AUTHORIZED SIGNATURE */}
+<View style={styles.signatureRow}>
+  <View style={styles.signatureSpacer} />
+  <View style={styles.signatureBox}>
+    {signatureImage ? (
+      <Image src={signatureImage} style={styles.signatureImg} />
+    ) : (
+      <Text style={styles.signatureText}>Authorized Signature</Text>
+    )}
+  </View>
+</View>
+
 
 
         {/* FOOTER */}
