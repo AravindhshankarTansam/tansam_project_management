@@ -346,9 +346,23 @@ const filtered = data.filter((q) => {
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
+      let items = [];
+  try {
+    items = quotation.itemDetails
+      ? JSON.parse(quotation.itemDetails)
+      : [];
+  } catch (_error) {
+    items = [];
+  }
+
+  const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-      
+          pricingMode: "unit",
+    unitPrice: firstItem.unitPrice || "",
+    qty: firstItem.qty || "",
+    gst: firstItem.gst || "",
+
    
       ...initializePaymentFields(quotation.quotationStatus, quotation),
 
@@ -570,6 +584,7 @@ const filtered = data.filter((q) => {
     setSelectedClients(values);
     setPage(1);
   }}
+  placeholder="Enter your clients"
 />
 
 
@@ -581,6 +596,7 @@ const filtered = data.filter((q) => {
     setSelectedWorkCategories(values);
     setPage(1);
   }}
+  placeholder="Enter your work category"
 />
 
 
@@ -592,11 +608,12 @@ const filtered = data.filter((q) => {
     setSelectedLabs(values);
     setPage(1);
   }}
+  placeholder="Enter Lab"
 />
 
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
-          ✕ Clear All
+          ✕ 
         </button>
 
         <div className="page-size-ui">
