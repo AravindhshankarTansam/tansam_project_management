@@ -73,12 +73,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  totalsLeft: {
+  leftColumn: {
     width: "50%",
     paddingRight: 10,
   },
 
-  totalsRight: {
+  rightColumn: {
     width: "50%",
     borderWidth: 1,
     borderColor: "#000",
@@ -103,14 +103,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#000",
     padding: 6,
-    marginTop: 6,
+    marginBottom: 6,
   },
 
   bankBlock: {
     borderWidth: 1,
     borderColor: "#000",
     padding: 6,
-    marginTop: 6,
   },
 
   footer: {
@@ -225,13 +224,24 @@ export default function TaxInvoicePdf({
           </View>
         ))}
 
-        {/* ===== BOTTOM SECTION (MATCHES PHOTO) ===== */}
+        {/* ===== BOTTOM SECTION ===== */}
         <View style={styles.bottomRow}>
-          {/* LEFT EMPTY (like scanned invoice) */}
-          <View style={styles.totalsLeft} />
+          {/* LEFT: WORDS + BANK */}
+          <View style={styles.leftColumn}>
+            <View style={styles.wordsBlock}>
+              <Text>Total in Words: {amountInWords}</Text>
+            </View>
 
-          {/* RIGHT TOTALS BOX */}
-          <View style={styles.totalsRight}>
+            <View style={styles.bankBlock}>
+              <Text>Bank Name & address:-</Text>
+              <Text>{bankNameAddress}</Text>
+              <Text>Bank A/c No.: {bankAccount}</Text>
+              <Text>IFSC Code: {ifsc}</Text>
+            </View>
+          </View>
+
+          {/* RIGHT: TOTALS */}
+          <View style={styles.rightColumn}>
             <View style={styles.totalLine}>
               <Text style={styles.totalLabel}>Total Service Value</Text>
               <Text style={styles.totalValue}>₹ {serviceValue}</Text>
@@ -251,19 +261,6 @@ export default function TaxInvoicePdf({
               <Text style={styles.totalValue}>₹ {totalWithGst}</Text>
             </View>
           </View>
-        </View>
-
-        {/* TOTAL IN WORDS */}
-        <View style={styles.wordsBlock}>
-          <Text>Total in Words: {amountInWords}</Text>
-        </View>
-
-        {/* BANK DETAILS */}
-        <View style={styles.bankBlock}>
-          <Text>Bank Name & address:-</Text>
-          <Text>{bankNameAddress}</Text>
-          <Text>Bank A/c No.: {bankAccount}</Text>
-          <Text>IFSC Code: {ifsc}</Text>
         </View>
 
         {/* FOOTER */}
