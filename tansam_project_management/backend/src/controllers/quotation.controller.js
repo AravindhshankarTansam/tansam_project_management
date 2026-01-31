@@ -195,11 +195,17 @@ export const updateQuotation = async (req, res) => {
     const currentStatus = existing.quotationStatus;
 
     // -----------------------------
-    // Helper to sanitize decimals
+    // Helper functions
     // -----------------------------
     const sanitizeDecimal = (val) => {
       if (val === '' || val === undefined || val === null) return null;
       return Number(val);
+    };
+
+    const sanitizeDate = (val) => {
+      if (!val || val.trim() === "") return null;
+      // Optional: validate YYYY-MM-DD format
+      return val;
     };
 
     // -----------------------------
@@ -224,7 +230,11 @@ export const updateQuotation = async (req, res) => {
       "paymentPendingReason",
       "client_id"
     ].forEach((key) => {
-      safeBody[key] = req.body[key] ?? null;
+      let val = req.body[key] ?? null;
+      if (key === "paymentReceivedDate" || key === "date") {
+        val = sanitizeDate(val);
+      }
+      safeBody[key] = val;
     });
 
     // Numeric fields
@@ -293,7 +303,7 @@ export const updateQuotation = async (req, res) => {
             poNumber: safeBody.poNumber,
             paymentReceived: safeBody.paymentReceived ?? "No",
             paymentAmount: safeBody.paymentAmount,
-            paymentReceivedDate: safeBody.paymentReceivedDate,
+            paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
             paymentPendingReason: safeBody.paymentPendingReason
           }
         : {
