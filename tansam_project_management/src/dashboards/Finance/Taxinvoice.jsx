@@ -272,16 +272,17 @@ export default function Taxinvoice() {
       {/* Authorized Signature */}
 <div className="signature-area">
   <div className="signature-box">
-    {signatureImage ? (
-      <img
-        src={signatureImage}
-        alt="Authorized Signature"
-        className="signature-preview"
-      />
-    ) : (
-      "Authorized Signature"
-    )}
-  </div>
+  {signatureImage ? (
+    <img
+      src={signatureImage}
+      alt="Authorized Signature"
+      className="signature-preview"
+    />
+  ) : (
+    <span>Authorized Signature</span>
+  )}
+</div>
+
 
   <input
     type="file"

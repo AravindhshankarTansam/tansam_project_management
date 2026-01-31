@@ -506,3 +506,33 @@ textarea {
   border-radius: 4px;
   font-size: 13px;
 }
+.signature-area {
+  text-align: right;
+  margin-bottom: 40px;
+}
+
+.signature-box {
+  width: 300px;
+  height: 100px;
+  border: 1px solid #000;
+  margin-left: auto;
+
+  /* 🔑 FIX */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Signature image MUST stay inside box */
+.signature-preview {
+  max-width: 90%;
+  max-height: 80%;
+  object-fit: contain;
+}
+
+.signature-upload {
+  margin-top: 8px;
+  font-size: 12px;
+}
