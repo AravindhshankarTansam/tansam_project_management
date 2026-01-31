@@ -174,41 +174,45 @@ colTotal: { width: "16%", textAlign: "right" },
     marginVertical: 6,
   },
 
-  footer: {
-    position: "absolute",
-    bottom: 24,
-    left: 34,
-    right: 34,
-    backgroundColor: BLUE,
-    color: "#fff",
-    flexDirection: "row",
-    fontSize: 8.4,
-    paddingVertical: 4,
-  },
-  footerCell: {
-    flex: 1,
-    textAlign: "center",
-    paddingHorizontal: 3,
-    borderRightWidth: 1,
-    borderRightColor: "rgba(255,255,255,0.4)",
-  },
-  footerAddress: {
-    flex: 2,
-    textAlign: "center",
-    paddingHorizontal: 3,
-  },
+footerContainer: {
+  position: "absolute",
+  bottom: 0,
+  left: 34,
+  right: 34,
+  fontSize: 8.4,
+},
 
-  gstBar: {
-    position: "absolute",
-    bottom: 6,
-    left: 34,
-    right: 34,
-    backgroundColor: DARK_BLUE,
-    color: "#fff",
-    fontSize: 7.8,
-    textAlign: "center",
-    paddingVertical: 3,
-  },
+footer: {
+  backgroundColor: BLUE,
+  color: "#fff",
+  flexDirection: "row",
+  paddingVertical: 4,
+  fontSize: 8.4,
+},
+
+footerCell: {
+  flex: 1,
+  textAlign: "center",
+  paddingHorizontal: 3,
+  borderRightWidth: 1,
+  borderRightColor: "rgba(255,255,255,0.4)",
+},
+
+footerAddress: {
+  flex: 2,
+  textAlign: "center",
+  paddingHorizontal: 3,
+},
+
+gstBar: {
+  backgroundColor: DARK_BLUE,
+  color: "#fff",
+  fontSize: 7.8,
+  textAlign: "center",
+  paddingVertical: 3,
+},
+
+
 });
 
 export default function QuotationPDF({
@@ -335,18 +339,20 @@ export default function QuotationPDF({
         </View>
 
         {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerCell}>Tel: +91 44 69255700</Text>
-          <Text style={styles.footerCell}>E-Mail: info@tansam.org</Text>
-          <Text style={styles.footerCell}>URL: www.tansam.org</Text>
-          <Text style={styles.footerAddress}>
-            C-Wing North, 603, TIDEL Park, Rajiv Gandhi Salai, Taramani, Chennai-600113
-          </Text>
-        </View>
+<View style={styles.footerContainer} fixed>
+  <View style={styles.footer}>
+    <Text style={styles.footerCell}>Tel: +91 44 69255700</Text>
+    <Text style={styles.footerCell}>E-Mail: info@tansam.org</Text>
+    <Text style={styles.footerCell}>URL: www.tansam.org</Text>
+    <Text style={styles.footerAddress}>
+      C-Wing North, 603, TIDEL Park, Rajiv Gandhi Salai, Taramani, Chennai-600113
+    </Text>
+  </View>
+  <View style={styles.gstBar}>
+    <Text>GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529</Text>
+  </View>
+</View>
 
-        <View style={styles.gstBar}>
-          GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529
-        </View>
       </Page>
     </Document>
   );
