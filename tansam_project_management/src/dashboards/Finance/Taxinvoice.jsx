@@ -1,5 +1,5 @@
 // dashboards/Finance/Taxinvoice.jsx
-import { useState, useEffect } from "react";
+import { useState,useMemo } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import TaxInvoicePdf from "./TaxInvoicePdf";
 import "../../layouts/CSS/TaxInvoiceEditor.css";
@@ -80,14 +80,17 @@ export default function Taxinvoice() {
   reader.readAsDataURL(file);
 };
 
-  // Auto-update Total in Words when grandTotal changes (unless user manually edited it)
-  useEffect(() => {
-    const autoWords = numberToWords(grandTotal);
-    setInvoice(prev => ({
-      ...prev,
-      totalInWords: prev.totalInWords === "Six Lakh Forty Nine Thousand Only" ? autoWords : prev.totalInWords
-    }));
-  }, [grandTotal]);
+ // 👇 ADD THIS HERE (inside component, after grandTotal)
+const autoTotalInWords = useMemo(() => {
+  return numberToWords(grandTotal);
+}, [grandTotal]);
+// 👇 ADD THIS
+const displayedTotalInWords =
+  invoice.totalInWords && invoice.totalInWords.trim().length > 0
+    ? invoice.totalInWords
+    : autoTotalInWords;
+
+
 
   const handleChange = (field) => (e) => {
     setInvoice(prev => ({ ...prev, [field]: e.target.value }));
@@ -231,11 +234,12 @@ export default function Taxinvoice() {
             {/* Total in Words - editable */}
             <div className="words-section">
               <label>Total in Words:</label>
-              <input
-                value={invoice.totalInWords}
-                onChange={handleChange("totalInWords")}
-                className="total-words-input"
-              />
+             <input
+  value={displayedTotalInWords}
+  onChange={handleChange("totalInWords")}
+  className="total-words-input"
+/>
+
             </div>
 
             {/* Bank Details - editable */}
@@ -328,7 +332,7 @@ export default function Taxinvoice() {
             sgst={sgst}
             cgst={cgst}
             totalWithGst={grandTotal}
-            amountInWords={invoice.totalInWords}
+            amountInWords={displayedTotalInWords}
             bankNameAddress={invoice.bankNameAddress}
             bankAccount={invoice.bankAccount}
             ifsc={invoice.ifscCode}
