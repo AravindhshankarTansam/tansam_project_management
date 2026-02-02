@@ -154,12 +154,23 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
     }
 
     // Ensure unitPrice, qty, gst are passed to GenerateQuotation
-    quotationToUse = {
-      ...quotationToUse,
-      unitPrice: newQuotation.unitPrice || 0,
-      qty: newQuotation.qty || 0,
-      gst: newQuotation.gst || 0,
-    };
+quotationToUse = {
+  ...quotationToUse,
+
+  // ✅ Pass unit pricing as items array
+  items: [
+    {
+      description: originalQuotation.description || "",
+      qty: Number(originalQuotation.qty || 0),
+      unitPrice: Number(originalQuotation.unitPrice || 0),
+      tax: Number(originalQuotation.gst || 0),
+      total: (
+        Number(originalQuotation.unitPrice || 0) *
+        Number(originalQuotation.qty || 0)
+      ).toFixed(2),
+    },
+  ],
+};
 
     setNewQuotation(quotationToUse);
     setShowGenerateQuotation(true);
@@ -358,7 +369,7 @@ const filtered = data.filter((q) => {
   const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-          pricingMode: "unit",
+         pricingMode: quotation.pricingMode || "value",
     unitPrice: firstItem.unitPrice || "",
     qty: firstItem.qty || "",
     gst: firstItem.gst || "",
@@ -544,9 +555,7 @@ const filtered = data.filter((q) => {
       <div className="table-header">
         <div>
           <h2>Quotations Management</h2>
-          <p className="header-subtitle">
-            Create, manage and download quotations
-          </p>
+        
         </div>
         <button
           className="btn-add-quotation"
@@ -738,16 +747,41 @@ const filtered = data.filter((q) => {
                             <MdEditDocument size={30} />
                           </button>
                         ) : (
-                          <button
-                            className="btn-generate"
-                            onClick={() => {
-                              setNewQuotation(q);
-                              setShowGenerateQuotation(true);
-                            }}
-                            title="Generate Quotation"
-                          >
-                            <FaFilePdf size={30} />
-                          </button>
+<button
+  className="btn-generate"
+  onClick={() => {
+    let items = [];
+
+    try {
+      items = q.itemDetails ? JSON.parse(q.itemDetails) : [];
+    } catch (e) {
+      items = [];
+    }
+
+    const firstItem = items[0] || {};
+
+    setNewQuotation({
+      items: [
+        {
+          description: q.description || firstItem.description || "",
+          qty: Number(firstItem.qty || 0),
+          unitPrice: Number(firstItem.unitPrice || 0),
+          tax: Number(firstItem.gst || 0),
+          total: (
+            Number(firstItem.unitPrice || 0) *
+            Number(firstItem.qty || 0)
+          ).toFixed(2),
+        },
+      ],
+    });
+
+    setShowGenerateQuotation(true);
+  }}
+  title="Generate Quotation"
+>
+  <FaFilePdf size={30} />
+</button>
+
                         )}
 
                         {q.quotationStatus === "Approved" && (
@@ -1028,44 +1062,9 @@ const filtered = data.filter((q) => {
                 <label>Lab</label>
                 <input type="text" value={newQuotation.lab_name} readOnly />
               </div>
-              <div className="form-group">
-                <label>Pricing Mode *</label>
-                <select
-                  value={newQuotation.pricingMode}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      pricingMode: e.target.value,
-                      unitPrice: "",
-                      qty: "",
-                      gst: "",
-                      value: "",
-                    })
-                  }
-                >
-                  {" "}
-                  <option value="">Select Pricing mode</option>
-                  <option value="value">Enter Total Value Only</option>
-                  <option value="unit">Unit Price × Qty + GST</option>
-                </select>
-              </div>
-              {newQuotation.pricingMode === "value" && (
-                <div className="form-group">
-                  <label>Quote Value *</label>
-                  <input
-                    type="number"
-                    value={newQuotation.value}
-                    onChange={(e) =>
-                      setNewQuotation({
-                        ...newQuotation,
-                        value: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              )}
-              {newQuotation.pricingMode === "unit" && (
-                <>
+
+       
+             
                   <div className="form-group">
                     <label>Unit Price *</label>
  <input
@@ -1122,9 +1121,8 @@ const filtered = data.filter((q) => {
                       })()}
                     />
                   </div>
-                </>
-              )}
-
+              
+            
               <div className="form-group">
                 <label>Work Description *</label>
                 <textarea

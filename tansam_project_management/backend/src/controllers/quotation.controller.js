@@ -50,8 +50,6 @@ export const addQuotation = async (req, res) => {
       lab_id,
       lab_name = null,      
       description = null,
-      pricingMode,
- 
       value = 0,
       date,
       quotationStatus = 'Draft',
@@ -127,13 +125,12 @@ export const addQuotation = async (req, res) => {
         work_category_name,
         lab_id,
         lab_name,
-        description,
-          pricingMode,
+        description,   
         itemDetails,
         value,
         date,
         quotationStatus
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         oppId,
@@ -148,7 +145,6 @@ export const addQuotation = async (req, res) => {
         labId,
         lab_name,
         description,
-          pricingMode,
         itemDetails,
         Number(value),
         quotationDate,
