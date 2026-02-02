@@ -83,7 +83,7 @@ client_type_id VARCHAR(50),
   await db.execute(`
     CREATE TABLE IF NOT EXISTS generated_quotations (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      refNo VARCHAR(50),
+      quotationNo VARCHAR(50),
       date DATE,
       clientName VARCHAR(100),
       kindAttn VARCHAR(100),

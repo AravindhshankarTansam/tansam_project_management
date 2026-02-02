@@ -349,7 +349,7 @@ const generateQuotationNo = (data) => {
 
   const nextNumber = numbers.length ? Math.max(...numbers) + 1 : 1001;
 
-  return `TANSAM/${nextNumber}/${financialYear}`;
+  return `TANSAM -${nextNumber}/${financialYear}`;
 };
 
 
@@ -1281,36 +1281,9 @@ const generateQuotationNo = (data) => {
 
               {newQuotation.paymentPhase === "Started" && (
                 <>
-                  <div className="form-group">
-                    <label>Revised Cost</label>
-                    <input
-                      type="number"
-                      value={newQuotation.revisedCost}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          revisedCost: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>PO Received *</label>
-                    <select
-                      value={newQuotation.poReceived}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          poReceived: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
-                  </div>
-                  {newQuotation.poReceived === "Yes" && (
+          
+     
+               
                     <div className="form-group">
                       <label>Purchase Order Number *</label>
                       <input
@@ -1324,7 +1297,7 @@ const generateQuotationNo = (data) => {
                         }
                       />
                     </div>
-                  )}
+         
 
                   <div className="form-group">
                     <label>Payment Received *</label>
