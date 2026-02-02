@@ -33,7 +33,7 @@ export const addGeneratedQuotation = async (req, res) => {
     }
 
     const {
-      refNo, date, clientName, kindAttn, subject,
+      quotationNo, date, clientName, kindAttn, subject,
       items, terms, termsContent, financeManagerName
     } = req.body;
 
@@ -59,12 +59,12 @@ export const addGeneratedQuotation = async (req, res) => {
 
       await db.execute(
         `UPDATE generated_quotations
-         SET refNo=?, date=?, clientName=?, kindAttn=?, subject=?,
+         SET quotationNo=?, date=?, clientName=?, kindAttn=?, subject=?,
              items=?, terms=?, termsContent=?, 
              signature=?, seal=?, financeManagerName=?
          WHERE quotationId=?`,
         [
-          refNo,
+          quotationNo,
           date,
           clientName,
           kindAttn,
@@ -91,12 +91,12 @@ export const addGeneratedQuotation = async (req, res) => {
     // ===============================
     await db.execute(
       `INSERT INTO generated_quotations
-       (quotationId, refNo, date, clientName, kindAttn, subject,
+       (quotationId, quotationNo, date, clientName, kindAttn, subject,
         items, terms, termsContent, signature, seal, financeManagerName)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         quotationId,
-        refNo,
+        quotationNo,
         date,
         clientName,
         kindAttn,
@@ -153,7 +153,7 @@ export const updateGeneratedQuotation = async (req, res) => {
     await initSchemas(db, { finance: true });
     const { id } = req.params;
     const {
-      refNo,
+      quotationNo,
       date,
       clientName,
       kindAttn,
@@ -168,10 +168,10 @@ export const updateGeneratedQuotation = async (req, res) => {
 
     await db.execute(
       `UPDATE generated_quotations
-       SET refNo=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?, signature=?, seal=?, financeManagerName=?
+       SET quotationNo,=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?, signature=?, seal=?, financeManagerName=?
        WHERE id=?`,
       [
-        refNo,
+        quotationNo,
         date,
         clientName,
         kindAttn,

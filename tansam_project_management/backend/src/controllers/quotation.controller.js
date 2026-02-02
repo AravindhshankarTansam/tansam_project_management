@@ -219,7 +219,7 @@ export const updateQuotation = async (req, res) => {
       "quotationStatus",
       "project_name",
       "paymentPhase",
-      "poReceived",
+     
       "poNumber",
       "paymentReceived",
       "paymentReceivedDate",
@@ -234,7 +234,7 @@ export const updateQuotation = async (req, res) => {
     });
 
     // Numeric fields
-    safeBody.revisedCost = sanitizeDecimal(req.body.revisedCost);
+    
     safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
     safeBody.value = sanitizeDecimal(req.body.value);
 
@@ -294,8 +294,7 @@ export const updateQuotation = async (req, res) => {
       finalStatus === "Approved"
         ? {
             paymentPhase: safeBody.paymentPhase ?? "Started",
-            revisedCost: safeBody.revisedCost,
-            poReceived: safeBody.poReceived ?? "No",
+          
             poNumber: safeBody.poNumber,
             paymentReceived: safeBody.paymentReceived ?? "No",
             paymentAmount: safeBody.paymentAmount,
@@ -304,8 +303,7 @@ export const updateQuotation = async (req, res) => {
           }
         : {
             paymentPhase: "Not Started",
-            revisedCost: null,
-            poReceived: "No",
+           
             poNumber: null,
             paymentReceived: "No",
             paymentAmount: null,
@@ -331,8 +329,7 @@ export const updateQuotation = async (req, res) => {
         date = ?,
         quotationStatus = ?,
         paymentPhase = ?,
-        revisedCost = ?,
-        poReceived = ?,
+     
         poNumber = ?,    
         paymentReceived = ?,
         paymentAmount = ?,
@@ -353,8 +350,8 @@ export const updateQuotation = async (req, res) => {
         safeBody.date,
         finalStatus,
         paymentData.paymentPhase,
-        paymentData.revisedCost,
-        paymentData.poReceived,
+ 
+      
         paymentData.poNumber,
         paymentData.paymentReceived,
         paymentData.paymentAmount,

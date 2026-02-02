@@ -1048,7 +1048,7 @@ const [refNo, setRefNo] = useState(quotationNo || "");
       const dataToSend = new FormData();
       dataToSend.append("quotation_id", quotation.id);
 
-      dataToSend.append("refNo", refNo);
+     dataToSend.append("quotationNo", refNo);
       dataToSend.append("date", date);
       dataToSend.append("clientName", quotation.clientName);
       dataToSend.append("kindAttn", quotation.kindAttn || "");
