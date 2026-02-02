@@ -328,16 +328,30 @@ const filtered = data.filter((q) => {
   return clientMatch && categoryMatch && labMatch;
 });
 
-  const generateQuotationNo = (data) => {
-    const numbers = data
-      .map((q) => q.quotationNo)
-      .filter(Boolean)
-      .map((no) => Number(no.replace("TANSAM/", "")))
-      .filter((n) => !isNaN(n));
+const generateQuotationNo = (data) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // Jan = 1
 
-    const nextNumber = numbers.length ? Math.max(...numbers) + 1 : 1001;
-    return `TANSAM/${nextNumber}`;
-  };
+  // Financial year: Apr–Mar
+  const startYear = month >= 4 ? year : year - 1;
+  const endYear = startYear + 1;
+
+  const financialYear = `${startYear}-${endYear}`;
+
+  const numbers = data
+    .map((q) => q.quotationNo)
+    .filter(Boolean)
+    .map((no) =>
+      Number(no.replace(/TANSAM\/|\/\d{4}-\d{4}/g, ""))
+    )
+    .filter((n) => !isNaN(n));
+
+  const nextNumber = numbers.length ? Math.max(...numbers) + 1 : 1001;
+
+  return `TANSAM/${nextNumber}/${financialYear}`;
+};
+
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -536,6 +550,7 @@ const filtered = data.filter((q) => {
     return (
       <GenerateQuotation
         quotation={newQuotation}
+        quotationNo={newQuotation.quotationNo} 
         onSaved={async () => {
           try {
             const fresh = await getQuotations();
@@ -760,7 +775,12 @@ const filtered = data.filter((q) => {
 
     const firstItem = items[0] || {};
 
+    // Generate the quotation number here if needed
+    const quotationNo = q.quotationNo || generateQuotationNo(data); // optional
+
     setNewQuotation({
+      ...q, 
+       quotationNo,// keeps quotationNo, client, date, etc.
       items: [
         {
           description: q.description || firstItem.description || "",
@@ -776,6 +796,9 @@ const filtered = data.filter((q) => {
     });
 
     setShowGenerateQuotation(true);
+
+    // Pass the quotationNo to GenerateQuotation
+    setQuotationNoForGenerate(quotationNo);
   }}
   title="Generate Quotation"
 >

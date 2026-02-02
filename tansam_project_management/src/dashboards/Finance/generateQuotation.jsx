@@ -300,7 +300,7 @@ const FinanceDocument = ({
           }}
         >
           <div>
-            <strong>Ref No:</strong>{" "}
+            <strong>Quotation No:</strong>{" "}
             <input
               type="text"
               value={refNo}
@@ -863,6 +863,7 @@ const FinanceDocument = ({
 // ✅ MAIN COMPONENT WITH ALL STATES & FIXED PROPS
 export default function GenerateQuotation({
   quotation: initialQuotation,
+  quotationNo,
   onSaved,
 }) {
   const isEditMode =
@@ -883,6 +884,7 @@ export default function GenerateQuotation({
     existingSignature: initialQuotation?.existingSignature || null, // preview path
     existingSeal: initialQuotation?.existingSeal || null, // preview path
   }));
+
   useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
@@ -890,9 +892,12 @@ export default function GenerateQuotation({
   const [selectedTerms, setSelectedTerms] = useState([]);
 
   // ✅ ALL REQUIRED STATES
-  const [refNo, setRefNo] = useState(
-    initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`,
-  );
+const [refNo, setRefNo] = useState(quotationNo || "");
+
+  useEffect(() => {
+    if (quotationNo) setRefNo(quotationNo);
+  }, [quotationNo]);
+
   const [date, setDate] = useState(
     initialQuotation?.date || new Date().toISOString().split("T")[0],
   );
