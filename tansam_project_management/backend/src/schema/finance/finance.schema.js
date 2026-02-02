@@ -46,8 +46,8 @@ client_type_id VARCHAR(50),
     generatedAt DATETIME,
 
     paymentPhase VARCHAR(20),
-    revisedCost DECIMAL(12,2),
-    poReceived VARCHAR(10),
+
+   
     paymentReceived VARCHAR(10),
     paymentAmount DECIMAL(12,2),
     paymentPendingReason TEXT,

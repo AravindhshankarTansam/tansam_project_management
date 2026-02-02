@@ -73,7 +73,7 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     lab_id: "",
     lab_name: "",
     description: "",
-    pricingMode: "value", // "value" | "unit"
+     // "value" | "unit"
     unitPrice: "",
     qty: "",
     gst: "",
@@ -457,7 +457,7 @@ const generateQuotationNo = (data) => {
         lab_id: newQuotation.lab_id,
         lab_name: newQuotation.lab_name,
         description: newQuotation.description,
-        pricingMode: newQuotation.pricingMode,
+    
         unitPrice: newQuotation.unitPrice || 0,
         qty: newQuotation.qty || 0,
         gst: newQuotation.gst || 0,
@@ -469,8 +469,7 @@ const generateQuotationNo = (data) => {
         ...(newQuotation.quotationStatus === "Approved"
           ? {
               paymentPhase: newQuotation.paymentPhase,
-              revisedCost: newQuotation.revisedCost,
-              poReceived: newQuotation.poReceived,
+           
               poNumber: newQuotation.poNumber,
               paymentReceived: newQuotation.paymentReceived,
               paymentReceivedDate: newQuotation.paymentReceivedDate,
@@ -695,8 +694,8 @@ const generateQuotationNo = (data) => {
                   <th>Quotation No</th>
                   <th>Opportunity Name</th>
                   <th>Payment Phase</th>
-                  <th>Revised Cost</th>
-                  <th>PO Received</th>
+              
+                  
                   <th>Purchase order number</th>
                   <th>Payment Received</th>
                   <th>Payment Amount</th>
@@ -798,7 +797,7 @@ const generateQuotationNo = (data) => {
     setShowGenerateQuotation(true);
 
     // Pass the quotationNo to GenerateQuotation
-    setQuotationNoForGenerate(quotationNo);
+   
   }}
   title="Generate Quotation"
 >
@@ -830,10 +829,7 @@ const generateQuotationNo = (data) => {
 
                                   paymentPhase:
                                     latestQuotation.paymentPhase || "Started",
-                                  revisedCost:
-                                    latestQuotation.revisedCost || "",
-                                  poReceived:
-                                    latestQuotation.poReceived || "No",
+                        
                                   poNumber: latestQuotation.poNumber || "",
                                   paymentReceived:
                                     latestQuotation.paymentReceived || "No",
@@ -864,9 +860,7 @@ const generateQuotationNo = (data) => {
                       </td>
                       <td>{q.opportunity_name || "-"}</td>
                       <td>{q.paymentPhase || "Not Started"}</td>
-                      <td>{q.revisedCost || "-"}</td>
-
-                      <td>{q.poReceived || "No"}</td>
+                    
                       <td>{q.poNumber || "-"}</td>
                       <td>{q.paymentReceived || "No"}</td>
                       <td>{q.paymentAmount || "-"}</td>
