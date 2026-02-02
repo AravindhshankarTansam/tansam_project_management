@@ -336,20 +336,21 @@ const generateQuotationNo = (data) => {
   // Financial year: Apr–Mar
   const startYear = month >= 4 ? year : year - 1;
   const endYear = startYear + 1;
-
   const financialYear = `${startYear}-${endYear}`;
 
-  const numbers = data
+  // Filter quotations for the current financial year
+  const currentFYNumbers = data
     .map((q) => q.quotationNo)
     .filter(Boolean)
-    .map((no) =>
-      Number(no.replace(/TANSAM\/|\/\d{4}-\d{4}/g, ""))
-    )
+    .filter((no) => no.includes(financialYear))
+    .map((no) => Number(no.replace(/TANSAM\s*-\s*\d+\/\d{4}-\d{4}/, (match) => match.match(/\d+/)[0])))
     .filter((n) => !isNaN(n));
 
-  const nextNumber = numbers.length ? Math.max(...numbers) + 1 : 1001;
+  const nextNumber = currentFYNumbers.length
+    ? Math.max(...currentFYNumbers) + 1
+    : 1001;
 
-  return `TANSAM -${nextNumber}/${financialYear}`;
+  return `TANSAM-${nextNumber}/${financialYear}`;
 };
 
 
