@@ -31,6 +31,9 @@ export default function CeoForecast() {
   const [workCategories, setWorkCategories] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isCEO = user?.role === "CEO";
+
 
   /* ================= LOAD DATA ================= */
   useEffect(() => {
@@ -145,12 +148,15 @@ export default function CeoForecast() {
       <div className="page-header">
         <div>
           <h2>Forecast Overview</h2>
-          <p>CEO level revenue forecast & pipeline</p>
+          <p>Revenue forecast</p>
         </div>
 
+            {!isCEO && (
         <button className="add-btn" onClick={addRow}>
           + Add Forecast
         </button>
+      )}
+
       </div>
 
       <div className="table-card">
@@ -165,7 +171,7 @@ export default function CeoForecast() {
               <th>FY (Month)</th>
               <th>Carryover</th>
               <th>Remarks</th>
-              <th>Actions</th>
+              {!isCEO && <th>Actions</th>}
             </tr>
           </thead>
 
@@ -279,23 +285,26 @@ export default function CeoForecast() {
                   </td>
 
                   {/* Actions */}
-                  <td className="actions">
-                    <button
-                      className="icon-btn save"
-                      title="Save"
-                      onClick={() => saveRow(row, i)}
-                    >
-                      <FaSave />
-                    </button>
+                {!isCEO && (
+                <td className="actions">
+                  <button
+                    className="icon-btn save"
+                    title="Save"
+                    onClick={() => saveRow(row, i)}
+                  >
+                    <FaSave />
+                  </button>
 
-                    <button
-                      className="icon-btn delete"
-                      title="Delete"
-                      onClick={() => removeRow(row)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
+                  <button
+                    className="icon-btn delete"
+                    title="Delete"
+                    onClick={() => removeRow(row)}
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              )}
+
                 </tr>
               ))
             )}
