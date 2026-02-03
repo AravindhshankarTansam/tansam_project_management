@@ -482,18 +482,20 @@ useEffect(() => {
             Clear
           </button>
         )}
+{/* ================= LAB PAYMENT SUMMARY ================= */}
+{/* ================= TOTAL REVENUE CARD ================= */}
 <div className="lab-cards">
-  {Object.keys(filteredLabPayments).map((labName) => {
-    const revenue = filteredLabPayments[labName];
-    if (!revenue) return null;
-    return (
-      <div key={labName} className="lab-card">
-        <h4>{labName}</h4>
-        <p>₹{revenue.toLocaleString("en-IN")}</p>
-      </div>
-    );
-  })}
+  <div className="lab-card total-revenue">
+    <h4>Total Revenue</h4>
+    <p>
+      ₹
+      {Object.keys(filteredLabPayments)
+        .reduce((sum, labName) => sum + Number(filteredLabPayments[labName] || 0), 0)
+        .toLocaleString("en-IN")}
+    </p>
+  </div>
 </div>
+
 
 
       </div>

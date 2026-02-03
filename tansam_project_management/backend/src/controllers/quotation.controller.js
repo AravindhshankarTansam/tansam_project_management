@@ -24,46 +24,11 @@ export const addQuotation = async (req, res) => {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
 
-    const { items = [], qty = 0, unitPrice = 0, gst = 0, ...otherFields } = req.body;
-
-    // Prepare itemDetails as string
-  const itemDetails = JSON.stringify(
-  items.length
-    ? items.map(item => {
-        const q = Number(item.qty || 0);
-        const u = Number(item.unitPrice || 0);
-        const g = Number(item.gst || 0);
-        const base = q * u;
-        const total = base + (base * g) / 100;
-
-        return {
-          description: item.description || "",
-          qty: q,
-          unitPrice: u,
-          gst: g,
-          total
-        };
-      })
-    : (() => {
-        const q = Number(qty || 0);
-        const u = Number(unitPrice || 0);
-        const g = Number(gst || 0);
-        const base = q * u;
-        const total = base + (base * g) / 100;
-
-        return [{
-          description: "",
-          qty: q,
-          unitPrice: u,
-          gst: g,
-          total
-        }];
-      })()
-);
-
-
-    // Extract fields from request
     const {
+      items = [],
+      qty = 0,
+      unitPrice = 0,
+      gst = 0,
       opportunity_id,
       opportunity_name = null,
       quotationNo = null,
@@ -73,14 +38,13 @@ export const addQuotation = async (req, res) => {
       work_category_id,
       work_category_name = null,
       lab_id,
-      lab_name = null,      
+      lab_name = null,
       description = null,
-      value = 0,
       date,
-      quotationStatus = 'Draft',
+      quotationStatus = "Draft",
     } = req.body;
 
-    // 🔑 Fetch client_id from opportunities_coordinator
+    // --- Fetch client_id from opportunities_coordinator ---
     const [[client]] = await db.execute(
       `
       SELECT client_id
@@ -97,25 +61,50 @@ export const addQuotation = async (req, res) => {
 
     const client_id = client.client_id;
 
-    // Ensure numeric fields or null
-    const oppId =
-  opportunity_id !== undefined && opportunity_id !== null
-    ? String(opportunity_id)
-    : null;
+    // --- Prepare itemDetails array ---
+    const itemsArray = items.length
+      ? items.map((item) => {
+          const q = Number(item.qty || 0);
+          const u = Number(item.unitPrice || 0);
+          const g = Number(item.gst || 0);
+          const base = q * u;
+          const total = base + (base * g) / 100;
 
+          return {
+            description: item.description || "",
+            qty: q,
+            unitPrice: u,
+            gst: g,
+            total,
+          };
+        })
+      : [
+          {
+            description: "",
+            qty: Number(qty || 0),
+            unitPrice: Number(unitPrice || 0),
+            gst: Number(gst || 0),
+            total: Number(qty || 0) * Number(unitPrice || 0) * (1 + Number(gst || 0) / 100),
+          },
+        ];
+
+    const itemDetails = JSON.stringify(itemsArray);
+
+    // --- Compute total value from itemDetails ---
+    const totalValue = itemsArray.reduce((sum, item) => sum + Number(item.total || 0), 0);
+
+    // --- Normalize IDs ---
+    const oppId = opportunity_id ? String(opportunity_id) : null;
     const clientTypeId = client_type_id ? Number(client_type_id) : null;
     const workCategoryId = work_category_id ? Number(work_category_id) : null;
-  const labId =
-  lab_id !== undefined && lab_id !== null
-    ? String(lab_id)
-    : null;
+    const labId = lab_id ? String(lab_id) : null;
 
-    // Format date for MySQL
+    // --- Format date for MySQL ---
     const quotationDate = date
-      ? new Date(date).toISOString().slice(0, 19).replace('T', ' ')
-      : new Date().toISOString().slice(0, 19).replace('T', ' ');
+      ? new Date(date).toISOString().slice(0, 19).replace("T", " ")
+      : new Date().toISOString().slice(0, 19).replace("T", " ");
 
-    // Debug log to verify values
+    // --- Debug log (optional) ---
     console.log({
       oppId,
       opportunity_name,
@@ -129,13 +118,13 @@ export const addQuotation = async (req, res) => {
       labId,
       lab_name,
       description,
-      itemDetails,
-      value,
+      totalValue,
       quotationDate,
-      quotationStatus
+      quotationStatus,
+      itemDetails,
     });
 
-    // Insert into quotations
+    // --- Insert into quotations ---
     const [result] = await db.execute(
       `
       INSERT INTO quotations (
@@ -150,7 +139,7 @@ export const addQuotation = async (req, res) => {
         work_category_name,
         lab_id,
         lab_name,
-        description,   
+        description,
         itemDetails,
         value,
         date,
@@ -171,9 +160,9 @@ export const addQuotation = async (req, res) => {
         lab_name,
         description,
         itemDetails,
-        Number(value),
+        totalValue, // ✅ always calculated from itemsArray
         quotationDate,
-        quotationStatus
+        quotationStatus,
       ]
     );
 
@@ -182,7 +171,6 @@ export const addQuotation = async (req, res) => {
       quotationStatus: "Draft",
       message: "Quotation created successfully",
     });
-
   } catch (error) {
     console.error("Add Quotation Error:", error);
     res.status(500).json({ message: error.message });
