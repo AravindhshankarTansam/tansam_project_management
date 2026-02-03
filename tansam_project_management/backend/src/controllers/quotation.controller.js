@@ -26,9 +26,9 @@ export const addQuotation = async (req, res) => {
 
     const {
       items = [],
-      qty = 0,
-      unitPrice = 0,
-      gst = 0,
+      qty,
+      unitPrice,
+      gst,
       opportunity_id,
       opportunity_name = null,
       quotationNo = null,
@@ -64,11 +64,11 @@ export const addQuotation = async (req, res) => {
     // --- Prepare itemDetails array ---
     const itemsArray = items.length
       ? items.map((item) => {
-          const q = Number(item.qty || 0);
-          const u = Number(item.unitPrice || 0);
-          const g = Number(item.gst || 0);
+          const q = Number(item.qty );
+          const u = Number(item.unitPrice);
+          const g = Number(item.gst);
           const base = q * u;
-          const total = base + (base * g) / 100;
+          const total = base + base *(g / 100) ;
 
           return {
             description: item.description || "",

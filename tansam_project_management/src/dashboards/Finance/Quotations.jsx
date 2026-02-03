@@ -1151,7 +1151,8 @@ const generateQuotationNo = (data) => {
                         const qty = Number(newQuotation.qty || 0);
                         const gst = Number(newQuotation.gst || 0);
                         const base = unit * qty;
-                        const total = base + (base * gst) / 100;
+                        const taxAmount = base*(gst/100);
+                        const total = base + taxAmount;
                         return total.toFixed(2);
                       })()}
                     />
