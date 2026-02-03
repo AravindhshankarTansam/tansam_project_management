@@ -27,15 +27,40 @@ export const addQuotation = async (req, res) => {
     const { items = [], qty = 0, unitPrice = 0, gst = 0, ...otherFields } = req.body;
 
     // Prepare itemDetails as string
-    const itemDetails = JSON.stringify(
-      items.length
-        ? items.map(item => ({
-            qty: Number(item.qty || 0),
-            unitPrice: Number(item.unitPrice || 0),
-            gst: Number(item.gst || 0),
-          }))
-        : [{ qty: Number(qty), unitPrice: Number(unitPrice), gst: Number(gst) }]
-    );
+  const itemDetails = JSON.stringify(
+  items.length
+    ? items.map(item => {
+        const q = Number(item.qty || 0);
+        const u = Number(item.unitPrice || 0);
+        const g = Number(item.gst || 0);
+        const base = q * u;
+        const total = base + (base * g) / 100;
+
+        return {
+          description: item.description || "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total
+        };
+      })
+    : (() => {
+        const q = Number(qty || 0);
+        const u = Number(unitPrice || 0);
+        const g = Number(gst || 0);
+        const base = q * u;
+        const total = base + (base * g) / 100;
+
+        return [{
+          description: "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total
+        }];
+      })()
+);
+
 
     // Extract fields from request
     const {
@@ -50,8 +75,6 @@ export const addQuotation = async (req, res) => {
       lab_id,
       lab_name = null,      
       description = null,
-      pricingMode,
- 
       value = 0,
       date,
       quotationStatus = 'Draft',
@@ -127,13 +150,12 @@ export const addQuotation = async (req, res) => {
         work_category_name,
         lab_id,
         lab_name,
-        description,
-          pricingMode,
+        description,   
         itemDetails,
         value,
         date,
         quotationStatus
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         oppId,
@@ -148,7 +170,6 @@ export const addQuotation = async (req, res) => {
         labId,
         lab_name,
         description,
-          pricingMode,
         itemDetails,
         Number(value),
         quotationDate,
@@ -223,7 +244,7 @@ export const updateQuotation = async (req, res) => {
       "quotationStatus",
       "project_name",
       "paymentPhase",
-      "poReceived",
+     
       "poNumber",
       "paymentReceived",
       "paymentReceivedDate",
@@ -238,7 +259,7 @@ export const updateQuotation = async (req, res) => {
     });
 
     // Numeric fields
-    safeBody.revisedCost = sanitizeDecimal(req.body.revisedCost);
+    
     safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
     safeBody.value = sanitizeDecimal(req.body.value);
 
@@ -298,8 +319,7 @@ export const updateQuotation = async (req, res) => {
       finalStatus === "Approved"
         ? {
             paymentPhase: safeBody.paymentPhase ?? "Started",
-            revisedCost: safeBody.revisedCost,
-            poReceived: safeBody.poReceived ?? "No",
+          
             poNumber: safeBody.poNumber,
             paymentReceived: safeBody.paymentReceived ?? "No",
             paymentAmount: safeBody.paymentAmount,
@@ -308,8 +328,7 @@ export const updateQuotation = async (req, res) => {
           }
         : {
             paymentPhase: "Not Started",
-            revisedCost: null,
-            poReceived: "No",
+           
             poNumber: null,
             paymentReceived: "No",
             paymentAmount: null,
@@ -335,8 +354,7 @@ export const updateQuotation = async (req, res) => {
         date = ?,
         quotationStatus = ?,
         paymentPhase = ?,
-        revisedCost = ?,
-        poReceived = ?,
+     
         poNumber = ?,    
         paymentReceived = ?,
         paymentAmount = ?,
@@ -357,8 +375,8 @@ export const updateQuotation = async (req, res) => {
         safeBody.date,
         finalStatus,
         paymentData.paymentPhase,
-        paymentData.revisedCost,
-        paymentData.poReceived,
+ 
+      
         paymentData.poNumber,
         paymentData.paymentReceived,
         paymentData.paymentAmount,

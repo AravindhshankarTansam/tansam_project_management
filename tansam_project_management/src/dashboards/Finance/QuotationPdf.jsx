@@ -28,6 +28,13 @@ const styles = StyleSheet.create({
 sectionGap: {
   marginTop: 8,
 },
+totalBoxRow: {
+  flexDirection: "row",
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderBottomWidth: 1,
+  borderColor: "#000",
+},
 
   header: {
     flexDirection: "row",
@@ -104,28 +111,44 @@ toRight: {
     lineHeight: 1.22,
     fontSize: 12,
   },
-
+tableBox: {
+  borderWidth: 1,
+  borderColor: "#000",
+},
   
   // Compact Table Styles
 tableHeader: {
   flexDirection: "row",
-  borderWidth: 1,
+  backgroundColor: "#D9E2F3",
+  borderBottomWidth: 1,
   borderColor: "#000",
-  backgroundColor: "#E8F0FA",
 },
 
 th: {
-  paddingVertical: 2.5,
-  paddingHorizontal: 3,
+  paddingVertical: 4,
+  paddingHorizontal: 4,
+  fontSize: 10,
   fontWeight: "bold",
-  fontSize: 11,
   textAlign: "center",
-  borderWidth: 1,
+  borderRightWidth: 1,
   borderColor: "#000",
 },
 
+row: {
+  flexDirection: "row",
+},
 
-
+cell: {
+  paddingVertical: 4,
+  paddingHorizontal: 4,
+  fontSize: 10,
+  lineHeight: 1.2,
+  borderRightWidth: 1,
+  borderColor: "#000",
+},
+lastCell: {
+  borderRightWidth: 0,
+},
 colSNo: { width: "6%", textAlign: "center" },
 colDesc: { width: "53%", textAlign: "left" },
 colQty: { width: "11.5%", textAlign: "center" },
@@ -224,11 +247,22 @@ export default function QuotationPDF({
   items = [],
   totalAmount,
   financeManagerName,
-  designation = "Manager - Operations",
+  designation = "",
   signatureUrl,
   sealUrl,
   termsContent,
 }) {
+  const calculatedTotalAmount = items.reduce((sum, item) => {
+  const qty = Number(item.qty || 0);
+  const unit = Number(item.unitPrice || 0);
+  const tax = Number(item.tax || 0);
+
+  const base = qty * unit;
+  const taxAmount = base * (tax / 100);
+
+  return sum + base + taxAmount;
+}, 0);
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -274,42 +308,89 @@ export default function QuotationPDF({
         </Text>
 
       <View style={styles.sectionGap} />
-<View style={styles.tableHeader}>
-  <Text style={[styles.th, styles.colSNo]}>S. No</Text>
-  <Text style={[styles.th, styles.colDesc]}>Product description</Text>
-  <Text style={[styles.th, styles.colQty]}>Qty</Text>
-  <Text style={[styles.th, styles.colUnit]}>Unit price</Text>
-  <Text style={[styles.th, styles.colTotal]}>Total</Text>
-</View>
-<View style={styles.sectionGap} />
-{/* Table Rows */}
-{items.length > 0 ? items.map((item, i) => (
-  <View key={i} style={{ flexDirection: "row" }}>
-    <Text style={[styles.td, styles.colSNo]}>{i + 1}</Text>
-    <Text style={[styles.td, styles.colDesc]}>{item.description}</Text>
-    <Text style={[styles.td, styles.colQty]}>{item.qty }</Text>
-    <Text style={[styles.td, styles.colUnit]}>{item.unitPrice }</Text>
-    <Text style={[styles.td, styles.colTotal]}>{item.total }</Text>
-  </View>
-)) : (
-  <View style={{ flexDirection: "row" }}>
-    <Text style={[styles.td, styles.colSNo]}>1</Text>
-    <Text style={[styles.td, styles.colDesc]}>—</Text>
-    <Text style={[styles.td, styles.colQty]}>—</Text>
-    <Text style={[styles.td, styles.colUnit]}>—</Text>
-    <Text style={[styles.td, styles.colTotal]}>—</Text>
-  </View>
-)}
+<View style={styles.tableBox}>
 
-{/* Total Row */}
-<View style={[styles.totalRow, { marginTop: 0 }]}>
-  <Text style={[styles.totalLabel, { width: "84%", padding: 3 }]}>
-    Total Service Value with Tax
+  {/* HEADER */}
+  <View style={styles.tableHeader}>
+    <Text style={[styles.th, styles.colSNo]}>S. No</Text>
+    <Text style={[styles.th, styles.colDesc]}>Product description</Text>
+    <Text style={[styles.th, styles.colQty]}>Qty</Text>
+    <Text style={[styles.th, styles.colUnit]}>Unit price</Text>
+    <Text style={[styles.th, styles.colUnit]}>Tax</Text>
+    <Text style={[styles.th, styles.colTotal, styles.lastCell]}>Total</Text>
+  </View>
+
+  {/* BODY */}
+  {items.map((item, i) => (
+    <View key={i} style={styles.row}>
+      <Text style={[styles.cell, styles.colSNo]}>{i + 1}</Text>
+      <Text style={[styles.cell, styles.colDesc]}>{item.description}</Text>
+      <Text style={[styles.cell, styles.colQty]}>{item.qty}</Text>
+      <Text style={[styles.cell, styles.colUnit]}>{item.unitPrice}</Text>
+       <Text style={[styles.cell, styles.colUnit]}>{item.tax }</Text>
+ <Text style={[styles.cell, styles.colTotal, styles.lastCell]}>
+  {(() => {
+    const qty = Number(item.qty || 0);
+    const unit = Number(item.unitPrice || 0);
+    const tax = Number(item.tax || 0);
+
+    const base = qty * unit;
+    const taxAmount = base * (tax / 100);
+
+    return (base + taxAmount).toFixed(2);
+  })()}
+</Text>
+
+    </View>
+  ))}
+
+  {/* TOTAL */}
+{/* TOTAL */}
+{/* TOTAL */}
+<View style={[styles.row]}>
+  <Text
+    style={[
+      styles.cell,
+      {
+        width: "99%",
+        textAlign: "right",
+        fontWeight: "bold",
+        borderWidth: 1,
+        borderBottomWidth: 0,
+        borderLeftWidth:0,
+        
+  borderColor: "#000",  // important
+      },
+    ]}
+  >
+    Total Service  {"\n"}Value with Tax
   </Text>
-  <Text style={[styles.totalValue, { width: "16%", padding: 3 }]}>
-    {totalAmount ? `₹ ${totalAmount}` : "—"}
+
+  <Text
+    style={[
+      styles.cell,
+      styles.lastCell,
+      {
+        width: "16%",
+        textAlign: "right",
+        fontWeight: "bold",
+         borderWidth: 1,
+          borderLeftWidth:0,
+          borderBottomWidth:0,
+          borderRightWidth:0,
+  borderColor: "#000",
+     // important
+      },
+    ]}
+  >
+    ₹ {calculatedTotalAmount.toFixed(2)}
   </Text>
 </View>
+
+
+
+</View>
+
 {termsContent && (
   <View style={{ marginTop: 10 }}>
     <Text style={styles.termsTitle}>Terms & Conditions</Text>
@@ -324,22 +405,27 @@ export default function QuotationPDF({
         
 
         {/* Compact Signature */}
-        <View style={styles.signatureBlock}>
-          <Text>Yours truly,</Text>
 
-          <View style={styles.signRow}>
-            {signatureUrl && <Image src={signatureUrl} style={{ height: 40 }} />}
-            {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
-          </View>
-
-          <Text style={{ fontWeight: "bold", marginTop: 3 }}>
-            {financeManagerName || ""}
-          </Text>
-          <Text>{designation}</Text>
-        </View>
 
         {/* Footer */}
 <View style={styles.footerContainer} fixed>
+
+  {/* SIGNATURE */}
+  <View style={{ marginBottom: 8 }}>
+    <Text>Yours truly,</Text>
+
+    <View style={styles.signRow}>
+      {signatureUrl && <Image src={signatureUrl} style={{ height: 40 }} />}
+      {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
+    </View>
+
+    <Text style={{ fontWeight: "bold", marginTop: 3 }}>
+      {financeManagerName}
+    </Text>
+    <Text>{designation}</Text>
+  </View>
+
+  {/* FOOTER */}
   <View style={styles.footer}>
     <Text style={styles.footerCell}>Tel: +91 44 69255700</Text>
     <Text style={styles.footerCell}>E-Mail: info@tansam.org</Text>
@@ -348,10 +434,13 @@ export default function QuotationPDF({
       C-Wing North, 603, TIDEL Park, Rajiv Gandhi Salai, Taramani, Chennai-600113
     </Text>
   </View>
+
   <View style={styles.gstBar}>
     <Text>GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529</Text>
   </View>
+
 </View>
+
 
       </Page>
     </Document>

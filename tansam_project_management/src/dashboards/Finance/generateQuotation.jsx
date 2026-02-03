@@ -6,7 +6,10 @@ import tidco from "../../assets/tansam/tidcologo.png";
 import "./CSS/generateQuotation.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { getActiveTerms } from "../../services/quotation/terms.api";
-import { saveGeneratedQuotation, getGeneratedQuotationByQuotationId } from "../../services/quotation/generatedQuotation.api";
+import {
+  saveGeneratedQuotation,
+  getGeneratedQuotationByQuotationId,
+} from "../../services/quotation/generatedQuotation.api";
 import QuotationPDF from "./QuotationPdf.jsx";
 
 // ✅ EditableQuotationTable Component (UNCHANGED)
@@ -15,19 +18,18 @@ export const EditableQuotationTable = ({ quotation, setQuotation }) => {
     const updatedItems = [...quotation.items];
     updatedItems[index][field] = value;
 
-const qty = parseFloat(updatedItems[index].qty) || 0;
-const unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
-const tax = parseFloat(updatedItems[index].tax) || 0; // % (for info only)
+    const qty = parseFloat(updatedItems[index].qty) || 0;
+    const unitPrice = parseFloat(updatedItems[index].unitPrice) || 0;
+    const tax = parseFloat(updatedItems[index].tax) || 0; // % (for info only)
 
-const baseAmount = qty * unitPrice;
+    const baseAmount = qty * unitPrice;
 
-// OPTIONAL: calculate tax separately (do NOT add)
-const taxAmount = baseAmount * (tax / 100);
+    // OPTIONAL: calculate tax separately (do NOT add)
+    const taxAmount = baseAmount * (tax / 100);
 
-updatedItems[index].total = baseAmount.toFixed(2);
+    updatedItems[index].total = baseAmount.toFixed(2);
 
-setQuotation({ ...quotation, items: updatedItems });
-
+    setQuotation({ ...quotation, items: updatedItems });
   };
 
   const addRow = () => {
@@ -41,46 +43,48 @@ setQuotation({ ...quotation, items: updatedItems });
     setQuotation({ ...quotation, items: updatedItems });
   };
 
-const totalServiceValue = quotation.items
-  .reduce((acc, item) => {
-    const base = parseFloat(item.total || 0);
-    const taxPercent = parseFloat(item.tax || 0);
-    const taxAmount = base * (taxPercent / 100);
-    return acc + base + taxAmount;
-  }, 0)
-  .toFixed(2);
+  const totalServiceValue = quotation.items
+    .reduce((acc, item) => {
+      const base = parseFloat(item.total || 0);
+      const taxPercent = parseFloat(item.tax || 0);
+      const taxAmount = base * (taxPercent / 100);
+      return acc + base + taxAmount;
+    }, 0)
+    .toFixed(2);
 
   return (
     <div style={{ marginBottom: "30px" }}>
       <div style={{ width: "100%", overflowX: "auto" }}>
-<table
-  style={{
-    width: "100%",
-    borderCollapse: "collapse",
-    marginBottom: "10px",
-    tableLayout: "fixed",
-  }}
->
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "10px",
+            tableLayout: "fixed",
+          }}
+        >
           <thead>
             <tr>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Sl. No
               </th>
-              <th style={{ border: "1px solid #000", padding: "12px", width: "30%" }}>
+              <th
+                style={{
+                  border: "1px solid #000",
+                  padding: "12px",
+                  width: "30%",
+                }}
+              >
                 Product Description
               </th>
-            
+
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Unit Price
               </th>
-                <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Qty
-              </th>
-                <th style={{ border: "1px solid #000", padding: "4px" }}>
-                TAX
-              </th>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>Qty</th>
+              <th style={{ border: "1px solid #000", padding: "4px" }}>TAX</th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
-            Total price
+                Total price
               </th>
               <th style={{ border: "1px solid #000", padding: "8px" }}>
                 Action
@@ -109,11 +113,10 @@ const totalServiceValue = quotation.items
                     style={{
                       width: "100%",
                       padding: "4px",
-                     
                     }}
                   />
                 </td>
-             
+
                 <td style={{ border: "1px solid #000", padding: "8px" }}>
                   <input
                     type="number"
@@ -128,7 +131,7 @@ const totalServiceValue = quotation.items
                     }}
                   />
                 </td>
-                   <td style={{ border: "1px solid #000", padding: "8px" }}>
+                <td style={{ border: "1px solid #000", padding: "8px" }}>
                   <input
                     type="number"
                     value={item.qty}
@@ -142,29 +145,34 @@ const totalServiceValue = quotation.items
                     }}
                   />
                 </td>
-                      <td style={{ border: "1px solid #000", padding: "8px" }}>
-             <input
-  type="number"
-  value={item.tax || ""}
-  onChange={(e) =>
-    handleRowChange(index, "tax", e.target.value)
-  }
-  style={{
-    width: "50%",
-    padding: "2px",
-    boxSizing: "border-box",
-  }}
-/>
-
+                <td style={{ border: "1px solid #000", padding: "8px" }}>
+                  <input
+                    type="number"
+                    value={item.tax || ""}
+                    onChange={(e) =>
+                      handleRowChange(index, "tax", e.target.value)
+                    }
+                    style={{
+                      width: "50%",
+                      padding: "2px",
+                      boxSizing: "border-box",
+                    }}
+                  />
                 </td>
-            <td style={{ border: "1px solid #000", padding: "8px", textAlign: "right" }}>
-  {(() => {
-    const baseTotal = Number(item.total || 0);
-    const taxPercent = Number(item.tax || 0);
-    const taxAmount = baseTotal *(taxPercent/100) ;
-    return (baseTotal + taxAmount).toFixed(2);
-  })()}
-</td>
+                <td
+                  style={{
+                    border: "1px solid #000",
+                    padding: "8px",
+                    textAlign: "right",
+                  }}
+                >
+                  {(() => {
+                    const baseTotal = Number(item.total || 0);
+                    const taxPercent = Number(item.tax || 0);
+                    const taxAmount = baseTotal * (taxPercent / 100);
+                    return (baseTotal + taxAmount).toFixed(2);
+                  })()}
+                </td>
 
                 <td
                   style={{
@@ -212,8 +220,8 @@ const FinanceDocument = ({
   handleSaveQuotation,
   showTermsModal,
   setShowTermsModal,
-    termsList,
-     selectedTerms,
+  termsList,
+  selectedTerms,
   toggleTermSelection,
   applySelectedTerms,
   termsLoading,
@@ -292,7 +300,7 @@ const FinanceDocument = ({
           }}
         >
           <div>
-            <strong>Ref No:</strong>{" "}
+            <strong>Quotation No:</strong>{" "}
             <input
               type="text"
               value={refNo}
@@ -322,49 +330,50 @@ const FinanceDocument = ({
         {/* Client Info - UNCHANGED */}
         <div style={{ display: "flex", gap: "20px", marginBottom: "15px" }}>
           <label style={{ display: "block", marginBottom: "12px" }}>
-            <strong>TO </strong> </label>
-            <textarea
-              rows={3} // Default shows 3 lines
-              value={quotation.clientName || ""}
-              onChange={(e) =>
-                setQuotation({ ...quotation, clientName: e.target.value })
-              }
-              placeholder="Enter Client Name/institution details  and Address "
-              style={{
-      width: "100%",
-minHeight: "48px", // ~ half to one line minimum
-padding: "8px",
-fontSize: "14px",
-lineHeight: "1.4",
-resize: "none", // ❌ no manual resize
-overflow: "hidden", // ❌ no scrollbar
-border: "1px solid #ccc",
-borderRadius: "4px",
-boxSizing: "border-box",
-              }}
-            />
-         
+            <strong>TO </strong>{" "}
+          </label>
+          <textarea
+            rows={3} // Default shows 3 lines
+            value={quotation.clientName || ""}
+            onChange={(e) =>
+              setQuotation({ ...quotation, clientName: e.target.value })
+            }
+            placeholder="Enter Client Name/institution details  and Address "
+            style={{
+              width: "100%",
+              minHeight: "48px", // ~ half to one line minimum
+              padding: "8px",
+              fontSize: "14px",
+              lineHeight: "1.4",
+              resize: "none", // ❌ no manual resize
+              overflow: "hidden", // ❌ no scrollbar
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              boxSizing: "border-box",
+            }}
+          />
+
           <label style={{ display: "block", marginBottom: "12px" }}>
-            <strong>Kind Attn </strong>  </label>
-            <textarea
-              rows={2}
-              value={quotation.kindAttn || ""}
-              onChange={(e) =>
-                setQuotation({ ...quotation, kindAttn: e.target.value })
-              }
-              placeholder="e.g., "
-              style={{
-                width: "40%",
-                padding: "10px",
-                fontSize: "15px",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                resize: "vertical",
-                minHeight: "50px",
-                lineHeight: "1.4",
-              }}
-            />
-        
+            <strong>Kind Attn </strong>{" "}
+          </label>
+          <textarea
+            rows={2}
+            value={quotation.kindAttn || ""}
+            onChange={(e) =>
+              setQuotation({ ...quotation, kindAttn: e.target.value })
+            }
+            placeholder="e.g., "
+            style={{
+              width: "40%",
+              padding: "10px",
+              fontSize: "15px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              resize: "vertical",
+              minHeight: "50px",
+              lineHeight: "1.4",
+            }}
+          />
         </div>
 
         <div style={{ marginBottom: "15px" }}>
@@ -378,13 +387,13 @@ boxSizing: "border-box",
               }
               placeholder="e.g., Quote offer for Industrial Visit 2.5 hours at TANSAM Centre"
               style={{
-               width: "100%",
-      padding: "12px",
-      fontSize: "14px",
-      lineHeight: "1.0",
-      border: "1px solid #ccc",
-      borderRadius: "4px",
-      resize: "vertical",
+                width: "100%",
+                padding: "12px",
+                fontSize: "14px",
+                lineHeight: "1.0",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                resize: "vertical",
               }}
             />
           </label>
@@ -395,33 +404,32 @@ boxSizing: "border-box",
           quotation={quotation}
           setQuotation={setQuotation}
         />
-<div style={{ marginTop: "30px" }}>
-  <h3 style={{ textDecoration: "underline", marginBottom: "10px" }}>
-    Terms & Conditions
-  </h3>
+        <div style={{ marginTop: "30px" }}>
+          <h3 style={{ textDecoration: "underline", marginBottom: "10px" }}>
+            Terms & Conditions
+          </h3>
 
-  <textarea
-    rows={8}
-    value={quotation.termsContent || ""}
-    onChange={(e) =>
-      setQuotation({ ...quotation, termsContent: e.target.value })
-    }
-    placeholder="Enter terms & conditions here..."
-    style={{
-      width: "100%",
-      padding: "12px",
-      fontSize: "14px",
-      lineHeight: "1.0",
-      border: "1px solid #ccc",
-      borderRadius: "4px",
-      resize: "vertical",
-    }}
-  />
-</div>
+          <textarea
+            rows={8}
+            value={quotation.termsContent || ""}
+            onChange={(e) =>
+              setQuotation({ ...quotation, termsContent: e.target.value })
+            }
+            placeholder="Enter terms & conditions here..."
+            style={{
+              width: "100%",
+              padding: "12px",
+              fontSize: "14px",
+              lineHeight: "1.0",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              resize: "vertical",
+            }}
+          />
+        </div>
 
         {/* ✅ FIXED TERMS & CONDITIONS WITH LOADING/ERROR */}
         <div style={{ marginTop: "30px" }}>
-         
           <p style={{ fontSize: "14px", marginBottom: "6px" }}>
             Applicable Terms & Conditions are available at:
           </p>
@@ -621,10 +629,9 @@ boxSizing: "border-box",
                 kindAttn={quotation.kindAttn}
                 subject={quotation.subject}
                 items={quotation.items}
-              termsContent={quotation.termsContent} 
-              
+                termsContent={quotation.termsContent}
                 financeManagerName={quotation.financeManagerName}
-                designation="Manager - Operations"
+                designation=""
                 signatureUrl={
                   quotation.signature
                     ? URL.createObjectURL(quotation.signature)
@@ -718,63 +725,67 @@ boxSizing: "border-box",
                 </button>
               </div>
               {termsLoading ? (
-  <p>Loading...</p>
-) : termsError ? (
-  <p style={{ color: "red" }}>{termsError}</p>
-) : (
-  <>
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr>
-          <th>Select</th>
-          <th>Term Title</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-   <tbody>
-  {Array.isArray(termsList) && termsList.length > 0 ? (
-    termsList.map((term) => (
-      <tr key={term.id}>
-        <td style={{ textAlign: "center" }}>
-          <input
-            type="checkbox"
-            checked={selectedTerms.some(t => t.id === term.id)}
-            onChange={() => toggleTermSelection(term)}
-          />
-        </td>
-        <td>{term.title}</td>
-       <td dangerouslySetInnerHTML={{ __html: term.description }} />
+                <p>Loading...</p>
+              ) : termsError ? (
+                <p style={{ color: "red" }}>{termsError}</p>
+              ) : (
+                <>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        <th>Select</th>
+                        <th>Term Title</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.isArray(termsList) && termsList.length > 0 ? (
+                        termsList.map((term) => (
+                          <tr key={term.id}>
+                            <td style={{ textAlign: "center" }}>
+                              <input
+                                type="checkbox"
+                                checked={selectedTerms.some(
+                                  (t) => t.id === term.id,
+                                )}
+                                onChange={() => toggleTermSelection(term)}
+                              />
+                            </td>
+                            <td>{term.title}</td>
+                            <td
+                              dangerouslySetInnerHTML={{
+                                __html: term.description,
+                              }}
+                            />
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={3} style={{ textAlign: "center" }}>
+                            No active terms available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
 
-      </tr>
-    ))
-  ) : (
-    <tr>
-      <td colSpan={3} style={{ textAlign: "center" }}>No active terms available</td>
-    </tr>
-  )}
-</tbody>
-
-
-    </table>
-
-    <div style={{ textAlign: "right", marginTop: "20px" }}>
-      <button
-        onClick={applySelectedTerms}
-        style={{
-          background: "#1F4E79",
-          color: "#fff",
-          padding: "8px 16px",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Apply Selected Terms
-      </button>
-    </div>
-  </>
-)}
-
+                  <div style={{ textAlign: "right", marginTop: "20px" }}>
+                    <button
+                      onClick={applySelectedTerms}
+                      style={{
+                        background: "#1F4E79",
+                        color: "#fff",
+                        padding: "8px 16px",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Apply Selected Terms
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -850,34 +861,46 @@ boxSizing: "border-box",
 };
 
 // ✅ MAIN COMPONENT WITH ALL STATES & FIXED PROPS
-export default function GenerateQuotation({ quotation: initialQuotation, onSaved }) {
-
-
-  
-  const isEditMode = !!initialQuotation?.id && initialQuotation?.items?.length > 0;
-const [quotation, setQuotation] = useState(() => ({
+export default function GenerateQuotation({
+  quotation: initialQuotation,
+  quotationNo,
+  onSaved,
+}) {
+  const isEditMode =
+    !!initialQuotation?.id && initialQuotation?.items?.length > 0;
+  const [quotation, setQuotation] = useState(() => ({
     id: initialQuotation?.id || null,
     subject: initialQuotation?.subject || "",
     clientName: initialQuotation?.clientName || "",
     kindAttn: initialQuotation?.kindAttn || "",
-    items: initialQuotation?.items || [{ description: "", qty: "", unitPrice: "", tax:"", total: "0.00" }],
+   items: initialQuotation?.items || [
+    { description: "", qty: "", unitPrice: "", tax: "", total: "0.00" },
+  ],
     terms: initialQuotation?.terms || [],
     termsContent: initialQuotation?.termsContent || "",
     financeManagerName: initialQuotation?.financeManagerName || "",
-    signature: null,           // new file upload
-    seal: null,                // new file upload
-    existingSignature: initialQuotation?.existingSignature || null,  // preview path
-    existingSeal: initialQuotation?.existingSeal || null,            // preview path
+    signature: null, // new file upload
+    seal: null, // new file upload
+    existingSignature: initialQuotation?.existingSignature || null, // preview path
+    existingSeal: initialQuotation?.existingSeal || null, // preview path
   }));
-useEffect(() => {
+
+  useEffect(() => {
     console.log("GenerateQuotation mounted with quotation.id =", quotation.id);
   }, []);
- const [activeTermsList, setActiveTermsList] = useState([]);
-const [selectedTerms, setSelectedTerms] = useState([]);
+  const [activeTermsList, setActiveTermsList] = useState([]);
+  const [selectedTerms, setSelectedTerms] = useState([]);
 
   // ✅ ALL REQUIRED STATES
-const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date().getFullYear()}/001`);
-  const [date, setDate] = useState(initialQuotation?.date || new Date().toISOString().split("T")[0]);
+const [refNo, setRefNo] = useState(quotationNo || "");
+
+  useEffect(() => {
+    if (quotationNo) setRefNo(quotationNo);
+  }, [quotationNo]);
+
+  const [date, setDate] = useState(
+    initialQuotation?.date || new Date().toISOString().split("T")[0],
+  );
   const [showPreview, setShowPreview] = useState(false);
   const [savedQuotation, setSavedQuotation] = useState(null);
 
@@ -888,131 +911,129 @@ const [refNo, setRefNo] = useState(initialQuotation?.refNo || `TN/SA/${new Date(
   const [termsError, setTermsError] = useState(null);
 
   const toggleTermSelection = (term) => {
-  setSelectedTerms((prev) => {
-    const exists = prev.find((t) => t.id === term.id);
-    if (exists) {
-      return prev.filter((t) => t.id !== term.id);
+    setSelectedTerms((prev) => {
+      const exists = prev.find((t) => t.id === term.id);
+      if (exists) {
+        return prev.filter((t) => t.id !== term.id);
+      }
+      return [...prev, term];
+    });
+  };
+  const htmlToPlainText = (html) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+
+    // convert list items into new lines
+    const lines = Array.from(div.querySelectorAll("li")).map((li) =>
+      li.textContent.trim(),
+    );
+
+    // fallback if not a list
+    if (lines.length === 0) {
+      return div.textContent.replace(/\u00A0/g, " ").trim();
     }
-    return [...prev, term];
-  });
-};
-const htmlToPlainText = (html) => {
-  const div = document.createElement("div");
-  div.innerHTML = html;
 
-  // convert list items into new lines
-  const lines = Array.from(div.querySelectorAll("li")).map(
-    li => li.textContent.trim()
-  );
+    return lines.map((line, i) => `${i + 1}. ${line}`).join("\n\n");
+  };
+  const applySelectedTerms = () => {
+    const formattedText = selectedTerms
+      .map((term) => htmlToPlainText(term.description))
+      .join("\n\n");
 
-  // fallback if not a list
-  if (lines.length === 0) {
-    return div.textContent.replace(/\u00A0/g, " ").trim();
-  }
+    setQuotation((prev) => ({
+      ...prev,
+      terms: selectedTerms,
+      termsContent: formattedText, // ✅ textarea content
+    }));
 
-  return lines.map((line, i) => `${i + 1}. ${line}`).join("\n\n");
-};
-const applySelectedTerms = () => {
-  const formattedText = selectedTerms
-    .map(term => htmlToPlainText(term.description))
-    .join("\n\n");
-
-  setQuotation(prev => ({
-    ...prev,
-    terms: selectedTerms,
-    termsContent: formattedText, // ✅ textarea content
-  }));
-
-  setShowTermsModal(false);
-};
-
-
-useEffect(() => {
-  if (!quotation.id) return;
-
-  const loadGeneratedQuotation = async () => {
-    try {
-      const generated = await getGeneratedQuotationByQuotationId(quotation.id);
-
-      if (!generated) return;
-
-      setRefNo(generated.refNo || refNo);
-      setDate(generated.date || date);
- const rawItems =
-    typeof generated.items === "string"
-      ? JSON.parse(generated.items)
-      : Array.isArray(generated.items)
-      ? generated.items
-      : [];
-      setQuotation(prev => ({
-        ...prev,
-        clientName: generated.clientName || "",
-        kindAttn: generated.kindAttn || "",
-        subject: generated.subject || "",
-        financeManagerName: generated.financeManagerName || "",
-       items: rawItems.map(item => ({
-  description: item.description || "",
-  unitPrice: item.unitPrice ?? "",
-  qty: item.qty ?? "",
-  tax: item.gst ?? item.tax ?? "",
-  total:
-    item.total ??
-    (
-      Number(item.qty || 0) *
-      Number(item.unitPrice || 0)
-    ).toFixed(2),
-})),
-
-        terms: JSON.parse(generated.terms || "[]"),
-        termsContent: generated.termsContent || "",
-
-        // previews from backend
-        existingSignature: generated.signature || null,
-        existingSeal: generated.seal || null,
-
-        // reset new uploads
-        signature: null,
-        seal: null,
-      }));
-    } catch (err) {
-      console.error("Failed to load generated quotation", err);
-    }
+    setShowTermsModal(false);
   };
 
-  loadGeneratedQuotation();
-}, [quotation.id]);
+  useEffect(() => {
+    if (!quotation.id) return;
+
+    const loadGeneratedQuotation = async () => {
+      try {
+        const generated = await getGeneratedQuotationByQuotationId(
+          quotation.id,
+        );
+
+        if (!generated) return;
+
+        setRefNo(generated.refNo || refNo);
+        setDate(generated.date || date);
+        const rawItems =
+          typeof generated.items === "string"
+            ? JSON.parse(generated.items)
+            : Array.isArray(generated.items)
+              ? generated.items
+              : [];
+        setQuotation((prev) => ({
+          ...prev,
+          clientName: generated.clientName || "",
+          kindAttn: generated.kindAttn || "",
+          subject: generated.subject || "",
+          financeManagerName: generated.financeManagerName || "",
+          items: rawItems.map((item) => ({
+            description: item.description || "",
+            unitPrice: item.unitPrice ?? "",
+            qty: item.qty ?? "",
+            tax: item.gst ?? item.tax ?? "",
+            total:
+              item.total ??
+              (Number(item.qty || 0) * Number(item.unitPrice || 0)).toFixed(2),
+          })),
+
+          terms: JSON.parse(generated.terms || "[]"),
+          termsContent: generated.termsContent || "",
+
+          // previews from backend
+          existingSignature: generated.signature || null,
+          existingSeal: generated.seal || null,
+
+          // reset new uploads
+          signature: null,
+          seal: null,
+        }));
+      } catch (err) {
+        console.error("Failed to load generated quotation", err);
+      }
+    };
+
+    loadGeneratedQuotation();
+  }, [quotation.id]);
 
   // ✅ FIXED TERMS FETCHING WITH LOADING/ERROR
-useEffect(() => {
-  const fetchTerms = async () => {
-    try {
-      setTermsLoading(true);
-      const response = await getActiveTerms();
-      console.log("TERMS API RESPONSE:", response);
+  useEffect(() => {
+    const fetchTerms = async () => {
+      try {
+        setTermsLoading(true);
+        const response = await getActiveTerms();
+        console.log("TERMS API RESPONSE:", response);
 
-      const list = Array.isArray(response) ? response : response.data ? response.data : [response];
+        const list = Array.isArray(response)
+          ? response
+          : response.data
+            ? response.data
+            : [response];
 
-      const formatted = list
-        .filter(term => term.status === "Active")
-        .map(term => ({
-          id: term.id,
-          title: `Term #${term.id}`,
-          description: term.content,
-        }));
+        const formatted = list
+          .filter((term) => term.status === "Active")
+          .map((term) => ({
+            id: term.id,
+            title: `Term #${term.id}`,
+            description: term.content,
+          }));
 
-      setActiveTermsList(formatted);   // ✅ This is what modal reads
-    } catch (err) {
-      setTermsError(err.message || "Failed to fetch terms");
-    } finally {
-      setTermsLoading(false);
-    }
-  };
-  fetchTerms();
-}, []);
-
-
-
-
+        setActiveTermsList(formatted); // ✅ This is what modal reads
+      } catch (err) {
+        setTermsError(err.message || "Failed to fetch terms");
+      } finally {
+        setTermsLoading(false);
+      }
+    };
+    fetchTerms();
+  }, []);
 
   // ✅ FIXED handleSaveQuotation
   const handleSaveQuotation = async () => {
@@ -1025,9 +1046,9 @@ useEffect(() => {
 
       console.log("Sending quotation_id =", quotation.id);
       const dataToSend = new FormData();
-dataToSend.append("quotation_id", quotation.id);
+      dataToSend.append("quotation_id", quotation.id);
 
-      dataToSend.append("refNo", refNo);
+     dataToSend.append("quotationNo", refNo);
       dataToSend.append("date", date);
       dataToSend.append("clientName", quotation.clientName);
       dataToSend.append("kindAttn", quotation.kindAttn || "");
@@ -1058,7 +1079,7 @@ dataToSend.append("quotation_id", quotation.id);
   // ✅ PASS ALL REQUIRED PROPS
   return (
     <FinanceDocument
-    isEditMode={isEditMode}
+      isEditMode={isEditMode}
       quotation={quotation}
       setQuotation={setQuotation}
       refNo={refNo}
@@ -1071,12 +1092,12 @@ dataToSend.append("quotation_id", quotation.id);
       handleSaveQuotation={handleSaveQuotation}
       showTermsModal={showTermsModal}
       setShowTermsModal={setShowTermsModal}
-     termsList={activeTermsList}
-      selectedTerms={selectedTerms}    
-        applySelectedTerms={applySelectedTerms}       // ✅ add this
-  toggleTermSelection={toggleTermSelection}
-  termsLoading={termsLoading}
-  termsError={termsError}
+      termsList={activeTermsList}
+      selectedTerms={selectedTerms}
+      applySelectedTerms={applySelectedTerms} // ✅ add this
+      toggleTermSelection={toggleTermSelection}
+      termsLoading={termsLoading}
+      termsError={termsError}
       termsContent={termsContent}
     />
   );

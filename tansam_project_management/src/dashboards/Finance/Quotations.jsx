@@ -55,9 +55,9 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
-  const [selectedClient, setSelectedClient] = useState("");
-  const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
-  const [selectedLab, setSelectedLab] = useState("");
+  // const [selectedClient, setSelectedClient] = useState("");
+  // const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
+  // const [selectedLab, setSelectedLab] = useState("");
 
 
   const [newQuotation, setNewQuotation] = useState({
@@ -73,7 +73,7 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     lab_id: "",
     lab_name: "",
     description: "",
-    pricingMode: "value", // "value" | "unit"
+     // "value" | "unit"
     unitPrice: "",
     qty: "",
     gst: "",
@@ -154,12 +154,23 @@ const handleEditGeneratedQuotation = async (originalQuotation) => {
     }
 
     // Ensure unitPrice, qty, gst are passed to GenerateQuotation
-    quotationToUse = {
-      ...quotationToUse,
-      unitPrice: newQuotation.unitPrice || 0,
-      qty: newQuotation.qty || 0,
-      gst: newQuotation.gst || 0,
-    };
+quotationToUse = {
+  ...quotationToUse,
+
+  // ✅ Pass unit pricing as items array
+  items: [
+    {
+      description: originalQuotation.description || "",
+      qty: Number(originalQuotation.qty || 0),
+      unitPrice: Number(originalQuotation.unitPrice || 0),
+      tax: Number(originalQuotation.gst || 0),
+      total: (
+        Number(originalQuotation.unitPrice || 0) *
+        Number(originalQuotation.qty || 0)
+      ).toFixed(2),
+    },
+  ],
+};
 
     setNewQuotation(quotationToUse);
     setShowGenerateQuotation(true);
@@ -317,16 +328,31 @@ const filtered = data.filter((q) => {
   return clientMatch && categoryMatch && labMatch;
 });
 
-  const generateQuotationNo = (data) => {
-    const numbers = data
-      .map((q) => q.quotationNo)
-      .filter(Boolean)
-      .map((no) => Number(no.replace("TANSAM/", "")))
-      .filter((n) => !isNaN(n));
+const generateQuotationNo = (data) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // Jan = 1
 
-    const nextNumber = numbers.length ? Math.max(...numbers) + 1 : 1001;
-    return `TANSAM/${nextNumber}`;
-  };
+  // Financial year: Apr–Mar
+  const startYear = month >= 4 ? year : year - 1;
+  const endYear = startYear + 1;
+  const financialYear = `${startYear}-${endYear}`;
+
+  // Filter quotations for the current financial year
+  const currentFYNumbers = data
+    .map((q) => q.quotationNo)
+    .filter(Boolean)
+    .filter((no) => no.includes(financialYear))
+    .map((no) => Number(no.replace(/TANSAM\s*-\s*\d+\/\d{4}-\d{4}/, (match) => match.match(/\d+/)[0])))
+    .filter((n) => !isNaN(n));
+
+  const nextNumber = currentFYNumbers.length
+    ? Math.max(...currentFYNumbers) + 1
+    : 1001;
+
+  return `TANSAM-${nextNumber}/${financialYear}`;
+};
+
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -358,7 +384,7 @@ const filtered = data.filter((q) => {
   const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-          pricingMode: "unit",
+         pricingMode: quotation.pricingMode || "value",
     unitPrice: firstItem.unitPrice || "",
     qty: firstItem.qty || "",
     gst: firstItem.gst || "",
@@ -432,7 +458,7 @@ const filtered = data.filter((q) => {
         lab_id: newQuotation.lab_id,
         lab_name: newQuotation.lab_name,
         description: newQuotation.description,
-        pricingMode: newQuotation.pricingMode,
+    
         unitPrice: newQuotation.unitPrice || 0,
         qty: newQuotation.qty || 0,
         gst: newQuotation.gst || 0,
@@ -444,8 +470,7 @@ const filtered = data.filter((q) => {
         ...(newQuotation.quotationStatus === "Approved"
           ? {
               paymentPhase: newQuotation.paymentPhase,
-              revisedCost: newQuotation.revisedCost,
-              poReceived: newQuotation.poReceived,
+           
               poNumber: newQuotation.poNumber,
               paymentReceived: newQuotation.paymentReceived,
               paymentReceivedDate: newQuotation.paymentReceivedDate,
@@ -525,6 +550,7 @@ const filtered = data.filter((q) => {
     return (
       <GenerateQuotation
         quotation={newQuotation}
+        quotationNo={newQuotation.quotationNo} 
         onSaved={async () => {
           try {
             const fresh = await getQuotations();
@@ -544,9 +570,7 @@ const filtered = data.filter((q) => {
       <div className="table-header">
         <div>
           <h2>Quotations Management</h2>
-          <p className="header-subtitle">
-            Create, manage and download quotations
-          </p>
+        
         </div>
         <button
           className="btn-add-quotation"
@@ -671,8 +695,8 @@ const filtered = data.filter((q) => {
                   <th>Quotation No</th>
                   <th>Opportunity Name</th>
                   <th>Payment Phase</th>
-                  <th>Revised Cost</th>
-                  <th>PO Received</th>
+              
+                  
                   <th>Purchase order number</th>
                   <th>Payment Received</th>
                   <th>Payment Amount</th>
@@ -706,9 +730,24 @@ const filtered = data.filter((q) => {
                         <span className="badge-lab_name">{q.lab_name}</span>
                       </td>
                       <td className="desc-cell">{q.description}</td>
-                      <td className="value-cell">
-                        ₹ {parseInt(q.value || 0).toLocaleString("en-IN")}
-                      </td>
+                  <td className="value-cell">
+  ₹ {(() => {
+    try {
+      const items = JSON.parse(q.itemDetails || "[]");
+
+      // if multiple items → sum totals
+      const total = items.reduce(
+        (sum, item) => sum + Number(item.total || 0),
+        0
+      );
+
+      return Math.round(total).toLocaleString("en-IN");
+    } catch {
+      return "0";
+    }
+  })()}
+</td>
+
                       <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
 
                       {/* Actions column ONLY in Quotation tab */}
@@ -738,16 +777,49 @@ const filtered = data.filter((q) => {
                             <MdEditDocument size={30} />
                           </button>
                         ) : (
-                          <button
-                            className="btn-generate"
-                            onClick={() => {
-                              setNewQuotation(q);
-                              setShowGenerateQuotation(true);
-                            }}
-                            title="Generate Quotation"
-                          >
-                            <FaFilePdf size={30} />
-                          </button>
+<button
+  className="btn-generate"
+  onClick={() => {
+    let items = [];
+
+    try {
+      items = q.itemDetails ? JSON.parse(q.itemDetails) : [];
+    } catch (e) {
+      items = [];
+    }
+
+    const firstItem = items[0] || {};
+
+    // Generate the quotation number here if needed
+    const quotationNo = q.quotationNo || generateQuotationNo(data); // optional
+
+    setNewQuotation({
+      ...q, 
+       quotationNo,// keeps quotationNo, client, date, etc.
+      items: [
+        {
+          description: q.description || firstItem.description || "",
+          qty: Number(firstItem.qty || 0),
+          unitPrice: Number(firstItem.unitPrice || 0),
+          tax: Number(firstItem.gst || 0),
+          total: (
+            Number(firstItem.unitPrice || 0) *
+            Number(firstItem.qty || 0)
+          ).toFixed(2),
+        },
+      ],
+    });
+
+    setShowGenerateQuotation(true);
+
+    // Pass the quotationNo to GenerateQuotation
+   
+  }}
+  title="Generate Quotation"
+>
+  <FaFilePdf size={30} />
+</button>
+
                         )}
 
                         {q.quotationStatus === "Approved" && (
@@ -773,10 +845,7 @@ const filtered = data.filter((q) => {
 
                                   paymentPhase:
                                     latestQuotation.paymentPhase || "Started",
-                                  revisedCost:
-                                    latestQuotation.revisedCost || "",
-                                  poReceived:
-                                    latestQuotation.poReceived || "No",
+                        
                                   poNumber: latestQuotation.poNumber || "",
                                   paymentReceived:
                                     latestQuotation.paymentReceived || "No",
@@ -807,9 +876,7 @@ const filtered = data.filter((q) => {
                       </td>
                       <td>{q.opportunity_name || "-"}</td>
                       <td>{q.paymentPhase || "Not Started"}</td>
-                      <td>{q.revisedCost || "-"}</td>
-
-                      <td>{q.poReceived || "No"}</td>
+                    
                       <td>{q.poNumber || "-"}</td>
                       <td>{q.paymentReceived || "No"}</td>
                       <td>{q.paymentAmount || "-"}</td>
@@ -1028,44 +1095,9 @@ const filtered = data.filter((q) => {
                 <label>Lab</label>
                 <input type="text" value={newQuotation.lab_name} readOnly />
               </div>
-              <div className="form-group">
-                <label>Pricing Mode *</label>
-                <select
-                  value={newQuotation.pricingMode}
-                  onChange={(e) =>
-                    setNewQuotation({
-                      ...newQuotation,
-                      pricingMode: e.target.value,
-                      unitPrice: "",
-                      qty: "",
-                      gst: "",
-                      value: "",
-                    })
-                  }
-                >
-                  {" "}
-                  <option value="">Select Pricing mode</option>
-                  <option value="value">Enter Total Value Only</option>
-                  <option value="unit">Unit Price × Qty + GST</option>
-                </select>
-              </div>
-              {newQuotation.pricingMode === "value" && (
-                <div className="form-group">
-                  <label>Quote Value *</label>
-                  <input
-                    type="number"
-                    value={newQuotation.value}
-                    onChange={(e) =>
-                      setNewQuotation({
-                        ...newQuotation,
-                        value: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              )}
-              {newQuotation.pricingMode === "unit" && (
-                <>
+
+       
+             
                   <div className="form-group">
                     <label>Unit Price *</label>
  <input
@@ -1122,9 +1154,8 @@ const filtered = data.filter((q) => {
                       })()}
                     />
                   </div>
-                </>
-              )}
-
+              
+            
               <div className="form-group">
                 <label>Work Description *</label>
                 <textarea
@@ -1169,6 +1200,22 @@ const filtered = data.filter((q) => {
                     </>
                   )}
                 </select>
+                {newQuotation.quotationStatus === "Approved" && (
+  <div className="form-group">
+    <label>Purchase Order Number *</label>
+    <input
+      type="text"
+      value={newQuotation.poNumber || ""}
+      onChange={(e) =>
+        setNewQuotation({
+          ...newQuotation,
+          poNumber: e.target.value,
+        })
+      }
+    />
+  </div>
+)}
+
               </div>
 
               {/* PAYMENT PHASE */}
@@ -1266,36 +1313,9 @@ const filtered = data.filter((q) => {
 
               {newQuotation.paymentPhase === "Started" && (
                 <>
-                  <div className="form-group">
-                    <label>Revised Cost</label>
-                    <input
-                      type="number"
-                      value={newQuotation.revisedCost}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          revisedCost: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>PO Received *</label>
-                    <select
-                      value={newQuotation.poReceived}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          poReceived: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
-                  </div>
-                  {newQuotation.poReceived === "Yes" && (
+          
+     
+               
                     <div className="form-group">
                       <label>Purchase Order Number *</label>
                       <input
@@ -1309,7 +1329,7 @@ const filtered = data.filter((q) => {
                         }
                       />
                     </div>
-                  )}
+         
 
                   <div className="form-group">
                     <label>Payment Received *</label>

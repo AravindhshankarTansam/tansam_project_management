@@ -46,8 +46,8 @@ client_type_id VARCHAR(50),
     generatedAt DATETIME,
 
     paymentPhase VARCHAR(20),
-    revisedCost DECIMAL(12,2),
-    poReceived VARCHAR(10),
+
+   
     paymentReceived VARCHAR(10),
     paymentAmount DECIMAL(12,2),
     paymentPendingReason TEXT,
@@ -83,7 +83,7 @@ client_type_id VARCHAR(50),
   await db.execute(`
     CREATE TABLE IF NOT EXISTS generated_quotations (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      refNo VARCHAR(50),
+      quotationNo VARCHAR(50),
       date DATE,
       clientName VARCHAR(100),
       kindAttn VARCHAR(100),
