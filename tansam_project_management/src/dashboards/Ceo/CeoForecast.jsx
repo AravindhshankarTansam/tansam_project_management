@@ -186,57 +186,81 @@ export default function CeoForecast() {
               rows.map((row, i) => (
                 <tr key={row.id || i}>
                   {/* Work Category */}
-                  <td>
-                    <select
-                      value={row.work_category_id}
-                      onChange={(e) => {
-                        const wc = workCategories.find(
-                          (w) => String(w.id) === e.target.value,
-                        );
-                        if (!wc) return;
-                        updateRow(i, "work_category_id", wc.id);
-                        updateRow(i, "work_category_name", wc.name);
-                      }}
-                    >
-                      <option value="">Select</option>
-                      {workCategories.map((w) => (
-                        <option key={w.id} value={w.id}>
-                          {w.name}
-                        </option>
-                      ))}
-                    </select>
+                 <td>
+                    {isCEO ? (
+                      <span className="readonly-text">
+                        {row.work_category_name || "-"}
+                      </span>
+                    ) : (
+                      <select
+                        value={row.work_category_id}
+                        onChange={(e) => {
+                          const wc = workCategories.find(
+                            (w) => String(w.id) === e.target.value
+                          );
+                          if (!wc) return;
+                          updateRow(i, "work_category_id", wc.id);
+                          updateRow(i, "work_category_name", wc.name);
+                        }}
+                      >
+                        <option value="">Select</option>
+                        {workCategories.map((w) => (
+                          <option key={w.id} value={w.id}>
+                            {w.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+                  {/* Client */}
+                 <td>
+                    {isCEO ? (
+                      <span className="readonly-text">
+                        {row.client_name || "-"}
+                      </span>
+                    ) : (
+                      <select
+                        value={row.client_name}
+                        onChange={(e) =>
+                          updateRow(i, "client_name", e.target.value)
+                        }
+                      >
+                        <option value="">Select</option>
+                        {clients.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </td>
 
-                  {/* Client */}
-                  <td>
-                    <select
-                      value={row.client_name}
-                      onChange={(e) =>
-                        updateRow(i, "client_name", e.target.value)
-                      }
-                    >
-                      <option value="">Select</option>
-                      {clients.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
 
                   {/* Total Value */}
                   <td>
-                    <input
-                      type="number"
-                      value={row.total_value}
-                      onChange={(e) =>
-                        updateRow(i, "total_value", e.target.value)
-                      }
-                    />
+                    {isCEO ? (
+                      <span className="readonly-text">
+                        {row.total_value || 0}
+                      </span>
+                    ) : (
+                      <input
+                        type="number"
+                        value={row.total_value}
+                        onChange={(e) =>
+                          updateRow(i, "total_value", e.target.value)
+                        }
+                      />
+                    )}
                   </td>
+
 
                   {/* Confidence */}
                   <td>
+                  {isCEO ? (
+                    <span className="readonly-text">
+                      {row.confidence ? `${row.confidence}%` : "-"}
+                    </span>
+                  ) : (
                     <select
                       value={row.confidence}
                       onChange={(e) =>
@@ -250,10 +274,17 @@ export default function CeoForecast() {
                         </option>
                       ))}
                     </select>
-                  </td>
+                  )}
+                </td>
+
 
                   {/* Realizable */}
-                  <td>
+                 <td>
+                  {isCEO ? (
+                    <span className="readonly-text">
+                      {row.realizable_value || 0}
+                    </span>
+                  ) : (
                     <input
                       type="number"
                       value={row.realizable_value}
@@ -261,28 +292,45 @@ export default function CeoForecast() {
                         updateRow(i, "realizable_value", e.target.value)
                       }
                     />
-                  </td>
+                  )}
+                </td>
 
                   {/* FY – Month Picker */}
-                  <td>
-                    <input
-                      type="month"
-                      value={row.fy || ""}
-                      onChange={(e) => updateRow(i, "fy", e.target.value)}
-                    />
-                    <div className="fy-label">{formatMonthYear(row.fy)}</div>
-                  </td>
+                 <td>
+                  {isCEO ? (
+                    <span className="readonly-text">
+                      {formatMonthYear(row.fy) || "-"}
+                    </span>
+                  ) : (
+                    <>
+                      <input
+                        type="month"
+                        value={row.fy || ""}
+                        onChange={(e) => updateRow(i, "fy", e.target.value)}
+                      />
+                      <div className="fy-label">{formatMonthYear(row.fy)}</div>
+                    </>
+                  )}
+                </td>
+
 
                   {/* Carryover */}
                   <td className="readonly">{row.carryover || 0}</td>
 
                   {/* Remarks */}
-                  <td>
+                 <td>
+                  {isCEO ? (
+                    <span className="readonly-text">
+                      {row.remarks || "-"}
+                    </span>
+                  ) : (
                     <input
                       value={row.remarks || ""}
                       onChange={(e) => updateRow(i, "remarks", e.target.value)}
                     />
-                  </td>
+                  )}
+                </td>
+
 
                   {/* Actions */}
                 {!isCEO && (
