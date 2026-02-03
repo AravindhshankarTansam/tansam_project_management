@@ -290,7 +290,7 @@ export default function QuotationPDF({
 <View style={styles.sectionGap} />
         {/* Ref & Date */}
         <View style={styles.refDateRow}>
-          <Text>REF: {refNo || "TANSAM/XXXX/2025-26"}</Text>
+          <Text>Quotation no: {refNo || "TANSAM/XXXX/2025-26"}</Text>
           <Text>DATE: {date || "DD-MM-YYYY"}</Text>
         </View>
 <View style={styles.sectionGap} />

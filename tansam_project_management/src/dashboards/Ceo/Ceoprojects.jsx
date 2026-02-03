@@ -22,6 +22,80 @@ const [currentPage, setCurrentPage] = useState(1);
 const [quotations, setQuotations] = useState([]);
 const [labPayments, setLabPayments] = useState({});
 const [projectPayments, setProjectPayments] = useState({});
+const [allLabPayments, setAllLabPayments] = useState({});
+const [filteredLabPayments, setFilteredLabPayments] = useState({});
+const totalRevenue = useMemo(() => {
+  return quotations
+    .filter(
+      (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
+    )
+    .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
+}, [quotations]);
+
+useEffect(() => {
+  const payments = {};
+  projects.forEach((project) => {
+    const oppId = project.opportunityId?.trim()?.toUpperCase();
+    if (!oppId) return;
+
+    const revenue = quotations
+      .filter(
+        (q) =>
+          q.opportunity_id?.trim()?.toUpperCase() === oppId &&
+          q.quotationStatus === "Approved" &&
+          q.paymentReceived === "Yes"
+      )
+      .reduce((sum, q) => sum + Number(q.paymentAmount || 0), 0);
+
+    if (!revenue) return;
+
+    const labs = Array.isArray(project.labNames)
+      ? project.labNames
+      : project.labNames ? [project.labNames] : [];
+
+    labs.forEach((lab) => {
+      const key = lab.trim();
+      payments[key] = (payments[key] || 0) + revenue;
+    });
+  });
+
+  setAllLabPayments(payments);
+}, [projects, quotations]);
+useEffect(() => {
+  if (!projects || !projectPayments) return;
+
+  if (selectedLabs.length === 0) {
+    setFilteredLabPayments(allLabPayments); // show all if no filter
+    return;
+  }
+
+  const payments = {};
+
+  projects.forEach((project) => {
+    const oppId = project.opportunityId?.trim()?.toUpperCase();
+    if (!oppId) return;
+
+    // Normalize labs
+    let projectLabNames = [];
+    if (Array.isArray(project.labNames)) projectLabNames = project.labNames;
+    else if (typeof project.labNames === "string") {
+      try {
+        const parsed = JSON.parse(project.labNames);
+        projectLabNames = Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        projectLabNames = project.labNames.split(",").map((l) => l.trim());
+      }
+    }
+
+    projectLabNames.forEach((lab) => {
+      if (selectedLabs.includes(lab)) {
+        payments[lab] = (payments[lab] || 0) + (projectPayments[oppId] || 0);
+      }
+    });
+  });
+
+  setFilteredLabPayments(payments);
+}, [projects, projectPayments, selectedLabs, allLabPayments]);
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -189,6 +263,7 @@ useEffect(() => {
     console.error("Failed to calculate lab payments:", err);
   }
 }, [projects, projectPayments, selectedLabs]);
+
 
 
 
@@ -408,12 +483,13 @@ useEffect(() => {
           </button>
         )}
 <div className="lab-cards">
-  {Object.keys(labPayments).map(labName => {
-    if (labPayments[labName] === 0) return null;
+  {Object.keys(filteredLabPayments).map((labName) => {
+    const revenue = filteredLabPayments[labName];
+    if (!revenue) return null;
     return (
       <div key={labName} className="lab-card">
         <h4>{labName}</h4>
-        <p>₹{labPayments[labName]}</p>
+        <p>₹{revenue.toLocaleString("en-IN")}</p>
       </div>
     );
   })}

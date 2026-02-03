@@ -71,10 +71,18 @@ export default function CeoQuotation() {
     setCurrentPage(1);
   };
 const totalQuotationValue = useMemo(() => {
-  return filteredData.reduce(
-    (sum, q) => sum + (Number(q.value) || 0),
-    0
-  );
+  return filteredData.reduce((sum, q) => {
+    try {
+      const items = JSON.parse(q.itemDetails || "[]");
+      const total = items.reduce(
+        (subSum, item) => subSum + Number(item.total || 0),
+        0
+      );
+      return sum + total;
+    } catch {
+      return sum;
+    }
+  }, 0);
 }, [filteredData]);
 
 const totalPaymentReceived = useMemo(() => {
@@ -212,10 +220,28 @@ const totalPaymentReceived = useMemo(() => {
                       <>
                         <td>{q.clientName}</td>
                         <td>{q.client_type_name}</td>
-                        <td>{q.opprtunity_name}</td>
+                        <td>{q.opportunity_name}</td>
                         <td>{q.work_category_name}</td>
                         <td>{q.lab_name}</td>
-                        <td>{q.value}</td>
+                      <td className="value-cell">
+  ₹ {(() => {
+    try {
+      const items = JSON.parse(q.itemDetails || "[]");
+
+      const total = items.reduce(
+        (sum, item) => sum + Number(item.total || 0),
+        0
+      );
+
+      return total.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    } catch {
+      return "0.00";
+    }
+  })()}
+</td>
                       </>
                     ) : (
                       <>

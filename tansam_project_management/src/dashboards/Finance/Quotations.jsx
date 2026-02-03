@@ -730,20 +730,22 @@ const generateQuotationNo = (data) => {
                         <span className="badge-lab_name">{q.lab_name}</span>
                       </td>
                       <td className="desc-cell">{q.description}</td>
-                  <td className="value-cell">
+<td className="value-cell">
   ₹ {(() => {
     try {
       const items = JSON.parse(q.itemDetails || "[]");
 
-      // if multiple items → sum totals
       const total = items.reduce(
         (sum, item) => sum + Number(item.total || 0),
         0
       );
 
-      return Math.round(total).toLocaleString("en-IN");
+      return total.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
     } catch {
-      return "0";
+      return "0.00";
     }
   })()}
 </td>
