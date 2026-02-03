@@ -55,9 +55,9 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
-  const [selectedClient, setSelectedClient] = useState("");
-  const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
-  const [selectedLab, setSelectedLab] = useState("");
+  // const [selectedClient, setSelectedClient] = useState("");
+  // const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
+  // const [selectedLab, setSelectedLab] = useState("");
 
 
   const [newQuotation, setNewQuotation] = useState({
