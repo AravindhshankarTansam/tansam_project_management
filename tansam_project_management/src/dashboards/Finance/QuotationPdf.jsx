@@ -247,7 +247,7 @@ export default function QuotationPDF({
   items = [],
   totalAmount,
   financeManagerName,
-  designation = "Manager - Operations",
+  designation = "",
   signatureUrl,
   sealUrl,
   termsContent,
@@ -347,19 +347,23 @@ export default function QuotationPDF({
   {/* TOTAL */}
 {/* TOTAL */}
 {/* TOTAL */}
-<View style={[styles.row, styles.totalBoxRow]}>
+<View style={[styles.row]}>
   <Text
     style={[
       styles.cell,
       {
-        width: "84%",
+        width: "99%",
         textAlign: "right",
         fontWeight: "bold",
-        borderTopWidth: 0,   // important
+        borderWidth: 1,
+        borderBottomWidth: 0,
+        borderLeftWidth:0,
+        
+  borderColor: "#000",  // important
       },
     ]}
   >
-    Total Service Value{"\n"}with Tax
+    Total Service  {"\n"}Value with Tax
   </Text>
 
   <Text
@@ -370,7 +374,12 @@ export default function QuotationPDF({
         width: "16%",
         textAlign: "right",
         fontWeight: "bold",
-        borderTopWidth: 0,   // important
+         borderWidth: 1,
+          borderLeftWidth:0,
+          borderBottomWidth:0,
+          borderRightWidth:0,
+  borderColor: "#000",
+     // important
       },
     ]}
   >
@@ -396,22 +405,27 @@ export default function QuotationPDF({
         
 
         {/* Compact Signature */}
-        <View style={styles.signatureBlock}>
-          <Text>Yours truly,</Text>
 
-          <View style={styles.signRow}>
-            {signatureUrl && <Image src={signatureUrl} style={{ height: 40 }} />}
-            {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
-          </View>
-
-          <Text style={{ fontWeight: "bold", marginTop: 3 }}>
-            {financeManagerName || ""}
-          </Text>
-          <Text>{designation}</Text>
-        </View>
 
         {/* Footer */}
 <View style={styles.footerContainer} fixed>
+
+  {/* SIGNATURE */}
+  <View style={{ marginBottom: 8 }}>
+    <Text>Yours truly,</Text>
+
+    <View style={styles.signRow}>
+      {signatureUrl && <Image src={signatureUrl} style={{ height: 40 }} />}
+      {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
+    </View>
+
+    <Text style={{ fontWeight: "bold", marginTop: 3 }}>
+      {financeManagerName}
+    </Text>
+    <Text>{designation}</Text>
+  </View>
+
+  {/* FOOTER */}
   <View style={styles.footer}>
     <Text style={styles.footerCell}>Tel: +91 44 69255700</Text>
     <Text style={styles.footerCell}>E-Mail: info@tansam.org</Text>
@@ -420,10 +434,13 @@ export default function QuotationPDF({
       C-Wing North, 603, TIDEL Park, Rajiv Gandhi Salai, Taramani, Chennai-600113
     </Text>
   </View>
+
   <View style={styles.gstBar}>
     <Text>GSTIN:- 33AAJCT2401Q1Z7 | CIN : U91990TN2022NPL150529</Text>
   </View>
+
 </View>
+
 
       </Page>
     </Document>

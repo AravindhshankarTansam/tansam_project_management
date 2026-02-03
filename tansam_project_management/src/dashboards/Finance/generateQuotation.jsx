@@ -631,7 +631,7 @@ const FinanceDocument = ({
                 items={quotation.items}
                 termsContent={quotation.termsContent}
                 financeManagerName={quotation.financeManagerName}
-                designation="Manager - Operations"
+                designation=""
                 signatureUrl={
                   quotation.signature
                     ? URL.createObjectURL(quotation.signature)

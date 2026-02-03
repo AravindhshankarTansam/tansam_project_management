@@ -27,15 +27,40 @@ export const addQuotation = async (req, res) => {
     const { items = [], qty = 0, unitPrice = 0, gst = 0, ...otherFields } = req.body;
 
     // Prepare itemDetails as string
-    const itemDetails = JSON.stringify(
-      items.length
-        ? items.map(item => ({
-            qty: Number(item.qty || 0),
-            unitPrice: Number(item.unitPrice || 0),
-            gst: Number(item.gst || 0),
-          }))
-        : [{ qty: Number(qty), unitPrice: Number(unitPrice), gst: Number(gst) }]
-    );
+  const itemDetails = JSON.stringify(
+  items.length
+    ? items.map(item => {
+        const q = Number(item.qty || 0);
+        const u = Number(item.unitPrice || 0);
+        const g = Number(item.gst || 0);
+        const base = q * u;
+        const total = base + (base * g) / 100;
+
+        return {
+          description: item.description || "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total
+        };
+      })
+    : (() => {
+        const q = Number(qty || 0);
+        const u = Number(unitPrice || 0);
+        const g = Number(gst || 0);
+        const base = q * u;
+        const total = base + (base * g) / 100;
+
+        return [{
+          description: "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total
+        }];
+      })()
+);
+
 
     // Extract fields from request
     const {
