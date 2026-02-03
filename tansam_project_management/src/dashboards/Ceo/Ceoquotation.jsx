@@ -71,10 +71,18 @@ export default function CeoQuotation() {
     setCurrentPage(1);
   };
 const totalQuotationValue = useMemo(() => {
-  return filteredData.reduce(
-    (sum, q) => sum + (Number(q.value) || 0),
-    0
-  );
+  return filteredData.reduce((sum, q) => {
+    try {
+      const items = JSON.parse(q.itemDetails || "[]");
+      const total = items.reduce(
+        (subSum, item) => subSum + Number(item.total || 0),
+        0
+      );
+      return sum + total;
+    } catch {
+      return sum;
+    }
+  }, 0);
 }, [filteredData]);
 
 const totalPaymentReceived = useMemo(() => {
