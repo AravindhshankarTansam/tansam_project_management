@@ -105,3 +105,17 @@
 .icon-btn.delete:hover {
   background-color: #dc2626;
 }
+
+.ceo-forecast select:disabled,
+.ceo-forecast input:disabled {
+  background-color: #f5f5f5;
+  color: #555;
+  cursor: not-allowed;
+  border: 1px solid #ddd;
+}
+
+.readonly-text {
+  display: inline-block;
+  padding: 6px 8px;
+  color: #444;
+}
