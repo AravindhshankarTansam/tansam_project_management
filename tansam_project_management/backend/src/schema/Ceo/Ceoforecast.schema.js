@@ -41,7 +41,7 @@ export const createCeoForecastSchema = async (db) => {
 
       CONSTRAINT fk_ceo_forecast_created_by
         FOREIGN KEY (created_by)
-        REFERENCES users(id)
+        REFERENCES users_admin(id)
         ON DELETE RESTRICT
     )
   `);

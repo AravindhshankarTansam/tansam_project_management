@@ -21,6 +21,7 @@
     coordinator: [
       // { label: "Dashboard", path: "/coordinator" },
       { label: "New Opportunities", path: "/coordinator/opportunities" },
+       { label: "Forecast", path: "/ceo/ceoforecast" },
       // { label: "Opportunities-Tracker", path: "/coordinator/Opportunities-tracker" },
     ],
 
