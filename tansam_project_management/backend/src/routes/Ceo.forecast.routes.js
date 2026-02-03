@@ -14,28 +14,28 @@ const router = express.Router();
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(["ADMIN", "CEO"]),
+  roleMiddleware(["ADMIN", "CEO","COORDINATOR"]),
   getForecasts
 );
 
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(["ADMIN", "CEO"]),
+  roleMiddleware(["ADMIN", "CEO","COORDINATOR"]),
   createForecast
 );
 
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(["ADMIN", "CEO"]),
+  roleMiddleware(["ADMIN", "CEO","COORDINATOR"]),
   updateForecast
 );
 
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(["ADMIN", "CEO"]),
+  roleMiddleware(["ADMIN", "CEO","COORDINATOR"]),
   deleteForecast
 );
 

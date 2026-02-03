@@ -39,6 +39,8 @@ export const createForecast = async (req, res) => {
       carryover,
       remarks,
     } = req.body;
+   const created_by = req.user.id;
+   console.log("created_by:", created_by);
 
     const [result] = await db.execute(
       `
