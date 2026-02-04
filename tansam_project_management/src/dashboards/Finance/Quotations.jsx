@@ -224,14 +224,14 @@ export default function Quotations() {
 
     loadProjects();
   }, [showPaymentForm, newQuotation.clientName]);
-  useEffect(() => {
-    const fetchQuotation = async () => {
-      const data = await getQuotations(); // your API call
-      const items = JSON.parse(data.itemDetails || "[]");
-      setUnitPrice(items[0]?.unitPrice || 0);
-    };
-    fetchQuotation();
-  }, []);
+  // useEffect(() => {
+  //   const fetchQuotation = async () => {
+  //     const data = await getQuotations(); // your API call
+  //     const items = JSON.parse(data.itemDetails || "[]");
+  //     setUnitPrice(items[0]?.unitPrice || 0);
+  //   };
+  //   fetchQuotation();
+  // }, []);
   useEffect(() => {
     const closeDropdowns = () => {
       setShowOpportunityDropdown(false);
@@ -397,7 +397,7 @@ export default function Quotations() {
     let items = [];
     try {
       items = quotation.itemDetails ? JSON.parse(quotation.itemDetails) : [];
-    } catch (_error) {
+    } catch (error) {
       items = [];
     }
 
@@ -715,6 +715,7 @@ export default function Quotations() {
 
                   <th>Purchase order number</th>
                   <th>Payment Received</th>
+                     <th>Payment Received Date</th>
                   <th>Payment Amount</th>
                   <th>Pending Reason</th>
                 </>
@@ -903,6 +904,7 @@ export default function Quotations() {
 
                       <td>{q.poNumber || "-"}</td>
                       <td>{q.paymentReceived || "No"}</td>
+                      <td>{q.paymentReceivedDate}</td>
                       <td>{q.paymentAmount || "-"}</td>
                       <td>{q.paymentPendingReason || "-"}</td>
                     </>

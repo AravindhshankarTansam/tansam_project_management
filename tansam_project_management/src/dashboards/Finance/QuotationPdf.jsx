@@ -261,7 +261,7 @@ export default function QuotationPDF({
   kindAttn,
   subject,
   items = [],
-  totalAmount,
+  // totalAmount,
   financeManagerName,
   designation,
   signatureUrl,
