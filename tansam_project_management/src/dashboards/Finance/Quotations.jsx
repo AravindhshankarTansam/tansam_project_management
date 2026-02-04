@@ -35,8 +35,8 @@ export default function Quotations() {
   const [_projects, setProjects] = useState([]);
   // const [selectedProject, setSelectedProject] = useState("");
   const [selectedClients, setSelectedClients] = useState([]);
-const [selectedWorkCategories, setSelectedWorkCategories] = useState([]);
-const [selectedLabs, setSelectedLabs] = useState([]);
+  const [selectedWorkCategories, setSelectedWorkCategories] = useState([]);
+  const [selectedLabs, setSelectedLabs] = useState([]);
 
   const [_showOpportunityDropdown, setShowOpportunityDropdown] =
     useState(false);
@@ -51,14 +51,13 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   const workCategoryOptions = [
     ...new Set(data.map((d) => d.work_category_name)),
   ];
-  const labOptions = labs.map((lab) => lab.name); 
-  
+  const labOptions = labs.map((lab) => lab.name);
+
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
 
   // const [selectedClient, setSelectedClient] = useState("");
   // const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
   // const [selectedLab, setSelectedLab] = useState("");
-
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
@@ -73,7 +72,7 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     lab_id: "",
     lab_name: "",
     description: "",
-     // "value" | "unit"
+    // "value" | "unit"
     unitPrice: "",
     qty: "",
     gst: "",
@@ -98,96 +97,111 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     setSelectedLabs("");
     setPage(1);
   };
-const handleEditGeneratedQuotation = async (originalQuotation) => {
-  console.log("Edit clicked for quotation ID:", originalQuotation.id);
+  const handleEditGeneratedQuotation = async (originalQuotation) => {
+    console.log("Edit clicked for quotation ID:", originalQuotation.id);
 
-  // ─── Define baseQuotation outside try so it's accessible in catch ───
-  const baseQuotation = {
-    id: originalQuotation.id,
-    quotationNo: originalQuotation.quotationNo || "",
-    opportunity_name: originalQuotation.opportunity_name || "",
-    clientName: originalQuotation.clientName || "",
-    kindAttn: "",
-    subject: "",
-    financeManagerName: "",
-    items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
-    terms: [],
-    termsContent: "",
-    signature: null,
-    seal: null,
-    existingSignature: null,
-    existingSeal: null,
-  };
-  // ────────────────────────────────────────────────
+    // ─── Define baseQuotation outside try so it's accessible in catch ───
+    const baseQuotation = {
+      id: originalQuotation.id,
+      quotationNo: originalQuotation.quotationNo || "",
+      opportunity_name: originalQuotation.opportunity_name || "",
+      clientName: originalQuotation.clientName || "",
+      kindAttn: "",
+      subject: "",
+      financeManagerName: "",
+      items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
+      terms: [],
+      termsContent: "",
+      signature: null,
+      seal: null,
+      existingSignature: null,
+      existingSeal: null,
+    };
+    // ────────────────────────────────────────────────
 
-  try {
-    const generated = await getGeneratedQuotationByQuotationId(originalQuotation.id);
-    console.log("API returned generated data:", generated);
+    try {
+      const generated = await getGeneratedQuotationByQuotationId(
+        originalQuotation.id,
+      );
+      console.log("API returned generated data:", generated);
 
-    let quotationToUse;
+      let quotationToUse;
 
-    if (!generated || !generated.id) {
-      console.warn("No previously generated quotation found for this ID");
+      if (!generated || !generated.id) {
+        console.warn("No previously generated quotation found for this ID");
+        quotationToUse = {
+          ...baseQuotation,
+          refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
+          date: new Date().toISOString().split("T")[0],
+        };
+      } else {
+        console.log("Loading existing generated quotation data");
+        quotationToUse = {
+          ...baseQuotation,
+          quotationId: originalQuotation.id,
+          quotationNo: originalQuotation.quotationNo,
+          opportunity_name:
+            originalQuotation.opportunity_name ||
+            generated.opportunity_name ||
+            "",
+          clientName: originalQuotation.clientName || "",
+          generatedId: generated.id,
+          refNo: generated.refNo,
+          date: generated.date,
+          items: generated.items
+            ? JSON.parse(generated.items)
+            : baseQuotation.items,
+          terms: generated.terms
+            ? JSON.parse(generated.terms)
+            : baseQuotation.terms,
+          termsContent: generated.termsContent || "",
+          existingSignature: generated.signature
+            ? `http://localhost:9899/${generated.signature}`
+            : null,
+          existingSeal: generated.seal
+            ? `http://localhost:9899/${generated.seal}`
+            : null,
+          signature: null,
+          seal: null,
+        };
+      }
+
+      // Ensure unitPrice, qty, gst are passed to GenerateQuotation
       quotationToUse = {
+        ...quotationToUse,
+
+        // ✅ Pass unit pricing as items array
+        items: [
+          {
+            description: originalQuotation.description || "",
+            qty: Number(originalQuotation.qty || 0),
+            unitPrice: Number(originalQuotation.unitPrice || 0),
+            tax: Number(originalQuotation.gst || 0),
+            total: (
+              Number(originalQuotation.unitPrice || 0) *
+              Number(originalQuotation.qty || 0)
+            ).toFixed(2),
+          },
+        ],
+      };
+
+      setNewQuotation(quotationToUse);
+      setShowGenerateQuotation(true);
+    } catch (err) {
+      console.error("Error loading generated quotation:", err);
+      alert(
+        "Could not load previous generated version. Opening with basic data.",
+      );
+
+      // Fallback – now baseQuotation is accessible
+      setNewQuotation({
         ...baseQuotation,
         refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
         date: new Date().toISOString().split("T")[0],
-      };
-    } else {
-      console.log("Loading existing generated quotation data");
-      quotationToUse = {
-        ...baseQuotation,
-        quotationId: originalQuotation.id,
-        quotationNo: originalQuotation.quotationNo,
-        opportunity_name: originalQuotation.opportunity_name || generated.opportunity_name || "",
-        clientName: originalQuotation.clientName || "",
-        generatedId: generated.id,
-        refNo: generated.refNo,
-        date: generated.date,
-        items: generated.items ? JSON.parse(generated.items) : baseQuotation.items,
-        terms: generated.terms ? JSON.parse(generated.terms) : baseQuotation.terms,
-        termsContent: generated.termsContent || "",
-        existingSignature: generated.signature ? `http://localhost:9899/${generated.signature}` : null,
-        existingSeal: generated.seal ? `http://localhost:9899/${generated.seal}` : null,
-        signature: null,
-        seal: null,
-      };
+      });
+      setShowGenerateQuotation(true);
     }
-
-    // Ensure unitPrice, qty, gst are passed to GenerateQuotation
-quotationToUse = {
-  ...quotationToUse,
-
-  // ✅ Pass unit pricing as items array
-  items: [
-    {
-      description: originalQuotation.description || "",
-      qty: Number(originalQuotation.qty || 0),
-      unitPrice: Number(originalQuotation.unitPrice || 0),
-      tax: Number(originalQuotation.gst || 0),
-      total: (
-        Number(originalQuotation.unitPrice || 0) *
-        Number(originalQuotation.qty || 0)
-      ).toFixed(2),
-    },
-  ],
-};
-
-    setNewQuotation(quotationToUse);
-    setShowGenerateQuotation(true);
-  } catch (err) {
-    console.error("Error loading generated quotation:", err);
-    alert("Could not load previous generated version. Opening with basic data.");
-
-    // Fallback – now baseQuotation is accessible
-    setNewQuotation({
-      ...baseQuotation,
-      refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
-      date: new Date().toISOString().split("T")[0],
-    });
-    setShowGenerateQuotation(true);
-  }
-};
+  };
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -315,47 +329,51 @@ quotationToUse = {
 
     loadOpportunities();
   }, []);
-const filtered = data.filter((q) => {
-  const clientMatch =
-    selectedClients.length === 0 ||
-    selectedClients.includes(q.clientName);
+  const filtered = data.filter((q) => {
+    const clientMatch =
+      selectedClients.length === 0 || selectedClients.includes(q.clientName);
 
-  const categoryMatch =
-    selectedWorkCategories.length === 0 ||
-    selectedWorkCategories.includes(q.work_category_name);
+    const categoryMatch =
+      selectedWorkCategories.length === 0 ||
+      selectedWorkCategories.includes(q.work_category_name);
 
-  const labMatch =
-    selectedLabs.length === 0 ||
-    selectedLabs.includes(q.lab_name);
+    const labMatch =
+      selectedLabs.length === 0 || selectedLabs.includes(q.lab_name);
 
-  return clientMatch && categoryMatch && labMatch;
-});
+    return clientMatch && categoryMatch && labMatch;
+  });
 
-const generateQuotationNo = (data) => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1; // Jan = 1
+  const generateQuotationNo = (data) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // Jan = 1
 
-  // Financial year: Apr–Mar
-  const startYear = month >= 4 ? year : year - 1;
-  const endYear = startYear + 1;
-  const financialYear = `${startYear}-${endYear}`;
+    // Financial year: Apr–Mar
+    const startYear = month >= 4 ? year : year - 1;
+    const endYear = startYear + 1;
+    const financialYear = `${startYear}-${endYear}`;
 
-  // Filter quotations for the current financial year
-  const currentFYNumbers = data
-    .map((q) => q.quotationNo)
-    .filter(Boolean)
-    .filter((no) => no.includes(financialYear))
-    .map((no) => Number(no.replace(/TANSAM\s*-\s*\d+\/\d{4}-\d{4}/, (match) => match.match(/\d+/)[0])))
-    .filter((n) => !isNaN(n));
+    // Filter quotations for the current financial year
+    const currentFYNumbers = data
+      .map((q) => q.quotationNo)
+      .filter(Boolean)
+      .filter((no) => no.includes(financialYear))
+      .map((no) =>
+        Number(
+          no.replace(
+            /TANSAM\s*-\s*\d+\/\d{4}-\d{4}/,
+            (match) => match.match(/\d+/)[0],
+          ),
+        ),
+      )
+      .filter((n) => !isNaN(n));
 
-  const nextNumber = currentFYNumbers.length
-    ? Math.max(...currentFYNumbers) + 1
-    : 1001;
+    const nextNumber = currentFYNumbers.length
+      ? Math.max(...currentFYNumbers) + 1
+      : 1001;
 
-  return `TANSAM-${nextNumber}/${financialYear}`;
-};
-
+    return `TANSAM-${nextNumber}/${financialYear}`;
+  };
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -375,24 +393,21 @@ const generateQuotationNo = (data) => {
 
   const handleEdit = (quotation) => {
     setEditId(quotation.id);
-      let items = [];
-  try {
-    items = quotation.itemDetails
-      ? JSON.parse(quotation.itemDetails)
-      : [];
-  } catch (_error) {
-    items = [];
-  }
+    let items = [];
+    try {
+      items = quotation.itemDetails ? JSON.parse(quotation.itemDetails) : [];
+    } catch (_error) {
+      items = [];
+    }
 
-  const firstItem = items[0] || {};
+    const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-         pricingMode: quotation.pricingMode || "value",
-    unitPrice: firstItem.unitPrice || "",
-    qty: firstItem.qty || "",
-    gst: firstItem.gst || "",
+      pricingMode: quotation.pricingMode || "value",
+      unitPrice: firstItem.unitPrice || "",
+      qty: firstItem.qty || "",
+      gst: firstItem.gst || "",
 
-   
       ...initializePaymentFields(quotation.quotationStatus, quotation),
 
       paymentPhase: quotation.paymentPhase || "Not Started",
@@ -462,7 +477,7 @@ const generateQuotationNo = (data) => {
         lab_id: newQuotation.lab_id,
         lab_name: newQuotation.lab_name,
         description: newQuotation.description,
-    
+
         unitPrice: newQuotation.unitPrice || 0,
         qty: newQuotation.qty || 0,
         gst: newQuotation.gst || 0,
@@ -474,7 +489,7 @@ const generateQuotationNo = (data) => {
         ...(newQuotation.quotationStatus === "Approved"
           ? {
               paymentPhase: newQuotation.paymentPhase,
-           
+
               poNumber: newQuotation.poNumber,
               remarks: newQuotation.remarks,
               paymentReceived: newQuotation.paymentReceived,
@@ -555,7 +570,7 @@ const generateQuotationNo = (data) => {
     return (
       <GenerateQuotation
         quotation={newQuotation}
-        quotationNo={newQuotation.quotationNo} 
+        quotationNo={newQuotation.quotationNo}
         onSaved={async () => {
           try {
             const fresh = await getQuotations();
@@ -575,7 +590,6 @@ const generateQuotationNo = (data) => {
       <div className="table-header">
         <div>
           <h2>Quotations Management</h2>
-        
         </div>
         <button
           className="btn-add-quotation"
@@ -605,44 +619,41 @@ const generateQuotationNo = (data) => {
 
       {/* Filters */}
       <div className="filters">
-<MultiSelectDropdown
-  // label="Client"
-  options={clientOptions.map(c => ({ label: c, value: c }))}
-  selectedValues={selectedClients}
-  onChange={(values) => {
-    setSelectedClients(values);
-    setPage(1);
-  }}
-  placeholder="Enter your clients"
-/>
+        <MultiSelectDropdown
+          // label="Client"
+          options={clientOptions.map((c) => ({ label: c, value: c }))}
+          selectedValues={selectedClients}
+          onChange={(values) => {
+            setSelectedClients(values);
+            setPage(1);
+          }}
+          placeholder="Enter your clients"
+        />
 
+        <MultiSelectDropdown
+          // label="Work Category"
+          options={workCategoryOptions.map((w) => ({ label: w, value: w }))}
+          selectedValues={selectedWorkCategories}
+          onChange={(values) => {
+            setSelectedWorkCategories(values);
+            setPage(1);
+          }}
+          placeholder="Enter your work category"
+        />
 
-      <MultiSelectDropdown
-  // label="Work Category"
-  options={workCategoryOptions.map(w => ({ label: w, value: w }))}
-  selectedValues={selectedWorkCategories}
-  onChange={(values) => {
-    setSelectedWorkCategories(values);
-    setPage(1);
-  }}
-  placeholder="Enter your work category"
-/>
-
-
-  <MultiSelectDropdown
-  // label="Lab"
-  options={labOptions.map(l => ({ label: l, value: l }))}
-  selectedValues={selectedLabs}
-  onChange={(values) => {
-    setSelectedLabs(values);
-    setPage(1);
-  }}
-  placeholder="Enter Lab"
-/>
-
+        <MultiSelectDropdown
+          // label="Lab"
+          options={labOptions.map((l) => ({ label: l, value: l }))}
+          selectedValues={selectedLabs}
+          onChange={(values) => {
+            setSelectedLabs(values);
+            setPage(1);
+          }}
+          placeholder="Enter Lab"
+        />
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
-          ✕ 
+          ✕
         </button>
 
         <div className="page-size-ui">
@@ -700,8 +711,7 @@ const generateQuotationNo = (data) => {
                   <th>Quotation No</th>
                   <th>Opportunity Name</th>
                   <th>Payment Phase</th>
-              
-                  
+
                   <th>Purchase order number</th>
                   <th>Payment Received</th>
                   <th>Payment Amount</th>
@@ -735,25 +745,26 @@ const generateQuotationNo = (data) => {
                         <span className="badge-lab_name">{q.lab_name}</span>
                       </td>
                       <td className="desc-cell">{q.description}</td>
-<td className="value-cell">
-  ₹ {(() => {
-    try {
-      const items = JSON.parse(q.itemDetails || "[]");
+                      <td className="value-cell">
+                        ₹{" "}
+                        {(() => {
+                          try {
+                            const items = JSON.parse(q.itemDetails || "[]");
 
-      const total = items.reduce(
-        (sum, item) => sum + Number(item.total || 0),
-        0
-      );
+                            const total = items.reduce(
+                              (sum, item) => sum + Number(item.total || 0),
+                              0,
+                            );
 
-      return total.toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    } catch {
-      return "0.00";
-    }
-  })()}
-</td>
+                            return total.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            });
+                          } catch {
+                            return "0.00";
+                          }
+                        })()}
+                      </td>
 
                       <td>{new Date(q.date).toLocaleDateString("en-IN")}</td>
 
@@ -784,49 +795,53 @@ const generateQuotationNo = (data) => {
                             <MdEditDocument size={30} />
                           </button>
                         ) : (
-<button
-  className="btn-generate"
-  onClick={() => {
-    let items = [];
+                          <button
+                            className="btn-generate"
+                            onClick={() => {
+                              let items = [];
 
-    try {
-      items = q.itemDetails ? JSON.parse(q.itemDetails) : [];
-    } catch (e) {
-      items = [];
-    }
+                              try {
+                                items = q.itemDetails
+                                  ? JSON.parse(q.itemDetails)
+                                  : [];
+                              } catch (e) {
+                                items = [];
+                              }
 
-    const firstItem = items[0] || {};
+                              const firstItem = items[0] || {};
 
-    // Generate the quotation number here if needed
-    const quotationNo = q.quotationNo || generateQuotationNo(data); // optional
+                              // Generate the quotation number here if needed
+                              const quotationNo =
+                                q.quotationNo || generateQuotationNo(data); // optional
 
-    setNewQuotation({
-      ...q, 
-       quotationNo,// keeps quotationNo, client, date, etc.
-      items: [
-        {
-          description: q.description || firstItem.description || "",
-          qty: Number(firstItem.qty || 0),
-          unitPrice: Number(firstItem.unitPrice || 0),
-          tax: Number(firstItem.gst || 0),
-          total: (
-            Number(firstItem.unitPrice || 0) *
-            Number(firstItem.qty || 0)
-          ).toFixed(2),
-        },
-      ],
-    });
+                              setNewQuotation({
+                                ...q,
+                                quotationNo, // keeps quotationNo, client, date, etc.
+                                items: [
+                                  {
+                                    description:
+                                      q.description ||
+                                      firstItem.description ||
+                                      "",
+                                    qty: Number(firstItem.qty || 0),
+                                    unitPrice: Number(firstItem.unitPrice || 0),
+                                    tax: Number(firstItem.gst || 0),
+                                    total: (
+                                      Number(firstItem.unitPrice || 0) *
+                                      Number(firstItem.qty || 0)
+                                    ).toFixed(2),
+                                  },
+                                ],
+                              });
 
-    setShowGenerateQuotation(true);
+                              setShowGenerateQuotation(true);
 
-    // Pass the quotationNo to GenerateQuotation
-   
-  }}
-  title="Generate Quotation"
->
-  <FaFilePdf size={30} />
-</button>
-
+                              // Pass the quotationNo to GenerateQuotation
+                            }}
+                            title="Generate Quotation"
+                          >
+                            <FaFilePdf size={30} />
+                          </button>
                         )}
 
                         {q.quotationStatus === "Approved" && (
@@ -852,7 +867,7 @@ const generateQuotationNo = (data) => {
 
                                   paymentPhase:
                                     latestQuotation.paymentPhase || "Started",
-                        
+
                                   poNumber: latestQuotation.poNumber || "",
                                   remarks: latestQuotation.remarks || "",
                                   paymentReceived:
@@ -884,7 +899,7 @@ const generateQuotationNo = (data) => {
                       </td>
                       <td>{q.opportunity_name || "-"}</td>
                       <td>{q.paymentPhase || "Not Started"}</td>
-                    
+
                       <td>{q.poNumber || "-"}</td>
                       <td>{q.paymentReceived || "No"}</td>
                       <td>{q.paymentAmount || "-"}</td>
@@ -1104,66 +1119,64 @@ const generateQuotationNo = (data) => {
                 <input type="text" value={newQuotation.lab_name} readOnly />
               </div>
 
-       
-             
-                  <div className="form-group">
-                    <label>Unit Price *</label>
- <input
-  type="number"
-  value={newQuotation.unitPrice}
-  onChange={(e) =>
-    setNewQuotation({ ...newQuotation, unitPrice: e.target.value })
-  }
-/>
+              <div className="form-group">
+                <label>Unit Price *</label>
+                <input
+                  type="number"
+                  value={newQuotation.unitPrice}
+                  onChange={(e) =>
+                    setNewQuotation({
+                      ...newQuotation,
+                      unitPrice: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
+              <div className="form-group">
+                <label>Quantity *</label>
+                <input
+                  type="number"
+                  value={newQuotation.qty}
+                  onChange={(e) =>
+                    setNewQuotation({
+                      ...newQuotation,
+                      qty: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
-                  </div>
+              <div className="form-group">
+                <label>GST (%)</label>
+                <input
+                  type="number"
+                  value={newQuotation.gst}
+                  onChange={(e) =>
+                    setNewQuotation({
+                      ...newQuotation,
+                      gst: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
-                  <div className="form-group">
-                    <label>Quantity *</label>
-                    <input
-                      type="number"
-                      value={newQuotation.qty}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          qty: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+              <div className="form-group">
+                <label>Calculated Value</label>
+                <input
+                  type="text"
+                  readOnly
+                  value={(() => {
+                    const unit = Number(newQuotation.unitPrice || 0);
+                    const qty = Number(newQuotation.qty || 0);
+                    const gst = Number(newQuotation.gst || 0);
+                    const base = unit * qty;
+                    const total = base + (base * gst) / 100;
+                    return total.toFixed(2);
+                  })()}
+                />
+              </div>
 
-                  <div className="form-group">
-                    <label>GST (%)</label>
-                    <input
-                      type="number"
-                      value={newQuotation.gst}
-                      onChange={(e) =>
-                        setNewQuotation({
-                          ...newQuotation,
-                          gst: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Calculated Value</label>
-                    <input
-                      type="text"
-                      readOnly
-                      value={(() => {
-                        const unit = Number(newQuotation.unitPrice || 0);
-                        const qty = Number(newQuotation.qty || 0);
-                        const gst = Number(newQuotation.gst || 0);
-                        const base = unit * qty;
-                        const total = base + (base * gst) / 100;
-                        return total.toFixed(2);
-                      })()}
-                    />
-                  </div>
-              
-            
               <div className="form-group">
                 <label>Work Description *</label>
                 <textarea
@@ -1209,21 +1222,20 @@ const generateQuotationNo = (data) => {
                   )}
                 </select>
                 {newQuotation.quotationStatus === "Approved" && (
-  <div className="form-group">
-    <label>Purchase Order Number *</label>
-    <input
-      type="text"
-      value={newQuotation.poNumber || ""}
-      onChange={(e) =>
-        setNewQuotation({
-          ...newQuotation,
-          poNumber: e.target.value,
-        })
-      }
-    />
-  </div>
-)}
-
+                  <div className="form-group">
+                    <label>Purchase Order Number *</label>
+                    <input
+                      type="text"
+                      value={newQuotation.poNumber || ""}
+                      onChange={(e) =>
+                        setNewQuotation({
+                          ...newQuotation,
+                          poNumber: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
               </div>
 
               {/* PAYMENT PHASE */}
@@ -1304,6 +1316,20 @@ const generateQuotationNo = (data) => {
 
             <div className="modal-form">
               <div className="form-group">
+                <label>Purchase Order Number *</label>
+                <input
+                  type="text"
+                  value={newQuotation.poNumber || ""}
+                  onChange={(e) =>
+                    setNewQuotation({
+                      ...newQuotation,
+                      poNumber: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="form-group">
                 <label>Payment Phase *</label>
                 <select
                   value={newQuotation.paymentPhase}
@@ -1321,24 +1347,6 @@ const generateQuotationNo = (data) => {
 
               {newQuotation.paymentPhase === "Started" && (
                 <>
-          
-     
-               
-                    <div className="form-group">
-                      <label>Purchase Order Number *</label>
-                      <input
-                        type="text"
-                        value={newQuotation.poNumber || ""}
-                        onChange={(e) =>
-                          setNewQuotation({
-                            ...newQuotation,
-                            poNumber: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-         
-
                   <div className="form-group">
                     <label>Payment Received *</label>
                     <select
@@ -1384,7 +1392,7 @@ const generateQuotationNo = (data) => {
                           }
                         />
                       </div>
-                        <div className="form-group">
+                      <div className="form-group">
                         <label>Remarks </label>
                         <input
                           type="text"
