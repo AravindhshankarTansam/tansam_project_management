@@ -109,6 +109,7 @@ export default function Quotations() {
       kindAttn: "",
       subject: "",
       financeManagerName: "",
+      designation: "",
       items: [{ description: "", qty: "", unitPrice: "", total: "0.00" }],
       terms: [],
       termsContent: "",

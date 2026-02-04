@@ -35,7 +35,10 @@ totalBoxRow: {
   borderBottomWidth: 1,
   borderColor: "#000",
 },
-
+siemensLogo: {
+  height: 25,
+  objectFit: "contain",
+},
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -50,8 +53,8 @@ totalBoxRow: {
     textAlign: "center",
     marginVertical: 4,
   },
-  mainTitle:    { fontSize: 11.8, fontWeight: "bold" },
-  subTitle:     { fontSize: 8.4, marginTop: 1 },
+  mainTitle:    { fontSize: 15, fontWeight: "bold" },
+  subTitle:     { fontSize: 13, marginTop: 1 },
   quotationTitle: { fontSize: 11, fontWeight: "bold", marginTop: 2 },
 
   refDateRow: {
@@ -247,7 +250,7 @@ export default function QuotationPDF({
   items = [],
   totalAmount,
   financeManagerName,
-  designation = "",
+  designation,
   signatureUrl,
   sealUrl,
   termsContent,
@@ -270,7 +273,7 @@ export default function QuotationPDF({
         <View style={styles.header}>
           <Image src={tnlogo} style={styles.logo} />
           <Image src={tansamLogo} style={styles.logo} />
-          <Image src={siemens} style={styles.logo} />
+          <Image src={siemens} style={styles.siemensLogo} />
           <Image src={tidco} style={styles.logo} />
         </View>
 <View style={styles.watermarkContainer}>
@@ -419,10 +422,12 @@ export default function QuotationPDF({
       {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
     </View>
 
-    <Text style={{ fontWeight: "bold", marginTop: 3 }}>
-      {financeManagerName}
+    <Text style={{ fontWeight: "normal", marginTop: 3 }}>
+      {financeManagerName} 
+       {"\n"}
+      {designation}
     </Text>
-    <Text>{designation}</Text>
+    
   </View>
 
   {/* FOOTER */}
