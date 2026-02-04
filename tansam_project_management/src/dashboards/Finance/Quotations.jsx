@@ -388,10 +388,16 @@ const generateQuotationNo = (data) => {
   const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-         pricingMode: quotation.pricingMode || "value",
-    unitPrice: firstItem.unitPrice || "",
-    qty: firstItem.qty || "",
-    gst: firstItem.gst || "",
+       
+ unitPrice:
+  firstItem.unitPrice === null ? "" : firstItem.unitPrice,
+
+qty:
+  firstItem.qty === null ? "" : firstItem.qty,
+
+gst:
+  firstItem.gst === null ? "" : firstItem.gst,
+
 
    
       ...initializePaymentFields(quotation.quotationStatus, quotation),
@@ -415,19 +421,25 @@ const generateQuotationNo = (data) => {
 
   const handleSaveQuotation = async () => {
     try {
+      // 🚨 PO NUMBER MANDATORY ONLY FOR UPDATE
+if (editId && !newQuotation.poNumber?.trim()) {
+  alert("Purchase Order Number is mandatory while updating a quotation");
+  return;
+}
+
 const base =
-  Number(newQuotation.unitPrice || 0) *
-  Number(newQuotation.qty || 0);
+  Number(newQuotation.unitPrice || "") *
+  Number(newQuotation.qty || "");
 
 const totalValue =
-  base + (base * Number(newQuotation.gst || 0)) / 100;
+  base + (base * Number(newQuotation.gst || "")) / 100;
 
 const itemsArray = [
   {
     description: newQuotation.description || "",
-    qty: Number(newQuotation.qty || 0),
-    unitPrice: Number(newQuotation.unitPrice || 0),
-    gst: Number(newQuotation.gst || 0),
+    qty: Number(newQuotation.qty || ""),
+    unitPrice: Number(newQuotation.unitPrice || ""),
+    gst: Number(newQuotation.gst || ""),
     total: totalValue,
   },
 ];
@@ -1217,7 +1229,7 @@ const itemsArray = [
                     </>
                   )}
                 </select>
-                {newQuotation.quotationStatus === "Approved" && (
+                {newQuotation.quotationStatus === "Approved" && editId && (
   <div className="form-group">
     <label>Purchase Order Number *</label>
     <input
