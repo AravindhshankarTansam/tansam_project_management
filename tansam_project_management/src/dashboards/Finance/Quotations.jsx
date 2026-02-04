@@ -422,10 +422,15 @@ gst:
   const handleSaveQuotation = async () => {
     try {
       // 🚨 PO NUMBER MANDATORY ONLY FOR UPDATE
-if (editId && !newQuotation.poNumber?.trim()) {
-  alert("Purchase Order Number is mandatory while updating a quotation");
+if (
+  editId &&
+  newQuotation.quotationStatus === "Approved" &&
+  !newQuotation.poNumber?.trim()
+) {
+  alert("Purchase Order Number is mandatory when quotation is Approved");
   return;
 }
+
 
 const base =
   Number(newQuotation.unitPrice || "") *
