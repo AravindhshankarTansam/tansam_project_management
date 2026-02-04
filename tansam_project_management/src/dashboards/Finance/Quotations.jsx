@@ -83,6 +83,7 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     poReceived: "No",
     poNumber: "",
     paymentReceived: "No",
+    Remarks: "",
     paymentReceivedDate: "",
     paymentAmount: "",
     paymentPendingReason: "",
@@ -252,6 +253,7 @@ quotationToUse = {
         revisedCost: "",
         poReceived: "No",
         poNumber: "",
+        remarks: "",
         paymentReceived: "No",
         paymentReceivedDate: "",
         paymentAmount: "",
@@ -266,6 +268,7 @@ quotationToUse = {
         revisedCost: currentData.revisedCost || "",
         poReceived: currentData.poReceived || "No",
         poNumber: currentData.poNumber || "",
+        remarks: currentData.Remarks || "",
         paymentReceived: currentData.paymentReceived || "No",
         paymentReceivedDate: currentData.paymentReceivedDate || "",
         paymentAmount: currentData.paymentAmount || "",
@@ -277,6 +280,7 @@ quotationToUse = {
         revisedCost: "",
         poReceived: "No",
         poNumber: "",
+        remarks: "",
         paymentReceived: "No",
         paymentReceivedDate: "",
         paymentAmount: "",
@@ -396,6 +400,7 @@ const generateQuotationNo = (data) => {
       revisedCost: quotation.revisedCost || "",
       poReceived: quotation.poReceived || "No",
       poNumber: quotation.poNumber || "",
+      remarks: quotation.remarks || "",
       paymentReceived: quotation.paymentReceived || "No",
       paymentReceivedDate: quotation.paymentReceivedDate || "",
       paymentAmount: quotation.paymentAmount || "",
@@ -410,15 +415,22 @@ const generateQuotationNo = (data) => {
 
   const handleSaveQuotation = async () => {
     try {
-      const totalValue =
-        newQuotation.pricingMode === "unit"
-          ? (() => {
-              const base =
-                Number(newQuotation.unitPrice || 0) *
-                Number(newQuotation.qty || 0);
-              return base + (base * Number(newQuotation.gst || 0)) / 100;
-            })()
-          : Number(newQuotation.value || 0);
+const base =
+  Number(newQuotation.unitPrice || 0) *
+  Number(newQuotation.qty || 0);
+
+const totalValue =
+  base + (base * Number(newQuotation.gst || 0)) / 100;
+
+const itemsArray = [
+  {
+    description: newQuotation.description || "",
+    qty: Number(newQuotation.qty || 0),
+    unitPrice: Number(newQuotation.unitPrice || 0),
+    gst: Number(newQuotation.gst || 0),
+    total: totalValue,
+  },
+];
 
       // if (newQuotation.quotationStatus === "Approved") {
       //   const matchingOpp = opportunities.find(
@@ -463,7 +475,7 @@ const generateQuotationNo = (data) => {
         qty: newQuotation.qty || 0,
         gst: newQuotation.gst || 0,
         value: totalValue,
-        items: JSON.stringify(newQuotation.items),
+        items: JSON.stringify(itemsArray),
         date: newQuotation.date,
         quotationStatus: newQuotation.quotationStatus,
         // ✅ only include payment fields if Approved
@@ -472,6 +484,7 @@ const generateQuotationNo = (data) => {
               paymentPhase: newQuotation.paymentPhase,
            
               poNumber: newQuotation.poNumber,
+              remarks: newQuotation.remarks,
               paymentReceived: newQuotation.paymentReceived,
               paymentReceivedDate: newQuotation.paymentReceivedDate,
               paymentAmount: newQuotation.paymentAmount,
@@ -849,6 +862,7 @@ const generateQuotationNo = (data) => {
                                     latestQuotation.paymentPhase || "Started",
                         
                                   poNumber: latestQuotation.poNumber || "",
+                                   remarks: latestQuotation.remarks || "",
                                   paymentReceived:
                                     latestQuotation.paymentReceived || "No",
                                   paymentReceivedDate:
@@ -1375,6 +1389,19 @@ const generateQuotationNo = (data) => {
                             setNewQuotation({
                               ...newQuotation,
                               paymentReceivedDate: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                           <div className="form-group">
+                        <label>Remarks</label>
+                        <input
+                          type="text"
+                          value={newQuotation.remarks}
+                          onChange={(e) =>
+                            setNewQuotation({
+                              ...newQuotation,
+                              remarks: e.target.value,
                             })
                           }
                         />

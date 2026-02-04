@@ -62,33 +62,51 @@ export const addQuotation = async (req, res) => {
     const client_id = client.client_id;
 
     // --- Prepare itemDetails array ---
-    const itemsArray = items.length
-      ? items.map((item) => {
-          const q = Number(item.qty );
-          const u = Number(item.unitPrice);
-          const g = Number(item.gst);
-          const base = q * u;
-          const total = base + base *(g / 100) ;
+// --- Normalize items (string | array | empty) ---
+let parsedItems = [];
 
-          return {
-            description: item.description || "",
-            qty: q,
-            unitPrice: u,
-            gst: g,
-            total,
-          };
-        })
-      : [
-          {
-            description: "",
-            qty: Number(qty || 0),
-            unitPrice: Number(unitPrice || 0),
-            gst: Number(gst || 0),
-            total: Number(qty || 0) * Number(unitPrice || 0) * (1 + Number(gst || 0) / 100),
-          },
-        ];
+if (Array.isArray(items)) {
+  parsedItems = items;
+} else if (typeof items === "string") {
+  try {
+    parsedItems = JSON.parse(items);
+  } catch (e) {
+    parsedItems = [];
+  }
+}
 
-    const itemDetails = JSON.stringify(itemsArray);
+// --- Prepare itemDetails array ---
+const itemsArray = parsedItems.length
+  ? parsedItems.map((item) => {
+      const q = Number(item.qty || 0);
+      const u = Number(item.unitPrice || 0);
+      const g = Number(item.gst || 0);
+      const base = q * u;
+      const total = base + base * (g / 100);
+
+      return {
+        description: item.description || "",
+        qty: q,
+        unitPrice: u,
+        gst: g,
+        total,
+      };
+    })
+  : [
+      {
+        description: "",
+        qty: Number(qty || 0),
+        unitPrice: Number(unitPrice || 0),
+        gst: Number(gst || 0),
+        total:
+          Number(qty || 0) *
+          Number(unitPrice || 0) *
+          (1 + Number(gst || 0) / 100),
+      },
+    ];
+
+const itemDetails = JSON.stringify(itemsArray);
+
 
     // --- Compute total value from itemDetails ---
     const totalValue = itemsArray.reduce((sum, item) => sum + Number(item.total || 0), 0);
@@ -234,6 +252,7 @@ export const updateQuotation = async (req, res) => {
       "paymentPhase",
      
       "poNumber",
+      "remarks",
       "paymentReceived",
       "paymentReceivedDate",
       "paymentPendingReason",
@@ -252,23 +271,43 @@ export const updateQuotation = async (req, res) => {
     safeBody.value = sanitizeDecimal(req.body.value);
 
     // Handle itemDetails array
-    safeBody.itemDetails = JSON.stringify(
-      (req.body.items && req.body.items.length)
-        ? req.body.items.map(item => ({
-            description: item.description || "",
-            qty: sanitizeDecimal(item.qty) || 0,
-            unitPrice: sanitizeDecimal(item.unitPrice) || 0,
-            gst: sanitizeDecimal(item.gst) || 0,
-            total: ((sanitizeDecimal(item.qty) || 0) * (sanitizeDecimal(item.unitPrice) || 0) * (1 + (sanitizeDecimal(item.gst) || 0)/100))
-          }))
-        : [{
-            description: "",
-            qty: sanitizeDecimal(req.body.qty) || 0,
-            unitPrice: sanitizeDecimal(req.body.unitPrice) || 0,
-            gst: sanitizeDecimal(req.body.gst) || 0,
-            total: ((sanitizeDecimal(req.body.qty) || 0) * (sanitizeDecimal(req.body.unitPrice) || 0) * (1 + (sanitizeDecimal(req.body.gst) || 0)/100))
-          }]
-    );
+// Handle itemDetails array
+// --- Normalize items (array | string | empty) ---
+let parsedItems = [];
+
+if (Array.isArray(req.body.items)) {
+  parsedItems = req.body.items;
+} else if (typeof req.body.items === "string") {
+  try {
+    parsedItems = JSON.parse(req.body.items);
+  } catch (e) {
+    parsedItems = [];
+  }
+}
+
+safeBody.itemDetails = JSON.stringify(
+  parsedItems.length
+    ? parsedItems.map(item => ({
+        description: item.description || "",
+        qty: sanitizeDecimal(item.qty) || 0,
+        unitPrice: sanitizeDecimal(item.unitPrice) || 0,
+        gst: sanitizeDecimal(item.gst) || 0,
+        total:
+          (sanitizeDecimal(item.qty) || 0) *
+          (sanitizeDecimal(item.unitPrice) || 0) *
+          (1 + (sanitizeDecimal(item.gst) || 0) / 100),
+      }))
+    : [{
+        description: "",
+        qty: sanitizeDecimal(req.body.qty) || 0,
+        unitPrice: sanitizeDecimal(req.body.unitPrice) || 0,
+        gst: sanitizeDecimal(req.body.gst) || 0,
+        total:
+          (sanitizeDecimal(req.body.qty) || 0) *
+          (sanitizeDecimal(req.body.unitPrice) || 0) *
+          (1 + (sanitizeDecimal(req.body.gst) || 0) / 100),
+      }]
+);
 
     // -----------------------------
     // Determine final status
@@ -309,6 +348,7 @@ export const updateQuotation = async (req, res) => {
             paymentPhase: safeBody.paymentPhase ?? "Started",
           
             poNumber: safeBody.poNumber,
+            remarks: safeBody.remarks,
             paymentReceived: safeBody.paymentReceived ?? "No",
             paymentAmount: safeBody.paymentAmount,
             paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
@@ -318,6 +358,7 @@ export const updateQuotation = async (req, res) => {
             paymentPhase: "Not Started",
            
             poNumber: null,
+            remarks: null,
             paymentReceived: "No",
             paymentAmount: null,
             paymentReceivedDate: null,
@@ -343,7 +384,8 @@ export const updateQuotation = async (req, res) => {
         quotationStatus = ?,
         paymentPhase = ?,
      
-        poNumber = ?,    
+        poNumber = ?, 
+        remarks = ?,   
         paymentReceived = ?,
         paymentAmount = ?,
         paymentReceivedDate = ?,   
@@ -366,6 +408,7 @@ export const updateQuotation = async (req, res) => {
  
       
         paymentData.poNumber,
+         paymentData.remarks,
         paymentData.paymentReceived,
         paymentData.paymentAmount,
         paymentData.paymentReceivedDate,

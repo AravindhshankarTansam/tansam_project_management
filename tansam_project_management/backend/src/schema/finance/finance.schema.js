@@ -54,10 +54,11 @@ client_type_id VARCHAR(50),
     
     itemDetails LONGTEXT CHECK (JSON_VALID(itemDetails)),
     poNumber VARCHAR(100),
+    remarks VARCHAR(100),
     paymentReceivedDate DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    pricingMode VARCHAR(100),
+ 
     INDEX idx_client_id (client_id),
 
     CONSTRAINT fk_quotation_client
