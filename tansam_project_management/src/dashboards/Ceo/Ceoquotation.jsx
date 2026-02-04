@@ -5,15 +5,13 @@ import "./Ceocss/Ceoquotation.css";
 
 import { getQuotations } from "../../services/quotation/quotation.api";
 
-
-
 export default function CeoQuotation() {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState("quotation");
-const [itemsPerPage, setItemsPerPage] = useState(10);
-const ITEMS_PER_PAGE =10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const ITEMS_PER_PAGE = 10;
   /* Filters */
   const [searchOpportunity, setSearchOpportunity] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
@@ -33,9 +31,9 @@ const ITEMS_PER_PAGE =10;
       }
     })();
   }, []);
-useEffect(() => {
-  setCurrentPage(1);
-}, [activeTab]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   /* ================= FILTER OPTIONS ================= */
   const clientOptions = useMemo(() => {
@@ -61,13 +59,12 @@ useEffect(() => {
 
   /* ================= PAGINATION ================= */
   // const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-const paginatedData = useMemo(() => {
-  const start = (currentPage - 1) * itemsPerPage;
-  return filteredData.slice(start, start + itemsPerPage);
-}, [filteredData, currentPage, itemsPerPage]);
-
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(start, start + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
 
   const clearFilters = () => {
     setSearchOpportunity("");
@@ -126,75 +123,60 @@ const paginatedData = useMemo(() => {
       </div>
 
       {/* FILTERS + TOTAL */}
- 
-      <div className="filter-row">
 
+     <div className="filter-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  {/* Left side: filters */}
+  <div className="filter-left" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+    <input
+      type="text"
+      placeholder="Search by opportunity..."
+      value={searchOpportunity}
+      onChange={(e) => {
+        setSearchOpportunity(e.target.value);
+        setCurrentPage(1);
+      }}
+    />
 
-        <div className="filter-left">
-          <input
-            type="text"
-            placeholder="Search by opportunity..."
-            value={searchOpportunity}
-            onChange={(e) => {
-              setSearchOpportunity(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
+    <select
+      value={selectedClient}
+      onChange={(e) => {
+        setSelectedClient(e.target.value);
+        setCurrentPage(1);
+      }}
+    >
+      <option value="">All Clients</option>
+      {clientOptions.map((client) => (
+        <option key={client} value={client}>
+          {client}
+        </option>
+      ))}
+    </select>
 
-          <select
-            value={selectedClient}
-            onChange={(e) => {
-              setSelectedClient(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="">All Clients</option>
-            {clientOptions.map((client) => (
-              <option key={client} value={client}>
-                {client}
-              </option>
-            ))}
-          </select>
+    {(searchOpportunity || selectedClient) && (
+      <button className="clear-btn" onClick={clearFilters}>
+        Clear
+      </button>
+    )}
+  </div>
 
-          {(searchOpportunity || selectedClient) && (
-            <button className="clear-btn" onClick={clearFilters}>
-              Clear
-            </button>
-          )}
-        </div>
-     <div className="page-size">
-  <label>Show</label>
-  <select
-    value={itemsPerPage}
-    onChange={(e) => {
-      setItemsPerPage(Number(e.target.value));
-      setCurrentPage(1);
-    }}
-  >
-    <option value={10}>10</option>
-    <option value={25}>25</option>
-    <option value={50}>50</option>
-  </select>
-  <span>entries</span>
+  {/* Right side: show entries */}
+  <div className="page-size" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+    <label>Show</label>
+    <select
+      value={itemsPerPage}
+      onChange={(e) => {
+        setItemsPerPage(Number(e.target.value));
+        setCurrentPage(1);
+      }}
+    >
+      <option value={10}>10</option>
+      <option value={25}>25</option>
+      <option value={50}>50</option>
+    </select>
+    <span>entries</span>
+  </div>
 </div>
-        <div className="summary-row">
-          {activeTab === "quotation" ? (
-            <div className="summary-card">
-              <span className="summary-label">Total Quotation Value</span>
-              <span className="summary-value">
-                ₹ {totalQuotationValue.toLocaleString("en-IN")}
-              </span>
-            </div>
-          ) : (
-            <div className="summary-card success">
-              <span className="summary-label">Total Payment Received</span>
-              <span className="summary-value">
-                ₹ {totalPaymentReceived.toLocaleString("en-IN")}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
+
 
       {/* ================= TABS ================= */}
       <div className="tabs">
@@ -310,39 +292,31 @@ const paginatedData = useMemo(() => {
           </table>
         )}
       </div>
-     
-  <div className="pagination">
-    <button
-      disabled={currentPage === 1}
-      onClick={goPrev}
-    >
-      ◀ Prev
-    </button>
 
-    {Array.from({ length: totalPages }, (_, i) => i + 1)
-      .slice(
-        Math.max(0, currentPage - 3),
-        Math.min(totalPages, currentPage + 2)
-      )
-      .map((page) => (
-        <button
-          key={page}
-          className={page === currentPage ? "active" : ""}
-          onClick={() => goToPage(page)}
-        >
-          {page}
+      <div className="pagination">
+        <button disabled={currentPage === 1} onClick={goPrev}>
+          ◀ Prev
         </button>
-      ))}
 
-    <button
-      disabled={currentPage === totalPages}
-      onClick={goNext}
-    >
-      Next ▶
-    </button>
-  </div>
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(
+            Math.max(0, currentPage - 3),
+            Math.min(totalPages, currentPage + 2),
+          )
+          .map((page) => (
+            <button
+              key={page}
+              className={page === currentPage ? "active" : ""}
+              onClick={() => goToPage(page)}
+            >
+              {page}
+            </button>
+          ))}
 
-
+        <button disabled={currentPage === totalPages} onClick={goNext}>
+          Next ▶
+        </button>
+      </div>
     </div>
   );
 }
