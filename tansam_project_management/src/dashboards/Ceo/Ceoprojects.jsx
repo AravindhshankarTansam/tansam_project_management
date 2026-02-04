@@ -20,17 +20,17 @@ export default function CeoProjects() {
 const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
 const [currentPage, setCurrentPage] = useState(1);
 const [quotations, setQuotations] = useState([]);
-const [labPayments, setLabPayments] = useState({});
+const [_labPayments, setLabPayments] = useState({});
 const [projectPayments, setProjectPayments] = useState({});
 const [allLabPayments, setAllLabPayments] = useState({});
 const [filteredLabPayments, setFilteredLabPayments] = useState({});
-const totalRevenue = useMemo(() => {
-  return quotations
-    .filter(
-      (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
-    )
-    .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
-}, [quotations]);
+// const totalRevenue = useMemo(() => {
+//   return quotations
+//     .filter(
+//       (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
+//     )
+//     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
+// }, [quotations]);
 
 useEffect(() => {
   const payments = {};

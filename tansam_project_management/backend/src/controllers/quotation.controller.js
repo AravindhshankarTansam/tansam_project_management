@@ -273,6 +273,12 @@ export const updateQuotation = async (req, res) => {
     // Handle itemDetails array
 // Handle itemDetails array
 // --- Normalize items (array | string | empty) ---
+// -----------------------------
+// Handle itemDetails SAFELY
+// -----------------------------
+let finalItemDetails = existing.itemDetails;
+let finalValue = existing.value;
+
 let parsedItems = [];
 
 if (Array.isArray(req.body.items)) {
@@ -280,23 +286,32 @@ if (Array.isArray(req.body.items)) {
 } else if (typeof req.body.items === "string") {
   try {
     parsedItems = JSON.parse(req.body.items);
-  } catch (e) {
+  } catch {
     parsedItems = [];
   }
 }
 
-safeBody.itemDetails = JSON.stringify(
-  parsedItems.length
-    ? parsedItems.map(item => ({
-        description: item.description || "",
-        qty: sanitizeDecimal(item.qty) || 0,
-        unitPrice: sanitizeDecimal(item.unitPrice) || 0,
-        gst: sanitizeDecimal(item.gst) || 0,
-        total:
-          (sanitizeDecimal(item.qty) || 0) *
-          (sanitizeDecimal(item.unitPrice) || 0) *
-          (1 + (sanitizeDecimal(item.gst) || 0) / 100),
-      }))
+// 🔒 ONLY recalculate if items OR pricing is sent
+if (
+  parsedItems.length > 0 ||
+  req.body.qty !== undefined ||
+  req.body.unitPrice !== undefined ||
+  req.body.gst !== undefined
+) {
+  const itemsArray = parsedItems.length
+    ? parsedItems.map(item => {
+        const q = sanitizeDecimal(item.qty) || 0;
+        const u = sanitizeDecimal(item.unitPrice) || 0;
+        const g = sanitizeDecimal(item.gst) || 0;
+        const base = q * u;
+        return {
+          description: item.description || "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total: base + base * (g / 100),
+        };
+      })
     : [{
         description: "",
         qty: sanitizeDecimal(req.body.qty) || 0,
@@ -306,8 +321,15 @@ safeBody.itemDetails = JSON.stringify(
           (sanitizeDecimal(req.body.qty) || 0) *
           (sanitizeDecimal(req.body.unitPrice) || 0) *
           (1 + (sanitizeDecimal(req.body.gst) || 0) / 100),
-      }]
-);
+      }];
+
+  finalItemDetails = JSON.stringify(itemsArray);
+  finalValue = itemsArray.reduce((s, i) => s + i.total, 0);
+}
+
+// Assign safely
+safeBody.itemDetails = finalItemDetails;
+safeBody.value = finalValue;
 
     // -----------------------------
     // Determine final status

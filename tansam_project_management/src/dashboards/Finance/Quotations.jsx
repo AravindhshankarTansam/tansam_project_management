@@ -82,8 +82,8 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     revisedCost: "",
     poReceived: "No",
     poNumber: "",
+    remarks: "",
     paymentReceived: "No",
-    Remarks: "",
     paymentReceivedDate: "",
     paymentAmount: "",
     paymentPendingReason: "",
@@ -268,7 +268,7 @@ quotationToUse = {
         revisedCost: currentData.revisedCost || "",
         poReceived: currentData.poReceived || "No",
         poNumber: currentData.poNumber || "",
-        remarks: currentData.Remarks || "",
+        remarks: currentData.remarks || "",
         paymentReceived: currentData.paymentReceived || "No",
         paymentReceivedDate: currentData.paymentReceivedDate || "",
         paymentAmount: currentData.paymentAmount || "",
@@ -280,7 +280,6 @@ quotationToUse = {
         revisedCost: "",
         poReceived: "No",
         poNumber: "",
-        remarks: "",
         paymentReceived: "No",
         paymentReceivedDate: "",
         paymentAmount: "",
@@ -388,16 +387,10 @@ const generateQuotationNo = (data) => {
   const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-       
- unitPrice:
-  firstItem.unitPrice === null ? "" : firstItem.unitPrice,
-
-qty:
-  firstItem.qty === null ? "" : firstItem.qty,
-
-gst:
-  firstItem.gst === null ? "" : firstItem.gst,
-
+         pricingMode: quotation.pricingMode || "value",
+    unitPrice: firstItem.unitPrice || "",
+    qty: firstItem.qty || "",
+    gst: firstItem.gst || "",
 
    
       ...initializePaymentFields(quotation.quotationStatus, quotation),
@@ -421,33 +414,15 @@ gst:
 
   const handleSaveQuotation = async () => {
     try {
-      // 🚨 PO NUMBER MANDATORY ONLY FOR UPDATE
-if (
-  editId &&
-  newQuotation.quotationStatus === "Approved" &&
-  !newQuotation.poNumber?.trim()
-) {
-  alert("Purchase Order Number is mandatory when quotation is Approved");
-  return;
-}
-
-
-const base =
-  Number(newQuotation.unitPrice || "") *
-  Number(newQuotation.qty || "");
-
-const totalValue =
-  base + (base * Number(newQuotation.gst || "")) / 100;
-
-const itemsArray = [
-  {
-    description: newQuotation.description || "",
-    qty: Number(newQuotation.qty || ""),
-    unitPrice: Number(newQuotation.unitPrice || ""),
-    gst: Number(newQuotation.gst || ""),
-    total: totalValue,
-  },
-];
+      const totalValue =
+        newQuotation.pricingMode === "unit"
+          ? (() => {
+              const base =
+                Number(newQuotation.unitPrice || 0) *
+                Number(newQuotation.qty || 0);
+              return base + (base * Number(newQuotation.gst || 0)) / 100;
+            })()
+          : Number(newQuotation.value || 0);
 
       // if (newQuotation.quotationStatus === "Approved") {
       //   const matchingOpp = opportunities.find(
@@ -492,7 +467,7 @@ const itemsArray = [
         qty: newQuotation.qty || 0,
         gst: newQuotation.gst || 0,
         value: totalValue,
-        items: JSON.stringify(itemsArray),
+        items: JSON.stringify(newQuotation.items),
         date: newQuotation.date,
         quotationStatus: newQuotation.quotationStatus,
         // ✅ only include payment fields if Approved
@@ -879,7 +854,7 @@ const itemsArray = [
                                     latestQuotation.paymentPhase || "Started",
                         
                                   poNumber: latestQuotation.poNumber || "",
-                                   remarks: latestQuotation.remarks || "",
+                                  remarks: latestQuotation.remarks || "",
                                   paymentReceived:
                                     latestQuotation.paymentReceived || "No",
                                   paymentReceivedDate:
@@ -1182,8 +1157,7 @@ const itemsArray = [
                         const qty = Number(newQuotation.qty || 0);
                         const gst = Number(newQuotation.gst || 0);
                         const base = unit * qty;
-                        const taxAmount = base*(gst/100);
-                        const total = base + taxAmount;
+                        const total = base + (base * gst) / 100;
                         return total.toFixed(2);
                       })()}
                     />
@@ -1234,7 +1208,7 @@ const itemsArray = [
                     </>
                   )}
                 </select>
-                {newQuotation.quotationStatus === "Approved" && editId && (
+                {newQuotation.quotationStatus === "Approved" && (
   <div className="form-group">
     <label>Purchase Order Number *</label>
     <input
@@ -1410,11 +1384,11 @@ const itemsArray = [
                           }
                         />
                       </div>
-                           <div className="form-group">
-                        <label>Remarks</label>
+                        <div className="form-group">
+                        <label>Remarks </label>
                         <input
                           type="text"
-                          value={newQuotation.remarks}
+                          value={newQuotation.remarks || ""}
                           onChange={(e) =>
                             setNewQuotation({
                               ...newQuotation,
