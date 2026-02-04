@@ -124,7 +124,7 @@ export default function CeoQuotation() {
 
       {/* FILTERS + TOTAL */}
 
-     <div className="filter-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+     <div className="filter-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
   {/* Left side: filters */}
   <div className="filter-left" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
     <input
@@ -159,7 +159,7 @@ export default function CeoQuotation() {
     )}
   </div>
 
-  {/* Right side: show entries */}
+  {/* Right side: Show entries */}
   <div className="page-size" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
     <label>Show</label>
     <select
@@ -174,6 +174,25 @@ export default function CeoQuotation() {
       <option value={50}>50</option>
     </select>
     <span>entries</span>
+  </div>
+
+  {/* Summary card stays */}
+  <div className="summary-row">
+    {activeTab === "quotation" ? (
+      <div className="summary-card">
+        <span className="summary-label">Total Quotation Value</span>
+        <span className="summary-value">
+          ₹ {totalQuotationValue.toLocaleString("en-IN")}
+        </span>
+      </div>
+    ) : (
+      <div className="summary-card success">
+        <span className="summary-label">Total Payment Received</span>
+        <span className="summary-value">
+          ₹ {totalPaymentReceived.toLocaleString("en-IN")}
+        </span>
+      </div>
+    )}
   </div>
 </div>
 
