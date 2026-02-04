@@ -34,7 +34,7 @@ export const addGeneratedQuotation = async (req, res) => {
 
     const {
       quotationNo, date, clientName, kindAttn, subject,
-      items, terms, termsContent, financeManagerName
+      items, terms, termsContent, financeManagerName, designation,
     } = req.body;
 
     const signaturePath = req.files?.signature?.[0]
@@ -61,7 +61,7 @@ export const addGeneratedQuotation = async (req, res) => {
         `UPDATE generated_quotations
          SET quotationNo=?, date=?, clientName=?, kindAttn=?, subject=?,
              items=?, terms=?, termsContent=?, 
-             signature=?, seal=?, financeManagerName=?
+             signature=?, seal=?, financeManagerName=?, designation=?,
          WHERE quotationId=?`,
         [
           quotationNo,
@@ -75,6 +75,7 @@ export const addGeneratedQuotation = async (req, res) => {
           signaturePath || existingRow.signature,
           sealPath || existingRow.seal,
           financeManagerName,
+          designation,
           quotationId,
         ]
       );
@@ -92,8 +93,8 @@ export const addGeneratedQuotation = async (req, res) => {
     await db.execute(
       `INSERT INTO generated_quotations
        (quotationId, quotationNo, date, clientName, kindAttn, subject,
-        items, terms, termsContent, signature, seal, financeManagerName)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        items, terms, termsContent, signature, seal, financeManagerName,designation)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         quotationId,
         quotationNo,
@@ -107,6 +108,7 @@ export const addGeneratedQuotation = async (req, res) => {
         signaturePath,
         sealPath,
         financeManagerName,
+        designation,
       ]
     );
 
@@ -164,11 +166,12 @@ export const updateGeneratedQuotation = async (req, res) => {
       signature,
       seal,
       financeManagerName,
+      designation,
     } = req.body;
 
     await db.execute(
       `UPDATE generated_quotations
-       SET quotationNo,=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?, signature=?, seal=?, financeManagerName=?
+       SET quotationNo,=?, date=?, clientName=?, kindAttn=?, subject=?, items=?, terms=?, signature=?, seal=?, financeManagerName=? designation = ?,
        WHERE id=?`,
       [
         quotationNo,
@@ -181,6 +184,7 @@ export const updateGeneratedQuotation = async (req, res) => {
         signature || null,
         seal || null,
         financeManagerName || null,
+        designation || null,
         id,
       ]
     );

@@ -543,7 +543,31 @@ const FinanceDocument = ({
                 })
               }
               style={{
-                width: "60%",
+                width: "40%",
+                padding: "8px",
+                fontSize: "16px",
+                textAlign: "center",
+                border: "1px solid #ccc",
+                margin: "0 auto",
+                display: "block",
+              }}
+            />
+          </div>
+               <div style={{ marginTop: "25px" }}>
+            <p>
+              <strong> Designation:</strong>
+            </p>
+            <input
+              type="text"
+              value={quotation.designation || ""}
+              onChange={(e) =>
+                setQuotation({
+                  ...quotation,
+                  designation : e.target.value,
+                })
+              }
+              style={{
+                width: "40%",
                 padding: "8px",
                 fontSize: "16px",
                 textAlign: "center",
@@ -631,7 +655,7 @@ const FinanceDocument = ({
                 items={quotation.items}
                 termsContent={quotation.termsContent}
                 financeManagerName={quotation.financeManagerName}
-                designation=""
+                designation={quotation.designation}
                 signatureUrl={
                   quotation.signature
                     ? URL.createObjectURL(quotation.signature)
@@ -879,6 +903,7 @@ export default function GenerateQuotation({
     terms: initialQuotation?.terms || [],
     termsContent: initialQuotation?.termsContent || "",
     financeManagerName: initialQuotation?.financeManagerName || "",
+    designation: null,
     signature: null, // new file upload
     seal: null, // new file upload
     existingSignature: initialQuotation?.existingSignature || null, // preview path
@@ -974,6 +999,7 @@ const [refNo, setRefNo] = useState(quotationNo || "");
           kindAttn: generated.kindAttn || "",
           subject: generated.subject || "",
           financeManagerName: generated.financeManagerName || "",
+          designation: generated.designation || "",
           items: rawItems.map((item) => ({
             description: item.description || "",
             unitPrice: item.unitPrice ?? "",
@@ -1057,7 +1083,10 @@ const [refNo, setRefNo] = useState(quotationNo || "");
         "financeManagerName",
         quotation.financeManagerName || "",
       );
-
+ dataToSend.append(
+        "designation",
+        quotation.designation || "",
+      );
       dataToSend.append("items", JSON.stringify(quotation.items));
       dataToSend.append("terms", JSON.stringify(quotation.terms));
       dataToSend.append("termsContent", quotation.termsContent);
