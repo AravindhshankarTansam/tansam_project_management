@@ -1329,6 +1329,19 @@ const itemsArray = [
             </div>
 
             <div className="modal-form">
+                <div className="form-group">
+                      <label>Purchase Order Number *</label>
+                      <input
+                        type="text"
+                        value={newQuotation.poNumber || ""}
+                        onChange={(e) =>
+                          setNewQuotation({
+                            ...newQuotation,
+                            poNumber: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
               <div className="form-group">
                 <label>Payment Phase *</label>
                 <select
@@ -1350,19 +1363,7 @@ const itemsArray = [
           
      
                
-                    <div className="form-group">
-                      <label>Purchase Order Number *</label>
-                      <input
-                        type="text"
-                        value={newQuotation.poNumber || ""}
-                        onChange={(e) =>
-                          setNewQuotation({
-                            ...newQuotation,
-                            poNumber: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
+                  
          
 
                   <div className="form-group">
