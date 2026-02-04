@@ -14,7 +14,7 @@ import {
 import { fetchWorkCategories } from "../../services/admin/admin.roles.api";
 import { fetchOpportunities } from "../../services/coordinator/coordinator.opportunity.api";
 
-const CONFIDENCE_OPTIONS = [0, 30, 75, 100];
+const CONFIDENCE_OPTIONS = [0, 25, 50, 75, 100];
 
 /* ================= HELPER ================= */
 const formatMonthYear = (value) => {

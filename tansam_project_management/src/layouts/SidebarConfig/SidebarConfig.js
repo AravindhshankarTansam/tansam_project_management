@@ -61,5 +61,6 @@
       { label: "Projects", path: "/ceo/ceoprojects" },
       { label: "Quotation", path: "/ceo/ceoquotation" },
       { label: "Forecast", path: "/ceo/ceoforecast" },
+      { label: "DB View", path: "/ceo/ceodbview" },
     ],
   };

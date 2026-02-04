@@ -18,6 +18,7 @@
 import generatedQuotationRoutes from "./routes/generatedQuotation.routes.js";
 
 import CeoforecastRoutes from "./routes/Ceo.forecast.routes.js";
+import CeoDBroutes from "./routes/ceoDB.routes.js";
 
     import path from "path";
 
@@ -67,6 +68,7 @@ app.use(
   app.use("/api", projectTypeRoutes);
   app.use("/api", projectFollowupRoutes);
   app.use("/api/ceo/forecast", CeoforecastRoutes);
+  app.use("/api/ceo/db", CeoDBroutes);
 
 
 

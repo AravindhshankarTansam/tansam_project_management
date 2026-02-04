@@ -41,7 +41,7 @@ import TeamMember from "./dashboards/tl/pages/teammember.jsx";
 import CeoProjects from "./dashboards/Ceo/Ceoprojects.jsx";
 import CeoQuotation from "./dashboards/Ceo/Ceoquotation.jsx";
 import CeoForecast from "./dashboards/Ceo/CeoForecast.jsx";
-
+import CeoDbView from "./dashboards/Ceo/CeoDbView.jsx";
 
 
 
@@ -129,6 +129,7 @@ function App() {
   <Route path="ceoprojects" element={<CeoProjects />} />
   <Route path="ceoquotation" element={<CeoQuotation />} />
   <Route path="ceoforecast" element={<CeoForecast />} />
+  <Route path="ceodbview" element={<CeoDbView />} />
 </Route>
 
 

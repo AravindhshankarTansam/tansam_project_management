@@ -1,0 +1,58 @@
+const BASE_URL = "http://localhost:9899/api/ceo/db";
+
+/* 🔐 AUTH HEADERS */
+const getAuthHeaders = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+
+  return {
+    "Content-Type": "application/json",
+    "x-user-id": user.id,
+    "x-user-role": user.role,
+    "x-user-name": user.username,
+  };
+};
+
+export const fetchAllDbTables = async () => {
+  const res = await fetch(`${BASE_URL}/tables`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch DB tables");
+  }
+
+  return res.json();
+};
+
+export const fetchTableData = async (tableName) => {
+  const res = await fetch(`${BASE_URL}/table/${tableName}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to fetch table data");
+  }
+
+  return res.json();
+};
+
+export const downloadTableData = async (tableName) => {
+  const res = await fetch(
+    `${BASE_URL}/table/${tableName}/download`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Download failed");
+  }
+
+  return res.json();
+};
