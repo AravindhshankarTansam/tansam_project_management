@@ -63,11 +63,24 @@ siemensLogo: {
     marginVertical: 4,
     fontSize: 10,
   },
+toBox: {
+  width: "60%",
+  minHeight: 55,     // 👈 controls height
+  lineHeight: 1.3,
+  paddingTop: 2,
+},
+
+kindAttnBox: {
+  width: "38%",
+  minHeight: 55,     // 👈 same height for alignment
+  textAlign: "right",
+  lineHeight: 1.3,
+},
 
   toBlock: {
     marginTop: 5,
     marginBottom: 8,
-    lineHeight: 1.2,
+    lineHeight: 1.8,
   },
 watermarkContainer: {
   position: "absolute",
@@ -299,8 +312,14 @@ export default function QuotationPDF({
 <View style={styles.sectionGap} />
         {/* To + Kind Attn */}
 <View style={styles.refDateRow}>
-  <Text>To, {clientName || "INSTITUTE NAME"}</Text>
-  <Text>Kind Attn.: {kindAttn || "NAME, DESIGNATION"}</Text>
+    <View style={styles.toBox}>
+    <Text>To,</Text>
+    <Text>{clientName || "INSTITUTE NAME"}</Text>
+  </View>
+  <View style={styles.kindAttnBox}>
+    <Text>Kind Attn.:</Text>
+    <Text>{kindAttn || "NAME, DESIGNATION"}</Text>
+  </View>
 </View>
 
 <View style={styles.sectionGap} />
