@@ -20,17 +20,17 @@ export default function CeoProjects() {
 const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
 const [currentPage, setCurrentPage] = useState(1);
 const [quotations, setQuotations] = useState([]);
-const [labPayments, setLabPayments] = useState({});
+const [_labPayments, setLabPayments] = useState({});
 const [projectPayments, setProjectPayments] = useState({});
 const [allLabPayments, setAllLabPayments] = useState({});
-const [filteredLabPayments, setFilteredLabPayments] = useState({});
-const totalRevenue = useMemo(() => {
-  return quotations
-    .filter(
-      (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
-    )
-    .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
-}, [quotations]);
+const [_filteredLabPayments, setFilteredLabPayments] = useState({});
+// const totalRevenue = useMemo(() => {
+//   return quotations
+//     .filter(
+//       (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
+//     )
+//     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
+// }, [quotations]);
 
 useEffect(() => {
   const payments = {};
@@ -224,45 +224,38 @@ useEffect(() => {
     return;
   }
 
-  try {
-    let totalRevenue = 0;
+  let totalRevenue = 0;
 
-    projects.forEach((project) => {
-      const oppId = project.opportunityId?.trim().toUpperCase();
-      if (!oppId) return;
+  projects.forEach((project) => {
+    const oppId = project.opportunityId?.trim().toUpperCase();
+    if (!oppId) return;
 
-      // Normalize labNames
-      let projectLabNames = [];
-      if (Array.isArray(project.labNames)) {
-        projectLabNames = project.labNames;
-      } else if (typeof project.labNames === "string") {
-        try {
-          const parsed = JSON.parse(project.labNames);
-          projectLabNames = Array.isArray(parsed)
-            ? parsed
-            : [parsed];
-        } catch {
-          projectLabNames = project.labNames
-            .split(",")
-            .map((l) => l.trim());
-        }
+    // Normalize labNames
+    let projectLabNames = [];
+    if (Array.isArray(project.labNames)) {
+      projectLabNames = project.labNames;
+    } else if (typeof project.labNames === "string") {
+      try {
+        const parsed = JSON.parse(project.labNames);
+        projectLabNames = Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        projectLabNames = project.labNames.split(",").map((l) => l.trim());
       }
+    }
 
-      // If project has ANY selected lab → add revenue once
-      const hasSelectedLab = selectedLabs.some((lab) =>
-        projectLabNames.includes(lab)
-      );
+    // ✅ ADD REVENUE ONLY ONCE PER PROJECT
+    const hasSelectedLab = selectedLabs.some((lab) =>
+      projectLabNames.includes(lab)
+    );
 
-      if (hasSelectedLab) {
-        totalRevenue += projectPayments[oppId] || 0;
-      }
-    });
+    if (hasSelectedLab) {
+      totalRevenue += projectPayments[oppId] || 0;
+    }
+  });
 
-    setLabPayments({ total: totalRevenue });
-  } catch (err) {
-    console.error("Failed to calculate lab payments:", err);
-  }
+  setLabPayments({ total: totalRevenue });
 }, [projects, projectPayments, selectedLabs]);
+
 
 
 
@@ -489,9 +482,13 @@ useEffect(() => {
     <h4>Total Revenue</h4>
     <p>
       ₹
-      {Object.keys(filteredLabPayments)
-        .reduce((sum, labName) => sum + Number(filteredLabPayments[labName] || 0), 0)
-        .toLocaleString("en-IN")}
+      {(selectedLabs.length > 0
+        ? _labPayments.total || 0     // ✅ your existing correct total
+        : Object.values(allLabPayments).reduce(
+            (sum, v) => sum + Number(v || 0),
+            0
+          )
+      ).toLocaleString("en-IN")}
     </p>
   </div>
 </div>

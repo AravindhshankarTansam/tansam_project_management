@@ -39,7 +39,7 @@ client_type_id VARCHAR(50),
      quotationStatus ENUM('Draft', 'Submitted', 'Approved', 'Rejected')
     NOT NULL DEFAULT 'draft',
 
-    value DECIMAL(12,2),
+
     date DATE,
 
     isGenerated TINYINT(1) DEFAULT 0,
@@ -54,10 +54,11 @@ client_type_id VARCHAR(50),
     
     itemDetails LONGTEXT CHECK (JSON_VALID(itemDetails)),
     poNumber VARCHAR(100),
+    remarks VARCHAR(100),
     paymentReceivedDate DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    pricingMode VARCHAR(100),
+ 
     INDEX idx_client_id (client_id),
 
     CONSTRAINT fk_quotation_client
@@ -93,6 +94,7 @@ client_type_id VARCHAR(50),
       signature VARCHAR(255),
       seal VARCHAR(255),
       financeManagerName VARCHAR(100),
+      designation VARCHAR(100),
       isGenerated TINYINT(1),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       termsContent LONGTEXT,

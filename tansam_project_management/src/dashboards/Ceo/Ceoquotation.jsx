@@ -5,14 +5,13 @@ import "./Ceocss/Ceoquotation.css";
 
 import { getQuotations } from "../../services/quotation/quotation.api";
 
-const ITEMS_PER_PAGE = 10;
-
 export default function CeoQuotation() {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState("quotation");
-
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const ITEMS_PER_PAGE = 10;
   /* Filters */
   const [searchOpportunity, setSearchOpportunity] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
@@ -32,6 +31,9 @@ export default function CeoQuotation() {
       }
     })();
   }, []);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   /* ================= FILTER OPTIONS ================= */
   const clientOptions = useMemo(() => {
@@ -47,8 +49,7 @@ export default function CeoQuotation() {
           ?.toLowerCase()
           .includes(searchOpportunity.toLowerCase());
 
-      const matchClient =
-        !selectedClient || q.clientName === selectedClient;
+      const matchClient = !selectedClient || q.clientName === selectedClient;
 
       return matchOpportunity && matchClient;
     });
@@ -56,41 +57,59 @@ export default function CeoQuotation() {
 
   /* ================= TOTAL VALUE ================= */
 
-
   /* ================= PAGINATION ================= */
   // const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredData.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredData, currentPage]);
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(start, start + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
 
   const clearFilters = () => {
     setSearchOpportunity("");
     setSelectedClient("");
     setCurrentPage(1);
   };
-const totalQuotationValue = useMemo(() => {
-  return filteredData.reduce((sum, q) => {
-    try {
-      const items = JSON.parse(q.itemDetails || "[]");
-      const total = items.reduce(
-        (subSum, item) => subSum + Number(item.total || 0),
-        0
-      );
-      return sum + total;
-    } catch {
-      return sum;
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
     }
-  }, 0);
-}, [filteredData]);
+  };
 
-const totalPaymentReceived = useMemo(() => {
-  return filteredData.reduce(
-    (sum, q) => sum + (Number(q.paymentAmount) || 0),
-    0
-  );
-}, [filteredData]);
+  const goPrev = () => {
+    if (currentPage > 1) {
+      setCurrentPage((p) => p - 1);
+    }
+  };
+
+  const goNext = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((p) => p + 1);
+    }
+  };
+
+  const totalQuotationValue = useMemo(() => {
+    return filteredData.reduce((sum, q) => {
+      try {
+        const items = JSON.parse(q.itemDetails || "[]");
+        const total = items.reduce(
+          (subSum, item) => subSum + Number(item.total || 0),
+          0,
+        );
+        return sum + total;
+      } catch {
+        return sum;
+      }
+    }, 0);
+  }, [filteredData]);
+
+  const totalPaymentReceived = useMemo(() => {
+    return filteredData.reduce(
+      (sum, q) => sum + (Number(q.paymentAmount) || 0),
+      0,
+    );
+  }, [filteredData]);
 
   /* ================= RENDER ================= */
   return (
@@ -104,59 +123,79 @@ const totalPaymentReceived = useMemo(() => {
       </div>
 
       {/* FILTERS + TOTAL */}
-      <div className="filter-row">
-        <div className="filter-left">
-          <input
-            type="text"
-            placeholder="Search by opportunity..."
-            value={searchOpportunity}
-            onChange={(e) => {
-              setSearchOpportunity(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
 
-          <select
-            value={selectedClient}
-            onChange={(e) => {
-              setSelectedClient(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="">All Clients</option>
-            {clientOptions.map((client) => (
-              <option key={client} value={client}>
-                {client}
-              </option>
-            ))}
-          </select>
+     <div className="filter-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+  {/* Left side: filters */}
+  <div className="filter-left" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+    <input
+      type="text"
+      placeholder="Search by opportunity..."
+      value={searchOpportunity}
+      onChange={(e) => {
+        setSearchOpportunity(e.target.value);
+        setCurrentPage(1);
+      }}
+    />
 
-          {(searchOpportunity || selectedClient) && (
-            <button className="clear-btn" onClick={clearFilters}>
-              Clear
-            </button>
-          )}
-        </div>
+    <select
+      value={selectedClient}
+      onChange={(e) => {
+        setSelectedClient(e.target.value);
+        setCurrentPage(1);
+      }}
+    >
+      <option value="">All Clients</option>
+      {clientOptions.map((client) => (
+        <option key={client} value={client}>
+          {client}
+        </option>
+      ))}
+    </select>
 
-   <div className="summary-row">
-  {activeTab === "quotation" ? (
-    <div className="summary-card">
-      <span className="summary-label">Total Quotation Value</span>
-      <span className="summary-value">
-        ₹ {totalQuotationValue.toLocaleString("en-IN")}
-      </span>
-    </div>
-  ) : (
-    <div className="summary-card success">
-      <span className="summary-label">Total Payment Received</span>
-      <span className="summary-value">
-        ₹ {totalPaymentReceived.toLocaleString("en-IN")}
-      </span>
-    </div>
-  )}
+    {(searchOpportunity || selectedClient) && (
+      <button className="clear-btn" onClick={clearFilters}>
+        Clear
+      </button>
+    )}
+  </div>
+
+  {/* Right side: Show entries */}
+  <div className="page-size" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+    <label>Show</label>
+    <select
+      value={itemsPerPage}
+      onChange={(e) => {
+        setItemsPerPage(Number(e.target.value));
+        setCurrentPage(1);
+      }}
+    >
+      <option value={10}>10</option>
+      <option value={25}>25</option>
+      <option value={50}>50</option>
+    </select>
+    <span>entries</span>
+  </div>
+
+  {/* Summary card stays */}
+  <div className="summary-row">
+    {activeTab === "quotation" ? (
+      <div className="summary-card">
+        <span className="summary-label">Total Quotation Value</span>
+        <span className="summary-value">
+          ₹ {totalQuotationValue.toLocaleString("en-IN")}
+        </span>
+      </div>
+    ) : (
+      <div className="summary-card success">
+        <span className="summary-label">Total Payment Received</span>
+        <span className="summary-value">
+          ₹ {totalPaymentReceived.toLocaleString("en-IN")}
+        </span>
+      </div>
+    )}
+  </div>
 </div>
 
-      </div>
 
       {/* ================= TABS ================= */}
       <div className="tabs">
@@ -192,13 +231,13 @@ const totalPaymentReceived = useMemo(() => {
                     <th>Opportunity Name</th>
                     <th>Work Category</th>
                     <th>Lab</th>
-                     <th>Quotation Value</th>
+                    <th>Quotation Value</th>
                   </>
                 ) : (
                   <>
                     <th>Client Name</th>
                     <th>Client Type</th>
-                   <th>Work Category</th>
+                    <th>Work Category</th>
                     <th>Lab</th>
                     <th>Payment Phase</th>
                     <th>Payment Amount</th>
@@ -212,9 +251,7 @@ const totalPaymentReceived = useMemo(() => {
               {paginatedData.length > 0 ? (
                 paginatedData.map((q, i) => (
                   <tr key={q.id}>
-                    <td>
-                      {(currentPage - 1) * ITEMS_PER_PAGE + i + 1}
-                    </td>
+                    <td>{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
 
                     {activeTab === "quotation" ? (
                       <>
@@ -223,37 +260,38 @@ const totalPaymentReceived = useMemo(() => {
                         <td>{q.opportunity_name}</td>
                         <td>{q.work_category_name}</td>
                         <td>{q.lab_name}</td>
-                      <td className="value-cell">
-  ₹ {(() => {
-    try {
-      const items = JSON.parse(q.itemDetails || "[]");
+                        <td className="value-cell">
+                          ₹{" "}
+                          {(() => {
+                            try {
+                              const items = JSON.parse(q.itemDetails || "[]");
 
-      const total = items.reduce(
-        (sum, item) => sum + Number(item.total || 0),
-        0
-      );
+                              const total = items.reduce(
+                                (sum, item) => sum + Number(item.total || 0),
+                                0,
+                              );
 
-      return total.toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    } catch {
-      return "0.00";
-    }
-  })()}
-</td>
+                              return total.toLocaleString("en-IN", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              });
+                            } catch {
+                              return "0.00";
+                            }
+                          })()}
+                        </td>
                       </>
                     ) : (
                       <>
                         <td>{q.clientName}</td>
-                      <td>{q.client_type_name}</td>
+                        <td>{q.client_type_name}</td>
                         <td>{q.work_category_name}</td>
                         <td>{q.lab_name}</td>
                         <td>{q.paymentPhase || "Not Started"}</td>
                         <td>
                           {q.paymentAmount
                             ? `₹ ${Number(q.paymentAmount).toLocaleString(
-                                "en-IN"
+                                "en-IN",
                               )}`
                             : "—"}
                         </td>
@@ -272,6 +310,31 @@ const totalPaymentReceived = useMemo(() => {
             </tbody>
           </table>
         )}
+      </div>
+
+      <div className="pagination">
+        <button disabled={currentPage === 1} onClick={goPrev}>
+          ◀ Prev
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(
+            Math.max(0, currentPage - 3),
+            Math.min(totalPages, currentPage + 2),
+          )
+          .map((page) => (
+            <button
+              key={page}
+              className={page === currentPage ? "active" : ""}
+              onClick={() => goToPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+        <button disabled={currentPage === totalPages} onClick={goNext}>
+          Next ▶
+        </button>
       </div>
     </div>
   );

@@ -35,7 +35,10 @@ totalBoxRow: {
   borderBottomWidth: 1,
   borderColor: "#000",
 },
-
+siemensLogo: {
+  height: 25,
+  objectFit: "contain",
+},
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -50,8 +53,8 @@ totalBoxRow: {
     textAlign: "center",
     marginVertical: 4,
   },
-  mainTitle:    { fontSize: 11.8, fontWeight: "bold" },
-  subTitle:     { fontSize: 8.4, marginTop: 1 },
+  mainTitle:    { fontSize: 15, fontWeight: "bold" },
+  subTitle:     { fontSize: 13, marginTop: 1 },
   quotationTitle: { fontSize: 11, fontWeight: "bold", marginTop: 2 },
 
   refDateRow: {
@@ -60,11 +63,24 @@ totalBoxRow: {
     marginVertical: 4,
     fontSize: 10,
   },
+toBox: {
+  width: "60%",
+  minHeight: 55,     // 👈 controls height
+  lineHeight: 1.3,
+  paddingTop: 2,
+},
+
+kindAttnBox: {
+  width: "38%",
+  minHeight: 55,     // 👈 same height for alignment
+  textAlign: "right",
+  lineHeight: 1.3,
+},
 
   toBlock: {
     marginTop: 5,
     marginBottom: 8,
-    lineHeight: 1.2,
+    lineHeight: 1.8,
   },
 watermarkContainer: {
   position: "absolute",
@@ -245,9 +261,9 @@ export default function QuotationPDF({
   kindAttn,
   subject,
   items = [],
-  totalAmount,
+  // totalAmount,
   financeManagerName,
-  designation = "",
+  designation,
   signatureUrl,
   sealUrl,
   termsContent,
@@ -270,7 +286,7 @@ export default function QuotationPDF({
         <View style={styles.header}>
           <Image src={tnlogo} style={styles.logo} />
           <Image src={tansamLogo} style={styles.logo} />
-          <Image src={siemens} style={styles.logo} />
+          <Image src={siemens} style={styles.siemensLogo} />
           <Image src={tidco} style={styles.logo} />
         </View>
 <View style={styles.watermarkContainer}>
@@ -296,8 +312,14 @@ export default function QuotationPDF({
 <View style={styles.sectionGap} />
         {/* To + Kind Attn */}
 <View style={styles.refDateRow}>
-  <Text>To, {clientName || "INSTITUTE NAME"}</Text>
-  <Text>Kind Attn.: {kindAttn || "NAME, DESIGNATION"}</Text>
+    <View style={styles.toBox}>
+    <Text>To,</Text>
+    <Text>{clientName || "INSTITUTE NAME"}</Text>
+  </View>
+  <View style={styles.kindAttnBox}>
+    <Text>Kind Attn.:</Text>
+    <Text>{kindAttn || "NAME, DESIGNATION"}</Text>
+  </View>
 </View>
 
 <View style={styles.sectionGap} />
@@ -419,10 +441,12 @@ export default function QuotationPDF({
       {sealUrl && <Image src={sealUrl} style={{ height: 40 }} />}
     </View>
 
-    <Text style={{ fontWeight: "bold", marginTop: 3 }}>
-      {financeManagerName}
+    <Text style={{ fontWeight: "normal", marginTop: 3 }}>
+      {financeManagerName} 
+       {"\n"}
+      {designation}
     </Text>
-    <Text>{designation}</Text>
+    
   </View>
 
   {/* FOOTER */}

@@ -45,6 +45,9 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   //   setNewQuotation(quotation);
   //   setShowPaymentModal(true);
   // };
+
+
+
   const [_paymentQuotationId, setPaymentQuotationId] = useState(null);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
@@ -83,6 +86,7 @@ const [selectedLabs, setSelectedLabs] = useState([]);
     poReceived: "No",
     poNumber: "",
     paymentReceived: "No",
+    Remarks: "",
     paymentReceivedDate: "",
     paymentAmount: "",
     paymentPendingReason: "",
@@ -181,7 +185,7 @@ quotationToUse = {
     // Fallback – now baseQuotation is accessible
     setNewQuotation({
       ...baseQuotation,
-      refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
+     
       date: new Date().toISOString().split("T")[0],
     });
     setShowGenerateQuotation(true);
@@ -208,14 +212,14 @@ quotationToUse = {
 
     loadProjects();
   }, [showPaymentForm, newQuotation.clientName]);
-  useEffect(() => {
-    const fetchQuotation = async () => {
-      const data = await getQuotations(); // your API call
-      const items = JSON.parse(data.itemDetails || "[]");
-      setUnitPrice(items[0]?.unitPrice || 0);
-    };
-    fetchQuotation();
-  }, []);
+  // useEffect(() => {
+  //   const fetchQuotation = async () => {
+  //     const data = await getQuotations(); // your API call
+  //     const items = JSON.parse(data.itemDetails || "[]");
+  //     setUnitPrice(items[0]?.unitPrice || 0);
+  //   };
+  //   fetchQuotation();
+  // }, []);
   useEffect(() => {
     const closeDropdowns = () => {
       setShowOpportunityDropdown(false);
@@ -252,6 +256,7 @@ quotationToUse = {
         revisedCost: "",
         poReceived: "No",
         poNumber: "",
+        remarks: "",
         paymentReceived: "No",
         paymentReceivedDate: "",
         paymentAmount: "",
@@ -266,6 +271,7 @@ quotationToUse = {
         revisedCost: currentData.revisedCost || "",
         poReceived: currentData.poReceived || "No",
         poNumber: currentData.poNumber || "",
+        remarks: currentData.Remarks || "",
         paymentReceived: currentData.paymentReceived || "No",
         paymentReceivedDate: currentData.paymentReceivedDate || "",
         paymentAmount: currentData.paymentAmount || "",
@@ -277,6 +283,7 @@ quotationToUse = {
         revisedCost: "",
         poReceived: "No",
         poNumber: "",
+        remarks: "",
         paymentReceived: "No",
         paymentReceivedDate: "",
         paymentAmount: "",
@@ -384,10 +391,16 @@ const generateQuotationNo = (data) => {
   const firstItem = items[0] || {};
     setNewQuotation({
       ...quotation,
-         pricingMode: quotation.pricingMode || "value",
-    unitPrice: firstItem.unitPrice || "",
-    qty: firstItem.qty || "",
-    gst: firstItem.gst || "",
+       
+ unitPrice:
+  firstItem.unitPrice === null ? "" : firstItem.unitPrice,
+
+qty:
+  firstItem.qty === null ? "" : firstItem.qty,
+
+gst:
+  firstItem.gst === null ? "" : firstItem.gst,
+
 
    
       ...initializePaymentFields(quotation.quotationStatus, quotation),
@@ -396,6 +409,7 @@ const generateQuotationNo = (data) => {
       revisedCost: quotation.revisedCost || "",
       poReceived: quotation.poReceived || "No",
       poNumber: quotation.poNumber || "",
+      remarks: quotation.remarks || "",
       paymentReceived: quotation.paymentReceived || "No",
       paymentReceivedDate: quotation.paymentReceivedDate || "",
       paymentAmount: quotation.paymentAmount || "",
@@ -410,15 +424,37 @@ const generateQuotationNo = (data) => {
 
   const handleSaveQuotation = async () => {
     try {
-      const totalValue =
-        newQuotation.pricingMode === "unit"
-          ? (() => {
-              const base =
-                Number(newQuotation.unitPrice || 0) *
-                Number(newQuotation.qty || 0);
-              return base + (base * Number(newQuotation.gst || 0)) / 100;
-            })()
-          : Number(newQuotation.value || 0);
+      // 🚨 PO NUMBER MANDATORY ONLY FOR UPDATE
+if (
+  editId &&
+  newQuotation.quotationStatus === "Approved" &&
+  !newQuotation.poNumber?.trim()
+) {
+  alert("Purchase Order Number is mandatory when quotation is Approved");
+  return;
+}
+if (!newQuotation.work_category_name || !newQuotation.lab_name) {
+  alert("Work Category and Lab are required");
+  return;
+}
+
+
+const base =
+  Number(newQuotation.unitPrice || "") *
+  Number(newQuotation.qty || "");
+
+const totalValue =
+  base + (base * Number(newQuotation.gst || "")) / 100;
+
+const itemsArray = [
+  {
+    description: newQuotation.description || "",
+    qty: Number(newQuotation.qty || ""),
+    unitPrice: Number(newQuotation.unitPrice || ""),
+    gst: Number(newQuotation.gst || ""),
+    total: totalValue,
+  },
+];
 
       // if (newQuotation.quotationStatus === "Approved") {
       //   const matchingOpp = opportunities.find(
@@ -463,7 +499,7 @@ const generateQuotationNo = (data) => {
         qty: newQuotation.qty || 0,
         gst: newQuotation.gst || 0,
         value: totalValue,
-        items: JSON.stringify(newQuotation.items),
+        items: JSON.stringify(itemsArray),
         date: newQuotation.date,
         quotationStatus: newQuotation.quotationStatus,
         // ✅ only include payment fields if Approved
@@ -472,6 +508,7 @@ const generateQuotationNo = (data) => {
               paymentPhase: newQuotation.paymentPhase,
            
               poNumber: newQuotation.poNumber,
+              remarks: newQuotation.remarks,
               paymentReceived: newQuotation.paymentReceived,
               paymentReceivedDate: newQuotation.paymentReceivedDate,
               paymentAmount: newQuotation.paymentAmount,
@@ -849,6 +886,7 @@ const generateQuotationNo = (data) => {
                                     latestQuotation.paymentPhase || "Started",
                         
                                   poNumber: latestQuotation.poNumber || "",
+                                   remarks: latestQuotation.remarks || "",
                                   paymentReceived:
                                     latestQuotation.paymentReceived || "No",
                                   paymentReceivedDate:
@@ -1029,52 +1067,45 @@ const generateQuotationNo = (data) => {
 
 
 </div> */}
-              <MultiSelectDropdown
-                label="Opportunity Name(s) *"
-                options={opportunities.filter(
-                  (o) => String(o.client_id) === String(newQuotation.client_id),
-                )}
-                displayKey="opportunity_name"
-                valueKey="opportunity_name"
-                selectedValues={
-                  newQuotation.opportunity_name
-                    ? newQuotation.opportunity_name.split(",")
-                    : []
-                }
-                placeholder="Select Opportunity"
-                onChange={(selected) => {
-                  const matchedOpps = opportunities.filter(
-                    (o) =>
-                      String(o.client_id) === String(newQuotation.client_id) &&
-                      selected.includes(o.opportunity_name),
-                  );
+<MultiSelectDropdown
+  label="Opportunity Name(s) *"
+  options={opportunities.filter(
+    (o) => String(o.client_id) === String(newQuotation.client_id),
+  )}
+  displayKey="opportunity_name"
+  valueKey="opportunity_name"
+  selectedValues={
+    newQuotation.opportunity_name
+      ? newQuotation.opportunity_name.split(",")
+      : []
+  }
+  placeholder="Select Opportunity"
+  onChange={(selected) => {
+    const matchedOpps = opportunities.filter(
+      (o) =>
+        String(o.client_id) === String(newQuotation.client_id) &&
+        selected.includes(o.opportunity_name),
+    );
 
-                  setNewQuotation({
-                    ...newQuotation,
+    setNewQuotation({
+      ...newQuotation,
+      opportunity_name: matchedOpps.map(o => o.opportunity_name).join(","),
+      opportunity_id: matchedOpps.map(o => o.opportunity_id).join(","),
 
-                    // ✅ store BOTH
-                    opportunity_name: matchedOpps
-                      .map((o) => o.opportunity_name)
-                      .join(","),
-                    opportunity_id: matchedOpps
-                      .map((o) => o.opportunity_id)
-                      .join(","),
+      clientName: matchedOpps[0]?.client_name || "",
+      work_category_id: matchedOpps[0]?.work_category_id || "",
+      work_category_name: matchedOpps[0]?.work_category_name || "",
+      lab_id: matchedOpps[0]?.lab_id || "",
+      lab_name: matchedOpps[0]?.lab_name || "",
+      client_type_id: matchedOpps[0]?.client_type_id || "",
+      client_type_name: matchedOpps[0]?.client_type_name || "",
+    });
 
-                    // take details from FIRST opportunity only
-                    clientName: matchedOpps[0]?.client_name || "",
-                    work_category_id: matchedOpps[0]?.work_category_id || "",
-                    work_category_name:
-                      matchedOpps[0]?.work_category_name || "",
-                    lab_id: matchedOpps[0]?.lab_id || "",
-                    // lab_name: matchedOpps[0]?.lab_name
-                    //   ? JSON.parse(matchedOpps[0].lab_name).join(", ")
-                    //   : "",
-                    lab_name: matchedOpps[0]?.lab_name || "",
-                    client_type_id: matchedOpps[0]?.client_type_id || "",
-                    client_type_name: matchedOpps[0]?.client_type_name || "",
-                  });
-                }}
-              />
+    // ✅ ADD THIS LINE HERE
+    setSelectedOppStages(matchedOpps.map(o => o.stage));
+  }}
+/>
+
 
               <div className="form-group">
                 <label>Client Type</label>
@@ -1151,7 +1182,8 @@ const generateQuotationNo = (data) => {
                         const qty = Number(newQuotation.qty || 0);
                         const gst = Number(newQuotation.gst || 0);
                         const base = unit * qty;
-                        const total = base + (base * gst) / 100;
+                        const taxAmount = base*(gst/100);
+                        const total = base + taxAmount;
                         return total.toFixed(2);
                       })()}
                     />
@@ -1202,7 +1234,7 @@ const generateQuotationNo = (data) => {
                     </>
                   )}
                 </select>
-                {newQuotation.quotationStatus === "Approved" && (
+                {newQuotation.quotationStatus === "Approved" && editId && (
   <div className="form-group">
     <label>Purchase Order Number *</label>
     <input
@@ -1297,6 +1329,19 @@ const generateQuotationNo = (data) => {
             </div>
 
             <div className="modal-form">
+                <div className="form-group">
+                      <label>Purchase Order Number *</label>
+                      <input
+                        type="text"
+                        value={newQuotation.poNumber || ""}
+                        onChange={(e) =>
+                          setNewQuotation({
+                            ...newQuotation,
+                            poNumber: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
               <div className="form-group">
                 <label>Payment Phase *</label>
                 <select
@@ -1318,19 +1363,7 @@ const generateQuotationNo = (data) => {
           
      
                
-                    <div className="form-group">
-                      <label>Purchase Order Number *</label>
-                      <input
-                        type="text"
-                        value={newQuotation.poNumber || ""}
-                        onChange={(e) =>
-                          setNewQuotation({
-                            ...newQuotation,
-                            poNumber: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
+                  
          
 
                   <div className="form-group">
@@ -1374,6 +1407,19 @@ const generateQuotationNo = (data) => {
                             setNewQuotation({
                               ...newQuotation,
                               paymentReceivedDate: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                           <div className="form-group">
+                        <label>Remarks</label>
+                        <input
+                          type="text"
+                          value={newQuotation.remarks}
+                          onChange={(e) =>
+                            setNewQuotation({
+                              ...newQuotation,
+                              remarks: e.target.value,
                             })
                           }
                         />

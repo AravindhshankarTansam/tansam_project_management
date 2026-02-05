@@ -124,6 +124,7 @@ function App() {
     </PrivateRoute>
   }
 >
+    <Route index element={<CeoProjects />} />
   {/* <Route index element={<CeoDashboard />} /> */}
   <Route path="ceoprojects" element={<CeoProjects />} />
   <Route path="ceoquotation" element={<CeoQuotation />} />
