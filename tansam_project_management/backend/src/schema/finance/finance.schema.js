@@ -39,7 +39,7 @@ client_type_id VARCHAR(50),
      quotationStatus ENUM('Draft', 'Submitted', 'Approved', 'Rejected')
     NOT NULL DEFAULT 'draft',
 
-    value DECIMAL(12,2),
+
     date DATE,
 
     isGenerated TINYINT(1) DEFAULT 0,
