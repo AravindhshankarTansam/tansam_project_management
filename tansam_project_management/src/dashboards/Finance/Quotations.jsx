@@ -209,14 +209,14 @@ quotationToUse = {
 
     loadProjects();
   }, [showPaymentForm, newQuotation.clientName]);
-  useEffect(() => {
-    const fetchQuotation = async () => {
-      const data = await getQuotations(); // your API call
-      const items = JSON.parse(data.itemDetails || "[]");
-      setUnitPrice(items[0]?.unitPrice || 0);
-    };
-    fetchQuotation();
-  }, []);
+  // useEffect(() => {
+  //   const fetchQuotation = async () => {
+  //     const data = await getQuotations(); // your API call
+  //     const items = JSON.parse(data.itemDetails || "[]");
+  //     setUnitPrice(items[0]?.unitPrice || 0);
+  //   };
+  //   fetchQuotation();
+  // }, []);
   useEffect(() => {
     const closeDropdowns = () => {
       setShowOpportunityDropdown(false);

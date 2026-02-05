@@ -85,7 +85,7 @@ const itemsArray = parsedItems.length
       const total = base + base * (g / 100);
 
       return {
-        description: item.description || "",
+        // description: item.description || "",
         qty: q,
         unitPrice: u,
         gst: g,
@@ -94,7 +94,7 @@ const itemsArray = parsedItems.length
     })
   : [
       {
-        description: "",
+       
         qty: Number(qty || 0),
         unitPrice: Number(unitPrice || 0),
         gst: Number(gst || 0),
@@ -295,7 +295,7 @@ if (Array.isArray(req.body.items)) {
 // Recalculate totals
 safeBody.itemDetails = JSON.stringify(
   parsedItems.map(item => ({
-    description: item.description || "",
+    // description: item.description || "",
     qty: sanitizeDecimal(item.qty) || 0,
     unitPrice: sanitizeDecimal(item.unitPrice) || 0,
     gst: sanitizeDecimal(item.gst) || 0,

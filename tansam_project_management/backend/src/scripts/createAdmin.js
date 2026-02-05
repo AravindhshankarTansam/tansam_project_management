@@ -67,6 +67,13 @@ const createAdmin = async () => {
     console.error("❌ ADMIN creation failed:", err);
     process.exit(1);
   }
+    finally {
+    if (db) {
+      await db.end();   // 🔥 VERY IMPORTANT
+      console.log("🔌 DB connection closed");
+    }
+    process.exit(0);
+  }
 };
 
 createAdmin();
