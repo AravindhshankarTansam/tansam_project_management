@@ -57,28 +57,38 @@ export const addGeneratedQuotation = async (req, res) => {
     if (existing.length) {
       const existingRow = existing[0];
 
-      await db.execute(
-        `UPDATE generated_quotations
-         SET quotationNo=?, date=?, clientName=?, kindAttn=?, subject=?,
-             items=?, terms=?, termsContent=?, 
-             signature=?, seal=?, financeManagerName=?, designation=?,
-         WHERE quotationId=?`,
-        [
-          quotationNo,
-          date,
-          clientName,
-          kindAttn,
-          subject,
-          items ? JSON.stringify(JSON.parse(items)) : "[]",
-          terms ? JSON.stringify(JSON.parse(terms)) : "[]",
-          termsContent || null,
-          signaturePath || existingRow.signature,
-          sealPath || existingRow.seal,
-          financeManagerName,
-          designation,
-          quotationId,
-        ]
-      );
+await db.execute(
+  `UPDATE generated_quotations
+   SET quotationNo = ?, 
+       date = ?, 
+       clientName = ?, 
+       kindAttn = ?, 
+       subject = ?, 
+       items = ?, 
+       terms = ?, 
+       termsContent = ?, 
+       signature = ?, 
+       seal = ?, 
+       financeManagerName = ?, 
+       designation = ?
+   WHERE quotationId = ?`,
+  [
+    quotationNo,
+    date,
+    clientName,
+    kindAttn,
+    subject,
+    items ? JSON.stringify(JSON.parse(items)) : "[]",
+    terms ? JSON.stringify(JSON.parse(terms)) : "[]",
+    termsContent || null,
+    signaturePath || existingRow.signature,
+    sealPath || existingRow.seal,
+    financeManagerName,
+    designation,
+    quotationId,
+  ]
+);
+
 
       return res.json({
         success: true,
