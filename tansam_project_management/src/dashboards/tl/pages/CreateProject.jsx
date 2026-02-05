@@ -219,19 +219,23 @@ const autoFilled = useMemo(() => {
       projectName: form.projectName,
       clientName: form.clientName,
       quotationNumber: form.quotationNumber,
+      poNumber: form.poNumber,
     };
   }
 
-  const projectName = selectedOpportunity.opportunity_name || form.projectName;
-  const clientName = selectedOpportunity.client_name || form.clientName;
+  const projectName =
+    selectedOpportunity.opportunity_name || form.projectName;
+
+  const clientName =
+    selectedOpportunity.client_name || form.clientName;
 
   let quotationNumber = "";
+  let poNumber = "";
 
   if (isCustomer && quotations.length > 0) {
-    // Super robust matching: trim + normalize spaces + case-insensitive
     const oppClient = (selectedOpportunity.client_name || "")
       .trim()
-      .replace(/\s+/g, " ") // normalize multiple spaces
+      .replace(/\s+/g, " ")
       .toLowerCase();
 
     const related = quotations.filter((q) => {
@@ -240,18 +244,36 @@ const autoFilled = useMemo(() => {
         .replace(/\s+/g, " ")
         .toLowerCase();
 
-      return qClient === oppClient || qClient.includes(oppClient) || oppClient.includes(qClient);
+      return (
+        qClient === oppClient ||
+        qClient.includes(oppClient) ||
+        oppClient.includes(qClient)
+      );
     });
 
     if (related.length > 0) {
-      // Get the most recent quotation
-      const latest = related.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-      quotationNumber = latest.quotationNo || ""; // ← correct field: quotationNo
+      // 🔥 Most recent quotation
+      const latest = related.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      )[0];
+
+      quotationNumber = latest.quotationNo || "";
+      poNumber = latest.poNumber || ""; // ✅ NEW
     }
   }
 
-  return { projectName, clientName, quotationNumber };
-}, [selectedOpportunity, isCustomer, isCustomerPOC, quotations, form.projectName, form.clientName, form.quotationNumber]);
+  return { projectName, clientName, quotationNumber, poNumber };
+}, [
+  selectedOpportunity,
+  isCustomer,
+  isCustomerPOC,
+  quotations,
+  form.projectName,
+  form.clientName,
+  form.quotationNumber,
+  form.poNumber,
+]);
+
 
   // Apply auto-fill ONLY when opportunityId changes (safe & controlled)
 // Apply auto-fill ONLY when opportunityId changes (safe & controlled)
@@ -264,6 +286,7 @@ useEffect(() => {
     projectName: autoFilled.projectName,
     clientName: autoFilled.clientName,
     quotationNumber: autoFilled.quotationNumber,
+    poNumber: autoFilled.poNumber,
   }));
 }, [form.opportunityId]);
 
@@ -459,7 +482,6 @@ useEffect(() => {
               </td>
               <td>{p.clientType || "—"}</td>
 
-
               <td>{p.projectType}</td>
               {/* <td className="client-details-col">
                 <button
@@ -591,217 +613,220 @@ useEffect(() => {
         </div>
       )}
       {/* MODAL */}
-   {/* MODAL */}
-{showModal && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <h3>{isEdit ? "Edit Project" : "Create Project"}</h3>
+      {/* MODAL */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>{isEdit ? "Edit Project" : "Create Project"}</h3>
 
-      <form onSubmit={handleSubmit}>
-        {/* Project Type */}
-        <div className="form-group">
-          <label>Project Type</label>
-          <select
-            name="projectType"
-            value={form.projectType}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Project Type</option>
-            {projectTypes.map((t) => (
-              <option key={t.id} value={t.name}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <form onSubmit={handleSubmit}>
+              {/* Project Type */}
+              <div className="form-group">
+                <label>Project Type</label>
+                <select
+                  name="projectType"
+                  value={form.projectType}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Project Type</option>
+                  {projectTypes.map((t) => (
+                    <option key={t.id} value={t.name}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {/* Client Selection (for Customer / Customer POC) */}
-        {(isCustomer || isCustomerPOC) && (
-          <div className="form-group">
-            <label>Client</label>
-            <select
-              value={selectedOppClient}
-              onChange={(e) => {
-                setSelectedOppClient(e.target.value);
-                setForm((prev) => ({ ...prev, opportunityId: "" }));
-              }}
-              required
-            >
-              <option value="">Select Client</option>
-              {opportunityClients.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              {/* Client Selection (for Customer / Customer POC) */}
+              {(isCustomer || isCustomerPOC) && (
+                <div className="form-group">
+                  <label>Client</label>
+                  <select
+                    value={selectedOppClient}
+                    onChange={(e) => {
+                      setSelectedOppClient(e.target.value);
+                      setForm((prev) => ({ ...prev, opportunityId: "" }));
+                    }}
+                    required
+                  >
+                    <option value="">Select Client</option>
+                    {opportunityClients.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Opportunity Selection */}
+              {(isCustomer || isCustomerPOC) && selectedOppClient && (
+                <div className="form-group">
+                  <label>Opportunity</label>
+                  <select
+                    name="opportunityId"
+                    value={form.opportunityId}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Opportunity</option>
+                    {filteredOpportunitiesForProject.map((o) => (
+                      <option key={o.opportunity_id} value={o.opportunity_id}>
+                        {o.opportunity_name} ({o.client_name})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Auto-filled fields with labels */}
+              {(isCustomer || isCustomerPOC) && selectedOpportunity && (
+                <>
+                  <div className="form-group">
+                    <label>Client Type</label>
+                    <input
+                      value={derivedFromOpportunity.clientType}
+                      placeholder="Client Type"
+                      disabled
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Work Category</label>
+                    <input
+                      value={derivedFromOpportunity.workCategory}
+                      placeholder="Work Category"
+                      disabled
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Labs</label>
+                    <input
+                      value={derivedFromOpportunity.labs}
+                      placeholder="Labs"
+                      disabled
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Project Name */}
+              <div className="form-group">
+                <label>Project Name</label>
+                <input
+                  name="projectName"
+                  placeholder="Project Name"
+                  value={autoFilled.projectName}
+                  onChange={handleChange}
+                  disabled={isCustomer || isCustomerPOC}
+                  required
+                />
+              </div>
+
+              {/* Client Name */}
+              <div className="form-group">
+                <label>Client Name</label>
+                <input
+                  name="clientName"
+                  placeholder="Client Name"
+                  value={autoFilled.clientName}
+                  onChange={handleChange}
+                  disabled={isCustomer || isCustomerPOC}
+                  required
+                />
+              </div>
+
+              {/* Quotation Number (Customer only) */}
+              {isCustomer && (
+                <div className="form-group">
+                  <label>Quotation Number (auto-filled)</label>
+                  <input
+                    name="quotationNumber"
+                    placeholder="Quotation Number (auto-filled)"
+                    value={autoFilled.quotationNumber}
+                    disabled
+                  />
+                </div>
+              )}
+
+              {/* Start & End Date */}
+              <div className="form-group">
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={form.startDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={form.endDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* PO Details (Customer only) */}
+              {isCustomer && (
+                <>
+                  <div className="form-group">
+                    <label>Purchase Order Number (auto-filled)</label>
+                    <input
+                      name="poNumber"
+                      value={autoFilled.poNumber}
+                      disabled
+                      placeholder="Auto-filled from quotation"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>PO File</label>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) =>
+                        setForm({ ...form, poFile: e.target.files[0] })
+                      }
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Status */}
+              <div className="form-group">
+                <label>Status</label>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option>Planned</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                  <option>On Hold</option>
+                </select>
+              </div>
+
+              {/* Actions */}
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit">{isEdit ? "Update" : "Create"}</button>
+              </div>
+            </form>
           </div>
-        )}
-
-        {/* Opportunity Selection */}
-        {(isCustomer || isCustomerPOC) && selectedOppClient && (
-          <div className="form-group">
-            <label>Opportunity</label>
-            <select
-              name="opportunityId"
-              value={form.opportunityId}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select Opportunity</option>
-              {filteredOpportunitiesForProject.map((o) => (
-                <option key={o.opportunity_id} value={o.opportunity_id}>
-                  {o.opportunity_name} ({o.client_name})
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Auto-filled fields with labels */}
-        {(isCustomer || isCustomerPOC) && selectedOpportunity && (
-          <>
-            <div className="form-group">
-              <label>Client Type</label>
-              <input
-                value={derivedFromOpportunity.clientType}
-                placeholder="Client Type"
-                disabled
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Work Category</label>
-              <input
-                value={derivedFromOpportunity.workCategory}
-                placeholder="Work Category"
-                disabled
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Labs</label>
-              <input
-                value={derivedFromOpportunity.labs}
-                placeholder="Labs"
-                disabled
-              />
-            </div>
-          </>
-        )}
-
-        {/* Project Name */}
-        <div className="form-group">
-          <label>Project Name</label>
-          <input
-            name="projectName"
-            placeholder="Project Name"
-            value={autoFilled.projectName}
-            onChange={handleChange}
-            disabled={isCustomer || isCustomerPOC}
-            required
-          />
         </div>
-
-        {/* Client Name */}
-        <div className="form-group">
-          <label>Client Name</label>
-          <input
-            name="clientName"
-            placeholder="Client Name"
-            value={autoFilled.clientName}
-            onChange={handleChange}
-            disabled={isCustomer || isCustomerPOC}
-            required
-          />
-        </div>
-
-        {/* Quotation Number (Customer only) */}
-        {isCustomer && (
-          <div className="form-group">
-            <label>Quotation Number (auto-filled)</label>
-            <input
-              name="quotationNumber"
-              placeholder="Quotation Number (auto-filled)"
-              value={autoFilled.quotationNumber}
-              disabled
-            />
-          </div>
-        )}
-
-        {/* Start & End Date */}
-        <div className="form-group">
-          <label>Start Date</label>
-          <input
-            type="date"
-            name="startDate"
-            value={form.startDate}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>End Date</label>
-          <input
-            type="date"
-            name="endDate"
-            value={form.endDate}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        {/* PO Details (Customer only) */}
-        {isCustomer && (
-          <>
-            <div className="form-group">
-              <label>Purchase Order Number</label>
-              <input
-                name="poNumber"
-                placeholder="Purchase Order Number"
-                value={form.poNumber}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>PO File</label>
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) =>
-                  setForm({ ...form, poFile: e.target.files[0] })
-                }
-                required
-              />
-            </div>
-          </>
-        )}
-
-        {/* Status */}
-        <div className="form-group">
-          <label>Status</label>
-          <select name="status" value={form.status} onChange={handleChange}>
-            <option>Planned</option>
-            <option>In Progress</option>
-            <option>Completed</option>
-            <option>On Hold</option>
-          </select>
-        </div>
-
-        {/* Actions */}
-        <div className="modal-actions">
-          <button type="button" onClick={() => setShowModal(false)}>
-            Cancel
-          </button>
-          <button type="submit">{isEdit ? "Update" : "Create"}</button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 }
