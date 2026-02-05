@@ -121,6 +121,35 @@ const itemDetails = JSON.stringify(itemsArray);
     const quotationDate = date
       ? new Date(date).toISOString().slice(0, 19).replace("T", " ")
       : new Date().toISOString().slice(0, 19).replace("T", " ");
+// 🔒 Check opportunity stage
+// 🔒 Check opportunity stage (SAFE)
+const oppIds = opportunity_id
+  ? String(opportunity_id).split(",").map(id => id.trim())
+  : [];
+
+if (oppIds.length === 0) {
+  return res.status(400).json({ message: "Opportunity not selected" });
+}
+
+const [oppRows] = await db.execute(
+  `
+  SELECT opportunity_id, stage
+  FROM opportunity_tracker
+  WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
+  `,
+  oppIds
+);
+
+// ❗ If ANY opportunity is not WON → block
+const notWon = oppRows.find(
+  o => (o.stage || "").trim().toUpperCase() !== "WON"
+);
+
+if (notWon) {
+  return res.status(403).json({
+    message: "Quotation can be created only when opportunity stage is WON",
+  });
+}
 
     // --- Debug log (optional) ---
     console.log({

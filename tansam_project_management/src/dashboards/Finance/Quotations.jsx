@@ -45,6 +45,9 @@ const [selectedLabs, setSelectedLabs] = useState([]);
   //   setNewQuotation(quotation);
   //   setShowPaymentModal(true);
   // };
+
+
+
   const [_paymentQuotationId, setPaymentQuotationId] = useState(null);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
@@ -182,7 +185,7 @@ quotationToUse = {
     // Fallback – now baseQuotation is accessible
     setNewQuotation({
       ...baseQuotation,
-      refNo: `TN/SA/${new Date().getFullYear()}/${String(originalQuotation.id).padStart(4, "0")}`,
+     
       date: new Date().toISOString().split("T")[0],
     });
     setShowGenerateQuotation(true);
@@ -428,6 +431,10 @@ if (
   !newQuotation.poNumber?.trim()
 ) {
   alert("Purchase Order Number is mandatory when quotation is Approved");
+  return;
+}
+if (!newQuotation.work_category_name || !newQuotation.lab_name) {
+  alert("Work Category and Lab are required");
   return;
 }
 
@@ -1060,52 +1067,45 @@ const itemsArray = [
 
 
 </div> */}
-              <MultiSelectDropdown
-                label="Opportunity Name(s) *"
-                options={opportunities.filter(
-                  (o) => String(o.client_id) === String(newQuotation.client_id),
-                )}
-                displayKey="opportunity_name"
-                valueKey="opportunity_name"
-                selectedValues={
-                  newQuotation.opportunity_name
-                    ? newQuotation.opportunity_name.split(",")
-                    : []
-                }
-                placeholder="Select Opportunity"
-                onChange={(selected) => {
-                  const matchedOpps = opportunities.filter(
-                    (o) =>
-                      String(o.client_id) === String(newQuotation.client_id) &&
-                      selected.includes(o.opportunity_name),
-                  );
+<MultiSelectDropdown
+  label="Opportunity Name(s) *"
+  options={opportunities.filter(
+    (o) => String(o.client_id) === String(newQuotation.client_id),
+  )}
+  displayKey="opportunity_name"
+  valueKey="opportunity_name"
+  selectedValues={
+    newQuotation.opportunity_name
+      ? newQuotation.opportunity_name.split(",")
+      : []
+  }
+  placeholder="Select Opportunity"
+  onChange={(selected) => {
+    const matchedOpps = opportunities.filter(
+      (o) =>
+        String(o.client_id) === String(newQuotation.client_id) &&
+        selected.includes(o.opportunity_name),
+    );
 
-                  setNewQuotation({
-                    ...newQuotation,
+    setNewQuotation({
+      ...newQuotation,
+      opportunity_name: matchedOpps.map(o => o.opportunity_name).join(","),
+      opportunity_id: matchedOpps.map(o => o.opportunity_id).join(","),
 
-                    // ✅ store BOTH
-                    opportunity_name: matchedOpps
-                      .map((o) => o.opportunity_name)
-                      .join(","),
-                    opportunity_id: matchedOpps
-                      .map((o) => o.opportunity_id)
-                      .join(","),
+      clientName: matchedOpps[0]?.client_name || "",
+      work_category_id: matchedOpps[0]?.work_category_id || "",
+      work_category_name: matchedOpps[0]?.work_category_name || "",
+      lab_id: matchedOpps[0]?.lab_id || "",
+      lab_name: matchedOpps[0]?.lab_name || "",
+      client_type_id: matchedOpps[0]?.client_type_id || "",
+      client_type_name: matchedOpps[0]?.client_type_name || "",
+    });
 
-                    // take details from FIRST opportunity only
-                    clientName: matchedOpps[0]?.client_name || "",
-                    work_category_id: matchedOpps[0]?.work_category_id || "",
-                    work_category_name:
-                      matchedOpps[0]?.work_category_name || "",
-                    lab_id: matchedOpps[0]?.lab_id || "",
-                    // lab_name: matchedOpps[0]?.lab_name
-                    //   ? JSON.parse(matchedOpps[0].lab_name).join(", ")
-                    //   : "",
-                    lab_name: matchedOpps[0]?.lab_name || "",
-                    client_type_id: matchedOpps[0]?.client_type_id || "",
-                    client_type_name: matchedOpps[0]?.client_type_name || "",
-                  });
-                }}
-              />
+    // ✅ ADD THIS LINE HERE
+    setSelectedOppStages(matchedOpps.map(o => o.stage));
+  }}
+/>
+
 
               <div className="form-group">
                 <label>Client Type</label>

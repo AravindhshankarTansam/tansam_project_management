@@ -69,7 +69,7 @@ const createAdmin = async () => {
   }
     finally {
     if (db) {
-      await db.end();   // 🔥 VERY IMPORTANT
+      await db.end();   
       console.log("🔌 DB connection closed");
     }
     process.exit(0);
