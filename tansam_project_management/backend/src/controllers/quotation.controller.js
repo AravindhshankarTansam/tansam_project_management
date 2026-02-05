@@ -188,7 +188,7 @@ if (notWon) {
         lab_name,
         description,
         itemDetails,
-        value,
+ 
         date,
         quotationStatus
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -207,7 +207,7 @@ if (notWon) {
         lab_name,
         description,
         itemDetails,
-        totalValue, // ✅ always calculated from itemsArray
+       // ✅ always calculated from itemsArray
         quotationDate,
         quotationStatus,
       ]
