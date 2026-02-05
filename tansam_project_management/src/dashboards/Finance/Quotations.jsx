@@ -1364,7 +1364,7 @@ const itemsArray = [
      
                
                   
-         
+  
 
                   <div className="form-group">
                     <label>Payment Received *</label>

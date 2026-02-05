@@ -191,7 +191,7 @@ if (notWon) {
  
         date,
         quotationStatus
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         oppId,
@@ -409,7 +409,7 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
         lab_name = ?,
         description = ?,
         itemDetails = ?,
-        value = ?,
+      
         date = ?,
         quotationStatus = ?,
         paymentPhase = ?,
@@ -431,7 +431,7 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
         safeBody.lab_name,
         safeBody.description,
         safeBody.itemDetails,
-        safeBody.value,
+       
         safeBody.date,
         finalStatus,
         paymentData.paymentPhase,
