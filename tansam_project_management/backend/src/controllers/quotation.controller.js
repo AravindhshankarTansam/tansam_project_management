@@ -131,25 +131,25 @@ if (oppIds.length === 0) {
   return res.status(400).json({ message: "Opportunity not selected" });
 }
 
-const [oppRows] = await db.execute(
-  `
-  SELECT opportunity_id, stage
-  FROM opportunity_tracker
-  WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
-  `,
-  oppIds
-);
+// const [oppRows] = await db.execute(
+//   `
+//   SELECT opportunity_id, stage
+//   FROM opportunity_tracker
+//   WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
+//   `,
+//   oppIds
+// );
 
-// ❗ If ANY opportunity is not WON → block
-const notWon = oppRows.find(
-  o => (o.stage || "").trim().toUpperCase() !== "WON"
-);
+// // ❗ If ANY opportunity is not WON → block
+// const notWon = oppRows.find(
+//   o => (o.stage || "").trim().toUpperCase() !== "WON"
+// );
 
-if (notWon) {
-  return res.status(403).json({
-    message: "Quotation can be created only when opportunity stage is WON",
-  });
-}
+// if (notWon) {
+//   return res.status(403).json({
+//     message: "Quotation can be created only when opportunity stage is WON",
+//   });
+// }
 
     // --- Debug log (optional) ---
     console.log({
@@ -444,20 +444,20 @@ if (auditAction) {
     const finalStatus = safeBody.quotationStatus ?? currentStatus;
 
     // Fetch opportunity stage
-    const [oppRows] = await db.execute(
-      `SELECT stage FROM opportunity_tracker WHERE opportunity_name = ? LIMIT 1`,
-      [safeBody.opportunity_name]
-    );
-    const opp = oppRows[0];
+    // const [oppRows] = await db.execute(
+    //   `SELECT stage FROM opportunity_tracker WHERE opportunity_name = ? LIMIT 1`,
+    //   [safeBody.opportunity_name]
+    // );
+    // const opp = oppRows[0];
 
-    if (!opp) return res.status(400).json({ message: "Opportunity not found" });
+    // if (!opp) return res.status(400).json({ message: "Opportunity not found" });
 
-    // Block approval if stage not WON
-    if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
-      return res.status(403).json({
-        message: "Quotation can be approved only when opportunity stage is WON",
-      });
-    }
+    // // Block approval if stage not WON
+    // if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
+    //   return res.status(403).json({
+    //     message: "Quotation can be approved only when opportunity stage is WON",
+    //   });
+    // }
 
     // Ensure client_id exists
     let client_id = safeBody.client_id;
