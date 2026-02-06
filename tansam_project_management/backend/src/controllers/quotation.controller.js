@@ -390,7 +390,7 @@ safeBody.value = newQuotationValue;
 const newPaymentValue =
   safeBody.paymentAmount !== null
     ? Number(safeBody.paymentAmount)
-    : null;
+    : oldPaymentValue; 
 
 const quotationValueChanged =
   oldQuotationValue !== newQuotationValue;
@@ -400,43 +400,43 @@ const paymentChanged =
   newPaymentValue !== null;
 
 let auditAction = null;
+let oldPaymentForLog = null;
+let newPaymentForLog = null;
 
 if (quotationValueChanged) {
-  auditAction = "quotation update";
+  auditAction = "quotation updated";
+  oldPaymentForLog = null;
+  newPaymentForLog = null;
 }
 
 if (!oldPaymentValue && newPaymentValue) {
   auditAction = "payment created";
+  oldPaymentForLog = oldPaymentValue;
+  newPaymentForLog = newPaymentValue;
 }
 
 if (oldPaymentValue && paymentChanged) {
   auditAction = "payment updated";
+  oldPaymentForLog = oldPaymentValue;
+  newPaymentForLog = newPaymentValue;
 }
 
 if (auditAction) {
   await db.execute(
-    `
-    INSERT INTO audit_log
-    (
-      quotation_No,
-      old_quotation_value,
-      new_quotation_value,
-      old_payment_value,
-      new_payment_value,
-      action
-    )
-    VALUES (?, ?, ?, ?, ?, ?)
-    `,
+    `INSERT INTO audit_log
+    (quotation_No, old_quotation_value, new_quotation_value, old_payment_value, new_payment_value, action)
+    VALUES (?, ?, ?, ?, ?, ?)`,
     [
       quotationNo,
-      quotationValueChanged ? oldQuotationValue : null,
-      quotationValueChanged ? newQuotationValue : null,
-      paymentChanged ? oldPaymentValue : null,
-      paymentChanged ? newPaymentValue : null,
-      auditAction,
+      oldQuotationValue,
+      newQuotationValue,
+      oldPaymentForLog,
+      newPaymentForLog,
+      auditAction
     ]
   );
 }
+
 
     // -----------------------------
     // Determine final status
