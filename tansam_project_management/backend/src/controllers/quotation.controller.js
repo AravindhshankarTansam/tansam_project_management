@@ -212,6 +212,28 @@ if (notWon) {
         quotationStatus,
       ]
     );
+await db.execute(
+  `
+  INSERT INTO audit_log
+  (
+    quotation_No,
+    old_quotation_value,
+    new_quotation_value,
+    old_payment_value,
+    new_payment_value,
+    action
+  )
+  VALUES (?, ?, ?, ?, ?, ?)
+  `,
+  [
+    quotationNo,
+    null,
+    totalValue,
+    null,
+    null,
+    "Quotation created",
+  ]
+);
 
     res.status(201).json({
       id: result.insertId,
@@ -249,6 +271,18 @@ export const updateQuotation = async (req, res) => {
     }
 
     const currentStatus = existing.quotationStatus;
+// 🔍 Capture OLD values for audit log (VERY IMPORTANT: before changes)
+const oldItems = existing.itemDetails
+  ? JSON.parse(existing.itemDetails)
+  : [];
+
+
+const oldQuotationValue = oldItems.reduce(
+  (sum, item) => sum + Number(item.total || 0),
+  0
+);
+const oldPaymentValue = Number(existing.paymentAmount || 0);
+const quotationNo = existing.quotationNo;
 
     // -----------------------------
     // Helper functions
@@ -338,6 +372,71 @@ safeBody.itemDetails = JSON.stringify(
 // Update total value
 safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
 
+safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
+
+// ================================
+// 🔍 AUDIT LOG (SAFE POSITION)
+// ================================
+const newQuotationValue = parsedItems.reduce((sum, item) => {
+  const qty = sanitizeDecimal(item.qty) || 0;
+  const unit = sanitizeDecimal(item.unitPrice) || 0;
+  const gst = sanitizeDecimal(item.gst) || 0;
+  const base = qty * unit;
+  return sum + base * (1 + gst / 100);
+}, 0);
+
+safeBody.value = newQuotationValue;
+
+const newPaymentValue =
+  safeBody.paymentAmount !== null
+    ? Number(safeBody.paymentAmount)
+    : null;
+
+const quotationValueChanged =
+  oldQuotationValue !== newQuotationValue;
+
+const paymentChanged =
+  oldPaymentValue !== newPaymentValue &&
+  newPaymentValue !== null;
+
+let auditAction = null;
+
+if (quotationValueChanged) {
+  auditAction = "quotation update";
+}
+
+if (!oldPaymentValue && newPaymentValue) {
+  auditAction = "payment created";
+}
+
+if (oldPaymentValue && paymentChanged) {
+  auditAction = "payment updated";
+}
+
+if (auditAction) {
+  await db.execute(
+    `
+    INSERT INTO audit_log
+    (
+      quotation_No,
+      old_quotation_value,
+      new_quotation_value,
+      old_payment_value,
+      new_payment_value,
+      action
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [
+      quotationNo,
+      quotationValueChanged ? oldQuotationValue : null,
+      quotationValueChanged ? newQuotationValue : null,
+      paymentChanged ? oldPaymentValue : null,
+      paymentChanged ? newPaymentValue : null,
+      auditAction,
+    ]
+  );
+}
 
     // -----------------------------
     // Determine final status
