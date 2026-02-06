@@ -331,19 +331,31 @@ export default function Quotations() {
 
     loadOpportunities();
   }, []);
-  const filtered = data.filter((q) => {
-    const clientMatch =
-      selectedClients.length === 0 || selectedClients.includes(q.clientName);
+const filtered = data.filter((q) => {
+  const clientMatch =
+    selectedClients.length === 0 ||
+    selectedClients.includes(q.clientName);
 
-    const categoryMatch =
-      selectedWorkCategories.length === 0 ||
-      selectedWorkCategories.includes(q.work_category_name);
+  const categoryMatch =
+    selectedWorkCategories.length === 0 ||
+    selectedWorkCategories.includes(q.work_category_name);
 
-    const labMatch =
-      selectedLabs.length === 0 || selectedLabs.includes(q.lab_name);
+  const labNames = Array.isArray(q.lab_name)
+    ? q.lab_name
+    : (() => {
+        try {
+          return JSON.parse(q.lab_name || "[]");
+        } catch {
+          return [];
+        }
+      })();
 
-    return clientMatch && categoryMatch && labMatch;
-  });
+  const labMatch =
+    selectedLabs.length === 0 ||
+    selectedLabs.some((lab) => labNames.includes(lab));
+
+  return clientMatch && categoryMatch && labMatch;
+});
 
   const generateQuotationNo = (data) => {
     const now = new Date();
