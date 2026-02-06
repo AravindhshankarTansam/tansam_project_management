@@ -404,19 +404,19 @@ let oldPaymentForLog = null;
 let newPaymentForLog = null;
 
 if (quotationValueChanged) {
-  auditAction = "quotation updated";
+  auditAction = "Quotation updated";
   oldPaymentForLog = null;
   newPaymentForLog = null;
 }
 
 if (!oldPaymentValue && newPaymentValue) {
-  auditAction = "payment created";
+  auditAction = "Payment created";
   oldPaymentForLog = oldPaymentValue;
   newPaymentForLog = newPaymentValue;
 }
 
 if (oldPaymentValue && paymentChanged) {
-  auditAction = "payment updated";
+  auditAction = "Payment updated";
   oldPaymentForLog = oldPaymentValue;
   newPaymentForLog = newPaymentValue;
 }
