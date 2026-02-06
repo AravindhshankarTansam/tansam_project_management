@@ -45,7 +45,9 @@ client_type_id VARCHAR(50),
     isGenerated TINYINT(1) DEFAULT 0,
     generatedAt DATETIME,
 
-    paymentPhase VARCHAR(20),
+    paymentPhase   ENUM('Started', 'Not Started')
+    NOT NULL DEFAULT 'Started',
+
 
    
     paymentReceived VARCHAR(10),
