@@ -454,10 +454,16 @@ const filtered = data.filter((q) => {
         alert("Purchase Order Number is mandatory when quotation is Approved");
         return;
       }
-      if (!newQuotation.work_category_name || !newQuotation.lab_name) {
-        alert("Work Category and Lab are required");
-        return;
-      }
+
+      if (!newQuotation.client_id) {
+  alert("Client Name is required");
+  return;
+}
+
+      // if (!newQuotation.work_category_name || !newQuotation.lab_name) {
+      //   alert("Work Category and Lab are required");
+      //   return;
+      // }
 
       const base =
         Number(newQuotation.unitPrice || "") * Number(newQuotation.qty || "");
@@ -1124,7 +1130,7 @@ const filtered = data.filter((q) => {
                   });
 
                   // ✅ ADD THIS LINE HERE
-                  setSelectedOppStages(matchedOpps.map((o) => o.stage));
+                  // setSelectedOppStages(matchedOpps.map((o) => o.stage));
                 }}
               />
 
