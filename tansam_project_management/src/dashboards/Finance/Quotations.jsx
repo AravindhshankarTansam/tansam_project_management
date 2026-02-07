@@ -6,6 +6,7 @@ import {
   addQuotation,
   updateQuotation,
   deleteQuotation,
+   generateQuotationNo,
 } from "../../services/quotation/quotation.api";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 
@@ -357,37 +358,37 @@ const filtered = data.filter((q) => {
   return clientMatch && categoryMatch && labMatch;
 });
 
-  const generateQuotationNo = (data) => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1; // Jan = 1
+  // const generateQuotationNo = (data) => {
+  //   const now = new Date();
+  //   const year = now.getFullYear();
+  //   const month = now.getMonth() + 1; // Jan = 1
 
-    // Financial year: Apr–Mar
-    const startYear = month >= 4 ? year : year - 1;
-    const endYear = startYear + 1;
-    const financialYear = `${startYear}-${endYear}`;
+  //   // Financial year: Apr–Mar
+  //   const startYear = month >= 4 ? year : year - 1;
+  //   const endYear = startYear + 1;
+  //   const financialYear = `${startYear}-${endYear}`;
 
-    // Filter quotations for the current financial year
-    const currentFYNumbers = data
-      .map((q) => q.quotationNo)
-      .filter(Boolean)
-      .filter((no) => no.includes(financialYear))
-      .map((no) =>
-        Number(
-          no.replace(
-            /TANSAM\s*-\s*\d+\/\d{4}-\d{4}/,
-            (match) => match.match(/\d+/)[0],
-          ),
-        ),
-      )
-      .filter((n) => !isNaN(n));
+  //   // Filter quotations for the current financial year
+  //   const currentFYNumbers = data
+  //     .map((q) => q.quotationNo)
+  //     .filter(Boolean)
+  //     .filter((no) => no.includes(financialYear))
+  //     .map((no) =>
+  //       Number(
+  //         no.replace(
+  //           /TANSAM\s*-\s*\d+\/\d{4}-\d{4}/,
+  //           (match) => match.match(/\d+/)[0],
+  //         ),
+  //       ),
+  //     )
+  //     .filter((n) => !isNaN(n));
 
-    const nextNumber = currentFYNumbers.length
-      ? Math.max(...currentFYNumbers) + 1
-      : 1001;
+  //   const nextNumber = currentFYNumbers.length
+  //     ? Math.max(...currentFYNumbers) + 1
+  //     : 1001;
 
-    return `TANSAM-${nextNumber}/${financialYear}`;
-  };
+  //   return `TANSAM-${nextNumber}/${financialYear}`;
+  // };
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -506,7 +507,7 @@ const filtered = data.filter((q) => {
       const payload = {
         quotationNo: editId
           ? newQuotation.quotationNo
-          : newQuotation.quotationNo || generateQuotationNo(data),
+          : newQuotation.quotationNo ,
         opportunity_id,
         opportunity_name: newQuotation.opportunity_name,
         client_id: newQuotation.client_id,
@@ -632,30 +633,37 @@ const filtered = data.filter((q) => {
         <div>
           <h2>Quotations Management</h2>
         </div>
-        <button
-          className="btn-add-quotation"
-          onClick={() => {
-            const quotationNo = generateQuotationNo(data);
+       <button
+  className="btn-add-quotation"
+  onClick={async () => {
+    try {
+      // ✅ call backend to generate quotation number
+      const res = await generateQuotationNo();
 
-            setNewQuotation({
-              quotationNo,
-              opportunity_name: "",
-              clientName: "",
-              client_type_name: "",
-              work_category_name: "",
-              lab_name: "",
-              description: "",
-              gst: "",
-              value: "",
-              date: "",
-            });
+      setNewQuotation({
+        quotationNo: res.quotationNo, // 👈 from backend
+        opportunity_name: "",
+        clientName: "",
+        client_type_name: "",
+        work_category_name: "",
+        lab_name: "",
+        description: "",
+        gst: "",
+        value: "",
+        date: new Date().toISOString().split("T")[0],
+      });
 
-            setEditId(null);
-            setShowModal(true);
-          }}
-        >
-          + Create New Quotation
-        </button>
+      setEditId(null);
+      setShowModal(true);
+    } catch (error) {
+      console.error(error);
+      alert("Unable to generate quotation number");
+    }
+  }}
+>
+  + Create New Quotation
+</button>
+
       </div>
 
       {/* Filters */}

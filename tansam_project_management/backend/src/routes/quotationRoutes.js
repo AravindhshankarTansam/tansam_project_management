@@ -5,6 +5,7 @@ import {
   updateQuotation,
   deleteQuotation,
   downloadQuotationDocx,
+   generateQuotationNo,
 } from "../controllers/quotation.controller.js";
 
 import { authMiddleware } from "../middlewares/auth.middleware.js";
@@ -20,6 +21,12 @@ router.get(
   "/",
   roleMiddleware(["FINANCE", "TEAM LEAD", "COORDINATOR","CEO"]), // ← TEAM LEAD now allowed
   getQuotations
+);
+// routes/quotation.routes.js
+router.get(
+  "/generate-quotation-no",
+  roleMiddleware(["FINANCE"]),
+  generateQuotationNo
 );
 
 // Restrict write/delete/download to FINANCE only

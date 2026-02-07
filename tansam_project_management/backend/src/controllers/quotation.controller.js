@@ -4,6 +4,51 @@ import { createQuotationDocx } from "../utils/QuotationDocx.js";
 import { initSchemas } from "../schema/main.schema.js";
 import { G } from "@react-pdf/renderer";
 // Get all quotations
+
+// controllers/quotation.controller.js
+// controllers/quotation.controller.js
+export const generateQuotationNo = async (req, res) => {
+  try {
+    const db = await connectDB();
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    // Financial year logic
+    const startYear = month >= 4 ? year : year - 1;
+    const endYear = startYear + 1;
+    const financialYear = `${startYear}-${endYear}`;
+
+    const [rows] = await db.query(
+      `
+      SELECT quotationNo 
+      FROM quotations
+      WHERE quotationNo LIKE ?
+      ORDER BY id DESC
+      LIMIT 1
+      `,
+      [`TANSAM-%/${financialYear}`]
+    );
+
+    let nextNumber = 1001;
+
+    if (rows.length > 0) {
+      const lastNo = rows[0].quotationNo; 
+      const match = lastNo.match(/TANSAM-(\d+)\//);
+      if (match) nextNumber = Number(match[1]) + 1;
+    }
+
+    const quotationNo = `TANSAM-${nextNumber}/${financialYear}`;
+
+    res.json({ quotationNo });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to generate quotation number" });
+  }
+};
+
+
 export const getQuotations = async (req, res) => {
   try {
     const db = await connectDB();
@@ -23,6 +68,7 @@ export const addQuotation = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
+const quotationNo = await generateQuotationNo(db);
 
     const {
       items = [],
@@ -31,7 +77,7 @@ export const addQuotation = async (req, res) => {
       gst,
       opportunity_id,
       opportunity_name = null,
-      quotationNo = null,
+      // quotationNo = null,
       clientName,
       client_type_id,
       client_type_name = null,
