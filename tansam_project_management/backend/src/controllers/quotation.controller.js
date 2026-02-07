@@ -340,7 +340,6 @@ export const updateQuotation = async (req, res) => {
 
     const sanitizeDate = (val) => {
       if (!val || val.trim() === "") return null;
-      // Optional: validate YYYY-MM-DD format
       return val;
     };
 
@@ -506,17 +505,22 @@ export const updateQuotation = async (req, res) => {
     // }
 
     // Ensure client_id exists
+    // -----------------------------
     let client_id = safeBody.client_id;
     if (!client_id && safeBody.clientName) {
       const [[client]] = await db.execute(
         `SELECT client_id FROM opportunities_coordinator WHERE UPPER(client_name)=UPPER(?) LIMIT 1`,
         [safeBody.clientName]
       );
-      if (!client) return res.status(400).json({ message: "Client not found" });
+      if (!client) {
+        return res.status(400).json({ message: "Client not found" });
+      }
       client_id = client.client_id;
     }
 
+    // -----------------------------
     // Payment data based on status
+    // -----------------------------
     const paymentData =
       finalStatus === "Approved"
         ? {
@@ -541,7 +545,7 @@ export const updateQuotation = async (req, res) => {
         };
 
     // -----------------------------
-    // Update quotation in DB
+    // Update quotation
     // -----------------------------
     await db.execute(
       `
@@ -554,11 +558,9 @@ export const updateQuotation = async (req, res) => {
         lab_name = ?,
         description = ?,
         itemDetails = ?,
-      
         date = ?,
         quotationStatus = ?,
         paymentPhase = ?,
-     
         poNumber = ?, 
         remarks = ?,   
         paymentReceived = ?,
@@ -584,6 +586,7 @@ export const updateQuotation = async (req, res) => {
 
         paymentData.poNumber,
         paymentData.remarks,
+        paymentData.remarks,
         paymentData.paymentReceived,
         paymentData.paymentAmount,
         paymentData.paymentReceivedDate,
@@ -593,6 +596,25 @@ export const updateQuotation = async (req, res) => {
       ]
     );
 
+    // -------------------------------------------------
+    // 🔥 ADDED LOGIC: AUTO UPDATE OPPORTUNITY STAGE
+    // -------------------------------------------------
+    if (finalStatus === "Approved" || finalStatus === "Rejected") {
+      const newStage = finalStatus === "Approved" ? "WON" : "LOST";
+
+      await db.execute(
+        `
+        UPDATE opportunity_tracker
+        SET stage = ?
+        WHERE opportunity_id = ?
+        `,
+        [newStage, existing.opportunity_id]
+      );
+    }
+
+    // -----------------------------
+    // Response
+    // -----------------------------
     res.json({
       message: "Quotation updated successfully",
       id,
@@ -604,6 +626,7 @@ export const updateQuotation = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 

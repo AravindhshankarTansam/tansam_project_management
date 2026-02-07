@@ -372,15 +372,31 @@ const handleSubmit = async (e) => {
       resetForm();
       loadAll();
     }, 800);
-  } catch (err) {
+  }  catch (err) {
   console.error(err);
 
+  // 🔒 LOCKED OPPORTUNITY (WON / LOST)
+  if (err?.response?.status === 403) {
+    showToast({
+      message:
+        err.response?.data?.message ||
+        "This opportunity is locked and cannot be edited",
+      type: "error",
+      position: "top",
+    });
+
+    setLoading(false); // 🔴 STOP LOADER
+    return; // 🔴 STOP EXECUTION
+  }
+
+  // CLIENT CONFLICT (already exists)
   if (
     err?.response?.status === 409 &&
     err?.response?.data?.code === "SIMILAR_CLIENT_FOUND"
   ) {
     setClientConflict(err.response.data);
     setPendingPayload(opportunityPayload);
+    setLoading(false);
     return;
   }
 
@@ -389,7 +405,10 @@ const handleSubmit = async (e) => {
     type: "error",
     position: "top",
   });
+
+  setLoading(false); // 🔴 STOP LOADER
 }
+
 
 };
 
@@ -815,9 +834,22 @@ function MultiSelectChips({
               </div>
 
               {/* Stage (full pipeline) */}
-              <div className="form-group">
-                <label>Stage</label>
-                <select name="stage" value={form.stage} onChange={handleChange}>
+             <div className="form-group">
+                <label>
+                  Stage{" "}
+                  {["WON", "LOST"].includes(form.stage) && (
+                    <span style={{ color: "red", fontSize: "12px", marginLeft: "6px" }}>
+                      (Locked)
+                    </span>
+                  )}
+                </label>
+
+                <select
+                  name="stage"
+                  value={form.stage}
+                  onChange={handleChange}
+                  disabled={["WON", "LOST"].includes(form.stage)}
+                >
                   {STAGES.map((stage) => (
                     <option key={stage} value={stage}>
                       {stage}
@@ -825,7 +857,6 @@ function MultiSelectChips({
                   ))}
                 </select>
               </div>
-
               {/* Next Follow-up Date */}
               <div className="form-group">
                 <label>Next Follow-up Date</label>

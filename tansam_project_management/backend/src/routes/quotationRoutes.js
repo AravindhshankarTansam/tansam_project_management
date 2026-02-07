@@ -32,25 +32,25 @@ router.get(
 // Restrict write/delete/download to FINANCE only
 router.post(
   "/",
-  roleMiddleware(["FINANCE"]),
+  roleMiddleware(["FINANCE","COORDINATOR"]), // ← COORDINATOR now allowed
   addQuotation
 );
 
 router.put(
   "/:id",
-  roleMiddleware(["FINANCE"]),
+  roleMiddleware(["FINANCE","COORDINATOR"]), // ← COORDINATOR now allowed
   updateQuotation
 );
 
 router.delete(
   "/:id",
-  roleMiddleware(["FINANCE"]),
+  roleMiddleware(["FINANCE","COORDINATOR"]), // ← COORDINATOR now allowed
   deleteQuotation
 );
 
 router.get(
   "/:id/docx",
-  roleMiddleware(["FINANCE"]),
+  roleMiddleware(["FINANCE","COORDINATOR"]), // ← COORDINATOR now allowed
   downloadQuotationDocx
 );
 

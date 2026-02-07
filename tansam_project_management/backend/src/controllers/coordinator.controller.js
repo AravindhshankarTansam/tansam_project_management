@@ -829,37 +829,95 @@ export const updateOpportunityTracker = async (req, res) => {
     const { id } = req.params;
     const db = await connectDB();
 
-    const [result] = await db.execute(
+    /* ---------- STEP 1: FETCH TRACKER ---------- */
+      const [[tracker]] = await db.execute(
+        `
+        SELECT opportunity_id, created_by, stage
+        FROM opportunity_tracker
+        WHERE id = ?
+        `,
+        [id]
+      );
+
+      if (!tracker) {
+        return res.status(404).json({ message: "Tracker not found" });
+      }
+
+      // 🔒 LOCK STAGE
+      if (tracker.stage === "WON" || tracker.stage === "LOST") {
+        return res.status(403).json({
+          message: `Opportunity is already ${tracker.stage} and cannot be edited`
+        });
+      }
+
+    /* ---------- STEP 2: FETCH QUOTATION ---------- */
+    let finalStage = normalizeStage(req.body.stage);
+
+    const [[quotation]] = await db.execute(
       `
-      UPDATE opportunity_tracker
-      SET
-        stage              = COALESCE(?, stage),
-        next_followup_date = COALESCE(?, next_followup_date),
-        next_action        = COALESCE(?, next_action),
-        remarks            = COALESCE(?, remarks)
-      WHERE id = ?
-        AND created_by = ?
+      SELECT quotationStatus
+      FROM quotationS
+      WHERE opportunity_id = ?
+      ORDER BY updated_at DESC
+      LIMIT 1
       `,
-      [
-        normalizeStage(req.body.stage),
-        req.body.next_followup_date || null,
-        normalize(req.body.next_action),
-        normalize(req.body.remarks),
-        id,
-        req.user.id,
-      ]
+      [tracker.opportunity_id]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Tracker not found" });
+    if (quotation) {
+      const qStatus = quotation.quotationStatus?.trim().toUpperCase();
+
+      if (qStatus === "APPROVED") {
+        finalStage = "WON";
+      } else if (qStatus === "REJECTED") {
+        finalStage = "LOST";
+      }
     }
 
-    res.json({ message: "Opportunity tracker updated successfully" });
+    /* ---------- STEP 3: PERMISSION LOGIC ---------- */
+    const isOwner = Number(tracker.created_by) === Number(req.user.id);
+    const isFinance = req.user.role === "FINANCE"; // adjust role name
+
+    if (!isOwner && !isFinance) {
+      return res.status(403).json({
+        message: "You are not allowed to update this opportunity"
+      });
+    }
+
+    /* ---------- STEP 4: UPDATE ---------- */
+   const [result] = await db.execute(
+  `
+  UPDATE opportunity_tracker
+  SET
+    stage = ?,
+    next_followup_date = CASE WHEN ? THEN COALESCE(?, next_followup_date) ELSE next_followup_date END,
+    next_action = CASE WHEN ? THEN COALESCE(?, next_action) ELSE next_action END,
+    remarks = CASE WHEN ? THEN COALESCE(?, remarks) ELSE remarks END
+  WHERE id = ?
+  `,
+  [
+    finalStage,
+    isOwner, req.body.next_followup_date,
+    isOwner, normalize(req.body.next_action),
+    isOwner, normalize(req.body.remarks),
+    id
+  ]
+);
+
+
+    res.json({
+      message: "Opportunity tracker updated successfully",
+      stage: finalStage
+    });
+
   } catch (err) {
-    console.error("Update tracker error:", err);
+    console.error(err);
     res.status(500).json({ message: "Failed to update opportunity tracker" });
   }
 };
+
+
+
 
 /* ======================================================
    DELETE OPPORTUNITY TRACKER
