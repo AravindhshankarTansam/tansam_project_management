@@ -131,25 +131,25 @@ if (oppIds.length === 0) {
   return res.status(400).json({ message: "Opportunity not selected" });
 }
 
-const [oppRows] = await db.execute(
-  `
-  SELECT opportunity_id, stage
-  FROM opportunity_tracker
-  WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
-  `,
-  oppIds
-);
+// const [oppRows] = await db.execute(
+//   `
+//   SELECT opportunity_id, stage
+//   FROM opportunity_tracker
+//   WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
+//   `,
+//   oppIds
+// );
 
-// ❗ If ANY opportunity is not WON → block
-const notWon = oppRows.find(
-  o => (o.stage || "").trim().toUpperCase() !== "WON"
-);
+// // ❗ If ANY opportunity is not WON → block
+// const notWon = oppRows.find(
+//   o => (o.stage || "").trim().toUpperCase() !== "WON"
+// );
 
-if (notWon) {
-  return res.status(403).json({
-    message: "Quotation can be created only when opportunity stage is WON",
-  });
-}
+// if (notWon) {
+//   return res.status(403).json({
+//     message: "Quotation can be created only when opportunity stage is WON",
+//   });
+// }
 
     // --- Debug log (optional) ---
     console.log({
@@ -260,7 +260,6 @@ export const updateQuotation = async (req, res) => {
 
     const sanitizeDate = (val) => {
       if (!val || val.trim() === "") return null;
-      // Optional: validate YYYY-MM-DD format
       return val;
     };
 
@@ -279,7 +278,6 @@ export const updateQuotation = async (req, res) => {
       "quotationStatus",
       "project_name",
       "paymentPhase",
-     
       "poNumber",
       "remarks",
       "paymentReceived",
@@ -295,98 +293,83 @@ export const updateQuotation = async (req, res) => {
     });
 
     // Numeric fields
-    
     safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
     safeBody.value = sanitizeDecimal(req.body.value);
 
-    // Handle itemDetails array
-// Handle itemDetails array
-// --- Normalize items (array | string | empty) ---
-// Fetch existing itemDetails from DB
-const existingItems = existing.itemDetails ? JSON.parse(existing.itemDetails) : [];
+    // -----------------------------
+    // Handle itemDetails
+    // -----------------------------
+    const existingItems = existing.itemDetails
+      ? JSON.parse(existing.itemDetails)
+      : [];
 
-// Normalize items (array | string | empty)
-let parsedItems = [];
+    let parsedItems = [];
 
-if (Array.isArray(req.body.items)) {
-  parsedItems = req.body.items;
-} else if (typeof req.body.items === "string") {
-  try {
-    parsedItems = JSON.parse(req.body.items);
-  } catch (e) {
-    parsedItems = [];
-  }
-} else if (!req.body.items || req.body.items.length === 0) {
-  // Use existing items if no new items are provided
-  parsedItems = existingItems;
-}
+    if (Array.isArray(req.body.items)) {
+      parsedItems = req.body.items;
+    } else if (typeof req.body.items === "string") {
+      try {
+        parsedItems = JSON.parse(req.body.items);
+      } catch (e) {
+        parsedItems = [];
+      }
+    } else if (!req.body.items || req.body.items.length === 0) {
+      parsedItems = existingItems;
+    }
 
-// Recalculate totals
-safeBody.itemDetails = JSON.stringify(
-  parsedItems.map(item => ({
-    // description: item.description || "",
-    qty: sanitizeDecimal(item.qty) || 0,
-    unitPrice: sanitizeDecimal(item.unitPrice) || 0,
-    gst: sanitizeDecimal(item.gst) || 0,
-    total:
-      (sanitizeDecimal(item.qty) || 0) *
-      (sanitizeDecimal(item.unitPrice) || 0) *
-      (1 + (sanitizeDecimal(item.gst) || 0) / 100),
-  }))
-);
+    safeBody.itemDetails = JSON.stringify(
+      parsedItems.map(item => ({
+        qty: sanitizeDecimal(item.qty) || 0,
+        unitPrice: sanitizeDecimal(item.unitPrice) || 0,
+        gst: sanitizeDecimal(item.gst) || 0,
+        total:
+          (sanitizeDecimal(item.qty) || 0) *
+          (sanitizeDecimal(item.unitPrice) || 0) *
+          (1 + (sanitizeDecimal(item.gst) || 0) / 100),
+      }))
+    );
 
-// Update total value
-safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
-
+    safeBody.value = parsedItems.reduce(
+      (sum, item) => sum + (item.total || 0),
+      0
+    );
 
     // -----------------------------
     // Determine final status
     // -----------------------------
     const finalStatus = safeBody.quotationStatus ?? currentStatus;
 
-    // Fetch opportunity stage
-    const [oppRows] = await db.execute(
-      `SELECT stage FROM opportunity_tracker WHERE opportunity_name = ? LIMIT 1`,
-      [safeBody.opportunity_name]
-    );
-    const opp = oppRows[0];
-
-    if (!opp) return res.status(400).json({ message: "Opportunity not found" });
-
-    // Block approval if stage not WON
-    if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
-      return res.status(403).json({
-        message: "Quotation can be approved only when opportunity stage is WON",
-      });
-    }
-
+    // -----------------------------
     // Ensure client_id exists
+    // -----------------------------
     let client_id = safeBody.client_id;
     if (!client_id && safeBody.clientName) {
       const [[client]] = await db.execute(
         `SELECT client_id FROM opportunities_coordinator WHERE UPPER(client_name)=UPPER(?) LIMIT 1`,
         [safeBody.clientName]
       );
-      if (!client) return res.status(400).json({ message: "Client not found" });
+      if (!client) {
+        return res.status(400).json({ message: "Client not found" });
+      }
       client_id = client.client_id;
     }
 
+    // -----------------------------
     // Payment data based on status
+    // -----------------------------
     const paymentData =
       finalStatus === "Approved"
         ? {
             paymentPhase: safeBody.paymentPhase ?? "Started",
-          
             poNumber: safeBody.poNumber,
             remarks: safeBody.remarks,
             paymentReceived: safeBody.paymentReceived ?? "No",
             paymentAmount: safeBody.paymentAmount,
-            paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
+            paymentReceivedDate: safeBody.paymentReceivedDate,
             paymentPendingReason: safeBody.paymentPendingReason
           }
         : {
             paymentPhase: "Not Started",
-           
             poNumber: null,
             remarks: null,
             paymentReceived: "No",
@@ -396,7 +379,7 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
           };
 
     // -----------------------------
-    // Update quotation in DB
+    // Update quotation
     // -----------------------------
     await db.execute(
       `
@@ -409,11 +392,9 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
         lab_name = ?,
         description = ?,
         itemDetails = ?,
-      
         date = ?,
         quotationStatus = ?,
         paymentPhase = ?,
-     
         poNumber = ?, 
         remarks = ?,   
         paymentReceived = ?,
@@ -431,14 +412,11 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
         safeBody.lab_name,
         safeBody.description,
         safeBody.itemDetails,
-       
         safeBody.date,
         finalStatus,
         paymentData.paymentPhase,
- 
-      
         paymentData.poNumber,
-         paymentData.remarks,
+        paymentData.remarks,
         paymentData.paymentReceived,
         paymentData.paymentAmount,
         paymentData.paymentReceivedDate,
@@ -448,6 +426,25 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
       ]
     );
 
+    // -------------------------------------------------
+    // 🔥 ADDED LOGIC: AUTO UPDATE OPPORTUNITY STAGE
+    // -------------------------------------------------
+    if (finalStatus === "Approved" || finalStatus === "Rejected") {
+      const newStage = finalStatus === "Approved" ? "WON" : "LOST";
+
+      await db.execute(
+        `
+        UPDATE opportunity_tracker
+        SET stage = ?
+        WHERE opportunity_id = ?
+        `,
+        [newStage, existing.opportunity_id]
+      );
+    }
+
+    // -----------------------------
+    // Response
+    // -----------------------------
     res.json({
       message: "Quotation updated successfully",
       id,
@@ -459,6 +456,7 @@ safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 
