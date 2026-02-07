@@ -258,28 +258,37 @@ export const addQuotation = async (req, res) => {
         quotationStatus,
       ]
     );
-    await db.execute(
-      `
+    const oldQuotationValue = null;
+const newQuotationValue = totalValue;
+const oldPaymentForLog = null;
+const newPaymentForLog = req.body.paymentAmount ?? null;
+const auditAction = "Quotation created";
+await db.execute(
+  `
   INSERT INTO audit_log
   (
     quotation_No,
+    opportunity_id,
+    opportunity_name,
     old_quotation_value,
     new_quotation_value,
     old_payment_value,
     new_payment_value,
     action
   )
-  VALUES (?, ?, ?, ?, ?, ?)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `,
-      [
-        quotationNo,
-        null,
-        totalValue,
-        null,
-        null,
-        "Quotation created",
-      ]
-    );
+  [
+    quotationNo,
+   oppId,                 // ✅ comes from req.body
+    opportunity_name, 
+    oldQuotationValue,
+    newQuotationValue,
+    oldPaymentForLog,
+    newPaymentForLog,
+    auditAction
+  ]
+);
 
     res.status(201).json({
       id: result.insertId,
@@ -378,10 +387,7 @@ export const updateQuotation = async (req, res) => {
     safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
     safeBody.value = sanitizeDecimal(req.body.value);
 
-    // Handle itemDetails array
-    // Handle itemDetails array
-    // --- Normalize items (array | string | empty) ---
-    // Fetch existing itemDetails from DB
+  
     const existingItems = existing.itemDetails ? JSON.parse(existing.itemDetails) : [];
 
     // Normalize items (array | string | empty)
@@ -467,19 +473,32 @@ export const updateQuotation = async (req, res) => {
     }
 
     if (auditAction) {
-      await db.execute(
-        `INSERT INTO audit_log
-    (quotation_No, old_quotation_value, new_quotation_value, old_payment_value, new_payment_value, action)
-    VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          quotationNo,
-          oldQuotationValue,
-          newQuotationValue,
-          oldPaymentForLog,
-          newPaymentForLog,
-          auditAction
-        ]
-      );
+await db.execute(
+  `
+  INSERT INTO audit_log
+  (
+    quotation_No,
+    opportunity_id,
+    opportunity_name,
+    old_quotation_value,
+    new_quotation_value,
+    old_payment_value,
+    new_payment_value,
+    action
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+  [
+    quotationNo,
+   existing.opportunity_id,  // ✅ use existing record
+      safeBody.opportunity_name || existing.opportunity_name,
+    oldQuotationValue,
+    newQuotationValue,
+    oldPaymentForLog,
+    newPaymentForLog,
+    auditAction
+  ]
+);
     }
 
 
@@ -586,7 +605,7 @@ export const updateQuotation = async (req, res) => {
 
         paymentData.poNumber,
         paymentData.remarks,
-        paymentData.remarks,
+      
         paymentData.paymentReceived,
         paymentData.paymentAmount,
         paymentData.paymentReceivedDate,
