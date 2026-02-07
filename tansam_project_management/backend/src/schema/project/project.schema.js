@@ -12,9 +12,8 @@ export const createProjectSchemas = async (db) => {
 
       opportunity_id VARCHAR(50),
 
-      /* ✅ NEW FIELDS */
-      lab_id JSON,
-      lab_name JSON,
+      lab_id VARCHAR(100) NULL,          -- changed from JSON
+      lab_name VARCHAR(255) NULL,        -- changed from JSON
 
       work_category_id INT,
       work_category_name VARCHAR(100),
@@ -22,8 +21,9 @@ export const createProjectSchemas = async (db) => {
       client_type_id INT,
       client_type_name VARCHAR(100),
 
-      start_date DATE NOT NULL,
-      end_date DATE NOT NULL,
+      -- Changed to VARCHAR to accept YYYY-MM format
+      start_date VARCHAR(10) NULL,       -- e.g. '2025-04' or '2025-04-15'
+      end_date   VARCHAR(10) NULL,       -- e.g. '2025-12' or '2026-03-01'
 
       status ENUM('Planned','In Progress','Completed','On Hold')
         DEFAULT 'Planned',

@@ -47,8 +47,28 @@ const emptyForm = {
   poFile: null,
 };
 
-const formatDate = (d) =>
-  d ? new Date(d).toISOString().split("T")[0] : "";
+/* Helper to format date to YYYY-MM */
+const formatDate = (d) => {
+  if (!d) return "";
+
+  // If already YYYY-MM, return as is
+  if (/^\d{4}-\d{2}$/.test(d)) return d;
+
+  // If full date YYYY-MM-DD, take first 7 chars
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d.substring(0, 7);
+
+  // Try parsing any other date format
+  try {
+    const date = new Date(d);
+    if (!isNaN(date)) {
+      return date.toISOString().slice(0, 7); // returns YYYY-MM
+    }
+  } catch {
+    // Ignore invalid date formats - return empty string
+  }
+
+  return "";
+};
 
 /* ================= COMPONENT ================= */
 
