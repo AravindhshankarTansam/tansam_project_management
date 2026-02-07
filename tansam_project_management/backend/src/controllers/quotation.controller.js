@@ -4,6 +4,51 @@ import { createQuotationDocx } from "../utils/QuotationDocx.js";
 import { initSchemas } from "../schema/main.schema.js";
 import { G } from "@react-pdf/renderer";
 // Get all quotations
+
+// controllers/quotation.controller.js
+// controllers/quotation.controller.js
+export const generateQuotationNo = async (req, res) => {
+  try {
+    const db = await connectDB();
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    // Financial year logic
+    const startYear = month >= 4 ? year : year - 1;
+    const endYear = startYear + 1;
+    const financialYear = `${startYear}-${endYear}`;
+
+    const [rows] = await db.query(
+      `
+      SELECT quotationNo 
+      FROM quotations
+      WHERE quotationNo LIKE ?
+      ORDER BY id DESC
+      LIMIT 1
+      `,
+      [`TANSAM-%/${financialYear}`]
+    );
+
+    let nextNumber = 1001;
+
+    if (rows.length > 0) {
+      const lastNo = rows[0].quotationNo;
+      const match = lastNo.match(/TANSAM-(\d+)\//);
+      if (match) nextNumber = Number(match[1]) + 1;
+    }
+
+    const quotationNo = `TANSAM-${nextNumber}/${financialYear}`;
+
+    res.json({ quotationNo });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to generate quotation number" });
+  }
+};
+
+
 export const getQuotations = async (req, res) => {
   try {
     const db = await connectDB();
@@ -23,6 +68,7 @@ export const addQuotation = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
+    //const quotationNo = await generateQuotationNo(db);
 
     const {
       items = [],
@@ -62,50 +108,50 @@ export const addQuotation = async (req, res) => {
     const client_id = client.client_id;
 
     // --- Prepare itemDetails array ---
-// --- Normalize items (string | array | empty) ---
-let parsedItems = [];
+    // --- Normalize items (string | array | empty) ---
+    let parsedItems = [];
 
-if (Array.isArray(items)) {
-  parsedItems = items;
-} else if (typeof items === "string") {
-  try {
-    parsedItems = JSON.parse(items);
-  } catch (e) {
-    parsedItems = [];
-  }
-}
+    if (Array.isArray(items)) {
+      parsedItems = items;
+    } else if (typeof items === "string") {
+      try {
+        parsedItems = JSON.parse(items);
+      } catch (e) {
+        parsedItems = [];
+      }
+    }
 
-// --- Prepare itemDetails array ---
-const itemsArray = parsedItems.length
-  ? parsedItems.map((item) => {
-      const q = Number(item.qty || 0);
-      const u = Number(item.unitPrice || 0);
-      const g = Number(item.gst || 0);
-      const base = q * u;
-      const total = base + base * (g / 100);
+    // --- Prepare itemDetails array ---
+    const itemsArray = parsedItems.length
+      ? parsedItems.map((item) => {
+        const q = Number(item.qty || 0);
+        const u = Number(item.unitPrice || 0);
+        const g = Number(item.gst || 0);
+        const base = q * u;
+        const total = base + base * (g / 100);
 
-      return {
-        // description: item.description || "",
-        qty: q,
-        unitPrice: u,
-        gst: g,
-        total,
-      };
-    })
-  : [
-      {
-       
-        qty: Number(qty || 0),
-        unitPrice: Number(unitPrice || 0),
-        gst: Number(gst || 0),
-        total:
-          Number(qty || 0) *
-          Number(unitPrice || 0) *
-          (1 + Number(gst || 0) / 100),
-      },
-    ];
+        return {
+          // description: item.description || "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total,
+        };
+      })
+      : [
+        {
 
-const itemDetails = JSON.stringify(itemsArray);
+          qty: Number(qty || 0),
+          unitPrice: Number(unitPrice || 0),
+          gst: Number(gst || 0),
+          total:
+            Number(qty || 0) *
+            Number(unitPrice || 0) *
+            (1 + Number(gst || 0) / 100),
+        },
+      ];
+
+    const itemDetails = JSON.stringify(itemsArray);
 
 
     // --- Compute total value from itemDetails ---
@@ -121,35 +167,35 @@ const itemDetails = JSON.stringify(itemsArray);
     const quotationDate = date
       ? new Date(date).toISOString().slice(0, 19).replace("T", " ")
       : new Date().toISOString().slice(0, 19).replace("T", " ");
-// 🔒 Check opportunity stage
-// 🔒 Check opportunity stage (SAFE)
-const oppIds = opportunity_id
-  ? String(opportunity_id).split(",").map(id => id.trim())
-  : [];
+    // 🔒 Check opportunity stage
+    // 🔒 Check opportunity stage (SAFE)
+    const oppIds = opportunity_id
+      ? String(opportunity_id).split(",").map(id => id.trim())
+      : [];
 
-if (oppIds.length === 0) {
-  return res.status(400).json({ message: "Opportunity not selected" });
-}
+    if (oppIds.length === 0) {
+      return res.status(400).json({ message: "Opportunity not selected" });
+    }
 
-// const [oppRows] = await db.execute(
-//   `
-//   SELECT opportunity_id, stage
-//   FROM opportunity_tracker
-//   WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
-//   `,
-//   oppIds
-// );
+    // const [oppRows] = await db.execute(
+    //   `
+    //   SELECT opportunity_id, stage
+    //   FROM opportunity_tracker
+    //   WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
+    //   `,
+    //   oppIds
+    // );
 
-// // ❗ If ANY opportunity is not WON → block
-// const notWon = oppRows.find(
-//   o => (o.stage || "").trim().toUpperCase() !== "WON"
-// );
+    // // ❗ If ANY opportunity is not WON → block
+    // const notWon = oppRows.find(
+    //   o => (o.stage || "").trim().toUpperCase() !== "WON"
+    // );
 
-// if (notWon) {
-//   return res.status(403).json({
-//     message: "Quotation can be created only when opportunity stage is WON",
-//   });
-// }
+    // if (notWon) {
+    //   return res.status(403).json({
+    //     message: "Quotation can be created only when opportunity stage is WON",
+    //   });
+    // }
 
     // --- Debug log (optional) ---
     console.log({
@@ -207,11 +253,42 @@ if (oppIds.length === 0) {
         lab_name,
         description,
         itemDetails,
-       // ✅ always calculated from itemsArray
+        // ✅ always calculated from itemsArray
         quotationDate,
         quotationStatus,
       ]
     );
+    const oldQuotationValue = null;
+const newQuotationValue = totalValue;
+const oldPaymentForLog = null;
+const newPaymentForLog = req.body.paymentAmount ?? null;
+const auditAction = "Quotation created";
+await db.execute(
+  `
+  INSERT INTO audit_log
+  (
+    quotation_No,
+    opportunity_id,
+    opportunity_name,
+    old_quotation_value,
+    new_quotation_value,
+    old_payment_value,
+    new_payment_value,
+    action
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+  [
+    quotationNo,
+   oppId,                 // ✅ comes from req.body
+    opportunity_name, 
+    oldQuotationValue,
+    newQuotationValue,
+    oldPaymentForLog,
+    newPaymentForLog,
+    auditAction
+  ]
+);
 
     res.status(201).json({
       id: result.insertId,
@@ -249,6 +326,18 @@ export const updateQuotation = async (req, res) => {
     }
 
     const currentStatus = existing.quotationStatus;
+    // 🔍 Capture OLD values for audit log (VERY IMPORTANT: before changes)
+    const oldItems = existing.itemDetails
+      ? JSON.parse(existing.itemDetails)
+      : [];
+
+
+    const oldQuotationValue = oldItems.reduce(
+      (sum, item) => sum + Number(item.total || 0),
+      0
+    );
+    const oldPaymentValue = Number(existing.paymentAmount || 0);
+    const quotationNo = existing.quotationNo;
 
     // -----------------------------
     // Helper functions
@@ -278,6 +367,7 @@ export const updateQuotation = async (req, res) => {
       "quotationStatus",
       "project_name",
       "paymentPhase",
+
       "poNumber",
       "remarks",
       "paymentReceived",
@@ -293,16 +383,14 @@ export const updateQuotation = async (req, res) => {
     });
 
     // Numeric fields
+
     safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
     safeBody.value = sanitizeDecimal(req.body.value);
 
-    // -----------------------------
-    // Handle itemDetails
-    // -----------------------------
-    const existingItems = existing.itemDetails
-      ? JSON.parse(existing.itemDetails)
-      : [];
+  
+    const existingItems = existing.itemDetails ? JSON.parse(existing.itemDetails) : [];
 
+    // Normalize items (array | string | empty)
     let parsedItems = [];
 
     if (Array.isArray(req.body.items)) {
@@ -314,11 +402,14 @@ export const updateQuotation = async (req, res) => {
         parsedItems = [];
       }
     } else if (!req.body.items || req.body.items.length === 0) {
+      // Use existing items if no new items are provided
       parsedItems = existingItems;
     }
 
+    // Recalculate totals
     safeBody.itemDetails = JSON.stringify(
       parsedItems.map(item => ({
+        // description: item.description || "",
         qty: sanitizeDecimal(item.qty) || 0,
         unitPrice: sanitizeDecimal(item.unitPrice) || 0,
         gst: sanitizeDecimal(item.gst) || 0,
@@ -329,17 +420,109 @@ export const updateQuotation = async (req, res) => {
       }))
     );
 
-    safeBody.value = parsedItems.reduce(
-      (sum, item) => sum + (item.total || 0),
-      0
-    );
+    // Update total value
+    safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
+
+    safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
+
+    // ================================
+    // 🔍 AUDIT LOG (SAFE POSITION)
+    // ================================
+    const newQuotationValue = parsedItems.reduce((sum, item) => {
+      const qty = sanitizeDecimal(item.qty) || 0;
+      const unit = sanitizeDecimal(item.unitPrice) || 0;
+      const gst = sanitizeDecimal(item.gst) || 0;
+      const base = qty * unit;
+      return sum + base * (1 + gst / 100);
+    }, 0);
+
+    safeBody.value = newQuotationValue;
+
+    const newPaymentValue =
+      safeBody.paymentAmount !== null
+        ? Number(safeBody.paymentAmount)
+        : oldPaymentValue;
+
+    const quotationValueChanged =
+      oldQuotationValue !== newQuotationValue;
+
+    const paymentChanged =
+      oldPaymentValue !== newPaymentValue &&
+      newPaymentValue !== null;
+
+    let auditAction = null;
+    let oldPaymentForLog = null;
+    let newPaymentForLog = null;
+
+    if (quotationValueChanged) {
+      auditAction = "Quotation updated";
+      oldPaymentForLog = null;
+      newPaymentForLog = null;
+    }
+
+    if (!oldPaymentValue && newPaymentValue) {
+      auditAction = "Payment created";
+      oldPaymentForLog = oldPaymentValue;
+      newPaymentForLog = newPaymentValue;
+    }
+
+    if (oldPaymentValue && paymentChanged) {
+      auditAction = "Payment updated";
+      oldPaymentForLog = oldPaymentValue;
+      newPaymentForLog = newPaymentValue;
+    }
+
+    if (auditAction) {
+await db.execute(
+  `
+  INSERT INTO audit_log
+  (
+    quotation_No,
+    opportunity_id,
+    opportunity_name,
+    old_quotation_value,
+    new_quotation_value,
+    old_payment_value,
+    new_payment_value,
+    action
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+  [
+    quotationNo,
+   existing.opportunity_id,  // ✅ use existing record
+      safeBody.opportunity_name || existing.opportunity_name,
+    oldQuotationValue,
+    newQuotationValue,
+    oldPaymentForLog,
+    newPaymentForLog,
+    auditAction
+  ]
+);
+    }
+
 
     // -----------------------------
     // Determine final status
     // -----------------------------
     const finalStatus = safeBody.quotationStatus ?? currentStatus;
 
-    // -----------------------------
+    // Fetch opportunity stage
+    // const [oppRows] = await db.execute(
+    //   `SELECT stage FROM opportunity_tracker WHERE opportunity_name = ? LIMIT 1`,
+    //   [safeBody.opportunity_name]
+    // );
+    // const opp = oppRows[0];
+
+    // if (!opp) return res.status(400).json({ message: "Opportunity not found" });
+
+    // // Block approval if stage not WON
+    // if (safeBody.quotationStatus === "Approved" && opp.stage !== "WON") {
+    //   return res.status(403).json({
+    //     message: "Quotation can be approved only when opportunity stage is WON",
+    //   });
+    // }
+
     // Ensure client_id exists
     // -----------------------------
     let client_id = safeBody.client_id;
@@ -360,23 +543,25 @@ export const updateQuotation = async (req, res) => {
     const paymentData =
       finalStatus === "Approved"
         ? {
-            paymentPhase: safeBody.paymentPhase ?? "Started",
-            poNumber: safeBody.poNumber,
-            remarks: safeBody.remarks,
-            paymentReceived: safeBody.paymentReceived ?? "No",
-            paymentAmount: safeBody.paymentAmount,
-            paymentReceivedDate: safeBody.paymentReceivedDate,
-            paymentPendingReason: safeBody.paymentPendingReason
-          }
+          paymentPhase: safeBody.paymentPhase ?? "Started",
+
+          poNumber: safeBody.poNumber,
+          remarks: safeBody.remarks,
+          paymentReceived: safeBody.paymentReceived ?? "No",
+          paymentAmount: safeBody.paymentAmount,
+          paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
+          paymentPendingReason: safeBody.paymentPendingReason
+        }
         : {
-            paymentPhase: "Not Started",
-            poNumber: null,
-            remarks: null,
-            paymentReceived: "No",
-            paymentAmount: null,
-            paymentReceivedDate: null,
-            paymentPendingReason: null
-          };
+          paymentPhase: "Not Started",
+
+          poNumber: null,
+          remarks: null,
+          paymentReceived: "No",
+          paymentAmount: null,
+          paymentReceivedDate: null,
+          paymentPendingReason: null
+        };
 
     // -----------------------------
     // Update quotation
@@ -412,11 +597,15 @@ export const updateQuotation = async (req, res) => {
         safeBody.lab_name,
         safeBody.description,
         safeBody.itemDetails,
+
         safeBody.date,
         finalStatus,
         paymentData.paymentPhase,
+
+
         paymentData.poNumber,
         paymentData.remarks,
+      
         paymentData.paymentReceived,
         paymentData.paymentAmount,
         paymentData.paymentReceivedDate,

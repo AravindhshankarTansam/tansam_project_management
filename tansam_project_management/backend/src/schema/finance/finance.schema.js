@@ -22,15 +22,14 @@ export const createQuotationFollowupsSchema = async (db) => {
 await db.execute(`
   CREATE TABLE IF NOT EXISTS quotations (
     id INT AUTO_INCREMENT PRIMARY KEY,
-opportunity_id VARCHAR(50),
+    opportunity_id VARCHAR(50),
     opportunity_name VARCHAR(50),
     quotationNo VARCHAR(50) NOT NULL,
-
     client_id VARCHAR(20) NOT NULL,
     clientName VARCHAR(100) NOT NULL,
-client_type_id VARCHAR(50),
+    client_type_id VARCHAR(50),
     client_type_name VARCHAR(50),
-     work_category_id VARCHAR(100),
+    work_category_id VARCHAR(100),
     work_category_name VARCHAR(100),
     lab_id VARCHAR(100),
     lab_name VARCHAR(100),
@@ -38,21 +37,15 @@ client_type_id VARCHAR(50),
     description TEXT,
      quotationStatus ENUM('Draft', 'Submitted', 'Approved', 'Rejected')
     NOT NULL DEFAULT 'draft',
-
-
     date DATE,
-
-    isGenerated TINYINT(1) DEFAULT 0,
-    generatedAt DATETIME,
-
-    paymentPhase VARCHAR(20),
-
-   
+   isGenerated TINYINT(1) DEFAULT 0,
+ 
+    paymentPhase   ENUM('Started', 'Not Started')
+    NOT NULL DEFAULT 'Started',
     paymentReceived VARCHAR(10),
     paymentAmount DECIMAL(12,2),
-    paymentPendingReason TEXT,
-    
-    itemDetails LONGTEXT CHECK (JSON_VALID(itemDetails)),
+    paymentPendingReason TEXT,    
+    itemDetails VARCHAR(255),
     poNumber VARCHAR(100),
     remarks VARCHAR(100),
     paymentReceivedDate DATE,
@@ -101,6 +94,19 @@ client_type_id VARCHAR(50),
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       quotationId INT,
       FOREIGN KEY (quotationId) REFERENCES quotations(id)
+    )
+  `);
+
+    await db.execute(`
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      quotation_No VARCHAR(100) NOT NULL,
+      old_quotation_value DECIMAL(15,2) DEFAULT NULL,
+      new_quotation_value DECIMAL(15,2) DEFAULT NULL,
+      old_payment_value DECIMAL(15,2) DEFAULT NULL,
+      new_payment_value DECIMAL(15,2) DEFAULT NULL,
+      action ENUM('Quotation created','Quotation updated','Payment created','Payment updated') NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 };
