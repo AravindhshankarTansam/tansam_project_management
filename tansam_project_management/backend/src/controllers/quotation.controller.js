@@ -34,7 +34,7 @@ export const generateQuotationNo = async (req, res) => {
     let nextNumber = 1001;
 
     if (rows.length > 0) {
-      const lastNo = rows[0].quotationNo; 
+      const lastNo = rows[0].quotationNo;
       const match = lastNo.match(/TANSAM-(\d+)\//);
       if (match) nextNumber = Number(match[1]) + 1;
     }
@@ -68,7 +68,7 @@ export const addQuotation = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { finance: true, coordinator: true });
-const quotationNo = await generateQuotationNo(db);
+    //const quotationNo = await generateQuotationNo(db);
 
     const {
       items = [],
@@ -77,7 +77,7 @@ const quotationNo = await generateQuotationNo(db);
       gst,
       opportunity_id,
       opportunity_name = null,
-      // quotationNo = null,
+      quotationNo = null,
       clientName,
       client_type_id,
       client_type_name = null,
@@ -108,50 +108,50 @@ const quotationNo = await generateQuotationNo(db);
     const client_id = client.client_id;
 
     // --- Prepare itemDetails array ---
-// --- Normalize items (string | array | empty) ---
-let parsedItems = [];
+    // --- Normalize items (string | array | empty) ---
+    let parsedItems = [];
 
-if (Array.isArray(items)) {
-  parsedItems = items;
-} else if (typeof items === "string") {
-  try {
-    parsedItems = JSON.parse(items);
-  } catch (e) {
-    parsedItems = [];
-  }
-}
+    if (Array.isArray(items)) {
+      parsedItems = items;
+    } else if (typeof items === "string") {
+      try {
+        parsedItems = JSON.parse(items);
+      } catch (e) {
+        parsedItems = [];
+      }
+    }
 
-// --- Prepare itemDetails array ---
-const itemsArray = parsedItems.length
-  ? parsedItems.map((item) => {
-      const q = Number(item.qty || 0);
-      const u = Number(item.unitPrice || 0);
-      const g = Number(item.gst || 0);
-      const base = q * u;
-      const total = base + base * (g / 100);
+    // --- Prepare itemDetails array ---
+    const itemsArray = parsedItems.length
+      ? parsedItems.map((item) => {
+        const q = Number(item.qty || 0);
+        const u = Number(item.unitPrice || 0);
+        const g = Number(item.gst || 0);
+        const base = q * u;
+        const total = base + base * (g / 100);
 
-      return {
-        // description: item.description || "",
-        qty: q,
-        unitPrice: u,
-        gst: g,
-        total,
-      };
-    })
-  : [
-      {
-       
-        qty: Number(qty || 0),
-        unitPrice: Number(unitPrice || 0),
-        gst: Number(gst || 0),
-        total:
-          Number(qty || 0) *
-          Number(unitPrice || 0) *
-          (1 + Number(gst || 0) / 100),
-      },
-    ];
+        return {
+          // description: item.description || "",
+          qty: q,
+          unitPrice: u,
+          gst: g,
+          total,
+        };
+      })
+      : [
+        {
 
-const itemDetails = JSON.stringify(itemsArray);
+          qty: Number(qty || 0),
+          unitPrice: Number(unitPrice || 0),
+          gst: Number(gst || 0),
+          total:
+            Number(qty || 0) *
+            Number(unitPrice || 0) *
+            (1 + Number(gst || 0) / 100),
+        },
+      ];
+
+    const itemDetails = JSON.stringify(itemsArray);
 
 
     // --- Compute total value from itemDetails ---
@@ -167,35 +167,35 @@ const itemDetails = JSON.stringify(itemsArray);
     const quotationDate = date
       ? new Date(date).toISOString().slice(0, 19).replace("T", " ")
       : new Date().toISOString().slice(0, 19).replace("T", " ");
-// 🔒 Check opportunity stage
-// 🔒 Check opportunity stage (SAFE)
-const oppIds = opportunity_id
-  ? String(opportunity_id).split(",").map(id => id.trim())
-  : [];
+    // 🔒 Check opportunity stage
+    // 🔒 Check opportunity stage (SAFE)
+    const oppIds = opportunity_id
+      ? String(opportunity_id).split(",").map(id => id.trim())
+      : [];
 
-if (oppIds.length === 0) {
-  return res.status(400).json({ message: "Opportunity not selected" });
-}
+    if (oppIds.length === 0) {
+      return res.status(400).json({ message: "Opportunity not selected" });
+    }
 
-// const [oppRows] = await db.execute(
-//   `
-//   SELECT opportunity_id, stage
-//   FROM opportunity_tracker
-//   WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
-//   `,
-//   oppIds
-// );
+    // const [oppRows] = await db.execute(
+    //   `
+    //   SELECT opportunity_id, stage
+    //   FROM opportunity_tracker
+    //   WHERE opportunity_id IN (${oppIds.map(() => "?").join(",")})
+    //   `,
+    //   oppIds
+    // );
 
-// // ❗ If ANY opportunity is not WON → block
-// const notWon = oppRows.find(
-//   o => (o.stage || "").trim().toUpperCase() !== "WON"
-// );
+    // // ❗ If ANY opportunity is not WON → block
+    // const notWon = oppRows.find(
+    //   o => (o.stage || "").trim().toUpperCase() !== "WON"
+    // );
 
-// if (notWon) {
-//   return res.status(403).json({
-//     message: "Quotation can be created only when opportunity stage is WON",
-//   });
-// }
+    // if (notWon) {
+    //   return res.status(403).json({
+    //     message: "Quotation can be created only when opportunity stage is WON",
+    //   });
+    // }
 
     // --- Debug log (optional) ---
     console.log({
@@ -253,13 +253,13 @@ if (oppIds.length === 0) {
         lab_name,
         description,
         itemDetails,
-       // ✅ always calculated from itemsArray
+        // ✅ always calculated from itemsArray
         quotationDate,
         quotationStatus,
       ]
     );
-await db.execute(
-  `
+    await db.execute(
+      `
   INSERT INTO audit_log
   (
     quotation_No,
@@ -271,15 +271,15 @@ await db.execute(
   )
   VALUES (?, ?, ?, ?, ?, ?)
   `,
-  [
-    quotationNo,
-    null,
-    totalValue,
-    null,
-    null,
-    "Quotation created",
-  ]
-);
+      [
+        quotationNo,
+        null,
+        totalValue,
+        null,
+        null,
+        "Quotation created",
+      ]
+    );
 
     res.status(201).json({
       id: result.insertId,
@@ -317,18 +317,18 @@ export const updateQuotation = async (req, res) => {
     }
 
     const currentStatus = existing.quotationStatus;
-// 🔍 Capture OLD values for audit log (VERY IMPORTANT: before changes)
-const oldItems = existing.itemDetails
-  ? JSON.parse(existing.itemDetails)
-  : [];
+    // 🔍 Capture OLD values for audit log (VERY IMPORTANT: before changes)
+    const oldItems = existing.itemDetails
+      ? JSON.parse(existing.itemDetails)
+      : [];
 
 
-const oldQuotationValue = oldItems.reduce(
-  (sum, item) => sum + Number(item.total || 0),
-  0
-);
-const oldPaymentValue = Number(existing.paymentAmount || 0);
-const quotationNo = existing.quotationNo;
+    const oldQuotationValue = oldItems.reduce(
+      (sum, item) => sum + Number(item.total || 0),
+      0
+    );
+    const oldPaymentValue = Number(existing.paymentAmount || 0);
+    const quotationNo = existing.quotationNo;
 
     // -----------------------------
     // Helper functions
@@ -359,7 +359,7 @@ const quotationNo = existing.quotationNo;
       "quotationStatus",
       "project_name",
       "paymentPhase",
-     
+
       "poNumber",
       "remarks",
       "paymentReceived",
@@ -375,113 +375,113 @@ const quotationNo = existing.quotationNo;
     });
 
     // Numeric fields
-    
+
     safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
     safeBody.value = sanitizeDecimal(req.body.value);
 
     // Handle itemDetails array
-// Handle itemDetails array
-// --- Normalize items (array | string | empty) ---
-// Fetch existing itemDetails from DB
-const existingItems = existing.itemDetails ? JSON.parse(existing.itemDetails) : [];
+    // Handle itemDetails array
+    // --- Normalize items (array | string | empty) ---
+    // Fetch existing itemDetails from DB
+    const existingItems = existing.itemDetails ? JSON.parse(existing.itemDetails) : [];
 
-// Normalize items (array | string | empty)
-let parsedItems = [];
+    // Normalize items (array | string | empty)
+    let parsedItems = [];
 
-if (Array.isArray(req.body.items)) {
-  parsedItems = req.body.items;
-} else if (typeof req.body.items === "string") {
-  try {
-    parsedItems = JSON.parse(req.body.items);
-  } catch (e) {
-    parsedItems = [];
-  }
-} else if (!req.body.items || req.body.items.length === 0) {
-  // Use existing items if no new items are provided
-  parsedItems = existingItems;
-}
+    if (Array.isArray(req.body.items)) {
+      parsedItems = req.body.items;
+    } else if (typeof req.body.items === "string") {
+      try {
+        parsedItems = JSON.parse(req.body.items);
+      } catch (e) {
+        parsedItems = [];
+      }
+    } else if (!req.body.items || req.body.items.length === 0) {
+      // Use existing items if no new items are provided
+      parsedItems = existingItems;
+    }
 
-// Recalculate totals
-safeBody.itemDetails = JSON.stringify(
-  parsedItems.map(item => ({
-    // description: item.description || "",
-    qty: sanitizeDecimal(item.qty) || 0,
-    unitPrice: sanitizeDecimal(item.unitPrice) || 0,
-    gst: sanitizeDecimal(item.gst) || 0,
-    total:
-      (sanitizeDecimal(item.qty) || 0) *
-      (sanitizeDecimal(item.unitPrice) || 0) *
-      (1 + (sanitizeDecimal(item.gst) || 0) / 100),
-  }))
-);
+    // Recalculate totals
+    safeBody.itemDetails = JSON.stringify(
+      parsedItems.map(item => ({
+        // description: item.description || "",
+        qty: sanitizeDecimal(item.qty) || 0,
+        unitPrice: sanitizeDecimal(item.unitPrice) || 0,
+        gst: sanitizeDecimal(item.gst) || 0,
+        total:
+          (sanitizeDecimal(item.qty) || 0) *
+          (sanitizeDecimal(item.unitPrice) || 0) *
+          (1 + (sanitizeDecimal(item.gst) || 0) / 100),
+      }))
+    );
 
-// Update total value
-safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
+    // Update total value
+    safeBody.value = parsedItems.reduce((sum, item) => sum + (item.total || 0), 0);
 
-safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
+    safeBody.paymentAmount = sanitizeDecimal(req.body.paymentAmount);
 
-// ================================
-// 🔍 AUDIT LOG (SAFE POSITION)
-// ================================
-const newQuotationValue = parsedItems.reduce((sum, item) => {
-  const qty = sanitizeDecimal(item.qty) || 0;
-  const unit = sanitizeDecimal(item.unitPrice) || 0;
-  const gst = sanitizeDecimal(item.gst) || 0;
-  const base = qty * unit;
-  return sum + base * (1 + gst / 100);
-}, 0);
+    // ================================
+    // 🔍 AUDIT LOG (SAFE POSITION)
+    // ================================
+    const newQuotationValue = parsedItems.reduce((sum, item) => {
+      const qty = sanitizeDecimal(item.qty) || 0;
+      const unit = sanitizeDecimal(item.unitPrice) || 0;
+      const gst = sanitizeDecimal(item.gst) || 0;
+      const base = qty * unit;
+      return sum + base * (1 + gst / 100);
+    }, 0);
 
-safeBody.value = newQuotationValue;
+    safeBody.value = newQuotationValue;
 
-const newPaymentValue =
-  safeBody.paymentAmount !== null
-    ? Number(safeBody.paymentAmount)
-    : oldPaymentValue; 
+    const newPaymentValue =
+      safeBody.paymentAmount !== null
+        ? Number(safeBody.paymentAmount)
+        : oldPaymentValue;
 
-const quotationValueChanged =
-  oldQuotationValue !== newQuotationValue;
+    const quotationValueChanged =
+      oldQuotationValue !== newQuotationValue;
 
-const paymentChanged =
-  oldPaymentValue !== newPaymentValue &&
-  newPaymentValue !== null;
+    const paymentChanged =
+      oldPaymentValue !== newPaymentValue &&
+      newPaymentValue !== null;
 
-let auditAction = null;
-let oldPaymentForLog = null;
-let newPaymentForLog = null;
+    let auditAction = null;
+    let oldPaymentForLog = null;
+    let newPaymentForLog = null;
 
-if (quotationValueChanged) {
-  auditAction = "Quotation updated";
-  oldPaymentForLog = null;
-  newPaymentForLog = null;
-}
+    if (quotationValueChanged) {
+      auditAction = "Quotation updated";
+      oldPaymentForLog = null;
+      newPaymentForLog = null;
+    }
 
-if (!oldPaymentValue && newPaymentValue) {
-  auditAction = "Payment created";
-  oldPaymentForLog = oldPaymentValue;
-  newPaymentForLog = newPaymentValue;
-}
+    if (!oldPaymentValue && newPaymentValue) {
+      auditAction = "Payment created";
+      oldPaymentForLog = oldPaymentValue;
+      newPaymentForLog = newPaymentValue;
+    }
 
-if (oldPaymentValue && paymentChanged) {
-  auditAction = "Payment updated";
-  oldPaymentForLog = oldPaymentValue;
-  newPaymentForLog = newPaymentValue;
-}
+    if (oldPaymentValue && paymentChanged) {
+      auditAction = "Payment updated";
+      oldPaymentForLog = oldPaymentValue;
+      newPaymentForLog = newPaymentValue;
+    }
 
-if (auditAction) {
-  await db.execute(
-    `INSERT INTO audit_log
+    if (auditAction) {
+      await db.execute(
+        `INSERT INTO audit_log
     (quotation_No, old_quotation_value, new_quotation_value, old_payment_value, new_payment_value, action)
     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
-      quotationNo,
-      oldQuotationValue,
-      newQuotationValue,
-      oldPaymentForLog,
-      newPaymentForLog,
-      auditAction
-    ]
-  );
-}
+        [
+          quotationNo,
+          oldQuotationValue,
+          newQuotationValue,
+          oldPaymentForLog,
+          newPaymentForLog,
+          auditAction
+        ]
+      );
+    }
 
 
     // -----------------------------
@@ -520,25 +520,25 @@ if (auditAction) {
     const paymentData =
       finalStatus === "Approved"
         ? {
-            paymentPhase: safeBody.paymentPhase ?? "Started",
-          
-            poNumber: safeBody.poNumber,
-            remarks: safeBody.remarks,
-            paymentReceived: safeBody.paymentReceived ?? "No",
-            paymentAmount: safeBody.paymentAmount,
-            paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
-            paymentPendingReason: safeBody.paymentPendingReason
-          }
+          paymentPhase: safeBody.paymentPhase ?? "Started",
+
+          poNumber: safeBody.poNumber,
+          remarks: safeBody.remarks,
+          paymentReceived: safeBody.paymentReceived ?? "No",
+          paymentAmount: safeBody.paymentAmount,
+          paymentReceivedDate: safeBody.paymentReceivedDate, // sanitized
+          paymentPendingReason: safeBody.paymentPendingReason
+        }
         : {
-            paymentPhase: "Not Started",
-           
-            poNumber: null,
-            remarks: null,
-            paymentReceived: "No",
-            paymentAmount: null,
-            paymentReceivedDate: null,
-            paymentPendingReason: null
-          };
+          paymentPhase: "Not Started",
+
+          poNumber: null,
+          remarks: null,
+          paymentReceived: "No",
+          paymentAmount: null,
+          paymentReceivedDate: null,
+          paymentPendingReason: null
+        };
 
     // -----------------------------
     // Update quotation in DB
@@ -576,14 +576,14 @@ if (auditAction) {
         safeBody.lab_name,
         safeBody.description,
         safeBody.itemDetails,
-       
+
         safeBody.date,
         finalStatus,
         paymentData.paymentPhase,
- 
-      
+
+
         paymentData.poNumber,
-         paymentData.remarks,
+        paymentData.remarks,
         paymentData.paymentReceived,
         paymentData.paymentAmount,
         paymentData.paymentReceivedDate,
