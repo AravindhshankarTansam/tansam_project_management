@@ -62,46 +62,40 @@ const parseAssignedUsers = (assignedTo) => {
 /* ======================================================
    ID GENERATORS
 ====================================================== */
-
 const generateOpportunityId = async (db) => {
   const year = new Date().getFullYear();
-  const [rows] = await db.execute(
+
+  const [[row]] = await db.execute(
     `
-    SELECT opportunity_id
+    SELECT
+      MAX(
+        CAST(SUBSTRING_INDEX(opportunity_id, '-', -1) AS UNSIGNED)
+      ) AS max_seq
     FROM opportunities_coordinator
     WHERE opportunity_id LIKE ?
-    ORDER BY id DESC
-    LIMIT 1
     `,
     [`OPP-${year}-%`]
   );
 
-  let seq = 1;
-  if (rows.length) {
-    seq = parseInt(rows[0].opportunity_id.split("-")[2], 10) + 1;
-  }
+  const nextSeq = (row?.max_seq || 0) + 1;
 
-  return `OPP-${year}-${String(seq).padStart(3, "0")}`;
+  return `OPP-${year}-${String(nextSeq).padStart(3, "0")}`;
 };
 
 const generateClientId = async (db) => {
-  const [rows] = await db.execute(
+  const [[row]] = await db.execute(
     `
-    SELECT client_id
+    SELECT
+      MAX(CAST(SUBSTRING(client_id, 7) AS UNSIGNED)) AS max_seq
     FROM opportunities_coordinator
     WHERE client_id LIKE 'CLIENT%'
-    ORDER BY id DESC
-    LIMIT 1
     `
   );
 
-  let seq = 1;
-  if (rows.length) {
-    seq = parseInt(rows[0].client_id.replace("CLIENT", ""), 10) + 1;
-  }
-
-  return `CLIENT${String(seq).padStart(3, "0")}`;
+  const nextSeq = (row?.max_seq || 0) + 1;
+  return `CLIENT${String(nextSeq).padStart(3, "0")}`;
 };
+
 
 /* ======================================================
    CREATE OPPORTUNITY
