@@ -100,11 +100,14 @@ await db.execute(`
     await db.execute(`
     CREATE TABLE IF NOT EXISTS audit_log (
       id INT AUTO_INCREMENT PRIMARY KEY,
+       opportunity_id VARCHAR(50) NOT NULL,
+      opportunity_name VARCHAR(100) NOT NULL,
       quotation_No VARCHAR(100) NOT NULL,
       old_quotation_value DECIMAL(15,2) DEFAULT NULL,
       new_quotation_value DECIMAL(15,2) DEFAULT NULL,
       old_payment_value DECIMAL(15,2) DEFAULT NULL,
       new_payment_value DECIMAL(15,2) DEFAULT NULL,
+     
       action ENUM('Quotation created','Quotation updated','Payment created','Payment updated') NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
