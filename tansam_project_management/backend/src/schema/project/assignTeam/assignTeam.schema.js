@@ -1,12 +1,12 @@
 export const createAssignTeamSchema = async (db) => {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS project_team_assignments (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-      project_id INT NOT NULL,
+      project_id INT UNSIGNED NOT NULL,
       member_name VARCHAR(150) NOT NULL,
       role VARCHAR(100) NOT NULL,
-      department_id INT NOT NULL,
+      department_id INT UNSIGNED NOT NULL,
 
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
@@ -19,6 +19,7 @@ export const createAssignTeamSchema = async (db) => {
 
       FOREIGN KEY (department_id)
         REFERENCES departments(id)
-    )
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB
   `);
 };
