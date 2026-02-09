@@ -1,5 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-const BASE_COORDINATOR_URL = `${API_BASE}/api/coordinator`;
+const BASE_COORDINATOR_URL = `${API_BASE}/coordinator`;
 
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem("user"));

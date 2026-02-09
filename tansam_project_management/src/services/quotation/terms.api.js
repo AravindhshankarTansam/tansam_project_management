@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 
-const TERMS_URL = `${API_BASE}/api/terms`;
+const TERMS_URL = `${API_BASE}/terms`;
 
 // Get user headers for authentication
 const getAuthHeaders = () => {
