@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./Ceocss/ceoDbView.css";
+import "./Ceocss/CeoDbView.css";
 
 import {
   fetchAllDbTables,
