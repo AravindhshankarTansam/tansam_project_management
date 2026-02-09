@@ -1,6 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-
+// adjust this to your real backend route if needed
+const BASE_URL = `${API_BASE}/ceo/forecast`;
 /* 🔐 AUTH HEADERS */
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem("user"));
