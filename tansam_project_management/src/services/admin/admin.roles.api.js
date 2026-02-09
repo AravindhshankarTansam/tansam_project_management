@@ -1,4 +1,6 @@
-const BASE_ADMIN_URL = "http://localhost:9899/api/admin";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const BASE_ADMIN_URL = `${API_BASE}/api/admin`;
 
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem("user"));

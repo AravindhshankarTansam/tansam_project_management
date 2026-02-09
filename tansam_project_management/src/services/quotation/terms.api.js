@@ -1,4 +1,7 @@
-const TERMS_URL = "http://localhost:9899/api/terms";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+
+const TERMS_URL = `${API_BASE}/api/terms`;
 
 // Get user headers for authentication
 const getAuthHeaders = () => {
