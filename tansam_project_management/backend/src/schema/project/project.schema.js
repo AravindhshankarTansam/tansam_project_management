@@ -31,7 +31,7 @@ export const createProjectSchemas = async (db) => {
       quotation_number VARCHAR(100),
       po_number VARCHAR(100),
       po_file VARCHAR(255),
-      created_by INT NOT NULL,
+      created_by INT NULL,
 
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
