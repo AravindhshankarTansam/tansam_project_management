@@ -1,5 +1,7 @@
 // services/generatedQuotation.api.js
-const GENERATED_QUOTATION_URL = "http://localhost:9899/api/generatequotation";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const GENERATED_QUOTATION_URL = `${API_BASE}/api/generatequotation`;
 
 const getAuthHeaders = () => {
   const user = JSON.parse(localStorage.getItem("user"));

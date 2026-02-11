@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 # Environment variables
 *.env
+# Backend environment file
+tansam_project_management/tansam_project_management/backend/.env

@@ -1,4 +1,6 @@
-const QUOTATIONS_URL = "http://localhost:9899/api/quotations";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const QUOTATIONS_URL = `${API_BASE}/quotations`;
 
 // safe headers
 const getAuthHeaders = () => {
@@ -28,7 +30,19 @@ export const addQuotation = async (data) => {
 
   return res.json();
 };
+export const generateQuotationNo = async () => {
+  const res = await fetch(
+    `${QUOTATIONS_URL}/generate-quotation-no`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
 
+  if (!res.ok) throw new Error("Failed to generate quotation number");
+
+  return res.json();
+};
 
 export const updateQuotation = async (id, data) => {
   const res = await fetch(`${QUOTATIONS_URL}/${id}`, {

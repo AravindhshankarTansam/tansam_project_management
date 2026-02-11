@@ -1,4 +1,6 @@
-const FOLLOWUPS_URL = "http://localhost:9899/api/quotation-followups";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const FOLLOWUPS_URL = `${API_BASE}/api/quotation-followups`;
 
 // ✅ same safe headers
 const getAuthHeaders = () => {
