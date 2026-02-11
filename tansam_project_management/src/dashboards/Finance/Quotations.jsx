@@ -255,28 +255,28 @@ export default function Quotations() {
 
     loadWorkCategories();
   }, []);
-  useEffect(() => {
-    if (newQuotation.quotationStatus === "Approved") {
-      setNewQuotation((prev) => ({
-        ...prev,
-        paymentPhase: "Started",
-      }));
-    } else {
-      setNewQuotation((prev) => ({
-        ...prev,
+  // useEffect(() => {
+  //   if (newQuotation.quotationStatus === "Approved") {
+  //     setNewQuotation((prev) => ({
+  //       ...prev,
+  //       paymentPhase: "Started",
+  //     }));
+  //   } else {
+  //     setNewQuotation((prev) => ({
+  //       ...prev,
 
-        paymentPhase: "Not Started",
-        revisedCost: "",
-        poReceived: "No",
-        poNumber: "",
-        remarks: "",
-        paymentReceived: "No",
-        paymentReceivedDate: "",
-        paymentAmount: "",
-        paymentPendingReason: "",
-      }));
-    }
-  }, [newQuotation.quotationStatus]);
+  //       paymentPhase: "Not Started",
+  //       revisedCost: "",
+  //       poReceived: "No",
+  //       poNumber: "",
+  //       remarks: "",
+  //       paymentReceived: "No",
+  //       paymentReceivedDate: "",
+  //       paymentAmount: "",
+  //       paymentPendingReason: "",
+  //     }));
+  //   }
+  // }, [newQuotation.quotationStatus]);
   const initializePaymentFields = (status, currentData) => {
     if (status === "Approved") {
       return {
@@ -411,7 +411,7 @@ const filtered = data.filter((q) => {
     let items = [];
     try {
       items = quotation.itemDetails ? JSON.parse(quotation.itemDetails) : [];
-    } catch (_error) {
+    } catch  {
       items = [];
     }
 
@@ -852,7 +852,7 @@ const filtered = data.filter((q) => {
                                 items = q.itemDetails
                                   ? JSON.parse(q.itemDetails)
                                   : [];
-                              } catch (e) {
+                              } catch {
                                 items = [];
                               }
 

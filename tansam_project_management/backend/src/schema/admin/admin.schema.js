@@ -4,7 +4,7 @@
  */
 
 export const createAdminSchemas = async (db) => {
-  // 🔐 ROLES TABLE
+  //  ROLES TABLE
   await db.execute(`
     CREATE TABLE IF NOT EXISTS roles (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -16,7 +16,7 @@ export const createAdminSchemas = async (db) => {
     )
   `);
 
-  // 🏢 LABS TABLE
+  //  LABS TABLE
   await db.execute(`
     CREATE TABLE IF NOT EXISTS labs_admin (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,7 +28,7 @@ export const createAdminSchemas = async (db) => {
     )
   `);
 
-  // 📦 PROJECT TYPES TABLE
+  //  PROJECT TYPES TABLE
   await db.execute(`
     CREATE TABLE IF NOT EXISTS project_types_admin (
       id INT AUTO_INCREMENT PRIMARY KEY,

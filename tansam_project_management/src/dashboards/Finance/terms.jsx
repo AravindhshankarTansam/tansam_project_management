@@ -18,7 +18,9 @@ const Terms = () => {
   const [content, setContent] = useState(INITIAL_CONTENT);
   const [isActive, setIsActive] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
-  const [isSaveEnabled, setIsSaveEnabled] = useState(false);
+  // const [isSaveEnabled, setIsSaveEnabled] = useState(false);
+const isSaveEnabled =
+  content.replace(/<[^>]*>/g, "").trim().length > 0;
 
   /* ---------------- FETCH TERMS ---------------- */
   const fetchTerms = async () => {
@@ -27,7 +29,7 @@ const Terms = () => {
 
       // ✅ ensure array
       setTermsList(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch  {
       alert("Failed to fetch terms");
     }
   };
@@ -37,10 +39,10 @@ const Terms = () => {
   }, []);
 
   /* ---------------- ENABLE SAVE ONLY WHEN TEXT EXISTS ---------------- */
-  useEffect(() => {
-    const plainText = content.replace(/<[^>]*>/g, "").trim();
-    setIsSaveEnabled(plainText.length > 0);
-  }, [content]);
+  // useEffect(() => {
+  //   const plainText = content.replace(/<[^>]*>/g, "").trim();
+  //   setIsSaveEnabled(plainText.length > 0);
+  // }, [content]);
 
   /* ---------------- SAVE / UPDATE ---------------- */
   const handleSave = async () => {
