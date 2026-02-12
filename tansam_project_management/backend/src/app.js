@@ -71,7 +71,7 @@ app.use(
   app.use("/api", projectTypeRoutes);
   app.use("/api", projectFollowupRoutes);
   app.use("/api/ceo/forecast", CeoforecastRoutes);
-  app.use("/api/ceo/db", CeoDBroutes);
+  app.use("/api", CeoDBroutes);
 
 
 
