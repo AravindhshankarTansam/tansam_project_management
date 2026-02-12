@@ -1,211 +1,289 @@
-.login-stage {
+/* =========================
+   ROOT / BACKGROUND
+========================= */
+
+.login-bg {
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    #f1f5f9,
-    #e2e8f0
-  );
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+
+  /* FONT SYSTEM */
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Silk background layer (behind everything) */
+.silk-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55; /* subtle, do not overpower card */
+}
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.login-card-split {
+  width: 900px;
+  height: 480px;
+  display: flex;
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
+}
+
+/* =========================
+   LEFT PANEL (BALLPIT)
+========================= */
+
+.login-left-panel {
+  width: 42%;
   position: relative;
   overflow: hidden;
-  font-family: "Noto Sans", system-ui, sans-serif;
-}
 
-/* ===== AURA ANIMATION ===== */
-.aura {
-  position: absolute;
-  width: 520px;
-  height: 520px;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.35;
-  animation: auraFloat 12s ease-in-out infinite alternate;
-}
+  background: linear-gradient(135deg, #009999, #006666);
+  color: #ffffff;
 
-.aura-1 {
-  /* background: #38bdf8; */
-  top: 10%;
-  left: 15%;
-}
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);
 
-.aura-2 {
-  /* background: #6366f1; */
-  bottom: 10%;
-  right: 15%;
-  animation-delay: 3s;
-}
-
-@keyframes auraFloat {
-  from {
-    transform: translateY(-30px) scale(1);
-  }
-  to {
-    transform: translateY(30px) scale(1.1);
-  }
-}
-
-/* ===== PARTICLES ===== */
-.particle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  animation: floatParticle 18s linear infinite;
-}
-
-.p1 {
-  left: 20%;
-  bottom: -10%;
-}
-.p2 {
-  left: 50%;
-  bottom: -20%;
-  animation-delay: 6s;
-}
-.p3 {
-  left: 80%;
-  bottom: -15%;
-  animation-delay: 10s;
-}
-
-@keyframes floatParticle {
-  from {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(-120vh);
-    opacity: 1;
-  }
-}
-
-/* ===== LOGIN CARD ===== */
-.login-card {
-  position: relative;
-  z-index: 5;
-  width: 420px;
-  padding: 38px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 22px;
-  box-shadow:
-    0 30px 60px rgba(15, 23, 42, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border: 1px solid #e2e8f0;
-  backdrop-filter: blur(18px);
-  transition: transform 0.3s ease;
-}
-
-.login-card:hover {
-  transform: translateY(-6px);
-}
-
-/* ===== LOGO ===== */
-/* ===== LOGO VISIBILITY FIX ===== */
-.logo-wrapper {
-  width: 88px;
-  height: 88px;
-  margin: 0 auto 22px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.85)
-  );
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.45),
-
-    
-    0 0 40px rgba(56, 189, 248, 0.35);
 }
 
-/* Logo itself */
-.login-logo {
-  height: 52px;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+/* Ballpit canvas wrapper */
+.ballpit-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
 }
 
+/* Overlay text on Ballpit */
+.left-overlay-text {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
 
-/* ===== TITLES ===== */
-.login-title {
   text-align: center;
-  color: #0f172a;
-  font-size: 23px;
+  padding: 10px 18px;
+
+  /* subtle background for readability */
+  /* background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(7px);
+  border-radius: 10px; */
+}
+
+.left-overlay-text h2 {
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
   font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+
+  color: #ffffff;
+  opacity: 1;
+
+  /* text clarity */
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  line-height: 1.35;
 }
 
-.login-subtitle {
-  text-align: center;
-  color: #475569;
+
+/* =========================
+   RIGHT PANEL (LOGIN)
+========================= */
+
+.login-right-panel {
+  width: 58%;
+  padding: 45px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.logo-row img {
+  height: 56px;
+}
+
+.logo-row span {
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #0f172a;
+}
+
+/* =========================
+   HEADINGS / TEXT
+========================= */
+
+.login-right-panel h3 {
+  font-family: "Inter", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.subtext {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
-  margin-bottom: 28px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #64748b;
+  margin-bottom: 26px;
 }
 
+/* =========================
+   INPUT FIELDS
+========================= */
 
-/* ===== FIELDS ===== */
-.login-field {
+.input-box {
+  position: relative;
   margin-bottom: 18px;
 }
 
-.login-field label {
-  font-size: 13px;
-  color: #334155;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.login-field input {
+.input-box input {
   width: 100%;
-  padding: 13px;
-  border-radius: 14px;
+  padding: 12px 44px;
+  border-radius: 22px;
   border: 1px solid #cbd5e1;
   background: #f8fafc;
+
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
   color: #0f172a;
-  transition: all 0.2s ease;
 }
 
-.login-field input:focus {
+.input-box input::placeholder {
+  color: #94a3b8;
+}
+
+.input-box input:focus {
   outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25);
+  border-color: #009999;
+  box-shadow: 0 0 0 3px rgba(0, 153, 153, 0.15);
 }
 
+.input-box svg {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+}
 
-/* ===== BUTTON ===== */
-.login-card button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 14px;
-  border-radius: 16px;
-  border: none;
-  background: linear-gradient(135deg, #0ea5e9, #2563eb);
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
+/* Password eye icon */
+.eye-inside {
+  position: absolute;
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
-  transition: all 0.25s ease;
+  color: #64748b;
 }
 
-.login-card button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.35);
+/* =========================
+   LOGIN BUTTON
+========================= */
+
+.login-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
 }
 
+.login-right-panel button {
+  width: 160px;
+  padding: 12px 0;
 
-.login-card button:disabled {
+  border-radius: 22px;
+  border: none;
+
+  background: #1d4ed8;
+  color: #ffffff;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.login-right-panel button:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+.login-right-panel button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* ===== ERROR ===== */
-.login-error {
-  margin-top: 14px;
+/* =========================
+   FOOTER
+========================= */
+
+.powered {
+  margin-top: 26px;
   text-align: center;
-  font-size: 13px;
-  color: #fecaca;
+
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+  .login-card-split {
+    width: 95%;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .login-left-panel {
+    clip-path: none;
+    width: 100%;
+    height: 160px;
+  }
+
+  .login-right-panel {
+    width: 100%;
+    padding: 36px;
+  }
 }
