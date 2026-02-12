@@ -19,6 +19,7 @@ export const createAssignTeamSchema = async (db) => {
 
       FOREIGN KEY (department_id)
         REFERENCES departments(id)
-    )
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB
   `);
 };

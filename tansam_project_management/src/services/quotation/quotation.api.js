@@ -1,4 +1,6 @@
-const QUOTATIONS_URL = "http://localhost:9899/api/quotations";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const QUOTATIONS_URL = `${API_BASE}/quotations`;
 
 // safe headers
 const getAuthHeaders = () => {

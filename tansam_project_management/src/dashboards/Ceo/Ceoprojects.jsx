@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/Ceoprojects.css";
 
 import { fetchProjects } from "../../services/project.api";
-import { fetchProjectFollowups } from "../../services/projectfollowup.api";
+import { fetchProjectFollowups } from "../../services/projectFollowup.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
 const ROWS_PER_PAGE = 10;
 

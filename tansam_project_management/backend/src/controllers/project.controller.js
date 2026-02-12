@@ -1,7 +1,6 @@
 import { connectDB } from "../config/db.js";
 import { initSchemas } from "../schema/main.schema.js";
 
-
 /* ======================================================
    CREATE PROJECT
 ====================================================== */
@@ -9,6 +8,10 @@ export const createProject = async (req, res) => {
   try {
     const db = await connectDB();
     await initSchemas(db, { project: true });
+
+    // 🔐 USER INFO FROM HEADERS
+    const userId = req.headers["x-user-id"];
+    const role = req.headers["x-user-role"];
 
     const {
       projectType,
@@ -32,7 +35,7 @@ export const createProject = async (req, res) => {
     let finalClientName = clientName;
     let oppId = null;
 
-    // ✅ MUST BE DECLARED (THIS FIXES YOUR ERROR)
+    // 🔧 REQUIRED FIELDS
     let lab_id = null;
     let lab_name = null;
     let work_category_id = null;
@@ -71,7 +74,6 @@ export const createProject = async (req, res) => {
         return res.status(400).json({ message: "Invalid opportunity ID" });
       }
 
-      // ✅ COPY MASTER DATA (SAFE)
       lab_id = opp.lab_id;
       lab_name = opp.lab_name;
       work_category_id = opp.work_category_id;
@@ -116,9 +118,11 @@ export const createProject = async (req, res) => {
         status,
         quotation_number,
         po_number,
-        po_file
+        po_file,
+
+        created_by
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         finalProjectName,
@@ -139,6 +143,8 @@ export const createProject = async (req, res) => {
         normalizedType === "CUSTOMER" ? quotationNumber : null,
         normalizedType === "CUSTOMER" ? poNumber : null,
         normalizedType === "CUSTOMER" ? poFilePath : null,
+
+        userId, // 🔥 TEAM LEAD ID
       ]
     );
 
@@ -170,36 +176,46 @@ export const getProjects = async (req, res) => {
   try {
     const db = await connectDB();
 
-    const [rows] = await db.execute(`
+    const userId = req.headers["x-user-id"];
+    const role = req.headers["x-user-role"];
+
+    let query = `
       SELECT
         p.id,
-        p.project_reference AS projectReference,
         p.project_name AS projectName,
         p.client_name AS clientName,
         p.project_type AS projectType,
-        p.opportunity_id AS opportunityId,
-
+        p.start_date AS startDate,
+        p.end_date AS endDate,
+        p.status,
         p.client_type_name AS clientType,
-        p.work_category_name AS workCategory,
-        p.lab_name AS labNames,
 
+        -- 🔽 FROM opportunities_coordinator
         o.contact_person AS contactPerson,
         o.contact_email AS contactEmail,
         o.contact_phone AS contactPhone,
-        o.assigned_to AS assignedTo,
 
-        p.start_date AS startDate,
-        p.end_date AS endDate,
-        p.status
+        p.created_by
       FROM projects p
       LEFT JOIN opportunities_coordinator o
         ON p.opportunity_id = o.opportunity_id
-      ORDER BY p.id DESC
-    `);
+    `;
 
+    let params = [];
+
+    // 🔐 TEAM LEAD → only own projects
+    if (role === "TEAM LEAD") {
+      query += ` WHERE p.created_by = ?`;
+      params.push(userId);
+    }
+
+    query += ` ORDER BY p.id DESC`;
+
+    const [rows] = await db.execute(query, params);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Get projects error:", err);
+    res.status(500).json({ message: "Failed to fetch projects" });
   }
 };
 
