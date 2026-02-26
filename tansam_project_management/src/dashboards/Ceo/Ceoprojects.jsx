@@ -338,7 +338,12 @@ useEffect(() => {
 
   const formatDate = (date) => {
     if (!date) return "—";
-    return new Date(date).toISOString().split("T")[0];
+
+    const d = new Date(date);
+
+    if (isNaN(d.getTime())) return "—"; // ✅ prevents crash
+
+    return d.toISOString().split("T")[0];
   };
 
   const totalPages = Math.ceil(filteredProjects.length / ROWS_PER_PAGE);
