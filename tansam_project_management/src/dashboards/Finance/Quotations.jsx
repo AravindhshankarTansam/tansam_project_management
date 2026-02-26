@@ -240,32 +240,7 @@ export default function Quotations() {
 
     loadWorkCategories();
   }, []);
-// useEffect(() => {
-//   setNewQuotation((prev) => {
-//     if (prev.quotationStatus === "Approved") {
-//       if (prev.paymentPhase === "Started") return prev;
 
-//       return {
-//         ...prev,
-//         paymentPhase: "Started",
-//       };
-//     } else {
-//       if (prev.paymentPhase === "Not Started") return prev;
-
-//       return {
-//         ...prev,
-//         paymentPhase: "Not Started",
-//         revisedCost: "",
-//         poReceived: "No",
-//         poNumber: "",
-//         remarks: "",
-//         paymentReceived: "No",
-//         paymentReceivedDate: "",
-//         paymentAmount: "",
-//         paymentPendingReason: "",
-//       };
-//     }
-//   });
 // }, [newQuotation.quotationStatus]);
   const initializePaymentFields = (status, currentData) => {
     if (status === "Approved") {
@@ -693,7 +668,7 @@ const handleEdit = (quotation) => {
                   <th>Description</th>
                   <th>Quote Value</th>
                   <th>Date</th>
-                  <th>Actions</th> {/* Only in Quotation tab */}
+                  <th>Actions</th>
                 </>
               ) : (
                 <>

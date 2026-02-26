@@ -1,17 +1,20 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 /* 🔐 AUTH HEADERS (same as coordinator/admin) */
-const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+export const getAuthHeaders = () => {
+  const storedUser = sessionStorage.getItem("user");
 
-  if (!user) {
-    throw new Error("User not logged in");
-  }
+  if (!storedUser) return {};
+
+  const user = JSON.parse(storedUser);
+
+  if (!user) return {};
 
   return {
+    "Content-Type": "application/json",
     "x-user-id": user.id,
     "x-user-role": user.role,
-    "x-user-name": user.username,
+    "x-user-name": user.name,
   };
 };
 

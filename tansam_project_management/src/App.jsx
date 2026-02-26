@@ -47,15 +47,23 @@ import CeoDbView from "./dashboards/Ceo/CeoDbView.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const PrivateRoute = ({ children }) =>
-    user ? children : <Navigate to="/" replace />;
+  /* ✅ Private Route */
+  const PrivateRoute = ({ children }) => {
+    if (loading) return null; // prevents redirect during refresh
+    return user ? children : <Navigate to="/" replace />;
+  };
 
+  if (loading) return null; 
   return (
     <BrowserRouter>
       <Routes>

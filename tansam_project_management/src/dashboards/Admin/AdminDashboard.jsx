@@ -74,14 +74,14 @@ const AdminDashboard = () => {
 
   return (
     <Box className="siemens-dashboard">
-      <Box className="siemens-header">
+      {/* <Box className="siemens-header">
         <Typography className="siemens-main-title">
           Admin Overview
         </Typography>
         <Typography className="siemens-subtitle">
           System Statistics & Management Summary
         </Typography>
-      </Box>
+      </Box> */}
 
       <Grid container spacing={4}>
         {/* 3 per row */}
