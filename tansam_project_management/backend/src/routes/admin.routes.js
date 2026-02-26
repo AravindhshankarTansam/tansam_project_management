@@ -17,7 +17,8 @@ import {
   updateUser,
   getClientTypes,
   createClientType,
-  updateClientType
+  updateClientType,
+  getAdminDashboardCounts,
 } from "../controllers/admin.controller.js";
 import {getOpportunities,} from "../controllers/coordinator.controller.js";
 
@@ -87,6 +88,7 @@ router.get(
   roleMiddleware(["ADMIN"]),
   getOpportunities
 );
+router.get("/dashboard-counts", getAdminDashboardCounts);
 
 
 export default router;
