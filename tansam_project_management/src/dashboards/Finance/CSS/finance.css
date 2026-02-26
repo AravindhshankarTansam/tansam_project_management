@@ -72,8 +72,7 @@ tbody td {
 }
 
 .btn-edit { background-color: #e0e0ff; }
-.btn-delete { background-color: #ffe0e0; }
-.pagination {
+.btn-delete { background-color: #ffe0e0;  
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,24 +80,28 @@ tbody td {
   margin-top: 16px;
 }
 
+.pagination {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .page-btn {
   padding: 6px 12px;
-  border: 1px solid #ccc;
-  background: #fff;
+  border: 1px solid #cbd5e1;
+  background: white;
   cursor: pointer;
-  border-radius: 4px;
 }
 
 .page-btn.active {
-  background: #2563eb;
-  color: #fff;
-  border-color: #2563eb;
-  font-weight: 600;
+  background: #009999;
+  color: white;
+  border-color: #009999;
 }
 
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.dots {
+  padding: 0 6px;
+  color: #94a3b8;
 }
 
 
@@ -898,4 +901,19 @@ button.btn-save:hover {
 
 .react-select__multi-value__remove {
   margin-left: auto;
+}
+.btn-clear-filters {
+  font-size: 22px;        /* slightly smaller icon */
+  background: rgb(243, 77, 77);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;     /* slightly smaller radius */
+  padding: 4px 8px;       /* smaller box */
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.btn-clear-filters:hover {
+  background: #e0f2f1;
 }

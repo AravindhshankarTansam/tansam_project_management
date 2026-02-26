@@ -23,7 +23,7 @@ import Select from "react-select";
 export default function Quotations() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -348,8 +348,14 @@ const filtered = data.filter((q) => {
   return clientMatch && categoryMatch && labMatch;
 });
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+
+const paginated = filtered.slice(
+  (page - 1) * pageSize,
+  page * pageSize
+);
+
+const totalPages = Math.ceil(filtered.length / pageSize);
 
 const handleEdit = (quotation) => {
   setEditId(quotation.id);
@@ -511,7 +517,22 @@ const handleEdit = (quotation) => {
       alert("Error saving quotation");
     }
   };
+const getVisiblePages = () => {
+  const pages = [];
+  const maxVisible = 5;
+  let start = Math.max(1, page - 2);
+  let end = Math.min(totalPages, start + maxVisible - 1);
 
+  if (end - start < maxVisible - 1) {
+    start = Math.max(1, end - maxVisible + 1);
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+};
   const deleteRow = async (id) => {
     if (window.confirm("Are you sure you want to delete this quotation?")) {
       try {
@@ -642,11 +663,11 @@ const handleEdit = (quotation) => {
         />
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
-          ✕
+          ↻
         </button>
 
         <div className="page-size-ui">
-          <span>Show</span>
+          <span>Pages</span>
           <select
             value={pageSize}
             onChange={(e) => {
@@ -654,12 +675,12 @@ const handleEdit = (quotation) => {
               setPage(1);
             }}
           >
-            <option value={5}>5</option>
             <option value={10}>10</option>
             <option value={25}>25</option>
             <option value={50}>50</option>
+            <option value={100}>100</option>
           </select>
-          <span>per page</span>
+         
         </div>
       </div>
       <div className="tabs">
@@ -921,32 +942,39 @@ const handleEdit = (quotation) => {
       </div>
 
       {/* Pagination */}
-      <div className="pagination">
-        {/* Prev */}
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-          ← Prev
-        </button>
+   <div className="pagination">
 
-        {/* Page Numbers */}
-        {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((num) => (
-          <button
-            key={num}
-            className={`page-btn ${page === num ? "active" : ""}`}
-            onClick={() => setPage(num)}
-          >
-            {num}
-          </button>
-        ))}
+  {/* Prev */}
+  <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+      ⬅
+  </button>
 
-        {/* Next */}
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          Next →
-        </button>
-      </div>
+  {/* Show left dots */}
+  {page > 3 && <span className="dots">...</span>}
 
+  {/* Visible Pages */}
+  {getVisiblePages().map((num) => (
+    <button
+      key={num}
+      className={`page-btn ${page === num ? "active" : ""}`}
+      onClick={() => setPage(num)}
+    >
+      {num}
+    </button>
+  ))}
+
+  {/* Show right dots */}
+  {page < totalPages - 2 && <span className="dots">...</span>}
+
+  {/* Next */}
+  <button
+    disabled={page === totalPages}
+    onClick={() => setPage(page + 1)}
+  >
+   ⮕
+  </button>
+
+</div>
       {/* ✅ IMPROVED MODAL */}
       {showModal && (
         <div className="finance-modal-overlay" onClick={closeModal}>
