@@ -238,3 +238,12 @@ export const updateClientType = async (id, payload) => {
   if (!res.ok) throw new Error(data.message);
   return data;
 };
+
+export const fetchAdminDashboardCounts = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/dashboard-counts`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch dashboard counts");
+  return res.json();
+};

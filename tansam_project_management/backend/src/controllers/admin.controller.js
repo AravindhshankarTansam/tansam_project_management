@@ -488,3 +488,86 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: "Failed to update user" });
   }
 };
+
+/**
+ * GET Admin Dashboard Counts (ADMIN only)
+ */
+/**
+ * GET Admin Dashboard Detailed Counts (ADMIN only)
+ */
+export const getAdminDashboardCounts = async (req, res) => {
+  try {
+    const db = await connectDB();
+    await initSchemas(db, { admin: true });
+
+    const [
+      [roles],
+      [labs],
+      [projectTypes],
+      [clientTypes],
+      [workCategories],
+      [users],
+    ] = await Promise.all([
+      db.execute(`
+        SELECT 
+          COUNT(*) AS total,
+          SUM(status='ACTIVE') AS active,
+          SUM(status='INACTIVE') AS inactive
+        FROM roles
+      `),
+
+      db.execute(`
+        SELECT 
+          COUNT(*) AS total,
+          SUM(status='ACTIVE') AS active,
+          SUM(status='INACTIVE') AS inactive
+        FROM labs_admin
+      `),
+
+      db.execute(`
+        SELECT 
+          COUNT(*) AS total,
+          SUM(status='ACTIVE') AS active,
+          SUM(status='INACTIVE') AS inactive
+        FROM project_types_admin
+      `),
+
+      db.execute(`
+        SELECT 
+          COUNT(*) AS total,
+          SUM(status='ACTIVE') AS active,
+          SUM(status='INACTIVE') AS inactive
+        FROM client_types_admin
+      `),
+
+      db.execute(`
+        SELECT 
+          COUNT(*) AS total,
+          SUM(status='ACTIVE') AS active,
+          SUM(status='INACTIVE') AS inactive
+        FROM work_categories
+      `),
+
+      db.execute(`
+        SELECT 
+          COUNT(*) AS total,
+          SUM(status='ACTIVE') AS active,
+          SUM(status='INACTIVE') AS inactive
+        FROM users_admin
+      `),
+    ]);
+
+    res.json({
+      roles: roles[0],
+      labs: labs[0],
+      projectTypes: projectTypes[0],
+      clientTypes: clientTypes[0],
+      workCategories: workCategories[0],
+      users: users[0],
+    });
+
+  } catch (err) {
+    console.error("Admin detailed counts error:", err);
+    res.status(500).json({ message: "Failed to fetch detailed dashboard counts" });
+  }
+};
