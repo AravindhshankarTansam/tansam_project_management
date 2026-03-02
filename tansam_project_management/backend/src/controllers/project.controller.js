@@ -191,6 +191,9 @@ export const getProjects = async (req, res) => {
         p.client_type_name AS clientType,
 
         -- 🔽 FROM opportunities_coordinator
+        p.opportunity_id AS opportunityId,
+        p.lab_name AS labNames,
+        p.work_category_name AS workCategory, 
         o.contact_person AS contactPerson,
         o.contact_email AS contactEmail,
         o.contact_phone AS contactPhone,

@@ -32,70 +32,8 @@ const [_filteredLabPayments, setFilteredLabPayments] = useState({});
 //     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
 // }, [quotations]);
 
-useEffect(() => {
-  const payments = {};
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (!oppId) return;
 
-    const revenue = quotations
-      .filter(
-        (q) =>
-          q.opportunity_id?.trim()?.toUpperCase() === oppId &&
-          q.quotationStatus === "Approved" &&
-          q.paymentReceived === "Yes"
-      )
-      .reduce((sum, q) => sum + Number(q.paymentAmount || 0), 0);
 
-    if (!revenue) return;
-
-    const labs = Array.isArray(project.labNames)
-      ? project.labNames
-      : project.labNames ? [project.labNames] : [];
-
-    labs.forEach((lab) => {
-      const key = lab.trim();
-      payments[key] = (payments[key] || 0) + revenue;
-    });
-  });
-
-  setAllLabPayments(payments);
-}, [projects, quotations]);
-useEffect(() => {
-  if (!projects || !projectPayments) return;
-
-  if (selectedLabs.length === 0) {
-    setFilteredLabPayments(allLabPayments); // show all if no filter
-    return;
-  }
-
-  const payments = {};
-
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (!oppId) return;
-
-    // Normalize labs
-    let projectLabNames = [];
-    if (Array.isArray(project.labNames)) projectLabNames = project.labNames;
-    else if (typeof project.labNames === "string") {
-      try {
-        const parsed = JSON.parse(project.labNames);
-        projectLabNames = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        projectLabNames = project.labNames.split(",").map((l) => l.trim());
-      }
-    }
-
-    projectLabNames.forEach((lab) => {
-      if (selectedLabs.includes(lab)) {
-        payments[lab] = (payments[lab] || 0) + (projectPayments[oppId] || 0);
-      }
-    });
-  });
-
-  setFilteredLabPayments(payments);
-}, [projects, projectPayments, selectedLabs, allLabPayments]);
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -108,19 +46,19 @@ useEffect(() => {
       }
     })();
   }, []);
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await getQuotations();
-        setQuotations(data || []);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load quotation data");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const data = await getQuotations();
+  //       setQuotations(data || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //       toast.error("Failed to load quotation data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   })();
+  // }, []);
 useEffect(() => {
   const payments = {};
 
@@ -189,28 +127,34 @@ useEffect(() => {
 useEffect(() => {
   (async () => {
     try {
-      const data = await getQuotations(); // fetch all quotations
+      const data = await getQuotations();
       if (!data) return;
 
       const paymentsMap = {};
+data.forEach((q) => {
+  if (q.quotationStatus === "Approved") {
 
-      data.forEach((q) => {
-        // Only consider approved and received payments
-        if (q.quotationStatus === "Approved" && q.paymentReceived === "Yes") {
-          const oppId = q.opportunity_id?.trim().toUpperCase(); // normalize key
-          const amount = Number(q.paymentAmount || 0);
+    const oppId = q.opportunity_id?.trim().toUpperCase();
+    if (!oppId) return;
 
-          if (oppId) {
-            // accumulate if multiple quotations for same opportunity
-            paymentsMap[oppId] = (paymentsMap[oppId] || 0) + amount;
-          }
+    let total = 0;
 
-          console.log("Quotation:", q.quotationNo, "opportunity_id:", q.opportunity_id, "paymentAmount:", q.paymentAmount);
-        }
-      });
+    try {
+      const items = JSON.parse(q.itemDetails || "[]");
+      total = items.reduce(
+        (sum, item) => sum + Number(item.total || 0),
+        0
+      );
+    } catch {}
 
-      console.log("Payments Map:", paymentsMap);
+    paymentsMap[oppId] =
+      (paymentsMap[oppId] || 0) + total;
+  }
+});
+
+      console.log("Correct Payments Map:", paymentsMap);
       setProjectPayments(paymentsMap);
+
     } catch (err) {
       console.error(err);
       toast.error("Failed to load quotation payments");
@@ -533,7 +477,7 @@ useEffect(() => {
                     <td>{p.clientName}</td>
                     <td>
                       <span className="pill pill-client">
-                        {p.clientType || "—"}
+                        {p.client_Type || "—"}
                       </span>
                     </td>
                     <td>
@@ -557,7 +501,13 @@ useEffect(() => {
                     </td>
                     <td>{p.workCategory || "—"}</td>
           <td>
-  ₹{projectPayments[p.opportunityId?.trim().toUpperCase()] || "0"}
+{(() => {
+  const key = p.opportunityId
+    ? p.opportunityId.trim().toUpperCase()
+    : "";
+
+  return `₹${(projectPayments[key] || 0).toLocaleString("en-IN")}`;
+})()}
 </td>
 
 
