@@ -917,3 +917,9 @@ button.btn-save:hover {
 .btn-clear-filters:hover {
   background: #e0f2f1;
 }
+.btn-generate {
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}

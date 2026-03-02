@@ -859,7 +859,7 @@ const getVisiblePages = () => {
                             }}
                             title="Generate Quotation"
                           >
-                            <FaFilePdf size={30} />
+                            <FaFilePdf size={30} color="#E10600" />
                           </button>
                         )}
 
