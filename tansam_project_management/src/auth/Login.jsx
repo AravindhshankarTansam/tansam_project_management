@@ -24,7 +24,7 @@ function Login({ setUser }) {
     try {
       const data = await loginUser(email, password);
       setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
+      sessionStorage.setItem("user", JSON.stringify(data));
       navigate(data.route);
     } catch (err) {
       toast.error(err.message || "Invalid credentials");

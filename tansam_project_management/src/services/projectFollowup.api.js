@@ -5,16 +5,37 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const SERVER_URL = BASE_URL.replace("/api", "");
 
 /* 🔐 AUTH HEADERS */
-const getAuthHeaders = (isJson = false) => {
-  const raw = localStorage.getItem("user");
-  if (!raw) throw new Error("User not logged in");
+export const getAuthHeaders = (isJson = false) => {
+  const raw = sessionStorage.getItem("user");
 
-  const user = JSON.parse(raw);
+  if (!raw) {
+    console.warn("User not logged in");
+    return isJson
+      ? { "Content-Type": "application/json" }
+      : {};
+  }
+
+  let user;
+  try {
+    user = JSON.parse(raw);
+  } catch {
+    console.error("Invalid user data in sessionStorage");
+    return isJson
+      ? { "Content-Type": "application/json" }
+      : {};
+  }
+
+  if (!user?.id) {
+    console.warn("User missing id");
+    return isJson
+      ? { "Content-Type": "application/json" }
+      : {};
+  }
 
   const headers = {
     "x-user-id": user.id,
     "x-user-role": user.role,
-    "x-user-name": user.username,
+    "x-user-name": user.username || user.name || "",
   };
 
   if (isJson) {
@@ -23,7 +44,6 @@ const getAuthHeaders = (isJson = false) => {
 
   return headers;
 };
-
 
 /* ============================
    GET PROJECT FOLLOWUPS
