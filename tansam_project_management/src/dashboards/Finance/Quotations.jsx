@@ -27,7 +27,7 @@ export default function Quotations() {
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-// const API_BASE = import.meta.env.VITE_API_BASE_URL;
+// const API_BASE =  "http://localhost:9899/api";
 //   const SERVER_URL = API_BASE.replace("/api", "");
   const [_workCategories, setWorkCategories] = useState([]);
   const [opportunities, setOpportunities] = useState([]);

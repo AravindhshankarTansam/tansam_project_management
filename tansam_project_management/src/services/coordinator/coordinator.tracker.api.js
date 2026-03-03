@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE =  "http://localhost:9899/api";
 const BASE_COORDINATOR_URL = `${API_BASE}/coordinator`;
 
 export const getAuthHeaders = () => {

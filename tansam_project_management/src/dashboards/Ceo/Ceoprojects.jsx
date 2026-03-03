@@ -270,7 +270,24 @@ useEffect(() => {
       return matchesSearch && matchesClient && matchesType && matchesLabs;
     });
   }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
+const dynamicFilteredRevenue = useMemo(() => {
+  const uniqueOppIds = new Set();
 
+  filteredProjects.forEach((project) => {
+    const oppId = project.opportunityId?.trim()?.toUpperCase();
+    if (oppId) {
+      uniqueOppIds.add(oppId);
+    }
+  });
+
+  let total = 0;
+
+  uniqueOppIds.forEach((oppId) => {
+    total += projectPayments[oppId] || 0;
+  });
+
+  return total;
+}, [filteredProjects, projectPayments]);
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedClient("");
@@ -429,16 +446,9 @@ useEffect(() => {
 <div className="lab-cards">
   <div className="lab-card total-revenue">
     <h4>Total Revenue</h4>
-    <p>
-      ₹
-      {(selectedLabs.length > 0
-        ? _labPayments.total || 0     // ✅ your existing correct total
-        : Object.values(allLabPayments).reduce(
-            (sum, v) => sum + Number(v || 0),
-            0
-          )
-      ).toLocaleString("en-IN")}
-    </p>
+<p>
+  ₹{dynamicFilteredRevenue.toLocaleString("en-IN")}
+</p>
   </div>
 </div>
 
