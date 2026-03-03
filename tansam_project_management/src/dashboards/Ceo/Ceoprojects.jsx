@@ -102,7 +102,7 @@ useEffect(() => {
       const paymentsMap = {};
 
       data.forEach((q) => {
-        if (q.quotationStatus === "Approved") {
+        if (q.quotationStatus === "Approved" ||q.quotationStatus === "") {
           const oppId = q.opportunity_id?.trim().toUpperCase();
           if (!oppId) return;
 
