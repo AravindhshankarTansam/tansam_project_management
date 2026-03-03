@@ -59,38 +59,7 @@ const [_filteredLabPayments, setFilteredLabPayments] = useState({});
   //     }
   //   })();
   // }, []);
-useEffect(() => {
-  const payments = {};
 
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (!oppId) return;
-
-    // sum approved & received quotations for this opportunity
-    const totalRevenue = quotations
-      .filter(
-        (q) =>
-          q.opportunity_id?.trim()?.toUpperCase() === oppId &&
-          q.quotationStatus === "Approved" &&
-          q.paymentReceived === "Yes"
-      )
-      .reduce((sum, q) => sum + Number(q.paymentAmount || 0), 0);
-
-    if (!totalRevenue) return;
-
-    // get labs for project
-    const labs = Array.isArray(project.labNames)
-      ? project.labNames
-      : (project.labNames ? [project.labNames] : []);
-
-    labs.forEach((lab) => {
-      const key = lab.trim();
-      payments[key] = (payments[key] || 0) + totalRevenue;
-    });
-  });
-
-  setLabPayments(payments);
-}, [projects, quotations]);
   /* ================= LOAD FOLLOWUP STATUS ================= */
   useEffect(() => {
     if (projects.length === 0) return;
@@ -131,74 +100,26 @@ useEffect(() => {
       if (!data) return;
 
       const paymentsMap = {};
-data.forEach((q) => {
-  if (q.quotationStatus === "Approved") {
 
-    const oppId = q.opportunity_id?.trim().toUpperCase();
-    if (!oppId) return;
+      data.forEach((q) => {
+        if (q.quotationStatus === "Approved") {
+          const oppId = q.opportunity_id?.trim().toUpperCase();
+          if (!oppId) return;
 
-    let total = 0;
+          const amount = Number(q.paymentAmount || 0);
 
-    try {
-      const items = JSON.parse(q.itemDetails || "[]");
-      total = items.reduce(
-        (sum, item) => sum + Number(item.total || 0),
-        0
-      );
-    } catch {}
+          paymentsMap[oppId] =
+            (paymentsMap[oppId] || 0) + amount;
+        }
+      });
 
-    paymentsMap[oppId] =
-      (paymentsMap[oppId] || 0) + total;
-  }
-});
-
-      console.log("Correct Payments Map:", paymentsMap);
       setProjectPayments(paymentsMap);
-
     } catch (err) {
-      console.error(err);
       toast.error("Failed to load quotation payments");
     }
   })();
 }, []);
 
-useEffect(() => {
-  if (!projects || !projectPayments || selectedLabs.length === 0) {
-    setLabPayments({});
-    return;
-  }
-
-  let totalRevenue = 0;
-
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim().toUpperCase();
-    if (!oppId) return;
-
-    // Normalize labNames
-    let projectLabNames = [];
-    if (Array.isArray(project.labNames)) {
-      projectLabNames = project.labNames;
-    } else if (typeof project.labNames === "string") {
-      try {
-        const parsed = JSON.parse(project.labNames);
-        projectLabNames = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        projectLabNames = project.labNames.split(",").map((l) => l.trim());
-      }
-    }
-
-    // ✅ ADD REVENUE ONLY ONCE PER PROJECT
-    const hasSelectedLab = selectedLabs.some((lab) =>
-      projectLabNames.includes(lab)
-    );
-
-    if (hasSelectedLab) {
-      totalRevenue += projectPayments[oppId] || 0;
-    }
-  });
-
-  setLabPayments({ total: totalRevenue });
-}, [projects, projectPayments, selectedLabs]);
 
 
 
@@ -270,7 +191,8 @@ useEffect(() => {
       return matchesSearch && matchesClient && matchesType && matchesLabs;
     });
   }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
-const dynamicFilteredRevenue = useMemo(() => {
+
+  const dynamicFilteredRevenue = useMemo(() => {
   const uniqueOppIds = new Set();
 
   filteredProjects.forEach((project) => {
@@ -288,6 +210,7 @@ const dynamicFilteredRevenue = useMemo(() => {
 
   return total;
 }, [filteredProjects, projectPayments]);
+
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedClient("");
