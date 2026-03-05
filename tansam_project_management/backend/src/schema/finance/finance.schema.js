@@ -43,7 +43,7 @@ await db.execute(`
     paymentPhase   ENUM('Started', 'Not Started')
     NOT NULL DEFAULT 'Started',
     paymentReceived VARCHAR(10),
-    paymentAmount DECIMAL(12,2),
+    paymentAmount VARCHAR(10),
     paymentPendingReason TEXT,    
     itemDetails VARCHAR(255),
     poNumber VARCHAR(100),

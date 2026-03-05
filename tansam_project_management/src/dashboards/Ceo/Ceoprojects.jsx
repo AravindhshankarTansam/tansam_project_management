@@ -192,23 +192,16 @@ useEffect(() => {
     });
   }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
 
-  const dynamicFilteredRevenue = useMemo(() => {
-  const uniqueOppIds = new Set();
+const dynamicFilteredRevenue = useMemo(() => {
+  return filteredProjects.reduce((total, project) => {
+    // Take amount from project itself or fallback to projectPayments
+    const rawAmount =
+      project.paymentAmount ?? projectPayments[project.opportunityId?.trim()?.toUpperCase()] ?? 0;
 
-  filteredProjects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (oppId) {
-      uniqueOppIds.add(oppId);
-    }
-  });
+    const amount = parseFloat(String(rawAmount).replace(/₹|,/g, '').trim());
 
-  let total = 0;
-
-  uniqueOppIds.forEach((oppId) => {
-    total += projectPayments[oppId] || 0;
-  });
-
-  return total;
+    return total + (isNaN(amount) ? 0 : amount);
+  }, 0);
 }, [filteredProjects, projectPayments]);
 
   const clearFilters = () => {
