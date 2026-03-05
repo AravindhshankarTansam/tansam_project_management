@@ -3,9 +3,11 @@ import {
   getQuotations,
   addQuotation,
   updateQuotation,
+  getTotalRevenue,
   deleteQuotation,
   downloadQuotationDocx,
    generateQuotationNo,
+   
 } from "../controllers/quotation.controller.js";
 
 import { authMiddleware } from "../middlewares/auth.middleware.js";
@@ -42,6 +44,11 @@ router.put(
   updateQuotation
 );
 
+router.get(
+  "/total-revenue",
+  roleMiddleware(["FINANCE", "TEAM LEAD", "COORDINATOR","CEO"]), // ← TEAM LEAD now allowed
+  getTotalRevenue
+);
 router.delete(
   "/:id",
   roleMiddleware(["FINANCE","COORDINATOR"]), // ← COORDINATOR now allowed

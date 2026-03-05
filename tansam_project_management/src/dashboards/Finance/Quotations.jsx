@@ -986,7 +986,7 @@ const getVisiblePages = () => {
       </div>
 
       {/* Pagination */}
-         <div className="pagination">
+         <div className="pagination_quotation">
 
   {/* Prev */}
   <button disabled={page === 1} onClick={() => setPage(page - 1)}>

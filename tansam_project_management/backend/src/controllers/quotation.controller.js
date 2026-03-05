@@ -3,6 +3,7 @@ import { Document, Packer, Paragraph, TextRun } from "docx";
 import { createQuotationDocx } from "../utils/QuotationDocx.js";
 import { initSchemas } from "../schema/main.schema.js";
 import { G } from "@react-pdf/renderer";
+
 // Get all quotations
 
 // controllers/quotation.controller.js
@@ -645,8 +646,28 @@ await db.execute(
     res.status(500).json({ message: error.message });
   }
 };
+export const getTotalRevenue = async (req, res) => {
+  try {
+    const db = await connectDB();
 
+    const [rows] = await db.execute(`
+    SELECT COALESCE(SUM(q.paymentAmount),0) AS totalRevenue
+FROM quotations q
+WHERE q.opportunity_id IN (
+  SELECT opportunity_id FROM projects
 
+);
+    `);
+
+    res.json({
+      totalRevenue: rows[0].totalRevenue || 0
+    });
+
+  } catch (error) {
+    console.error("Revenue Fetch Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 

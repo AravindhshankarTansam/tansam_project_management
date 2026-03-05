@@ -57,7 +57,7 @@ export default function CeoQuotation() {
 
   /* ================= TOTAL VALUE ================= */
 
-  /* ================= PAGINATION ================= */
+  /* ================= pagination_quotation ================= */
   // const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -317,7 +317,7 @@ const totalPaymentReceived = useMemo(() => {
         )}
       </div>
 
-      <div className="pagination">
+      <div className="pagination_quotation">
         <button disabled={currentPage === 1} onClick={goPrev}>
           ◀ Prev
         </button>

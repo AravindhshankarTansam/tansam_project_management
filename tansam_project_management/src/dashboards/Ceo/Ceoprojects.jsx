@@ -6,13 +6,14 @@ import "./Ceocss/Ceoprojects.css";
 import { fetchProjects } from "../../services/project.api";
 import { fetchProjectFollowups } from "../../services/projectFollowup.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
+import { getTotalRevenue } from "../../services/quotation/quotation.api";
 const ROWS_PER_PAGE = 10;
 
 export default function CeoProjects() {
   const [projects, setProjects] = useState([]);
   const [followupStatuses, setFollowupStatuses] = useState({});
   const [loading, setLoading] = useState(true);
-
+const [dynamicFilteredRevenue, setDynamicFilteredRevenue] = useState(0);
   /* 🔍 FILTER STATES */
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
@@ -192,17 +193,18 @@ useEffect(() => {
     });
   }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
 
-const dynamicFilteredRevenue = useMemo(() => {
-  return filteredProjects.reduce((total, project) => {
-    // Take amount from project itself or fallback to projectPayments
-    const rawAmount =
-      project.paymentAmount ?? projectPayments[project.opportunityId?.trim()?.toUpperCase()] ?? 0;
+useEffect(() => {
+  const fetchRevenue = async () => {
+    try {
+      const data = await getTotalRevenue();
+      setDynamicFilteredRevenue(data.totalRevenue || 0);
+    } catch (error) {
+      console.error("Revenue fetch error:", error);
+    }
+  };
 
-    const amount = parseFloat(String(rawAmount).replace(/₹|,/g, '').trim());
-
-    return total + (isNaN(amount) ? 0 : amount);
-  }, 0);
-}, [filteredProjects, projectPayments]);
+  fetchRevenue();
+}, []);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -363,7 +365,7 @@ const dynamicFilteredRevenue = useMemo(() => {
   <div className="lab-card total-revenue">
     <h4>Total Revenue</h4>
 <p>
-  ₹{dynamicFilteredRevenue.toLocaleString("en-IN")}
+₹ {Number(dynamicFilteredRevenue).toLocaleString("en-IN")}
 </p>
   </div>
 </div>
