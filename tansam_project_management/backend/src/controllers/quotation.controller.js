@@ -668,12 +668,24 @@ export const getTotalRevenue = async (req, res) => {
       params.push(projectType);
     }
 
-    if (labs) {
-      const labArray = labs.split(","); // Convert CSV to array
-      const placeholders = labArray.map(() => "?").join(",");
-      query += ` AND q.lab IN (${placeholders})`; // assuming `lab` column exists in quotations table
-      params.push(...labArray);
-    }
+  if (labs) {
+  const labArray = labs.split(",");
+
+  // get lab ids from labs_admin table
+  const placeholders = labArray.map(() => "?").join(",");
+  const [labRows] = await db.execute(
+    `SELECT id FROM labs_admin WHERE name IN (${placeholders})`,
+    labArray
+  );
+
+  const labIds = labRows.map(l => l.id);
+
+  if (labIds.length) {
+    const labPlaceholders = labIds.map(() => "?").join(",");
+    query += ` AND q.lab_id IN (${labPlaceholders})`;
+    params.push(...labIds);
+  }
+}
 
     const [rows] = await db.execute(query, params);
 
