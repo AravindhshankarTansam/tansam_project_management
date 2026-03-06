@@ -1,26 +1,37 @@
 // services/generatedQuotation.api.js
 const API_BASE =  "http://localhost:9899";
 
-const GENERATED_QUOTATION_URL = `${API_BASE}/api/generatequotation`;
+const GENERATED_QUOTATION_URL = `${API_BASE}/generatequotation`;
 
-const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+export const getAuthHeaders = () => {
+  const storedUser = sessionStorage.getItem("user");
+
+  if (!storedUser) return {};
+
+  const user = JSON.parse(storedUser);
+
+  if (!user) return {};
+
   return {
     "Content-Type": "application/json",
     "x-user-id": user.id,
     "x-user-role": user.role,
-    "x-user-name": user.username,
+    "x-user-name": user.name,
   };
 };
+
 export const saveGeneratedQuotation = async (quotationFormData) => {
-  const user = JSON.parse(localStorage.getItem("user"));
+ const storedUser = sessionStorage.getItem("user");
+
+ if (!storedUser) return {};
+  const user = JSON.parse(storedUser);
 
   const res = await fetch(GENERATED_QUOTATION_URL, {
     method: "POST",
     headers: {
       "x-user-id": user.id,
       "x-user-role": user.role,
-      "x-user-name": user.username,
+      "x-user-name": user.name,
       // ❌ do NOT set Content-Type here for FormData
     },
     body: quotationFormData, // pass FormData directly
