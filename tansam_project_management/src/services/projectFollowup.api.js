@@ -2,7 +2,7 @@ const BASE_URL =  "http://localhost:9899/api";
 
 
 /* 🔑 derive server root from API url */
-const SERVER_URL = BASE_URL.replace("/api", "");
+// const SERVER_URL = BASE_URL.replace("/api", "");
 
 /* 🔐 AUTH HEADERS */
 export const getAuthHeaders = (isJson = false) => {

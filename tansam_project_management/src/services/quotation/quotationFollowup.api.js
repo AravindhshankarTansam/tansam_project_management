@@ -3,8 +3,13 @@ const API_BASE =  "http://localhost:9899/api";
 const FOLLOWUPS_URL = `${API_BASE}/api/quotation-followups`;
 
 // ✅ same safe headers
-const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+export const getAuthHeaders = () => {
+  const storedUser = localStorage.getItem("user");
+
+  if (!storedUser) return {};
+
+  const user = JSON.parse(storedUser);
+
   return {
     "Content-Type": "application/json",
     "x-user-id": user.id,

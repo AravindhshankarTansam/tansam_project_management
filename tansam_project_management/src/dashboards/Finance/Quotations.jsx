@@ -27,8 +27,8 @@ export default function Quotations() {
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-// const API_BASE =  "http://localhost:9899/api";
-//   const SERVER_URL = API_BASE.replace("/api", "");
+  // const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  // const SERVER_URL = API_BASE.replace("/api", "");
   const [_workCategories, setWorkCategories] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [labs, setLabs] = useState([]);
@@ -158,12 +158,12 @@ export default function Quotations() {
             ? JSON.parse(generated.terms)
             : baseQuotation.terms,
           termsContent: generated.termsContent || "",
-          existingSignature: generated.signature
-            ? `http://localhost:9899/${generated.signature}`
-            : null,
-          existingSeal: generated.seal
-            ? `http://localhost:9899/${generated.seal}`
-            : null,
+          // existingSignature: generated.signature
+          //   ? `${BASE_URL}/${generated.signature}`
+          //   : null,
+          // existingSeal: generated.seal
+          //   ? `${BASE_URL}/${generated.seal}`
+          //   : null,
           signature: null,
           seal: null,
         };
