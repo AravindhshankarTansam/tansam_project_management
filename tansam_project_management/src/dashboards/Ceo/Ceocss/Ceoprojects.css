@@ -335,3 +335,12 @@
   width: fit-content;
   font-size: 13px;
 }
+.filter-bar .multi-select {
+  flex: 1 0 auto;       /* allow it to shrink and grow like the other inputs */
+  min-width: 180px;     /* optional: ensures it’s not too small */
+  max-width: 240px;     /* optional: keeps it similar to other filters */
+}
+.filter-bar .multi-select-input {
+  height: 42px;          /* match the select/input height */
+  padding: 0 12px;       /* optional: vertical padding tweak */
+}

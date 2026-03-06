@@ -14,26 +14,26 @@ export default function CeoProjects() {
   const [projects, setProjects] = useState([]);
   const [followupStatuses, setFollowupStatuses] = useState({});
   const [loading, setLoading] = useState(true);
-const [dynamicFilteredRevenue, setDynamicFilteredRevenue] = useState(0);
+  const [dynamicFilteredRevenue, setDynamicFilteredRevenue] = useState(0);
   /* 🔍 FILTER STATES */
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedType, setSelectedType] = useState("");
-const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
-const [currentPage, setCurrentPage] = useState(1);
-const [quotations, setQuotations] = useState([]);
-const [_labPayments, setLabPayments] = useState({});
-const [projectPayments, setProjectPayments] = useState({});
-const [allLabPayments, setAllLabPayments] = useState({});
-const [_filteredLabPayments, setFilteredLabPayments] = useState({});
-const [labs, setLabs] = useState([]); // ← fetched from API
-// const totalRevenue = useMemo(() => {
-//   return quotations
-//     .filter(
-//       (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
-//     )
-//     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
-// }, [quotations]);
+  const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
+  const [currentPage, setCurrentPage] = useState(1);
+  const [quotations, setQuotations] = useState([]);
+  const [_labPayments, setLabPayments] = useState({});
+  const [projectPayments, setProjectPayments] = useState({});
+  const [allLabPayments, setAllLabPayments] = useState({});
+  const [_filteredLabPayments, setFilteredLabPayments] = useState({});
+  const [labs, setLabs] = useState([]); // ← fetched from API
+  // const totalRevenue = useMemo(() => {
+  //   return quotations
+  //     .filter(
+  //       (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
+  //     )
+  //     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
+  // }, [quotations]);
 
 
 
@@ -92,53 +92,53 @@ const [labs, setLabs] = useState([]); // ← fetched from API
 
     loadStatuses();
   }, [projects]);
-// After fetching projects and quotations
-// ---------------------------
-// Fetch quotations and map revenue per opportunity
-// ---------------------------
-useEffect(() => {
-  (async () => {
-    try {
-      const data = await getQuotations();
-      if (!data) return;
+  // After fetching projects and quotations
+  // ---------------------------
+  // Fetch quotations and map revenue per opportunity
+  // ---------------------------
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getQuotations();
+        if (!data) return;
 
-      const paymentsMap = {};
+        const paymentsMap = {};
 
-      data.forEach((q) => {
-        if (q.quotationStatus === "Approved" ||q.quotationStatus === "") {
-          const oppId = q.opportunity_id?.trim().toUpperCase();
-          if (!oppId) return;
+        data.forEach((q) => {
+          if (q.quotationStatus === "Approved" || q.quotationStatus === "") {
+            const oppId = q.opportunity_id?.trim().toUpperCase();
+            if (!oppId) return;
 
-          const amount = Number(q.paymentAmount || 0);
+            const amount = Number(q.paymentAmount || 0);
 
-          paymentsMap[oppId] =
-            (paymentsMap[oppId] || 0) + amount;
-        }
-      });
+            paymentsMap[oppId] =
+              (paymentsMap[oppId] || 0) + amount;
+          }
+        });
 
-      setProjectPayments(paymentsMap);
-    } catch (err) {
-      toast.error("Failed to load quotation payments");
-    }
-  })();
-}, []);
+        setProjectPayments(paymentsMap);
+      } catch (err) {
+        toast.error("Failed to load quotation payments");
+      }
+    })();
+  }, []);
 
 
-useEffect(() => {
-  const loadLabs = async () => {
-    try {
-      const labData = await fetchLabs(); // from admin.roles.api.js
-      // Map to names if API returns objects
-      const labNames = labData.map(l => l.name); 
-      setLabs(labNames);
-    } catch (err) {
-      console.error("Failed to fetch labs:", err);
-      alert("Failed to load labs");
-    }
-  };
+  useEffect(() => {
+    const loadLabs = async () => {
+      try {
+        const labData = await fetchLabs(); // from admin.roles.api.js
+        // Map to names if API returns objects
+        const labNames = labData.map(l => l.name);
+        setLabs(labNames);
+      } catch (err) {
+        console.error("Failed to fetch labs:", err);
+        alert("Failed to load labs");
+      }
+    };
 
-  loadLabs();
-}, []);
+    loadLabs();
+  }, []);
 
 
 
@@ -209,24 +209,24 @@ useEffect(() => {
     });
   }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
 
-useEffect(() => {
-  const fetchRevenue = async () => {
-    try {
-      const params = new URLSearchParams();
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        const params = new URLSearchParams();
 
-      if (selectedClient) params.append("clientName", selectedClient);
-      if (selectedType) params.append("projectType", selectedType);
-      if (selectedLabs.length > 0) params.append("labs", selectedLabs.join(",")); 
+        if (selectedClient) params.append("clientName", selectedClient);
+        if (selectedType) params.append("projectType", selectedType);
+        if (selectedLabs.length > 0) params.append("labs", selectedLabs.join(","));
 
-      const data = await getTotalRevenue(params.toString());
-      setDynamicFilteredRevenue(data.totalRevenue || 0);
-    } catch (error) {
-      console.error("Revenue fetch error:", error);
-    }
-  };
+        const data = await getTotalRevenue(params.toString());
+        setDynamicFilteredRevenue(data.totalRevenue || 0);
+      } catch (error) {
+        console.error("Revenue fetch error:", error);
+      }
+    };
 
-  fetchRevenue();
-}, [selectedClient, selectedType, selectedLabs]);
+    fetchRevenue();
+  }, [selectedClient, selectedType, selectedLabs]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -235,7 +235,7 @@ useEffect(() => {
     setSelectedLabs([]); // Clear multi-select
     setCurrentPage(1);
   };
-{/* ================= LAB PAYMENT SUMMARY ================= */}
+  {/* ================= LAB PAYMENT SUMMARY ================= */ }
 
   const formatDate = (date) => {
     if (!date) return "—";
@@ -369,28 +369,28 @@ useEffect(() => {
         </select>
 
         {/* Multi-select for Labs */}
-  <MultiSelectChips
-  options={labs}          // ← use API fetched labs
-  value={selectedLabs}
-  onChange={setSelectedLabs}
-  placeholder="Select labs..."
-/>
+        <MultiSelectChips
+          options={labs}          // ← use API fetched labs
+          value={selectedLabs}
+          onChange={setSelectedLabs}
+          placeholder="Select labs..."
+        />
 
         {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
           <button className="clear-btn" onClick={clearFilters}>
             Clear
           </button>
         )}
-{/* ================= LAB PAYMENT SUMMARY ================= */}
-{/* ================= TOTAL REVENUE CARD ================= */}
-<div className="lab-cards">
-  <div className="lab-card total-revenue">
-    <h4>Total Revenue</h4>
-<p>
-₹ {Number(dynamicFilteredRevenue).toLocaleString("en-IN")}
-</p>
-  </div>
-</div>
+        {/* ================= LAB PAYMENT SUMMARY ================= */}
+        {/* ================= TOTAL REVENUE CARD ================= */}
+        <div className="lab-cards">
+          <div className="lab-card total-revenue">
+            <h4>Total Revenue</h4>
+            <p>
+              ₹ {Number(dynamicFilteredRevenue).toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
 
 
 
@@ -450,15 +450,15 @@ useEffect(() => {
                         : p.labNames || "—"}
                     </td>
                     <td>{p.workCategory || "—"}</td>
-          <td>
-{(() => {
-  const key = p.opportunityId
-    ? p.opportunityId.trim().toUpperCase()
-    : "";
+                    <td>
+                      {(() => {
+                        const key = p.opportunityId
+                          ? p.opportunityId.trim().toUpperCase()
+                          : "";
 
-  return `₹${(projectPayments[key] || 0).toLocaleString("en-IN")}`;
-})()}
-</td>
+                        return `₹${(projectPayments[key] || 0).toLocaleString("en-IN")}`;
+                      })()}
+                    </td>
 
 
 
