@@ -7,6 +7,7 @@ import { fetchProjects } from "../../services/project.api";
 import { fetchProjectFollowups } from "../../services/projectFollowup.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
 import { getTotalRevenue } from "../../services/quotation/quotation.api";
+import { fetchLabs } from "../../services/admin/admin.roles.api";
 const ROWS_PER_PAGE = 10;
 
 export default function CeoProjects() {
@@ -25,6 +26,7 @@ const [_labPayments, setLabPayments] = useState({});
 const [projectPayments, setProjectPayments] = useState({});
 const [allLabPayments, setAllLabPayments] = useState({});
 const [_filteredLabPayments, setFilteredLabPayments] = useState({});
+const [labs, setLabs] = useState([]); // ← fetched from API
 // const totalRevenue = useMemo(() => {
 //   return quotations
 //     .filter(
@@ -122,7 +124,21 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() => {
+  const loadLabs = async () => {
+    try {
+      const labData = await fetchLabs(); // from admin.roles.api.js
+      // Map to names if API returns objects
+      const labNames = labData.map(l => l.name); 
+      setLabs(labNames);
+    } catch (err) {
+      console.error("Failed to fetch labs:", err);
+      alert("Failed to load labs");
+    }
+  };
 
+  loadLabs();
+}, []);
 
 
 
@@ -347,12 +363,12 @@ useEffect(() => {
         </select>
 
         {/* Multi-select for Labs */}
-        <MultiSelectChips
-          options={labOptions}
-          value={selectedLabs}
-          onChange={setSelectedLabs}
-          placeholder="Select labs..."
-        />
+  <MultiSelectChips
+  options={labs}          // ← use API fetched labs
+  value={selectedLabs}
+  onChange={setSelectedLabs}
+  placeholder="Select labs..."
+/>
 
         {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
           <button className="clear-btn" onClick={clearFilters}>
