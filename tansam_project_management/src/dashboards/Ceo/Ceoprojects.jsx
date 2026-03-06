@@ -212,7 +212,13 @@ useEffect(() => {
 useEffect(() => {
   const fetchRevenue = async () => {
     try {
-      const data = await getTotalRevenue();
+      const params = new URLSearchParams();
+
+      if (selectedClient) params.append("clientName", selectedClient);
+      if (selectedType) params.append("projectType", selectedType);
+      if (selectedLabs.length > 0) params.append("labs", selectedLabs.join(",")); 
+
+      const data = await getTotalRevenue(params.toString());
       setDynamicFilteredRevenue(data.totalRevenue || 0);
     } catch (error) {
       console.error("Revenue fetch error:", error);
@@ -220,7 +226,7 @@ useEffect(() => {
   };
 
   fetchRevenue();
-}, []);
+}, [selectedClient, selectedType, selectedLabs]);
 
   const clearFilters = () => {
     setSearchTerm("");

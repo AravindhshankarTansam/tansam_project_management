@@ -649,27 +649,40 @@ await db.execute(
 export const getTotalRevenue = async (req, res) => {
   try {
     const db = await connectDB();
+    const { clientName, projectType, labs } = req.query;
 
-    const [rows] = await db.execute(`
-    SELECT COALESCE(SUM(q.paymentAmount),0) AS totalRevenue
-FROM quotations q
-WHERE q.opportunity_id IN (
-  SELECT opportunity_id FROM projects
+    let query = `
+      SELECT COALESCE(SUM(q.paymentAmount), 0) AS totalRevenue
+      FROM quotations q
+      WHERE q.opportunity_id IN (SELECT opportunity_id FROM projects WHERE 1=1)
+    `;
+    const params = [];
 
-);
-    `);
+    if (clientName) {
+      query += ` AND q.clientName = ?`;
+      params.push(clientName);
+    }
 
-    res.json({
-      totalRevenue: rows[0].totalRevenue || 0
-    });
+    if (projectType) {
+      query += ` AND q.opportunity_id IN (SELECT opportunity_id FROM projects WHERE project_type = ?)`;
+      params.push(projectType);
+    }
 
+    if (labs) {
+      const labArray = labs.split(","); // Convert CSV to array
+      const placeholders = labArray.map(() => "?").join(",");
+      query += ` AND q.lab IN (${placeholders})`; // assuming `lab` column exists in quotations table
+      params.push(...labArray);
+    }
+
+    const [rows] = await db.execute(query, params);
+
+    res.json({ totalRevenue: rows[0].totalRevenue || 0 });
   } catch (error) {
     console.error("Revenue Fetch Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 // Delete quotation
 export const deleteQuotation = async (req, res) => {

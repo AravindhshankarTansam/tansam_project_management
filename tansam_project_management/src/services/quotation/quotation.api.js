@@ -60,8 +60,8 @@ export const updateQuotation = async (id, data) => {
   if (!res.ok) throw new Error("Failed to update quotation");
   return res.json();
 };
-export const getTotalRevenue = async () => {
-  const res = await fetch(`${QUOTATIONS_URL}/total-revenue`, {
+export const getTotalRevenue = async (queryString = "") => {
+  const res = await fetch(`${QUOTATIONS_URL}/total-revenue?${queryString}`, {
     headers: getAuthHeaders(),
   });
 
