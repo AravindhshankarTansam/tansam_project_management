@@ -1,5 +1,5 @@
 // services/generatedQuotation.api.js
-const API_BASE =  "http://localhost:9899/api";
+const API_BASE =  "http://localhost:9899";
 
 const GENERATED_QUOTATION_URL = `${API_BASE}/api/generatequotation`;
 
