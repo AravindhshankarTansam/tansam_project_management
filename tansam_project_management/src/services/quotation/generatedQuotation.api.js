@@ -1,5 +1,5 @@
 // services/generatedQuotation.api.js
-const API_BASE =  "http://localhost:9899";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const GENERATED_QUOTATION_URL = `${API_BASE}/generatequotation`;
 

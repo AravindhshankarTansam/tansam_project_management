@@ -1,4 +1,4 @@
-const API_BASE =  "http://localhost:9899/api";
+const API_BASE =  import.meta.env.VITE_API_BASE_URL;
 
 // adjust this to your real backend route if needed
 const BASE_URL = `${API_BASE}/ceo/forecast`;
