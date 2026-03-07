@@ -1,11 +1,21 @@
-const BASE_ADMIN_URL = "http://localhost:9899/api/admin";
+const API_BASE =  import.meta.env.VITE_API_BASE_URL;
 
-const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+const BASE_ADMIN_URL = `${API_BASE}/admin`;
+
+export const getAuthHeaders = () => {
+  const storedUser = sessionStorage.getItem("user");
+
+  if (!storedUser) return {};
+
+  const user = JSON.parse(storedUser);
+
+  if (!user) return {};
+
   return {
     "Content-Type": "application/json",
     "x-user-id": user.id,
     "x-user-role": user.role,
+    "x-user-name": user.name,
   };
 };
 
@@ -234,4 +244,13 @@ export const updateClientType = async (id, payload) => {
   const data = await res.json();
   if (!res.ok) throw new Error(data.message);
   return data;
+};
+
+export const fetchAdminDashboardCounts = async () => {
+  const res = await fetch(`${BASE_ADMIN_URL}/dashboard-counts`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch dashboard counts");
+  return res.json();
 };

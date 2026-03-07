@@ -28,20 +28,23 @@ import CeoDBroutes from "./routes/ceoDB.routes.js";
    * CORS configuration
    * Frontend: Vite (http://localhost:5173)
    */
-  app.use(
-    cors({
-      origin: "http://localhost:5173",
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: [
-          "Content-Type",
-          "x-user-id",
-          "x-user-role",
-          "x-user-name",
-          ],
-      credentials: true, // safe even if not using cookies yet
-      
-    })
-  );
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://pms.tansam.org"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "x-user-id",
+      "x-user-role",
+      "x-user-name",
+    ],
+    credentials: true,
+  })
+);
+
 
   // Parse JSON request body
   app.use(express.json());

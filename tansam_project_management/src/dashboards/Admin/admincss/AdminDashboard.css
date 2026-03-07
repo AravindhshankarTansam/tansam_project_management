@@ -1,0 +1,163 @@
+/* ==============================
+   Dashboard Background
+================================ */
+.siemens-dashboard {
+  padding: 40px 50px;
+  background: linear-gradient(180deg, #f7fbfb 0%, #eef6f6 100%);
+  min-height: 100vh;
+}
+
+/* ==============================
+   Header
+================================ */
+.siemens-header {
+  margin-bottom: 40px;
+}
+
+.siemens-main-title {
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  color: #073b3b;
+}
+
+.siemens-subtitle {
+  font-size: 14px !important;
+  color: #6b8f8f;
+  margin-top: 6px !important;
+}
+
+/* ==============================
+   Card Styling (Tighter Layout)
+================================ */
+.siemens-card {
+  border-radius: 20px !important;
+  background: #ffffff;
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.05),
+    0 10px 25px rgba(0, 153, 153, 0.08);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.siemens-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.08),
+    0 16px 35px rgba(0, 153, 153, 0.15);
+}
+
+/* Accent bar */
+.siemens-card::before {
+  content: "";
+  height: 5px;
+  width: 100%;
+  display: block;
+  background: linear-gradient(90deg, #009999, #00cccc);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+/* ==============================
+   Card Content (Reduced Padding)
+================================ */
+.siemens-card-content {
+  padding: 26px !important;
+}
+
+.siemens-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+/* ==============================
+   Icon
+================================ */
+.siemens-icon {
+  background: linear-gradient(135deg, #009999, #00c2c2);
+  color: white;
+  padding: 14px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 153, 153, 0.25);
+}
+
+/* ==============================
+   Typography
+================================ */
+.siemens-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #355f5f;
+}
+
+.siemens-total {
+  font-size: 42px !important;
+  font-weight: 700 !important;
+  margin-top: 8px !important;
+  margin-bottom: 16px !important;
+  color: #022c2c;
+}
+
+/* ==============================
+   Status Section (More Compact)
+================================ */
+.siemens-status {
+  display: flex;
+  gap: 12px;
+}
+
+.status-box {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.status-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.status-count {
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: right;
+}
+
+/* Active */
+.active-box {
+  background: rgba(0, 153, 153, 0.08);
+  border: 1px solid rgba(0, 153, 153, 0.18);
+  color: #007a7a;
+}
+
+/* Inactive */
+.inactive-box {
+  background: rgba(185, 28, 28, 0.06);
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  color: #b91c1c;
+}
+
+/* ==============================
+   Responsive
+================================ */
+@media (max-width: 768px) {
+  .siemens-dashboard {
+    padding: 25px;
+  }
+
+  .siemens-total {
+    font-size: 34px !important;
+  }
+
+  .siemens-status {
+    flex-direction: column;
+  }
+}

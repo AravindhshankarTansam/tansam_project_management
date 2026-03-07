@@ -17,47 +17,45 @@ import { createCeoForecastSchema } from "./Ceo/Ceoforecast.schema.js";
  */
 export const initSchemas = async (db, options = {}) => {
 
+  // ===== BASE TABLES FIRST (no FKs) =====
   if (options.admin) {
     await createAdminSchemas(db);
   }
 
   if (options.coordinator) {
     await createCoordinatorSchemas(db);
-    // console.log("Coordinator schemas initialized");
   }
-    if (options.project) {
-    await createProjectSchemas(db);
+
+  if (options.project) {
+    await createProjectSchemas(db);      // parent
   }
-  if (options.assignTeam) {
-    await createAssignTeamSchema(db);
-  }
-  // if (options.assignTeam) {
-  //   await createAssignTeamSchema(db);
-  // }
 
   if (options.department) {
-    await createDepartmentSchema(db);
+    await createDepartmentSchema(db);    // parent
   }
-  if (options.member) {
-  await createMemberSchema(db);
-}
 
- if (options.finance) {
-  await createQuotationFollowupsSchema(db);
-}
+  if (options.member) {
+    await createMemberSchema(db);        // parent
+  }
+
   if (options.projectType) {
     await createProjectTypeSchema(db);
   }
-   if (options.projectFollowup) {
+
+  if (options.finance) {
+    await createQuotationFollowupsSchema(db);
+  }
+
+  if (options.projectFollowup) {
     await createProjectFollowupSchema(db);
   }
-  if (options.createCeoForecastSchema){
+
+  if (options.createCeoForecastSchema) {
     await createCeoForecastSchema(db);
   }
 
- 
-
-  // future extensions 👇
-  // if (options.project) { ... }
-  // if (options.reports) { ... }
+  // ===== CHILD TABLES LAST (has FKs) =====
+  if (options.assignTeam) {
+    await createAssignTeamSchema(db);    // MUST BE LAST
+  }
 };

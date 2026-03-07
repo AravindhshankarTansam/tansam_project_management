@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 
 import { fetchProjects } from "../../../services/project.api";
-import { fetchProjectFollowups } from "../../../services/projectfollowup.api";
+import { fetchProjectFollowups } from "../../../services/projectFollowup.api";
 
 import {
   PieChart,

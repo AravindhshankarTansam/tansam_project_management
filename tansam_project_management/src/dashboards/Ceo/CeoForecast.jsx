@@ -50,19 +50,22 @@ export default function CeoForecast() {
         fetchOpportunities(),
       ]);
 
-      setRows(forecastData || []);
+      setRows(Array.isArray(forecastData) ? forecastData : []);
       setWorkCategories(wc || []);
 
       const uniqueClients = [
         ...new Set((opps || []).map(o => o.client_name).filter(Boolean)),
       ];
       setClients(uniqueClients);
-    } catch {
-      toast.error("Failed to load forecast data");
+
+    } catch (err) {
+      console.error(err); // for debugging only
+      toast.error("Server error while loading forecast data"); // only real errors
     } finally {
       setLoading(false);
     }
   };
+
 
   /* ================= ADD ROW ================= */
   const addRow = () => {
@@ -184,7 +187,8 @@ export default function CeoForecast() {
               </tr>
             ) : (
               rows.map((row, i) => (
-                <tr key={row.id || i}>
+                <tr key={`${row.id || 'new'}-${i}`}>
+
                   {/* Work Category */}
                  <td>
                     {isCEO ? (

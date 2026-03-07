@@ -206,7 +206,7 @@ import "../CSS/teammember.css";
 
         {/* MODAL */}
         {showModal && (
-          <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-overlay">
             <div className="modal" onClick={(e) => e.stopPropagation()}>
               <h3>{isEdit ? "Edit Member" : "Create Member"}</h3>
 

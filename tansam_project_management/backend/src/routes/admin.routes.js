@@ -17,7 +17,8 @@ import {
   updateUser,
   getClientTypes,
   createClientType,
-  updateClientType
+  updateClientType,
+  getAdminDashboardCounts,
 } from "../controllers/admin.controller.js";
 import {getOpportunities,} from "../controllers/coordinator.controller.js";
 
@@ -32,7 +33,7 @@ router.post("/roles", authMiddleware, roleMiddleware(["ADMIN"]), createRole);
 router.put("/roles/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateRole);
 
 // LABS (ADMIN)
-router.get("/labs", authMiddleware, roleMiddleware(["ADMIN", "FINANCE","COORDINATOR","TEAM LEAD"]), getLabs);
+router.get("/labs", authMiddleware, roleMiddleware(["ADMIN", "FINANCE","COORDINATOR","TEAM LEAD", "CEO"]), getLabs);
 router.post("/labs", authMiddleware, roleMiddleware(["ADMIN"]), createLab);
 router.put("/labs/:id", authMiddleware, roleMiddleware(["ADMIN"]), updateLab);
 
@@ -87,6 +88,7 @@ router.get(
   roleMiddleware(["ADMIN"]),
   getOpportunities
 );
+router.get("/dashboard-counts", getAdminDashboardCounts);
 
 
 export default router;

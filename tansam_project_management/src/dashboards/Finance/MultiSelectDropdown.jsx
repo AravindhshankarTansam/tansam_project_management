@@ -13,33 +13,64 @@ const MultiSelectDropdown = ({
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close on outside click
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    document.addEventListener("pointerdown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleClickOutside);
+    };
   }, []);
 
-  const toggleValue = (value) => {
-    const updated = selectedValues.includes(value)
-      ? selectedValues.filter((v) => v !== value)
-      : [...selectedValues, value];
 
-    onChange(updated);
+  const toggleValue = (value) => {
+    if (selectedValues.includes(value)) {
+      onChange(selectedValues.filter((v) => v !== value));
+    } else {
+      onChange([...selectedValues, value]);
+    }
+  };
+
+  const removeValue = (value) => {
+    onChange(selectedValues.filter((v) => v !== value));
   };
 
   return (
     <div className="multi-select" ref={dropdownRef}>
       {label && <label>{label}</label>}
 
-      <div className="dropdown-header" onClick={() => setOpen(!open)}>
-        {selectedValues.length > 0
-          ? selectedValues.join(", ")
-          : placeholder}
+      <div
+        className="dropdown-header"
+        onClick={() => setOpen(!open)}
+      >
+        {selectedValues.length === 0 ? (
+          <span className="placeholder">{placeholder}</span>
+        ) : (
+          <div className="chips-container">
+            {selectedValues.map((val) => (
+              <div key={val} className="chip">
+                {val}
+                <span
+                  className="chip-close"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeValue(val);
+                  }}
+                >
+                  ×
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {open && (
@@ -47,17 +78,20 @@ const MultiSelectDropdown = ({
           {options.length === 0 ? (
             <div className="dropdown-empty">No options</div>
           ) : (
-            options.map((opt, index) => (
-              <label key={index} className="dropdown-item">
-                <input
-                  type="checkbox"
-                  value={opt[valueKey]}
-                  checked={selectedValues.includes(opt[valueKey])}
-                  onChange={() => toggleValue(opt[valueKey])}
-                />
-                {opt[displayKey]}
-              </label>
-            ))
+            options.map((opt, index) => {
+              const value = opt[valueKey];
+              return (
+                <div
+                  key={index}
+                  className={`dropdown-item ${
+                    selectedValues.includes(value) ? "selected" : ""
+                  }`}
+                  onClick={() => toggleValue(value)}
+                >
+                  {opt[displayKey]}
+                </div>
+              );
+            })
           )}
         </div>
       )}

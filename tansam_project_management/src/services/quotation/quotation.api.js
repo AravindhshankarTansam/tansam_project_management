@@ -1,13 +1,22 @@
-const QUOTATIONS_URL = "http://localhost:9899/api/quotations";
+const API_BASE =  import.meta.env.VITE_API_BASE_URL;
+
+const QUOTATIONS_URL = `${API_BASE}/quotations`;
 
 // safe headers
-const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+export const getAuthHeaders = () => {
+  const storedUser = sessionStorage.getItem("user");
+
+  if (!storedUser) return {};
+
+  const user = JSON.parse(storedUser);
+
+  if (!user) return {};
+
   return {
     "Content-Type": "application/json",
     "x-user-id": user.id,
     "x-user-role": user.role,
-    "x-user-name": user.username,
+    "x-user-name": user.name,
   };
 };
 
@@ -28,7 +37,19 @@ export const addQuotation = async (data) => {
 
   return res.json();
 };
+export const generateQuotationNo = async () => {
+  const res = await fetch(
+    `${QUOTATIONS_URL}/generate-quotation-no`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
 
+  if (!res.ok) throw new Error("Failed to generate quotation number");
+
+  return res.json();
+};
 
 export const updateQuotation = async (id, data) => {
   const res = await fetch(`${QUOTATIONS_URL}/${id}`, {
@@ -39,7 +60,20 @@ export const updateQuotation = async (id, data) => {
   if (!res.ok) throw new Error("Failed to update quotation");
   return res.json();
 };
+export const getTotalRevenue = async (queryString = "") => {
+  const res = await fetch(`${QUOTATIONS_URL}/total-revenue?${queryString}`, {
+    headers: getAuthHeaders(),
+  });
 
+  console.log("Revenue API status:", res.status);
+
+  const data = await res.json();
+  console.log("Revenue API data:", data);
+
+  if (!res.ok) throw new Error("Failed to fetch total revenue");
+
+  return data;
+};
 export const deleteQuotation = async (id) => {
   const res = await fetch(`${QUOTATIONS_URL}/${id}`, {
     method: "DELETE",

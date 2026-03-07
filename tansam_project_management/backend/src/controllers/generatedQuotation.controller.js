@@ -61,7 +61,7 @@ export const addGeneratedQuotation = async (req, res) => {
         `UPDATE generated_quotations
          SET quotationNo=?, date=?, clientName=?, kindAttn=?, subject=?,
              items=?, terms=?, termsContent=?, 
-             signature=?, seal=?, financeManagerName=?, designation=?,
+             signature=?, seal=?, financeManagerName=?, designation=?
          WHERE quotationId=?`,
         [
           quotationNo,

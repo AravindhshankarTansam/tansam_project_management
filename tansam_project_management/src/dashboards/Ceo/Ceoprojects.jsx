@@ -4,98 +4,39 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Ceocss/Ceoprojects.css";
 
 import { fetchProjects } from "../../services/project.api";
-import { fetchProjectFollowups } from "../../services/projectfollowup.api";
+import { fetchProjectFollowups } from "../../services/projectFollowup.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
+import { getTotalRevenue } from "../../services/quotation/quotation.api";
+import { fetchLabs } from "../../services/admin/admin.roles.api";
 const ROWS_PER_PAGE = 10;
 
 export default function CeoProjects() {
   const [projects, setProjects] = useState([]);
   const [followupStatuses, setFollowupStatuses] = useState({});
   const [loading, setLoading] = useState(true);
-
+  const [dynamicFilteredRevenue, setDynamicFilteredRevenue] = useState(0);
   /* 🔍 FILTER STATES */
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedType, setSelectedType] = useState("");
-const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
-const [currentPage, setCurrentPage] = useState(1);
-const [quotations, setQuotations] = useState([]);
-const [_labPayments, setLabPayments] = useState({});
-const [projectPayments, setProjectPayments] = useState({});
-const [allLabPayments, setAllLabPayments] = useState({});
-const [_filteredLabPayments, setFilteredLabPayments] = useState({});
-// const totalRevenue = useMemo(() => {
-//   return quotations
-//     .filter(
-//       (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
-//     )
-//     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
-// }, [quotations]);
+  const [selectedLabs, setSelectedLabs] = useState([]); // ← Array for multi-select
+  const [currentPage, setCurrentPage] = useState(1);
+  const [quotations, setQuotations] = useState([]);
+  const [_labPayments, setLabPayments] = useState({});
+  const [projectPayments, setProjectPayments] = useState({});
+  const [allLabPayments, setAllLabPayments] = useState({});
+  const [_filteredLabPayments, setFilteredLabPayments] = useState({});
+  const [labs, setLabs] = useState([]); // ← fetched from API
+  // const totalRevenue = useMemo(() => {
+  //   return quotations
+  //     .filter(
+  //       (q) => q.quotationStatus === "Approved" && q.paymentReceived === "Yes"
+  //     )
+  //     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
+  // }, [quotations]);
 
-useEffect(() => {
-  const payments = {};
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (!oppId) return;
 
-    const revenue = quotations
-      .filter(
-        (q) =>
-          q.opportunity_id?.trim()?.toUpperCase() === oppId &&
-          q.quotationStatus === "Approved" &&
-          q.paymentReceived === "Yes"
-      )
-      .reduce((sum, q) => sum + Number(q.paymentAmount || 0), 0);
 
-    if (!revenue) return;
-
-    const labs = Array.isArray(project.labNames)
-      ? project.labNames
-      : project.labNames ? [project.labNames] : [];
-
-    labs.forEach((lab) => {
-      const key = lab.trim();
-      payments[key] = (payments[key] || 0) + revenue;
-    });
-  });
-
-  setAllLabPayments(payments);
-}, [projects, quotations]);
-useEffect(() => {
-  if (!projects || !projectPayments) return;
-
-  if (selectedLabs.length === 0) {
-    setFilteredLabPayments(allLabPayments); // show all if no filter
-    return;
-  }
-
-  const payments = {};
-
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (!oppId) return;
-
-    // Normalize labs
-    let projectLabNames = [];
-    if (Array.isArray(project.labNames)) projectLabNames = project.labNames;
-    else if (typeof project.labNames === "string") {
-      try {
-        const parsed = JSON.parse(project.labNames);
-        projectLabNames = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        projectLabNames = project.labNames.split(",").map((l) => l.trim());
-      }
-    }
-
-    projectLabNames.forEach((lab) => {
-      if (selectedLabs.includes(lab)) {
-        payments[lab] = (payments[lab] || 0) + (projectPayments[oppId] || 0);
-      }
-    });
-  });
-
-  setFilteredLabPayments(payments);
-}, [projects, projectPayments, selectedLabs, allLabPayments]);
 
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
@@ -108,51 +49,20 @@ useEffect(() => {
       }
     })();
   }, []);
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await getQuotations();
-        setQuotations(data || []);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load quotation data");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-useEffect(() => {
-  const payments = {};
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const data = await getQuotations();
+  //       setQuotations(data || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //       toast.error("Failed to load quotation data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   })();
+  // }, []);
 
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim()?.toUpperCase();
-    if (!oppId) return;
-
-    // sum approved & received quotations for this opportunity
-    const totalRevenue = quotations
-      .filter(
-        (q) =>
-          q.opportunity_id?.trim()?.toUpperCase() === oppId &&
-          q.quotationStatus === "Approved" &&
-          q.paymentReceived === "Yes"
-      )
-      .reduce((sum, q) => sum + Number(q.paymentAmount || 0), 0);
-
-    if (!totalRevenue) return;
-
-    // get labs for project
-    const labs = Array.isArray(project.labNames)
-      ? project.labNames
-      : (project.labNames ? [project.labNames] : []);
-
-    labs.forEach((lab) => {
-      const key = lab.trim();
-      payments[key] = (payments[key] || 0) + totalRevenue;
-    });
-  });
-
-  setLabPayments(payments);
-}, [projects, quotations]);
   /* ================= LOAD FOLLOWUP STATUS ================= */
   useEffect(() => {
     if (projects.length === 0) return;
@@ -182,81 +92,53 @@ useEffect(() => {
 
     loadStatuses();
   }, [projects]);
-// After fetching projects and quotations
-// ---------------------------
-// Fetch quotations and map revenue per opportunity
-// ---------------------------
-useEffect(() => {
-  (async () => {
-    try {
-      const data = await getQuotations(); // fetch all quotations
-      if (!data) return;
-
-      const paymentsMap = {};
-
-      data.forEach((q) => {
-        // Only consider approved and received payments
-        if (q.quotationStatus === "Approved" && q.paymentReceived === "Yes") {
-          const oppId = q.opportunity_id?.trim().toUpperCase(); // normalize key
-          const amount = Number(q.paymentAmount || 0);
-
-          if (oppId) {
-            // accumulate if multiple quotations for same opportunity
-            paymentsMap[oppId] = (paymentsMap[oppId] || 0) + amount;
-          }
-
-          console.log("Quotation:", q.quotationNo, "opportunity_id:", q.opportunity_id, "paymentAmount:", q.paymentAmount);
-        }
-      });
-
-      console.log("Payments Map:", paymentsMap);
-      setProjectPayments(paymentsMap);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load quotation payments");
-    }
-  })();
-}, []);
-
-useEffect(() => {
-  if (!projects || !projectPayments || selectedLabs.length === 0) {
-    setLabPayments({});
-    return;
-  }
-
-  let totalRevenue = 0;
-
-  projects.forEach((project) => {
-    const oppId = project.opportunityId?.trim().toUpperCase();
-    if (!oppId) return;
-
-    // Normalize labNames
-    let projectLabNames = [];
-    if (Array.isArray(project.labNames)) {
-      projectLabNames = project.labNames;
-    } else if (typeof project.labNames === "string") {
+  // After fetching projects and quotations
+  // ---------------------------
+  // Fetch quotations and map revenue per opportunity
+  // ---------------------------
+  useEffect(() => {
+    (async () => {
       try {
-        const parsed = JSON.parse(project.labNames);
-        projectLabNames = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        projectLabNames = project.labNames.split(",").map((l) => l.trim());
+        const data = await getQuotations();
+        if (!data) return;
+
+        const paymentsMap = {};
+
+        data.forEach((q) => {
+          if (q.quotationStatus === "Approved" || q.quotationStatus === "") {
+            const oppId = q.opportunity_id?.trim().toUpperCase();
+            if (!oppId) return;
+
+            const amount = Number(q.paymentAmount || 0);
+
+            paymentsMap[oppId] =
+              (paymentsMap[oppId] || 0) + amount;
+          }
+        });
+
+        setProjectPayments(paymentsMap);
+      } catch (err) {
+        toast.error("Failed to load quotation payments");
       }
-    }
-
-    // ✅ ADD REVENUE ONLY ONCE PER PROJECT
-    const hasSelectedLab = selectedLabs.some((lab) =>
-      projectLabNames.includes(lab)
-    );
-
-    if (hasSelectedLab) {
-      totalRevenue += projectPayments[oppId] || 0;
-    }
-  });
-
-  setLabPayments({ total: totalRevenue });
-}, [projects, projectPayments, selectedLabs]);
+    })();
+  }, []);
 
 
+  useEffect(() => {
+    const loadLabs = async () => {
+      try {
+        const labData = await fetchLabs(); // from admin.roles.api.js
+        // Map to names if API returns objects
+        const labNames = labData.map(l => l.name);
+        setLabs(labNames);
+      } catch (err) {
+        console.error("Failed to fetch labs:", err);
+        alert("Failed to load labs");
+      }
+    };
+
+    loadLabs();
+  }, []);
 
 
 
@@ -327,6 +209,25 @@ useEffect(() => {
     });
   }, [projects, searchTerm, selectedClient, selectedType, selectedLabs]);
 
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        const params = new URLSearchParams();
+
+        if (selectedClient) params.append("clientName", selectedClient);
+        if (selectedType) params.append("projectType", selectedType);
+        if (selectedLabs.length > 0) params.append("labs", selectedLabs.join(","));
+
+        const data = await getTotalRevenue(params.toString());
+        setDynamicFilteredRevenue(data.totalRevenue || 0);
+      } catch (error) {
+        console.error("Revenue fetch error:", error);
+      }
+    };
+
+    fetchRevenue();
+  }, [selectedClient, selectedType, selectedLabs]);
+
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedClient("");
@@ -334,11 +235,16 @@ useEffect(() => {
     setSelectedLabs([]); // Clear multi-select
     setCurrentPage(1);
   };
-{/* ================= LAB PAYMENT SUMMARY ================= */}
+  {/* ================= LAB PAYMENT SUMMARY ================= */ }
 
   const formatDate = (date) => {
     if (!date) return "—";
-    return new Date(date).toISOString().split("T")[0];
+
+    const d = new Date(date);
+
+    if (isNaN(d.getTime())) return "—"; // ✅ prevents crash
+
+    return d.toISOString().split("T")[0];
   };
 
   const totalPages = Math.ceil(filteredProjects.length / ROWS_PER_PAGE);
@@ -421,81 +327,65 @@ useEffect(() => {
       </div>
 
       {/* ================= FILTER BAR ================= */}
-      <div className="filter-bar">
-        <input
-          type="text"
-          placeholder="Search project or client..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+    <div className="filter-bar">
+  <input
+    type="text"
+    placeholder="Search project or client..."
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
+    }}
+  />
 
-        <select
-          value={selectedClient}
-          onChange={(e) => {
-            setSelectedClient(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="">All Clients</option>
-          {clientOptions.map(c => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+  <select
+    value={selectedClient}
+    onChange={(e) => {
+      setSelectedClient(e.target.value);
+      setCurrentPage(1);
+    }}
+  >
+    <option value="">All Clients</option>
+    {clientOptions.map(c => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </select>
 
-        <select
-          value={selectedType}
-          onChange={(e) => {
-            setSelectedType(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="">All Project Types</option>
-          {typeOptions.map(t => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
+  <select
+    value={selectedType}
+    onChange={(e) => {
+      setSelectedType(e.target.value);
+      setCurrentPage(1);
+    }}
+  >
+    <option value="">All Project Types</option>
+    {typeOptions.map(t => (
+      <option key={t} value={t}>{t}</option>
+    ))}
+  </select>
 
-        {/* Multi-select for Labs */}
-        <MultiSelectChips
-          options={labOptions}
-          value={selectedLabs}
-          onChange={setSelectedLabs}
-          placeholder="Select labs..."
-        />
-
-        {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
-          <button className="clear-btn" onClick={clearFilters}>
-            Clear
-          </button>
-        )}
-{/* ================= LAB PAYMENT SUMMARY ================= */}
-{/* ================= TOTAL REVENUE CARD ================= */}
-<div className="lab-cards">
-  <div className="lab-card total-revenue">
-    <h4>Total Revenue</h4>
-    <p>
-      ₹
-      {(selectedLabs.length > 0
-        ? _labPayments.total || 0     // ✅ your existing correct total
-        : Object.values(allLabPayments).reduce(
-            (sum, v) => sum + Number(v || 0),
-            0
-          )
-      ).toLocaleString("en-IN")}
-    </p>
-  </div>
+  {/* Labs should come immediately after project type */}
+  <MultiSelectChips
+    options={labs}
+    value={selectedLabs}
+    onChange={setSelectedLabs}
+    placeholder="Select labs..."
+  />
+  <div className="lab-cards">
+          <div className="lab-card total-revenue">
+            <h4>Total Revenue</h4>
+            <p>
+              ₹ {Number(dynamicFilteredRevenue).toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
+  {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
+    <button className="clear-btn" onClick={clearFilters}>
+      Clear
+    </button>
+  )}
 </div>
 
-
-
-      </div>
 
       {/* ================= TABLE ================= */}
       <div className="table-card">
@@ -528,7 +418,7 @@ useEffect(() => {
                     <td>{p.clientName}</td>
                     <td>
                       <span className="pill pill-client">
-                        {p.clientType || "—"}
+                        {p.client_Type || "—"}
                       </span>
                     </td>
                     <td>
@@ -551,9 +441,15 @@ useEffect(() => {
                         : p.labNames || "—"}
                     </td>
                     <td>{p.workCategory || "—"}</td>
-          <td>
-  ₹{projectPayments[p.opportunityId?.trim().toUpperCase()] || "0"}
-</td>
+                    <td>
+                      {(() => {
+                        const key = p.opportunityId
+                          ? p.opportunityId.trim().toUpperCase()
+                          : "";
+
+                        return `₹${(projectPayments[key] || 0).toLocaleString("en-IN")}`;
+                      })()}
+                    </td>
 
 
 
