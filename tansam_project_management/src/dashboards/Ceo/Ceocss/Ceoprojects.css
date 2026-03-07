@@ -270,7 +270,13 @@
 .multi-select-input .chips {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;      /* prevent wrapping */
+  overflow-x: auto;       /* scroll if many chips */
+  scrollbar-width: none;  /* hide scrollbar (Firefox) */
+}
+
+.multi-select-input .chips::-webkit-scrollbar {
+  display: none;          /* hide scrollbar (Chrome) */
 }
 
 .multi-select-input .chip {
@@ -288,7 +294,7 @@
   background: none;
   border: none;
   color: #166534;
-  font-size: 14px;
+  font-size: 3px;
   cursor: pointer;
   padding: 0;
 }

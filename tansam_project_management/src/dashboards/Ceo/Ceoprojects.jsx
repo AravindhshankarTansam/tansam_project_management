@@ -327,63 +327,51 @@ export default function CeoProjects() {
       </div>
 
       {/* ================= FILTER BAR ================= */}
-      <div className="filter-bar">
-        <input
-          type="text"
-          placeholder="Search project or client..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+    <div className="filter-bar">
+  <input
+    type="text"
+    placeholder="Search project or client..."
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
+    }}
+  />
 
-        <select
-          value={selectedClient}
-          onChange={(e) => {
-            setSelectedClient(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="">All Clients</option>
-          {clientOptions.map(c => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+  <select
+    value={selectedClient}
+    onChange={(e) => {
+      setSelectedClient(e.target.value);
+      setCurrentPage(1);
+    }}
+  >
+    <option value="">All Clients</option>
+    {clientOptions.map(c => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </select>
 
-        <select
-          value={selectedType}
-          onChange={(e) => {
-            setSelectedType(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="">All Project Types</option>
-          {typeOptions.map(t => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
+  <select
+    value={selectedType}
+    onChange={(e) => {
+      setSelectedType(e.target.value);
+      setCurrentPage(1);
+    }}
+  >
+    <option value="">All Project Types</option>
+    {typeOptions.map(t => (
+      <option key={t} value={t}>{t}</option>
+    ))}
+  </select>
 
-        {/* Multi-select for Labs */}
-        <MultiSelectChips
-          options={labs}          // ← use API fetched labs
-          value={selectedLabs}
-          onChange={setSelectedLabs}
-          placeholder="Select labs..."
-        />
-
-        {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
-          <button className="clear-btn" onClick={clearFilters}>
-            Clear
-          </button>
-        )}
-        {/* ================= LAB PAYMENT SUMMARY ================= */}
-        {/* ================= TOTAL REVENUE CARD ================= */}
-        <div className="lab-cards">
+  {/* Labs should come immediately after project type */}
+  <MultiSelectChips
+    options={labs}
+    value={selectedLabs}
+    onChange={setSelectedLabs}
+    placeholder="Select labs..."
+  />
+  <div className="lab-cards">
           <div className="lab-card total-revenue">
             <h4>Total Revenue</h4>
             <p>
@@ -391,10 +379,13 @@ export default function CeoProjects() {
             </p>
           </div>
         </div>
+  {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
+    <button className="clear-btn" onClick={clearFilters}>
+      Clear
+    </button>
+  )}
+</div>
 
-
-
-      </div>
 
       {/* ================= TABLE ================= */}
       <div className="table-card">

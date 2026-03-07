@@ -21,8 +21,9 @@
 
 .chips-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap;        /* allow chips to move to next line */
   gap: 6px;
+  width: 100%;            /* ensure full width */
 }
 
 .chip {
@@ -31,9 +32,12 @@
   padding: 4px 8px;
   border-radius: 20px;
   font-size: 13px;
-  display: flex;
+  display: inline-flex;       /* change from flex to inline-flex */
   align-items: center;
   gap: 6px;
+  max-width: 100%;            /* allow chip to grow up to container width */
+  white-space: normal;        /* allow wrapping inside chip */
+     /* extra safety for long text */
 }
 
 .chip-close {
