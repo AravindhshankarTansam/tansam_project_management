@@ -8,7 +8,7 @@ export const ensureDatabaseExists = async () => {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    port: 3307, // IMPORTANT for Windows
+    port: 3306, // IMPORTANT for Windows
   });
 
   // Debug (remove later if you want)
@@ -32,7 +32,7 @@ export const connectDB = async () => {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: 3307, // IMPORTANT for Windows
+    port: 3306, // IMPORTANT for Windows
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
