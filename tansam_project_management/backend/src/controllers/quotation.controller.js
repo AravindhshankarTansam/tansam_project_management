@@ -3,6 +3,7 @@ import { Document, Packer, Paragraph, TextRun } from "docx";
 import { createQuotationDocx } from "../utils/QuotationDocx.js";
 import { initSchemas } from "../schema/main.schema.js";
 import { G } from "@react-pdf/renderer";
+
 // Get all quotations
 
 // controllers/quotation.controller.js
@@ -645,10 +646,55 @@ await db.execute(
     res.status(500).json({ message: error.message });
   }
 };
+export const getTotalRevenue = async (req, res) => {
+  try {
+    const db = await connectDB();
+    const { clientName, projectType, labs } = req.query;
 
+    let query = `
+      SELECT COALESCE(SUM(q.paymentAmount), 0) AS totalRevenue
+      FROM quotations q
+      WHERE q.opportunity_id IN (SELECT opportunity_id FROM projects WHERE 1=1)
+    `;
+    const params = [];
 
+    if (clientName) {
+      query += ` AND q.clientName = ?`;
+      params.push(clientName);
+    }
 
+    if (projectType) {
+      query += ` AND q.opportunity_id IN (SELECT opportunity_id FROM projects WHERE project_type = ?)`;
+      params.push(projectType);
+    }
 
+  if (labs) {
+  const labArray = labs.split(",");
+
+  // get lab ids from labs_admin table
+  const placeholders = labArray.map(() => "?").join(",");
+  const [labRows] = await db.execute(
+    `SELECT id FROM labs_admin WHERE name IN (${placeholders})`,
+    labArray
+  );
+
+  const labIds = labRows.map(l => l.id);
+
+  if (labIds.length) {
+    const labPlaceholders = labIds.map(() => "?").join(",");
+    query += ` AND q.lab_id IN (${labPlaceholders})`;
+    params.push(...labIds);
+  }
+}
+
+    const [rows] = await db.execute(query, params);
+
+    res.json({ totalRevenue: rows[0].totalRevenue || 0 });
+  } catch (error) {
+    console.error("Revenue Fetch Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Delete quotation
 export const deleteQuotation = async (req, res) => {

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE =  import.meta.env.VITE_API_BASE_URL;
 
 const QUOTATIONS_URL = `${API_BASE}/quotations`;
 
@@ -60,7 +60,20 @@ export const updateQuotation = async (id, data) => {
   if (!res.ok) throw new Error("Failed to update quotation");
   return res.json();
 };
+export const getTotalRevenue = async (queryString = "") => {
+  const res = await fetch(`${QUOTATIONS_URL}/total-revenue?${queryString}`, {
+    headers: getAuthHeaders(),
+  });
 
+  console.log("Revenue API status:", res.status);
+
+  const data = await res.json();
+  console.log("Revenue API data:", data);
+
+  if (!res.ok) throw new Error("Failed to fetch total revenue");
+
+  return data;
+};
 export const deleteQuotation = async (id) => {
   const res = await fetch(`${QUOTATIONS_URL}/${id}`, {
     method: "DELETE",

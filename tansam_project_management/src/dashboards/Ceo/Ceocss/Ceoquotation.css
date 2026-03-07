@@ -201,15 +201,15 @@
 }
 
 /* ================================
-   PAGINATION
+   pagination_quotation
 ================================ */
-.pagination {
+.pagination_quotation {
   display: flex;
   justify-content: center;
   padding: 10px 0;
   margin-top: auto; /* pushes it to the bottom */
 }
-.pagination button {
+.pagination_quotation button {
   padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
@@ -219,20 +219,20 @@
   color: #0f172a;
 }
 
-.pagination button:hover:not(:disabled) {
+/* .pagination_quotation button:hover:not(:disabled) {
   background: #f1f5f9;
-}
+} */
 
-.pagination button.active {
+/* .pagination_quotation button.active {
   background: #0ea5e9;
   color: white;
   border-color: #0ea5e9;
-}
+} */
 
-.pagination button:disabled {
+/* .pagination_quotation button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
+} */
 
 .tabs {
   display: flex;
@@ -555,15 +555,15 @@
   font-size: 13px;
 }
 
-/* Pagination */
-.pagination {
+/* pagination_quotation */
+.pagination_quotation {
   display: flex;
   justify-content: center;
   gap: 6px;
   margin-top: 16px;
 }
 
-.pagination button {
+.pagination_quotation button {
   padding: 6px 10px;
   border: 1px solid #ccc;
   background: #fff;
@@ -572,13 +572,13 @@
   font-size: 13px;
 }
 
-.pagination button.active {
+.pagination_quotation button.active {
   background: #1f4e79;
   color: #fff;
   border-color: #1f4e79;
 }
 
-.pagination button:disabled {
+.pagination_quotation button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

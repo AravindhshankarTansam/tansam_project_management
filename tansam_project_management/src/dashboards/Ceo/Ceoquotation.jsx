@@ -57,7 +57,7 @@ export default function CeoQuotation() {
 
   /* ================= TOTAL VALUE ================= */
 
-  /* ================= PAGINATION ================= */
+  /* ================= pagination_quotation ================= */
   // const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -103,13 +103,18 @@ export default function CeoQuotation() {
       }
     }, 0);
   }, [filteredData]);
-
-  const totalPaymentReceived = useMemo(() => {
-    return filteredData.reduce(
-      (sum, q) => sum + (Number(q.paymentAmount) || 0),
-      0,
+const totalPaymentReceived = useMemo(() => {
+  return filteredData.reduce((sum, q) => {
+    // Remove ₹, commas, and extra spaces, then parse as float
+    const amount = parseFloat(
+      String(q.paymentAmount)
+        .replace(/₹/g, '')
+        .replace(/,/g, '')
+        .trim()
     );
-  }, [filteredData]);
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
+}, [filteredData]);
 
   /* ================= RENDER ================= */
   return (
@@ -312,7 +317,7 @@ export default function CeoQuotation() {
         )}
       </div>
 
-      <div className="pagination">
+      <div className="pagination_quotation">
         <button disabled={currentPage === 1} onClick={goPrev}>
           ◀ Prev
         </button>

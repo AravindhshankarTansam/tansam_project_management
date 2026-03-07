@@ -23,7 +23,7 @@ await db.execute(`
   CREATE TABLE IF NOT EXISTS quotations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     opportunity_id VARCHAR(50),
-    opportunity_name VARCHAR(50),
+    opportunity_name VARCHAR(250),
     quotationNo VARCHAR(50) NOT NULL,
     client_id VARCHAR(20) NOT NULL,
     clientName VARCHAR(100) NOT NULL,
@@ -43,7 +43,7 @@ await db.execute(`
     paymentPhase   ENUM('Started', 'Not Started')
     NOT NULL DEFAULT 'Started',
     paymentReceived VARCHAR(10),
-    paymentAmount DECIMAL(12,2),
+    paymentAmount VARCHAR(50),
     paymentPendingReason TEXT,    
     itemDetails VARCHAR(255),
     poNumber VARCHAR(100),

@@ -43,6 +43,11 @@ export default function Quotations() {
   const [_showOpportunityDropdown, setShowOpportunityDropdown] =
     useState(false);
 
+  // const openPaymentModal = (quotation) => {
+  //   setNewQuotation(quotation);
+  //   setShowPaymentModal(true);
+  // };
+
   const [_paymentQuotationId, setPaymentQuotationId] = useState(null);
 
   const clientOptions = [...new Set(data.map((d) => d.clientName))];
@@ -52,6 +57,10 @@ export default function Quotations() {
   const labOptions = labs.map((lab) => lab.name);
 
   const [showGenerateQuotation, setShowGenerateQuotation] = useState(false);
+
+  // const [selectedClient, setSelectedClient] = useState("");
+  // const [selectedWorkCategory, setSelectedWorkCategory] = useState("");
+  // const [selectedLab, setSelectedLab] = useState("");
 
   const [newQuotation, setNewQuotation] = useState({
     quotationNo: "",
@@ -217,7 +226,14 @@ export default function Quotations() {
 
     loadProjects();
   }, [showPaymentForm, newQuotation.clientName]);
-
+  // useEffect(() => {
+  //   const fetchQuotation = async () => {
+  //     const data = await getQuotations(); // your API call
+  //     const items = JSON.parse(data.itemDetails || "[]");
+  //     setUnitPrice(items[0]?.unitPrice || 0);
+  //   };
+  //   fetchQuotation();
+  // }, []);
   useEffect(() => {
     const closeDropdowns = () => {
       setShowOpportunityDropdown(false);
@@ -240,8 +256,28 @@ export default function Quotations() {
 
     loadWorkCategories();
   }, []);
+  // useEffect(() => {
+  //   if (newQuotation.quotationStatus === "Approved") {
+  //     setNewQuotation((prev) => ({
+  //       ...prev,
+  //       paymentPhase: "Started",
+  //     }));
+  //   } else {
+  //     setNewQuotation((prev) => ({
+  //       ...prev,
 
-// }, [newQuotation.quotationStatus]);
+  //       paymentPhase: "Not Started",
+  //       revisedCost: "",
+  //       poReceived: "No",
+  //       poNumber: "",
+  //       remarks: "",
+  //       paymentReceived: "No",
+  //       paymentReceivedDate: "",
+  //       paymentAmount: "",
+  //       paymentPendingReason: "",
+  //     }));
+  //   }
+  // }, [newQuotation.quotationStatus]);
   const initializePaymentFields = (status, currentData) => {
     if (status === "Approved") {
       return {
@@ -323,51 +359,87 @@ const filtered = data.filter((q) => {
   return clientMatch && categoryMatch && labMatch;
 });
 
+  // const generateQuotationNo = (data) => {
+  //   const now = new Date();
+  //   const year = now.getFullYear();
+  //   const month = now.getMonth() + 1; // Jan = 1
 
+  //   // Financial year: Apr–Mar
+  //   const startYear = month >= 4 ? year : year - 1;
+  //   const endYear = startYear + 1;
+  //   const financialYear = `${startYear}-${endYear}`;
 
-const paginated = filtered.slice(
-  (page - 1) * pageSize,
-  page * pageSize
-);
+  //   // Filter quotations for the current financial year
+  //   const currentFYNumbers = data
+  //     .map((q) => q.quotationNo)
+  //     .filter(Boolean)
+  //     .filter((no) => no.includes(financialYear))
+  //     .map((no) =>
+  //       Number(
+  //         no.replace(
+  //           /TANSAM\s*-\s*\d+\/\d{4}-\d{4}/,
+  //           (match) => match.match(/\d+/)[0],
+  //         ),
+  //       ),
+  //     )
+  //     .filter((n) => !isNaN(n));
 
-const totalPages = Math.ceil(filtered.length / pageSize);
+  //   const nextNumber = currentFYNumbers.length
+  //     ? Math.max(...currentFYNumbers) + 1
+  //     : 1001;
 
-const handleEdit = (quotation) => {
-  setEditId(quotation.id);
+  //   return `TANSAM-${nextNumber}/${financialYear}`;
+  // };
 
-  let items = [];
-  try {
-    items = quotation.itemDetails ? JSON.parse(quotation.itemDetails) : [];
-  } catch {
-    items = [];
-  }
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const firstItem = items[0] || {};
+  // const calculateTotalValue = () => {
+  //   if (newQuotation.pricingMode === "unit") {
+  //     const unit = Number(newQuotation.unitPrice || 0);
+  //     const qty = Number(newQuotation.qty || 0);
+  //     const gst = Number(newQuotation.gst || 0);
+  //     const base = unit * qty;
+  //     return (base + (base * gst) / 100).toFixed(2);
+  //   }
 
-  setNewQuotation({
-    ...quotation,
+  //   // ✅ VALUE MODE → user already entered final value
+  //   return Number(newQuotation.value || 0).toFixed(2);
+  // };
 
-    // safer fallback
-    unitPrice: firstItem?.unitPrice ?? "",
-    qty: firstItem?.qty ?? "",
-    gst: firstItem?.gst ?? "",
+  const handleEdit = (quotation) => {
+    setEditId(quotation.id);
+    let items = [];
+    try {
+      items = quotation.itemDetails ? JSON.parse(quotation.itemDetails) : [];
+    } catch  {
+      items = [];
+    }
 
-    // payment fields
-    ...initializePaymentFields(quotation.quotationStatus, quotation),
+    const firstItem = items[0] || {};
+    setNewQuotation({
+      ...quotation,
 
-    paymentPhase: quotation.paymentPhase || "Not Started",
-    revisedCost: quotation.revisedCost || "",
-    poReceived: quotation.poReceived || "No",
-    poNumber: quotation.poNumber || "",
-    remarks: quotation.remarks || "",
-    paymentReceived: quotation.paymentReceived || "No",
-    paymentReceivedDate: quotation.paymentReceivedDate || "",
-    paymentAmount: quotation.paymentAmount || "",
-    paymentPendingReason: quotation.paymentPendingReason || "",
-  });
+      unitPrice: firstItem.unitPrice === null ? "" : firstItem.unitPrice,
 
-  setShowModal(true);
-};
+      qty: firstItem.qty === null ? "" : firstItem.qty,
+
+      gst: firstItem.gst === null ? "" : firstItem.gst,
+
+      ...initializePaymentFields(quotation.quotationStatus, quotation),
+
+      paymentPhase: quotation.paymentPhase || "Not Started",
+      revisedCost: quotation.revisedCost || "",
+      poReceived: quotation.poReceived || "No",
+      poNumber: quotation.poNumber || "",
+      remarks: quotation.remarks || "",
+      paymentReceived: quotation.paymentReceived || "No",
+      paymentReceivedDate: quotation.paymentReceivedDate || "",
+      paymentAmount: quotation.paymentAmount || "",
+      paymentPendingReason: quotation.paymentPendingReason || "",
+    });
+    setShowModal(true);
+  };
 
   useEffect(() => {
     getQuotations().then((res) => setData(res));
@@ -389,16 +461,11 @@ const handleEdit = (quotation) => {
   alert("Client Name is required");
   return;
 }
- // ✅ ADD HERE 👇
-    if (!newQuotation.opportunity_name) {
-      alert("Opportunity is required");
-      return;
-    }
 
-    if (!newQuotation.unitPrice || !newQuotation.qty) {
-      alert("Unit price and quantity required");
-      return;
-    }
+      // if (!newQuotation.work_category_name || !newQuotation.lab_name) {
+      //   alert("Work Category and Lab are required");
+      //   return;
+      // }
 
       const base =
         Number(newQuotation.unitPrice || "") * Number(newQuotation.qty || "");
@@ -414,6 +481,19 @@ const handleEdit = (quotation) => {
           total: totalValue,
         },
       ];
+
+      // if (newQuotation.quotationStatus === "Approved") {
+      //   const matchingOpp = opportunities.find(
+      //     (opp) =>
+      //       opp.opportunity_name === newQuotation.opportunity_name.split(",")[0]
+      //   );
+
+      //   if (!matchingOpp || matchingOpp.stage !== "WON") {
+      //     return alert(
+      //       "Quotation cannot be approved because the opportunity stage is not 'WON'."
+      //     );
+      //   }
+      // }
 
       const selectedOpportunities = Array.isArray(newQuotation.opportunity_name)
         ? newQuotation.opportunity_name
@@ -638,11 +718,11 @@ const getVisiblePages = () => {
         />
 
         <button className="btn-clear-filters" onClick={clearAllFilters}>
-          ↻
+          ✕
         </button>
 
         <div className="page-size-ui">
-          <span>Pages</span>
+          <span>Show</span>
           <select
             value={pageSize}
             onChange={(e) => {
@@ -650,12 +730,11 @@ const getVisiblePages = () => {
               setPage(1);
             }}
           >
-            <option value={10}>10</option>
+               <option value={10}>10</option>
             <option value={25}>25</option>
             <option value={50}>50</option>
-            <option value={100}>100</option>
           </select>
-         
+          <span>per page</span>
         </div>
       </div>
       <div className="tabs">
@@ -689,7 +768,7 @@ const getVisiblePages = () => {
                   <th>Description</th>
                   <th>Quote Value</th>
                   <th>Date</th>
-                  <th>Actions</th>
+                  <th>Actions</th> {/* Only in Quotation tab */}
                 </>
               ) : (
                 <>
@@ -726,17 +805,7 @@ const getVisiblePages = () => {
                       </td>
                       <td>{q.work_category_name}</td>
                       <td>
-                        <span className="badge-lab_name">
-                            {Array.isArray(q.lab_name)
-                              ? q.lab_name.join(", ")
-                              : (() => {
-                                  try {
-                                    return JSON.parse(q.lab_name || "[]").join(", ");
-                                  } catch {
-                                    return q.lab_name;
-                                  }
-                                })()}
-                          </span>
+                        <span className="badge-lab_name">{q.lab_name}</span>
                       </td>
                       <td className="desc-cell">{q.description}</td>
                       <td className="value-cell">
@@ -798,15 +867,15 @@ const getVisiblePages = () => {
                                 items = q.itemDetails
                                   ? JSON.parse(q.itemDetails)
                                   : [];
-                              } catch (error) {
-                                console.error("Invalid JSON in itemDetails:", error);
+                              } catch {
                                 items = [];
                               }
+
                               const firstItem = items[0] || {};
 
                               // Generate the quotation number here if needed
                               const quotationNo =
-                                q.quotationNo || generateQuotationNo(data); 
+                                q.quotationNo || generateQuotationNo(data); // optional
 
                               setNewQuotation({
                                 ...q,
@@ -917,7 +986,7 @@ const getVisiblePages = () => {
       </div>
 
       {/* Pagination */}
-   <div className="pagination">
+         <div className="pagination_quotation">
 
   {/* Prev */}
   <button disabled={page === 1} onClick={() => setPage(page - 1)}>
@@ -950,6 +1019,7 @@ const getVisiblePages = () => {
   </button>
 
 </div>
+
       {/* ✅ IMPROVED MODAL */}
       {showModal && (
         <div className="finance-modal-overlay" onClick={closeModal}>
@@ -1432,15 +1502,7 @@ const getVisiblePages = () => {
                 className="btn-save"
                 onClick={async () => {
                   try {
-                    await updateQuotation(newQuotation.id, {
-                      paymentPhase: newQuotation.paymentPhase,
-                      poNumber: newQuotation.poNumber,
-                      paymentReceived: newQuotation.paymentReceived,
-                      paymentReceivedDate: newQuotation.paymentReceivedDate,
-                      paymentAmount: newQuotation.paymentAmount,
-                      paymentPendingReason: newQuotation.paymentPendingReason,
-                      remarks: newQuotation.remarks,
-                    });// save payment
+                    await updateQuotation(newQuotation.id, newQuotation); // save payment
                     setShowPaymentForm(false);
                     // optionally refresh your quotation list
                   } catch (err) {

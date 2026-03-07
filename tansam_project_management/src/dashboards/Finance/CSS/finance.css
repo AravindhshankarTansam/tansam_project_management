@@ -80,7 +80,7 @@ tbody td {
   margin-top: 16px;
 }
 
-.pagination {
+.pagination_quotation {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -93,11 +93,11 @@ tbody td {
   cursor: pointer;
 }
 
-.page-btn.active {
+/* .page-btn.active {
   background: #009999;
   color: white;
   border-color: #009999;
-}
+} */
 
 .dots {
   padding: 0 6px;
