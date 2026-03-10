@@ -89,33 +89,52 @@ export default function CeoQuotation() {
     }
   };
 
-  const totalQuotationValue = useMemo(() => {
-    return filteredData.reduce((sum, q) => {
-      try {
-        const items = JSON.parse(q.itemDetails || "[]");
-        const total = items.reduce(
-          (subSum, item) => subSum + Number(item.total || 0),
-          0,
-        );
-        return sum + total;
-      } catch {
-        return sum;
-      }
-    }, 0);
-  }, [filteredData]);
-const totalPaymentReceived = useMemo(() => {
-  return filteredData.reduce((sum, q) => {
-    // Remove ₹, commas, and extra spaces, then parse as float
-    const amount = parseFloat(
-      String(q.paymentAmount)
-        .replace(/₹/g, '')
-        .replace(/,/g, '')
-        .trim()
-    );
-    return sum + (isNaN(amount) ? 0 : amount);
+const totalQuotationValue = useMemo(() => {
+  const total = filteredData.reduce((sum, q) => {
+    try {
+      const items = JSON.parse(q.itemDetails || "[]");
+      const itemTotal = items.reduce(
+        (subSum, item) => subSum + Number(item.total || 0),
+        0
+      );
+      return sum + itemTotal;
+    } catch {
+      return sum;
+    }
   }, 0);
-}, [filteredData]);
 
+  return Number(total.toFixed(2));
+}, [filteredData]);
+const totalPaymentReceived = useMemo(() => {
+  const opportunityPayments = {};
+
+  filteredData.forEach((q) => {
+    const oppId = q.opportunity_id;
+
+    const amount =
+      parseFloat(
+        String(q.paymentAmount || 0)
+          .replace(/₹/g, "")
+          .replace(/,/g, "")
+          .trim()
+      ) || 0;
+
+    const paise = Math.round(amount * 100); // convert to paise
+
+    if (!opportunityPayments[oppId]) {
+      opportunityPayments[oppId] = 0;
+    }
+
+    opportunityPayments[oppId] += paise;
+  });
+
+  const totalPaise = Object.values(opportunityPayments).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+
+  return totalPaise / 100; // convert back to rupees
+}, [filteredData]);
   /* ================= RENDER ================= */
   return (
     <div className="ceo-quotation">
@@ -187,14 +206,14 @@ const totalPaymentReceived = useMemo(() => {
       <div className="summary-card">
         <span className="summary-label">Total Quotation Value</span>
         <span className="summary-value">
-          ₹ {totalQuotationValue.toLocaleString("en-IN")}
+          ₹ {totalQuotationValue.toLocaleString("en-US")}
         </span>
       </div>
     ) : (
       <div className="summary-card success">
         <span className="summary-label">Total Payment Received</span>
         <span className="summary-value">
-          ₹ {totalPaymentReceived.toLocaleString("en-IN")}
+          ₹ {totalPaymentReceived.toLocaleString("en-US")}
         </span>
       </div>
     )}
@@ -256,7 +275,7 @@ const totalPaymentReceived = useMemo(() => {
               {paginatedData.length > 0 ? (
                 paginatedData.map((q, i) => (
                   <tr key={q.id}>
-                    <td>{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
+                    <td>{(currentPage - 1) * itemsPerPage + i + 1}</td>
 
                     {activeTab === "quotation" ? (
                       <>

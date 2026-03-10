@@ -23,7 +23,7 @@ export default function CeoProjects() {
   const [currentPage, setCurrentPage] = useState(1);
   const [quotations, setQuotations] = useState([]);
   const [_labPayments, setLabPayments] = useState({});
-  const [projectPayments, setProjectPayments] = useState({});
+  // const [projectPayments, setProjectPayments] = useState({});
   const [allLabPayments, setAllLabPayments] = useState({});
   const [_filteredLabPayments, setFilteredLabPayments] = useState({});
   const [labs, setLabs] = useState([]); // ← fetched from API
@@ -49,19 +49,19 @@ export default function CeoProjects() {
       }
     })();
   }, []);
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const data = await getQuotations();
-  //       setQuotations(data || []);
-  //     } catch (err) {
-  //       console.error(err);
-  //       toast.error("Failed to load quotation data");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   })();
-  // }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getQuotations();
+        setQuotations(data || []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load quotation data");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   /* ================= LOAD FOLLOWUP STATUS ================= */
   useEffect(() => {
@@ -96,34 +96,48 @@ export default function CeoProjects() {
   // ---------------------------
   // Fetch quotations and map revenue per opportunity
   // ---------------------------
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await getQuotations();
-        if (!data) return;
+useEffect(() => {
+  (async () => {
+    try {
+      const data = await getQuotations();
+      if (!data) return;
 
-        const paymentsMap = {};
+      const paymentsMap = {};
 
-        data.forEach((q) => {
-          if (q.quotationStatus === "Approved" || q.quotationStatus === "") {
-            const oppId = q.opportunity_id?.trim().toUpperCase();
-            if (!oppId) return;
+      data.forEach((q) => {
+        const oppId = String(q.opportunity_id || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s/g, "");
 
-            const amount = Number(q.paymentAmount || 0);
+        const amount = Number(q.paymentAmount || 0);
 
-            paymentsMap[oppId] =
-              (paymentsMap[oppId] || 0) + amount;
-          }
-        });
+        paymentsMap[oppId] = (paymentsMap[oppId] || 0) + amount;
+      });
 
-        setProjectPayments(paymentsMap);
-      } catch (err) {
-        toast.error("Failed to load quotation payments");
-      }
-    })();
-  }, []);
+      setProjectPayments(paymentsMap);
+    } catch (err) {
+      // toast.error("Failed to load quotation payments");
+    }
+  })();
+}, []);const revenueByOpportunity = useMemo(() => {
+  const map = {};
 
+  quotations.forEach((q) => {
+    const oppId = String(q.opportunity_id || "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s/g, "");
 
+    const amount = Number(q.paymentAmount);
+
+    if (!isNaN(amount) && amount > 0) {
+      map[oppId] = (map[oppId] || 0) + amount;
+    }
+  });
+
+  return map;
+}, [quotations]);
   useEffect(() => {
     const loadLabs = async () => {
       try {
@@ -441,17 +455,18 @@ export default function CeoProjects() {
                         : p.labNames || "—"}
                     </td>
                     <td>{p.workCategory || "—"}</td>
-                    <td>
-                      {(() => {
-                        const key = p.opportunityId
-                          ? p.opportunityId.trim().toUpperCase()
-                          : "";
+<td>
+  {(() => {
+    const key = String(p.opportunityId || "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s/g, "");
 
-                        return `₹${(projectPayments[key] || 0).toLocaleString("en-IN")}`;
-                      })()}
-                    </td>
+    const revenue = revenueByOpportunity[key] || 0;
 
-
+    return `₹${revenue.toLocaleString("en-IN")}`;
+  })()}
+</td>
 
                     <td>{formatDate(p.startDate)}</td>
                     <td>{formatDate(p.endDate)}</td>
