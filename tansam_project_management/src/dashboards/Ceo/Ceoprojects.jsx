@@ -280,8 +280,8 @@ useEffect(() => {
         if (selectedType) params.append("projectType", selectedType);
         if (selectedLabs.length > 0) params.append("labs", selectedLabs.join(","));
 
-        const data = await getTotalRevenue(params.toString());
-        setDynamicFilteredRevenue(data.totalRevenue || 0);
+      const data = await getTotalRevenue(params.toString());
+setDynamicFilteredRevenue(data.totalRevenue || 0);
       } catch (error) {
         console.error("Revenue fetch error:", error);
       }

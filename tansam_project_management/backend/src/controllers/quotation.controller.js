@@ -651,54 +651,51 @@ export const getTotalRevenue = async (req, res) => {
     const db = await connectDB();
     const { clientName, projectType, labs } = req.query;
 
-    let query = `
-      SELECT COALESCE(SUM(q.paymentAmount),0) AS totalRevenue
-      FROM quotations q
-      WHERE 1=1
-    `;
-
     const params = [];
-
-    if (clientName) {
-      query += ` AND q.clientName = ?`;
-      params.push(clientName);
-    }
+    let projectFilter = "1=1";
 
     if (projectType) {
-      query += ` AND q.opportunity_id IN (
-        SELECT opportunity_id FROM projects WHERE project_type = ?
-      )`;
+      projectFilter += " AND projectType = ?";
       params.push(projectType);
     }
 
     if (labs) {
       const labArray = labs.split(",");
       const placeholders = labArray.map(() => "?").join(",");
-
       const [labRows] = await db.execute(
         `SELECT id FROM labs_admin WHERE name IN (${placeholders})`,
         labArray
       );
-
       const labIds = labRows.map(l => l.id);
-
       if (labIds.length) {
         const labPlaceholders = labIds.map(() => "?").join(",");
-        query += ` AND q.lab_id IN (${labPlaceholders})`;
+        projectFilter += ` AND lab_id IN (${labPlaceholders})`;
         params.push(...labIds);
       }
     }
 
+    let query = `
+      SELECT COALESCE(SUM(paymentAmount), 0) AS totalRevenue
+      FROM quotations
+      WHERE opportunity_id IN (
+        SELECT opportunity_id
+        FROM projects
+        WHERE ${projectFilter}
+      )
+    `;
+
+    if (clientName) {
+      query += ` AND clientName = ?`;
+      params.push(clientName);
+    }
+
     const [rows] = await db.execute(query, params);
-
     res.json({ totalRevenue: rows[0].totalRevenue || 0 });
-
   } catch (error) {
     console.error("Revenue Fetch Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 // Delete quotation
 export const deleteQuotation = async (req, res) => {
   try {
