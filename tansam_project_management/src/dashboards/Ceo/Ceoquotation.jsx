@@ -90,20 +90,25 @@ export default function CeoQuotation() {
   };
 
 const totalQuotationValue = useMemo(() => {
-  const total = filteredData.reduce((sum, q) => {
-    try {
-      const items = JSON.parse(q.itemDetails || "[]");
-      const itemTotal = items.reduce(
-        (subSum, item) => subSum + Number(item.total || 0),
-        0
-      );
-      return sum + itemTotal;
-    } catch {
-      return sum;
-    }
-  }, 0);
+  const opportunityPayments = {};
 
-  return Number(total.toFixed(2));
+  filteredData.forEach((q) => {
+    const oppId = q.opportunity_id;
+
+    const amount = parseFloat(q.paymentAmount || 0) || 0;
+    const paise = Math.round(amount * 100); // to avoid float errors
+
+    if (!opportunityPayments[oppId]) opportunityPayments[oppId] = 0;
+
+    opportunityPayments[oppId] += paise;
+  });
+
+  const totalPaise = Object.values(opportunityPayments).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+
+  return totalPaise / 100; // rupees
 }, [filteredData]);
 const totalPaymentReceived = useMemo(() => {
   const opportunityPayments = {};
@@ -114,9 +119,7 @@ const totalPaymentReceived = useMemo(() => {
     const amount =
       parseFloat(
         String(q.paymentAmount || 0)
-          .replace(/₹/g, "")
-          .replace(/,/g, "")
-          .trim()
+          
       ) || 0;
 
     const paise = Math.round(amount * 100); // convert to paise

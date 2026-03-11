@@ -39,12 +39,9 @@ export default function CeoProjects() {
 const revenueByOpportunity = useMemo(() => {
   const map = {};
   quotations.forEach((q) => {
-    const key = String(q.opportunity_id || "")
-      .trim()               // remove leading/trailing spaces
-      .toUpperCase()        // make uppercase
-      .replace(/\s/g, "");  // remove any inner spaces
+    const key = String(q.opportunity_id || "");  // remove any inner spaces
 
-    map[key] = (map[key] || 0) + Number(q.paymentAmount || 0);
+    map[key] =Number(q.paymentAmount || 0);
   });
   return map;
 }, [quotations]);
