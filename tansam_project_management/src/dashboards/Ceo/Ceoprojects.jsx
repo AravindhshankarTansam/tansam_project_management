@@ -8,6 +8,8 @@ import { fetchProjectFollowups } from "../../services/projectFollowup.api";
 import { getQuotations } from "../../services/quotation/quotation.api";
 import { getTotalRevenue } from "../../services/quotation/quotation.api";
 import { fetchLabs } from "../../services/admin/admin.roles.api";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 const ROWS_PER_PAGE = 10;
 
 export default function CeoProjects() {
@@ -34,10 +36,76 @@ export default function CeoProjects() {
   //     )
   //     .reduce((sum, q) => sum + Number(q.paymentAmountReceived || 0), 0);
   // }, [quotations]);
+const revenueByOpportunity = useMemo(() => {
+  const map = {};
+  quotations.forEach((q) => {
+    const key = String(q.opportunity_id || "")
+      .trim()               // remove leading/trailing spaces
+      .toUpperCase()        // make uppercase
+      .replace(/\s/g, "");  // remove any inner spaces
 
+    map[key] = (map[key] || 0) + Number(q.paymentAmount || 0);
+  });
+  return map;
+}, [quotations]);
+const downloadExcel = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Projects");
 
+  // Add headers
+  worksheet.columns = [
+    { header: "Project Name", key: "projectName", width: 30 },
+    { header: "Client Name", key: "clientName", width: 25 },
+    { header: "Client Type", key: "clientType", width: 20 },
+    { header: "Project Type", key: "projectType", width: 20 },
+    { header: "Project Status", key: "status", width: 20 },
+    { header: "Labs", key: "labs", width: 30 },
+    { header: "Work Category", key: "workCategory", width: 25 },
+    { header: "Revenue", key: "revenue", width: 15 },
+    { header: "Start", key: "start", width: 15 },
+    { header: "End", key: "end", width: 15 },
+  ];
 
+  // Add rows
+projects.forEach((p) => {
+  const key = String(p.opportunityId || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s/g, "");
 
+  const revenue = revenueByOpportunity[key] || 0; // now matches table
+
+    // Handle labs
+    let labs = "—";
+    if (Array.isArray(p.labNames)) labs = p.labNames.join(", ");
+    else if (typeof p.labNames === "string") {
+      try {
+        const parsed = JSON.parse(p.labNames);
+        labs = Array.isArray(parsed) ? parsed.join(", ") : parsed;
+      } catch {
+        labs = p.labNames;
+      }
+    }
+
+    worksheet.addRow({
+      projectName: p.projectName || "—",
+      clientName: p.clientName || "—",
+      clientType: p.client_Type || "—",
+      projectType: p.projectType || "—",
+      status: followupStatuses[p.id] || "Planned",
+      labs,
+      workCategory: p.workCategory || "—",
+      revenue,
+      start: formatDate(p.startDate),
+      end: formatDate(p.endDate),
+    });
+  });
+
+  // Convert workbook to blob and save
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/octet-stream" });
+  saveAs(blob, "Projects.xlsx");
+};
   /* ================= LOAD PROJECTS ================= */
   useEffect(() => {
     (async () => {
@@ -120,24 +188,7 @@ useEffect(() => {
       // toast.error("Failed to load quotation payments");
     }
   })();
-}, []);const revenueByOpportunity = useMemo(() => {
-  const map = {};
-
-  quotations.forEach((q) => {
-    const oppId = String(q.opportunity_id || "")
-      .trim()
-      .toUpperCase()
-      .replace(/\s/g, "");
-
-    const amount = Number(q.paymentAmount);
-
-    if (!isNaN(amount) && amount > 0) {
-      map[oppId] = (map[oppId] || 0) + amount;
-    }
-  });
-
-  return map;
-}, [quotations]);
+}, []);
   useEffect(() => {
     const loadLabs = async () => {
       try {
@@ -393,11 +444,15 @@ useEffect(() => {
             </p>
           </div>
         </div>
+          <button className="download-btn" onClick={downloadExcel}>
+  Download Excel
+</button>
   {(searchTerm || selectedClient || selectedType || selectedLabs.length > 0) && (
     <button className="clear-btn" onClick={clearFilters}>
       Clear
     </button>
   )}
+
 </div>
 
 
@@ -457,11 +512,7 @@ useEffect(() => {
                     <td>{p.workCategory || "—"}</td>
 <td>
   {(() => {
-    const key = String(p.opportunityId || "")
-      .trim()
-      .toUpperCase()
-      .replace(/\s/g, "");
-
+    const key = String(p.opportunityId || "").trim();
     const revenue = revenueByOpportunity[key] || 0;
 
     return `₹${revenue.toLocaleString("en-IN")}`;
